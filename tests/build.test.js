@@ -207,6 +207,44 @@ section('adherence');
   ok(wk.planned === 15 && wk.done === 15, 'weekKm wk1: 15/15, got ' + wk.done + '/' + wk.planned);
 }
 
+/* ---- 8. .ics export ---- */
+section('ics export');
+{
+  const ics = DB.buildICS('2026-06-29');
+  ok(/^BEGIN:VCALENDAR\r\n/.test(ics) && /END:VCALENDAR\r\n$/.test(ics), 'calendar wrapper with CRLF');
+
+  // event count must equal every doable training block across all blocks
+  let expect = 0;
+  const lastB = PLAN.blocks[PLAN.blocks.length - 1];
+  const endISO = DB.addDays(lastB.start, lastB.weeks * 7 - 1);
+  for (let iso = '2026-06-29'; iso <= endISO; iso = DB.addDays(iso, 1)) {
+    for (const b of DB.buildDay(iso).blocks) {
+      if (b.doable && (b.cat === 'run' || b.cat === 'gym' || b.cat === 'xt')) expect++;
+    }
+  }
+  const events = (ics.match(/BEGIN:VEVENT/g) || []).length;
+  ok(events === expect && expect > 200, 'event count ' + events + ' matches training blocks ' + expect);
+
+  const flat = ics.replace(/\r\n /g, '');            // unfold
+  ok(flat.includes('DTSTART:20270124T090000') && flat.includes('DTEND:20270124T130000'),
+    'race day event at 09:00–13:00');
+  ok(/SUMMARY:MARATHON — 42\.2 km/.test(flat), 'race summary not doubled');
+  ok(/SUMMARY:Easy run — \d+ km/.test(flat), 'run summaries carry distance');
+  ok(flat.includes('Drive over\\, no run-commute'), 'commas escaped');
+  ok(flat.includes('Bench press 4 × 6–8\\nBarbell row'), 'gym plan in description');
+  ok((ics.match(/TRIGGER:-PT15M/g) || []).length === events, 'one 15-min alarm per event');
+
+  const uids = [...flat.matchAll(/UID:([^\r\n]+)/g)].map((m) => m[1]);
+  ok(new Set(uids).size === uids.length, 'UIDs unique (re-import safe)');
+
+  let maxBytes = 0;
+  for (const line of ics.split('\r\n')) maxBytes = Math.max(maxBytes, Buffer.byteLength(line, 'utf8'));
+  ok(maxBytes <= 75, 'all lines folded to ≤75 octets (max ' + maxBytes + ')');
+
+  ok((DB.buildICS('2028-01-01').match(/BEGIN:VEVENT/g) || []).length === 0, 'post-block export is empty');
+  ok((DB.buildICS('2026-01-01').match(/BEGIN:VEVENT/g) || []).length === expect, 'pre-block export clamps to block start');
+}
+
 /* ---- result ---- */
 console.log('\n' + checks + ' checks, ' + failures + ' failure' + (failures === 1 ? '' : 's'));
 process.exit(failures ? 1 : 0);

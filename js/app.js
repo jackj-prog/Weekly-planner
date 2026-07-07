@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.2.0';
+  const APP_VERSION = '1.3.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -524,7 +524,49 @@
       '<h2>App</h2><div class="ref-note">Week OS v' + APP_VERSION + ' · offline-first · plan lives in data/plan.js</div>' +
       '</div>'
     ));
+    view.appendChild(buildCalendarSection());
     view.appendChild(buildDataSection());
+  }
+
+  /* ---- .ics export: native reminders with zero backend ---- */
+  function buildCalendarSection() {
+    const wrap = el(
+      '<div class="ref"><h2>Reminders</h2><div class="ref-card data-card">' +
+      '<div class="ref-note">Every run, gym session and cross-training block from today to the ' +
+      'end of the block, as calendar events with 15-minute alerts. Times are local. ' +
+      'Re-importing after a plan change updates events instead of duplicating them.</div>' +
+      '<div class="data-actions"><button data-io="ics">Add to Calendar (.ics)</button></div>' +
+      '<div class="data-msg" role="status"></div></div></div>'
+    );
+    const msg = wrap.querySelector('.data-msg');
+    wrap.querySelector('[data-io="ics"]').addEventListener('click', () => {
+      const ics = DB.buildICS(todayISO());
+      const n = (ics.match(/BEGIN:VEVENT/g) || []).length;
+      if (!n) { msg.textContent = 'No upcoming sessions — the block is over.'; return; }
+      const ok = () => { msg.textContent = n + ' sessions exported — open the file and tap “Add All”.'; };
+      let file = null;
+      try { file = new File([ics], 'week-os-training.ics', { type: 'text/calendar' }); } catch (e) { /* old engine */ }
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'Week OS training' })
+          .then(ok)
+          .catch((e) => { if (!e || e.name !== 'AbortError') downloadICS(ics, n, msg); });
+      } else {
+        downloadICS(ics, n, msg);
+      }
+    });
+    return wrap;
+  }
+
+  function downloadICS(ics, n, msg) {
+    const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'week-os-training.ics';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    msg.textContent = n + ' sessions exported — open week-os-training.ics to add them.';
   }
 
   /* ---- backup / restore (ticks, skips, moves — everything local) ---- */

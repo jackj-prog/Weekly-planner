@@ -56,10 +56,11 @@ sanctioned mitigation: phase identity is always carried by order
 ## 3. Roadmap (impact ÷ effort, descending)
 
 **Quick wins**
-1. **.ics calendar export** — generate the block's runs/gym as a
-   calendar file, entirely offline. Native iOS reminders without a push
-   server. This is the notification story (web push on iOS needs a
-   backend — rejected).
+1. ~~**.ics calendar export**~~ — SHIPPED v1.3: Reference → Reminders.
+   Every training block from today to the end of the recovery block as
+   floating-local-time events with 15-minute VALARMs; stable UIDs make
+   re-imports update-in-place; share-sheet first, blob download
+   fallback. Native iOS reminders with zero backend.
 2. **Tune-up recalibrator** — Reference widget: enter the Week-24 half
    time → applies §10's rule, shows the locked race pace. Deterministic,
    ~30 lines.

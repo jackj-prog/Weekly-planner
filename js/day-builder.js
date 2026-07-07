@@ -327,6 +327,82 @@
     return s;
   }
 
+  /* ==================================================================
+     .ics export — every doable training block (run / gym / xt) from
+     fromISO to the end of the last block, as calendar events with a
+     15-minute alert. Floating local times (wall-clock — right for one
+     person in one timezone, DST-proof). UIDs are stable per date+block
+     so re-importing updates events in place instead of duplicating.
+     ================================================================== */
+  function icsEscape(s) {
+    return String(s)
+      .replace(/\\/g, '\\\\').replace(/;/g, '\\;')
+      .replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+  }
+  function utf8Len(ch) {
+    const cp = ch.codePointAt(0);
+    return cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4;
+  }
+  /* RFC 5545 folding: lines ≤ 75 octets, continuations start with a space.
+     Counted in UTF-8 bytes — em-dashes and × are multi-byte. */
+  function icsFold(line) {
+    const out = [];
+    let cur = '', bytes = 0;
+    for (const ch of line) {
+      const l = utf8Len(ch);
+      if (bytes + l > 74) { out.push(cur); cur = ' '; bytes = 1; }
+      cur += ch;
+      bytes += l;
+    }
+    out.push(cur);
+    return out.join('\r\n');
+  }
+
+  function buildICS(fromISO) {
+    const first = PLAN.blocks[0];
+    const last = PLAN.blocks[PLAN.blocks.length - 1];
+    const start = fromISO < first.start ? first.start : fromISO;
+    const endISO = addDays(last.start, last.weeks * 7 - 1);
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Week OS//Training//EN',
+      'CALSCALE:GREGORIAN',
+      'X-WR-CALNAME:Week OS training',
+    ];
+    for (let iso = start; iso <= endISO; iso = addDays(iso, 1)) {
+      const day = buildDay(iso);
+      for (const b of day.blocks) {
+        if (!b.doable || (b.cat !== 'run' && b.cat !== 'gym' && b.cat !== 'xt')) continue;
+        const d = iso.replace(/-/g, '');
+        const km = b.run && (b.run.km === Math.round(b.run.km) ? b.run.km : b.run.km.toFixed(1));
+        const summary = b.run && !/\d\s*km/i.test(b.title) ? b.title + ' — ' + km + ' km' : b.title;
+        let desc = b.detail || '';
+        if (b.plan) desc += (desc ? '\n' : '') + b.plan.map((p) => p.ex + ' ' + p.sets).join('\n');
+        lines.push(
+          'BEGIN:VEVENT',
+          icsFold('UID:' + iso + '-' + b.id + '@week-os'),
+          'DTSTAMP:' + stamp,
+          'DTSTART:' + d + 'T' + b.start.replace(':', '') + '00',
+          'DTEND:' + d + 'T' + b.end.replace(':', '') + '00',
+          icsFold('SUMMARY:' + icsEscape(summary))
+        );
+        if (desc) lines.push(icsFold('DESCRIPTION:' + icsEscape(desc)));
+        lines.push(
+          'BEGIN:VALARM',
+          'ACTION:DISPLAY',
+          icsFold('DESCRIPTION:' + icsEscape(b.title)),
+          'TRIGGER:-PT15M',
+          'END:VALARM',
+          'END:VEVENT'
+        );
+      }
+    }
+    lines.push('END:VCALENDAR');
+    return lines.join('\r\n') + '\r\n';
+  }
+
   /* Run km banked vs planned across the 7 days from anchor (any block). */
   function weekKm(getDone, anchorIso) {
     const out = { done: 0, planned: 0 };
@@ -342,7 +418,7 @@
 
   return {
     buildDay, resolveBlock, weekNumber, dayIndex, distancesForWeek,
-    weekRow, weekDates, raceCountdown, adherence, weekKm,
+    weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });
