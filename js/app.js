@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.3.0';
+  const APP_VERSION = '1.4.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -28,6 +28,17 @@
   };
   let nowKey = '';             // today's current|next block ids — minute tick
                                // re-renders only when this changes
+  let lastViewKey = '';        // view identity — fade only on real navigation
+
+  function fmtLeft(mins) {
+    if (mins >= 60) return Math.floor(mins / 60) + 'h ' + String(mins % 60).padStart(2, '0') + 'm left';
+    return mins + ' min left';
+  }
+  function fmtGap(mins) {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return (h ? h + 'h' + (m ? ' ' + m + 'm' : '') : m + 'm') + ' open';
+  }
 
   function todayISO() { return DB.toISO(new Date()); }
   function nowMin() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
@@ -123,6 +134,8 @@
       cdEl.innerHTML = '<b>DONE</b> ' + PLAN.race.date.slice(0, 4) + '<small>marathoner</small>';
     } else if (cd.days === 0) {
       cdEl.innerHTML = '<b>RACE DAY</b><small>gun ' + esc(PLAN.race.gun) + '</small>';
+    } else if (cd.weeks === 0) {
+      cdEl.innerHTML = '<b>' + cd.rem + ' DAY' + (cd.rem === 1 ? '' : 'S') + '</b><small>to the gun</small>';
     } else {
       cdEl.innerHTML = '<b>' + cd.weeks + 'w ' + cd.rem + 'd</b><small>to the gun</small>';
     }
@@ -137,6 +150,8 @@
     const done = getDone(iso);
     const ovr = getOvr(iso);
     const movedIn = getMoveIn(iso);
+    const just = state.justTicked;         // animate only the block just ticked
+    state.justTicked = null;
     const view = document.getElementById('view');
     view.innerHTML = '';
 
@@ -173,7 +188,7 @@
 
     /* -- run hero -- */
     if (day.run) {
-      view.appendChild(buildHero(day, done, iso));
+      view.appendChild(buildHero(day, done, iso, just));
     } else {
       const restBlock = day.blocks.find((b) => /no run|rest/i.test(b.title));
       view.appendChild(el(
@@ -190,13 +205,18 @@
 
     movedIn.forEach((m) => {
       const card = buildCard({
-        id: m.id, title: m.title, detail: m.detail, cat: m.cat,
+        id: m.id, title: m.title, detail: m.detail, plan: m.plan || null, cat: m.cat,
         start: '·', end: '', doable: true,
-      }, done, iso, { moved: m });
+      }, done, iso, { moved: m, just: just === m.id });
       tl.appendChild(card);
     });
 
+    let prevEnd = null;
     for (const b of day.blocks) {
+      if (prevEnd !== null && b.startMin - prevEnd >= 40) {
+        tl.appendChild(el('<div class="tl-gap">' + fmtGap(b.startMin - prevEnd) + '</div>'));
+      }
+      prevEnd = b.endMin;
       if (!nowPlaced && nMin < b.startMin) {
         tl.appendChild(el('<div class="tl-now">NOW ' + DB.fmtHM(nMin) + '</div>'));
         nowPlaced = true;
@@ -212,7 +232,7 @@
         );
         tl.appendChild(q);
       } else {
-        tl.appendChild(buildCard(b, done, iso, { current: isCurrent, skipped: !!ovr.skip[b.id], moved: null, movedOut: !!ovr.moved[b.id] }));
+        tl.appendChild(buildCard(b, done, iso, { current: isCurrent, skipped: !!ovr.skip[b.id], moved: null, movedOut: !!ovr.moved[b.id], just: just === b.id }));
       }
     }
     if (!nowPlaced) tl.appendChild(el('<div class="tl-now">NOW ' + DB.fmtHM(nMin) + '</div>'));
@@ -228,7 +248,9 @@
     if (cur) {
       const pct = Math.round(((nMin - cur.startMin) / (cur.endMin - cur.startMin)) * 100);
       html += '<div class="nn-tag">NOW</div><div class="nn-title">' + esc(cur.title) + '</div>' +
-        '<div class="nn-time">' + cur.start + '–' + cur.end + (cur.detail ? ' · ' + esc(cur.detail) : '') + '</div>' +
+        '<div class="nn-time">' + cur.start + '–' + cur.end +
+        ' · <span class="nn-left">' + fmtLeft(cur.endMin - nMin) + '</span>' +
+        (cur.detail ? ' · ' + esc(cur.detail) : '') + '</div>' +
         '<div class="nn-bar"><i style="width:' + pct + '%"></i></div>';
     } else {
       html += '<div class="nn-tag">NOW</div><div class="nn-title">Off the clock</div>' +
@@ -252,14 +274,14 @@
     return el(html + '</div>');
   }
 
-  function buildHero(day, done, iso) {
+  function buildHero(day, done, iso, just) {
     const r = day.run;
     const isRace = /marathon/i.test(r.title) || (day.row && day.row.race && day.dayIndex === 6);
     const km = r.run.km;
     const kmTxt = km === Math.round(km) ? String(km) : km.toFixed(1);
     const isDone = !!done[r.id];
     const hero = el(
-      '<section class="hero' + (isRace ? ' race' : '') + (isDone ? ' done' : '') + '">' +
+      '<section class="hero' + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (just === r.id ? ' just' : '') + '">' +
       '<div class="h-tag">' + (isRace ? 'RACE DAY' : 'The run') + ' · ' + r.start + '</div>' +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
@@ -267,7 +289,11 @@
       '<div class="h-detail">' + esc(r.detail) + '</div>' +
       '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="Mark run done">✓</button></section>'
     );
-    hero.querySelector('.h-tick').addEventListener('click', () => { toggleDone(iso, r.id); render(); });
+    hero.querySelector('.h-tick').addEventListener('click', () => {
+      if (!done[r.id]) state.justTicked = r.id;   // animate on tick-on only
+      toggleDone(iso, r.id);
+      render();
+    });
     return hero;
   }
 
@@ -278,7 +304,7 @@
     if (opts.movedOut) return attachUndoMove(iso, b);
     const expanded = state.expanded === b.id;
     const card = el(
-      '<div class="tl-card' + (isDone ? ' done' : '') + (opts.skipped ? ' skipped' : '') + (opts.current ? ' current' : '') + '" style="--cat:' + cat + '">' +
+      '<div class="tl-card' + (isDone ? ' done' : '') + (opts.skipped ? ' skipped' : '') + (opts.current ? ' current' : '') + (opts.just ? ' just' : '') + '" style="--cat:' + cat + '">' +
       '<div class="c-main">' +
       '<div class="c-time">' + b.start + (b.end && b.end !== b.start ? '–' + b.end : '') +
       (opts.current ? ' <span class="nowflag">· NOW</span>' : '') + '</div>' +
@@ -300,7 +326,11 @@
       '<button class="more-btn" aria-label="Actions">⋯</button>' +
       '</div></div>'
     );
-    card.querySelector('.tick').addEventListener('click', () => { toggleDone(iso, b.id); render(); });
+    card.querySelector('.tick').addEventListener('click', () => {
+      if (!isDone) state.justTicked = b.id;       // animate on tick-on only
+      toggleDone(iso, b.id);
+      render();
+    });
     card.querySelector('.more-btn').addEventListener('click', () => {
       state.expanded = expanded ? null : b.id;
       render();
@@ -653,6 +683,17 @@
     else if (state.view === 'week') renderWeek();
     else if (state.view === 'plan') renderPlan();
     else renderRef();
+
+    /* fade content in on real navigation only — never on tick re-renders */
+    const viewKey = state.view + '|' +
+      (state.view === 'today' ? state.dateISO : state.view === 'week' ? state.weekAnchor : '');
+    if (viewKey !== lastViewKey) {
+      lastViewKey = viewKey;
+      const v = document.getElementById('view');
+      v.classList.remove('anim');
+      void v.offsetWidth;                          // restart the animation
+      v.classList.add('anim');
+    }
   }
 
   /* ---- navigation ---- */
@@ -696,6 +737,8 @@
     if (bar && cur) {
       bar.style.width = Math.round(((n - cur.startMin) / (cur.endMin - cur.startMin)) * 100) + '%';
     }
+    const left = document.querySelector('.nn-left');
+    if (left && cur) left.textContent = fmtLeft(cur.endMin - n);
     const line = document.querySelector('.tl-now');
     if (line) line.textContent = 'NOW ' + DB.fmtHM(n);
   }, 60000);

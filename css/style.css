@@ -1,10 +1,16 @@
 /* ==========================================================================
    Week OS — css/style.css
    Identity tokens from CLAUDE.md §3. Design width 390px, iPhone standalone.
-   Typefaces fall back to system equivalents when Archivo / Space Mono /
-   Inter aren't available offline; drop woff2 files + @font-face here to
-   self-host later.
+   Archivo / Space Mono / Inter are self-hosted (fonts/, latin subsets,
+   ~124KB total) and precached by the service worker.
    ========================================================================== */
+
+@font-face { font-family: 'Archivo'; font-style: normal; font-weight: 800; font-display: swap; src: url('../fonts/archivo-latin-800-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Archivo'; font-style: normal; font-weight: 900; font-display: swap; src: url('../fonts/archivo-latin-900-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Space Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/space-mono-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Space Mono'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/space-mono-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/inter-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/inter-latin-600-normal.woff2') format('woff2'); }
 
 :root {
   --ink: #16242a;
@@ -454,3 +460,48 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 }
 .c-plan .xr:last-child { border-bottom: 0; }
 .c-plan .xs { font-family: var(--mono); font-size: 11.5px; color: var(--t2); white-space: nowrap; }
+
+/* ---- earned moments ------------------------------------------------------ */
+.hero.done { opacity: 0.82; }
+.hero.done::after {
+  content: "BANKED";
+  position: absolute; right: 14px; bottom: 14px;
+  font-family: var(--mono); font-weight: 700; font-size: 12px;
+  letter-spacing: 0.18em; padding: 3px 9px 3px 11px;
+  border: 2px solid rgba(255,255,255,0.75); border-radius: 5px;
+  transform: rotate(-8deg); color: #fff;
+}
+.hero.race.done::after { content: "MARATHONER"; }
+.hero.done .h-detail { padding-right: 110px; }   /* clear the stamp */
+
+/* ---- open time between blocks ------------------------------------------- */
+.tl-gap {
+  display: flex; align-items: center; padding: 1px 0 1px 12px; margin-left: 2px;
+  font-family: var(--mono); font-size: 10px; color: var(--t3);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border-left: 2px dotted var(--line); min-height: 18px;
+}
+
+/* ---- time remaining in Now card ------------------------------------------ */
+.nn-left { color: var(--accent); font-weight: 700; }
+
+/* ---- motion (only when welcome) ------------------------------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  .just .tick.on, .hero.just .h-tick.on {
+    animation: tickpop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes tickpop {
+    0% { transform: scale(0.5); }
+    60% { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+  .hero.just.done::after { animation: stampin 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes stampin {
+    0% { transform: rotate(-8deg) scale(1.9); opacity: 0; }
+    100% { transform: rotate(-8deg) scale(1); opacity: 1; }
+  }
+  .view.anim > * { animation: viewin 0.16s ease-out; }
+  @keyframes viewin {
+    from { opacity: 0; transform: translateY(5px); }
+  }
+}

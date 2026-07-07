@@ -76,9 +76,14 @@ sanctioned mitigation: phase identity is always carried by order
 6. **Illness/niggle mode** — one action that skips the next N days'
    runs and stamps the reason, so streak/stats stay honest without
    ceremony (currently N separate skips).
-7. **Self-hosted fonts** — Archivo/Space Mono/Inter woff2 checked into
-   the repo (network policy blocked fetching them this session); the
-   identity currently rides on fallbacks.
+7. ~~**Self-hosted fonts**~~ — SHIPPED v1.4: Archivo 800/900, Space
+   Mono 400/700, Inter 400/600 (latin woff2 via fontsource, ~124KB),
+   `font-display: swap`, precached by the SW. v1.4 also shipped the
+   delight pass: tick pop + rotated BANKED/MARATHONER stamps on the
+   done hero (animated only on the just-ticked block, reduced-motion
+   aware), "N min left" live in the Now card, "open time" gap dividers
+   in the timeline, days-only countdown in race week, and a fade on
+   real navigation only.
 8. **Home-screen widget-ish shortcut** — an `?view=week` start-URL
    parameter is cheap; a real iOS widget needs a native wrapper
    (rejected for now).

@@ -5,7 +5,7 @@
    ========================================================================== */
 'use strict';
 
-const CACHE_VERSION = 'week-os-v1.3.0';
+const CACHE_VERSION = 'week-os-v1.4.0';
 const ASSETS = [
   './',
   './index.html',
@@ -16,6 +16,12 @@ const ASSETS = [
   './manifest.webmanifest',
   './icons/icon-180.png',
   './icons/icon-512.png',
+  './fonts/archivo-latin-800-normal.woff2',
+  './fonts/archivo-latin-900-normal.woff2',
+  './fonts/space-mono-latin-400-normal.woff2',
+  './fonts/space-mono-latin-700-normal.woff2',
+  './fonts/inter-latin-400-normal.woff2',
+  './fonts/inter-latin-600-normal.woff2',
 ];
 
 self.addEventListener('install', (event) => {
