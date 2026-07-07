@@ -72,7 +72,7 @@ First-principles design is welcome. These behaviours are the intent:
 | Work | Mon/Wed/Thu 07:00–16:30 | Lunch 12:00–13:00. ~2h passive German listening during work. |
 | Commute | Work days 06:45 & 16:30, ~15–30 min | German podcasts. |
 | College | Tue 08:00–15:00 (until ~Sep 2026) | Includes ~3h flexible OU/HNC study periods. **Open question §16.** |
-| Nan meal | Mon–Thu 18:30–19:30 | Family anchor. Never scheduled over. |
+| Dinner | Mon–Thu 18:30–19:30 | Family anchor. Never scheduled over. |
 | Mum's | Fri from ~15:30 through the evening | Family time; basketball happens from here. |
 | Anki (German) | Daily, 15 min with breakfast | Non-negotiable. |
 | Reading | Nightly 22:00–22:30 · Thu anchor 21:00–22:00 · Sun catch-up 19:30–21:00 | ~200 pages/week target. |
@@ -93,7 +93,7 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
 ### Monday — recovery, no run
 06:00 Wake + Anki (15 min while eating) · 06:45 commute (podcast) ·
 07:00–12:00 Work · 12:00 lunch · 13:00–16:30 Work · 16:30 commute ·
-**17:00 Punchbag 30 min** · 17:30 shower + snack · 18:30 Nan meal ·
+**17:00 Punchbag 30 min** · 17:30 shower + snack · 18:30 dinner ·
 19:30–21:00 German active study (grammar/writing) · 21:00–22:00 German
 media (TV/film) · 22:00 read · 22:30 sleep.
 
@@ -101,7 +101,7 @@ media (TV/film) · 22:00 read · 22:30 sleep.
 06:45 wake + Anki + breakfast (lie-in vs work days) · 07:45 commute ·
 08:00–15:00 College (incl ~3h OU periods) · 15:00 commute + snack, home
 ~16:00 · **16:15 Easy run (Tue km)** · shower · OU study until 18:30 ·
-18:30 Nan meal · **19:30 Gym — Upper A** (bench/row/OHP; drive over, no
+18:30 dinner · **19:30 Gym — Upper A** (bench/row/OHP; drive over, no
 run-commute — legs are for running) · 20:45 wind down · 22:00 read ·
 22:30 sleep.
 Week 23 special: the Tue run's first 5 km are the **Pro 4 fit-check**
@@ -110,12 +110,12 @@ Week 23 special: the Tue run's first 5 km are the **Pro 4 fit-check**
 ### Wednesday — quality run (the week's hard session)
 Work day scaffold as Monday until 16:30 · **17:10 Quality run** (session
 from §7, ~Wed km, Evo SL, warm up 10 min easy first) · quick shower ·
-18:30 Nan meal · **19:30–21:00 OU study** (moved into the old gym slot) ·
+18:30 dinner · **19:30–21:00 OU study** (moved into the old gym slot) ·
 21:00 wind down · 22:00 read · 22:30 sleep.
 
 ### Thursday — easy run + protected evening
 Work day scaffold · **17:10 Easy run (Thu km)** · shower + snack ·
-18:30 Nan meal · **19:00–21:00 protected free evening** (the release
+18:30 dinner · **19:00–21:00 protected free evening** (the release
 valve; flex ≤1h to OU only on deadline weeks) · 21:00 deep reading
 anchor · 22:00 read · 22:30 sleep.
 
@@ -132,7 +132,7 @@ skip — §7/§9) · evening free at Mum's · 22:00 read · sleep.
 gym after the run: **Base phase (Wks 1–10): Lower B light-moderate ~50 min**
 (deadlift/RDL kept through Base only, no grinding PRs) ·
 **from Wk 11: Core + mobility 20 min, optional** (Lower B retired —
-running owns the legs) · shower · 12:00 Nan lunch · 13:00–16:30 OU/HNC
+running owns the legs) · shower · 12:00 lunch · 13:00–16:30 OU/HNC
 study · 16:30 free (social/hobbies) · 19:00 dinner · free evening ·
 22:00 read · 22:30 sleep.
 
@@ -150,6 +150,25 @@ Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
 - Gym intensity from Wk 23: both upper sessions labelled **maintenance**
   (reduced sets, keep the strength). Race week (30): no gym at all.
 - Lean bulk pauses ~Oct–Jan: eat maintenance-plus to fuel mileage.
+
+### Gym programming (exact sessions)
+Strength serves the marathon: low volume, decent intensity, zero leg
+fatigue near key runs. Compounds first, nothing to failure.
+
+- **Upper A — Tue 19:30:** bench 4×6–8 · row 4×6–8 · OHP 3×8 ·
+  face pulls 3×15.
+- **Upper B — Fri 13:00:** incline bench 4×8–10 · pull-ups 4×max ·
+  lateral raises 3×12 · curls 3×12 + pushdowns 3×12.
+- **Lower B — Sat after the buffer run (Base, Wks 1–10, ~50 min):**
+  deadlift 3×5 @ RPE 7 · RDL 3×8 light · step-ups 2×10/leg · calf
+  raises 3×15. Calf/tendon work now is injury insurance later. Never
+  grind — the long run owns tomorrow.
+- **Core + mobility — Sat from Wk 11 (20 min, optional):** plank 3×45s ·
+  side plank 2×30s/side · dead bugs 3×10 · glute bridges 2×15 · calves +
+  hips stretch.
+- **Maintenance from Wk 23 (both upper days):** 2 hard sets per lift,
+  3 reps in reserve. Strength holds on far less than it was built on.
+- **Race week (30):** no gym at all.
 
 ## 7. The 30-week block
 
@@ -222,14 +241,14 @@ evening · read 22:00. Christmas Day (Fri Wk 26): full rest, family, no
 Anki guilt. New Year's Day (Fri Wk 27): rest — peak 32 km is in two days.
 
 **Week 30 — race week, day by day.**
-- Mon: work · easy 5 (17:10) · Nan · free evening, feet up.
-- Tue: normal daytime · easy 4 (16:15) · OU 1.5h · Nan · NO gym.
-- Wed: work · easy 4 + strides · Nan · OU light.
-- Thu: work · shakeout 3–4 km (last run) · Nan · protected evening + reading anchor.
+- Mon: work · easy 5 (17:10) · dinner · free evening, feet up.
+- Tue: normal daytime · easy 4 (16:15) · OU 1.5h · dinner · NO gym.
+- Wed: work · easy 4 + strides · dinner · OU light.
+- Thu: work · shakeout 3–4 km (last run) · dinner · protected evening + reading anchor.
 - Fri: no German block (rest the brain) · kit prep + logistics (number,
   gels, drop bag, route) 12:45 · Mum's from 15:30 · NO basketball.
-- Sat: big carb breakfast · rest (optional 2 km leg-loosener) · Nan
-  carb lunch · feet up · early carb dinner 17:00 · final kit layout
+- Sat: big carb breakfast · rest (optional 2 km leg-loosener) · carb
+  lunch · feet up · early carb dinner 17:00 · final kit layout
   (Pro 4s, race socks, gels, vaseline, alarm) · wind down early · lights
   out 22:00.
 - Sun RACE DAY: 06:00 wake, porridge + coffee (3h before gun), sip
@@ -288,7 +307,7 @@ from mile 22.
   full-body replaced by the long run. Running owns the legs; lean bulk
   pauses ~Oct–Jan, regained after the race.
 - **Runs live in the evening gaps** (Tue 16:15, Wed/Thu 17:10) and
-  weekend mornings — built around Nan meals at 18:30. No 05:30 alarms;
+  weekend mornings — built around the 18:30 dinner anchor. No 05:30 alarms;
   sleep protected.
 - **Mon 25-min run → punchbag 30 min**: Monday is the recovery day.
 - **German active trims by phase** (Fri block 4.5h → 4h → 2.5–3h from
@@ -297,7 +316,7 @@ from mile 22.
 - **OU moves rather than shrinks**: Wed evening study takes the old gym
   slot (19:30–21:00). ~12h/wk in Build vs 13.5 planned; Thu free
   evening is the named flex on deadline weeks only.
-- **Protected and untouched**: Nan meals Mon–Thu · Mum Fridays · Thu
+- **Protected and untouched**: Mon–Thu dinners · Mum Fridays · Thu
   free evening · all reading targets · daily Anki · 22:30 sleep.
 
 ## 14. Amendability & life after the race

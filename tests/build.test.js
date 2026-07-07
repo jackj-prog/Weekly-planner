@@ -112,6 +112,18 @@ ok(friGerman(23).end === '10:30', 'Wk 23 Fri German ends 10:30');
 ok(hasBlock(dayOfWeek(5, 5), /Lower B/i), 'Base Sat should hold Lower B');
 ok(hasBlock(dayOfWeek(12, 5), /Core \+ mobility/i), 'Wk 11+ Sat should hold optional core');
 ok(hasBlock(dayOfWeek(23, 1), /maintenance/i), 'Wk 23 Tue gym should be maintenance');
+
+/* gym programming */
+ok(hasBlock(dayOfWeek(5, 1), /Bench 4×6–8/), 'Upper A should carry the full prescription');
+ok(hasBlock(dayOfWeek(5, 4), /Incline bench 4×8–10/), 'Upper B should carry the full prescription');
+ok(hasBlock(dayOfWeek(5, 5), /Deadlift 3×5/), 'Base Lower B should carry the prescription');
+ok(hasBlock(dayOfWeek(12, 5), /Plank 3×45s/), 'Wk 11+ core session should carry the prescription');
+ok(hasBlock(dayOfWeek(23, 1), /3 reps in reserve/), 'Wk 23 Upper A should swap to the maintenance session');
+ok(!hasBlock(dayOfWeek(23, 1), /Bench 4×6–8/), 'Wk 23 Upper A should not show the full-volume session');
+for (let i = 0; i < 210; i++) {
+  const day = DB.buildDay(DB.addDays(START, i));
+  for (const b of day.blocks) ok(!/\bNan\b/.test(b.title + ' ' + b.detail), day.iso + ' still mentions Nan: ' + b.title);
+}
 ok(!dayOfWeek(30, 1).blocks.some((b) => b.cat === 'gym'), 'Race week Tue should have no gym');
 ok(!dayOfWeek(30, 5).blocks.some((b) => b.cat === 'gym'), 'Race week Sat should have no gym');
 

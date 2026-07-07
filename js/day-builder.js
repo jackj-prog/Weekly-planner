@@ -221,11 +221,12 @@
       if (end <= start) continue;            /* squeezed out — drop it */
 
       const b = mk(start, end, entry);
-      /* gym → maintenance from Wk 23 (§6 deltas) */
+      /* gym → maintenance from Wk 23 (§6 deltas): swap in the reduced session */
       if (entry.gym === 'upper' && block.gymMaintenanceFromWk && week >= block.gymMaintenanceFromWk
           && !/maintenance/i.test(b.title)) {
         b.title += ' (maintenance)';
-        b.detail = (b.detail ? b.detail + ' · ' : '') + 'Reduced sets — keep the strength';
+        b.detail = entry.maintDetail ||
+          ((b.detail ? b.detail + ' · ' : '') + 'Reduced sets — keep the strength');
       }
       /* fixed-time run blocks defined directly in data (specials, default week) */
       if (entry.runKm) {
