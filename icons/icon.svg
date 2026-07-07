@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Week OS app icon — calendar + check, cyan→purple gradient on white.
+       Vector source for icons/icon-*.png (rendered by tools/make-icons.js). -->
+  <defs>
+    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="250" y1="210" x2="800" y2="760">
+      <stop offset="0" stop-color="#4be0ef"/>
+      <stop offset="0.5" stop-color="#5f7bee"/>
+      <stop offset="1" stop-color="#b168e8"/>
+    </linearGradient>
+    <linearGradient id="posts" gradientUnits="userSpaceOnUse" x1="250" y1="210" x2="800" y2="760">
+      <stop offset="0" stop-color="#43e4f2"/>
+      <stop offset="1" stop-color="#4fd4ee"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="#ffffff"/>
+
+  <!-- calendar body -->
+  <rect x="272" y="268" width="464" height="440" rx="64" fill="none" stroke="url(#g)" stroke-width="38"/>
+  <!-- header rule -->
+  <line x1="272" y1="382" x2="736" y2="382" stroke="url(#g)" stroke-width="34"/>
+  <!-- binding posts -->
+  <rect x="358" y="212" width="48" height="118" rx="24" fill="url(#posts)" stroke="#ffffff" stroke-width="10"/>
+  <rect x="602" y="212" width="48" height="118" rx="24" fill="url(#posts)" stroke="#ffffff" stroke-width="10"/>
+
+  <!-- date cells (one shared gradient shades them by position) -->
+  <rect x="342" y="428" width="76" height="76" rx="16" fill="url(#g)"/>
+  <rect x="438" y="428" width="76" height="76" rx="16" fill="url(#g)"/>
+  <rect x="534" y="428" width="76" height="76" rx="16" fill="url(#g)"/>
+  <rect x="342" y="522" width="76" height="76" rx="16" fill="url(#g)"/>
+  <rect x="438" y="522" width="76" height="76" rx="16" fill="url(#g)"/>
+  <rect x="342" y="616" width="76" height="76" rx="16" fill="url(#g)"/>
+
+  <!-- check circle (white halo breaks the calendar edge) -->
+  <circle cx="678" cy="638" r="158" fill="#ffffff"/>
+  <circle cx="678" cy="638" r="122" fill="#ffffff" stroke="url(#g)" stroke-width="30"/>
+  <path d="M 614 642 L 664 692 L 748 586" fill="none" stroke="url(#g)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

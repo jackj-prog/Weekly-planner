@@ -24,7 +24,8 @@ keyed per ISO date.
 | `js/app.js` | Rendering + interaction. Zero plan content. |
 | `sw.js` | Service worker. **Bump `CACHE_VERSION` on every deploy** — it drives the "Updated — reload" toast. |
 | `tests/build.test.js` | Headless test: builds all 210 days + the §15 definition-of-done checks. |
-| `tools/make-icons.js` | Dev-only PNG icon generator (no deps). |
+| `icons/icon.svg` | Vector source for the app icon (calendar + check). |
+| `tools/make-icons.js` | Dev-only: renders `icons/icon.svg` → the 180/512 PNGs via headless Chromium. |
 
 ## Amendment workflow
 
