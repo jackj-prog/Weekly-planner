@@ -206,7 +206,7 @@
         if (dayOverride && dayOverride.noGym) continue;
         const rule = fromWkPick(block.satGym, week);
         out.push(mk(prevEnd, prevEnd + rule.mins,
-          { title: rule.title, detail: rule.detail, cat: 'gym', doable: true }));
+          { title: rule.title, detail: rule.detail, plan: rule.plan, cat: 'gym', doable: true }));
         prevEnd = out[out.length - 1].endMin;
         continue;
       }
@@ -227,6 +227,7 @@
         b.title += ' (maintenance)';
         b.detail = entry.maintDetail ||
           ((b.detail ? b.detail + ' · ' : '') + 'Reduced sets — keep the strength');
+        if (entry.maintPlan) b.plan = entry.maintPlan;
       }
       /* fixed-time run blocks defined directly in data (specials, default week) */
       if (entry.runKm) {
@@ -258,6 +259,7 @@
       startMin, endMin,
       start: fmtHM(startMin), end: fmtHM(Math.min(endMin, 1439)),
       title: entry.title, detail: entry.detail || '',
+      plan: entry.plan || null,            /* structured session (gym) */
       cat: entry.cat || 'routine',
       doable: !!entry.doable, quiet: !!entry.quiet,
     };
@@ -273,9 +275,74 @@
     return { days: d, weeks: Math.floor(Math.max(0, d) / 7), rem: Math.max(0, d) % 7, past: d < 0 };
   }
 
+  /* ==================================================================
+     Adherence (pure — storage access is injected so tests can fake it).
+
+     Counting rules, chosen for honest-but-forgiving feedback:
+     · past days: every non-skipped doable counts as due; ticked = done.
+     · today: only ticked items count (pending blocks neither inflate
+       the denominator nor break anything — the day isn't over).
+     · explicit skips are excluded entirely and never reset the run
+       streak: deliberately resting per the niggle protocol is
+       compliance, not failure. A silently missed past run resets it.
+     ================================================================== */
+  function adherence(getDone, getSkips, todayIso) {
+    const b = PLAN.blocks[0];
+    const total = b.weeks * 7;
+    const s = {
+      day: Math.max(0, Math.min(total, daysBetween(b.start, todayIso) + 1)),
+      days: total,
+      kmDone: 0, kmDue: 0, runsDone: 0, runsDue: 0,
+      sessDone: 0, sessDue: 0, streak: 0, bestStreak: 0,
+      weekKmDone: {},
+    };
+    if (todayIso < b.start) return s;
+    let cur = 0;
+    for (let i = 0; i < total; i++) {
+      const iso = addDays(b.start, i);
+      if (iso > todayIso) break;
+      const day = buildDay(iso);
+      const done = getDone(iso) || {};
+      const skips = (getSkips && getSkips(iso)) || {};
+      const isPast = iso < todayIso;
+      for (const blk of day.blocks) {
+        if (!blk.doable || skips[blk.id]) continue;
+        if (done[blk.id]) { s.sessDone++; s.sessDue++; }
+        else if (isPast) s.sessDue++;
+      }
+      const r = day.run;
+      if (!r || skips[r.id]) continue;
+      if (done[r.id]) {
+        s.runsDone++; s.runsDue++;
+        s.kmDone += r.run.km; s.kmDue += r.run.km;
+        s.weekKmDone[day.week] = (s.weekKmDone[day.week] || 0) + r.run.km;
+        cur++;
+        if (cur > s.bestStreak) s.bestStreak = cur;
+      } else if (isPast) {
+        s.runsDue++; s.kmDue += r.run.km;
+        cur = 0;
+      }
+    }
+    s.streak = cur;
+    return s;
+  }
+
+  /* Run km banked vs planned across the 7 days from anchor (any block). */
+  function weekKm(getDone, anchorIso) {
+    const out = { done: 0, planned: 0 };
+    for (let i = 0; i < 7; i++) {
+      const iso = addDays(anchorIso, i);
+      const day = buildDay(iso);
+      if (!day.run) continue;
+      out.planned += day.run.run.km;
+      if ((getDone(iso) || {})[day.run.id]) out.done += day.run.run.km;
+    }
+    return out;
+  }
+
   return {
     buildDay, resolveBlock, weekNumber, dayIndex, distancesForWeek,
-    weekRow, weekDates, raceCountdown,
+    weekRow, weekDates, raceCountdown, adherence, weekKm,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

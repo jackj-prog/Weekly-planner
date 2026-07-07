@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.1.0';
+  const APP_VERSION = '1.2.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -26,6 +26,8 @@
     weekAnchor: null,          // Monday ISO shown in week view
     expanded: null,            // block id with actions open
   };
+  let nowKey = '';             // today's current|next block ids — minute tick
+                               // re-renders only when this changes
 
   function todayISO() { return DB.toISO(new Date()); }
   function nowMin() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
@@ -70,7 +72,7 @@
     writeJSON(ovrKey(iso), o);
     const tmr = DB.addDays(iso, 1);
     const list = getMoveIn(tmr);
-    list.push({ id: 'mv-' + iso + '-' + block.id, srcId: block.id, fromIso: iso, title: block.title, detail: block.detail, cat: block.cat });
+    list.push({ id: 'mv-' + iso + '-' + block.id, srcId: block.id, fromIso: iso, title: block.title, detail: block.detail, plan: block.plan || null, cat: block.cat });
     writeJSON(moveKey(tmr), list);
   }
   function undoMove(iso, id) {
@@ -151,11 +153,20 @@
     if (day.row && day.row.key) chips.push('<span class="chip hot">key</span>');
     const weekBit = day.blockId === 'marathon' ? 'WK ' + day.week + ' · DAY ' + (day.dayIndex + 1) + '/7'
       : day.blockId === 'recovery' ? 'RECOVERY · WK ' + day.week : 'STANDING WEEK';
-    view.appendChild(el(
-      '<div class="day-head"><h1>' + esc(fmtDate(iso)) + '</h1>' +
+    const head = el(
+      '<div class="day-head"><div class="day-nav">' +
+      '<button class="nav" data-d="-1" aria-label="Previous day">‹</button>' +
+      '<h1>' + esc(fmtDate(iso)) + '</h1>' +
+      '<button class="nav" data-d="1" aria-label="Next day">›</button></div>' +
       '<div class="sub"><span>' + weekBit + '</span>' + chips.join('') +
       (day.label ? '<span>' + esc(day.label) + '</span>' : '') + '</div></div>'
-    ));
+    );
+    head.querySelectorAll('.nav').forEach((btn) => btn.addEventListener('click', () => {
+      state.dateISO = DB.addDays(iso, Number(btn.getAttribute('data-d')));
+      state.expanded = null;
+      render();
+    }));
+    view.appendChild(head);
 
     /* -- now / next (real today only) -- */
     if (isToday) view.appendChild(buildNowNext(day));
@@ -212,6 +223,7 @@
     const nMin = nowMin();
     const cur = day.blocks.find((b) => nMin >= b.startMin && nMin < b.endMin);
     const next = day.blocks.filter((b) => b.startMin > nMin).slice(0, 2);
+    nowKey = day.iso + '|' + (cur ? cur.id : '-') + '|' + (next[0] ? next[0].id : '-');
     let html = '<div class="nownext">';
     if (cur) {
       const pct = Math.round(((nMin - cur.startMin) / (cur.endMin - cur.startMin)) * 100);
@@ -226,6 +238,16 @@
       html += next.map((b) => '<div class="nn-next"><span class="t">' + b.start + '</span><span>' + esc(b.title) + '</span></div>').join('');
     } else {
       html += '<div class="nn-next"><span class="t">—</span><span>Nothing left today. Lights out 22:30.</span></div>';
+    }
+    /* evening onwards, look ahead — lay the kit out tonight */
+    if (!next.length || nMin >= 21 * 60) {
+      const tmr = DB.buildDay(DB.addDays(day.iso, 1));
+      const line = tmr.run
+        ? tmr.run.start + ' · ' + tmr.run.title + ' — ' +
+          (tmr.run.run.km === Math.round(tmr.run.run.km) ? tmr.run.run.km : tmr.run.run.km.toFixed(1)) +
+          ' km · ' + tmr.run.run.shoe
+        : 'No run — recovery day';
+      html += '<div class="nn-tmrw"><span class="t">TMRW</span><span>' + esc(line) + '</span></div>';
     }
     return el(html + '</div>');
   }
@@ -243,7 +265,7 @@
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
       '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span><span><b>TIME</b>' + r.start + '–' + r.end + '</span></div>' +
       '<div class="h-detail">' + esc(r.detail) + '</div>' +
-      '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-label="Mark run done">✓</button></section>'
+      '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="Mark run done">✓</button></section>'
     );
     hero.querySelector('.h-tick').addEventListener('click', () => { toggleDone(iso, r.id); render(); });
     return hero;
@@ -259,9 +281,12 @@
       '<div class="tl-card' + (isDone ? ' done' : '') + (opts.skipped ? ' skipped' : '') + (opts.current ? ' current' : '') + '" style="--cat:' + cat + '">' +
       '<div class="c-main">' +
       '<div class="c-time">' + b.start + (b.end && b.end !== b.start ? '–' + b.end : '') +
-      (opts.current ? ' <span class="tl-now" style="display:inline">· NOW</span>' : '') + '</div>' +
+      (opts.current ? ' <span class="nowflag">· NOW</span>' : '') + '</div>' +
       '<div class="c-title">' + esc(b.title) + '</div>' +
       (b.detail ? '<div class="c-detail">' + esc(b.detail) + '</div>' : '') +
+      (b.plan ? '<div class="c-plan">' + b.plan.map((p) =>
+        '<div class="xr"><span>' + esc(p.ex) + '</span><span class="xs">' + esc(p.sets) + '</span></div>'
+      ).join('') + '</div>' : '') +
       '<div class="c-cat">' + esc(b.cat) + (opts.skipped ? ' · skipped' : '') +
       (opts.moved ? ' · moved from ' + esc(fmtShort(opts.moved.fromIso)) : '') + '</div>' +
       (expanded ? '<div class="c-actions">' +
@@ -271,7 +296,7 @@
         '</div>' : '') +
       '</div>' +
       '<div class="c-side">' +
-      '<button class="tick' + (isDone ? ' on' : '') + '" aria-label="Mark done">✓</button>' +
+      '<button class="tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="Mark ' + esc(b.title) + ' done">✓</button>' +
       '<button class="more-btn" aria-label="Actions">⋯</button>' +
       '</div></div>'
     );
@@ -345,6 +370,15 @@
     view.appendChild(el('<div class="wk-sub">' + sub + '</div>'));
     if (note) view.appendChild(el('<div class="wk-note">' + esc(note) + '</div>'));
 
+    /* banked km — only once the week has started */
+    if (anchor <= todayISO()) {
+      const km = DB.weekKm(getDone, anchor);
+      if (km.planned > 0) {
+        const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
+        view.appendChild(el('<div class="wk-banked">✓ ' + fmt(km.done) + ' of ' + fmt(km.planned) + ' km banked</div>'));
+      }
+    }
+
     const days = el('<div class="wk-days"></div>');
     const real = todayISO();
     for (let i = 0; i < 7; i++) {
@@ -403,6 +437,30 @@
       '<div class="wk-sub">' + fmtShort(block.start) + ' → race ' + fmtShort(PLAN.race.date) + ' · gun ' + esc(PLAN.race.gun) + '</div></div>'
     ));
 
+    /* adherence so far — the block talks back */
+    const adh = DB.adherence(getDone, (iso) => getOvr(iso).skip, today);
+    const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
+    if (adh.day > 0) {
+      view.appendChild(el(
+        '<div class="stats" role="group" aria-label="Block progress so far">' +
+        '<div class="stat"><b>' + adh.day + '<small>/' + adh.days + '</small></b><span>day</span></div>' +
+        '<div class="stat"><b>' + fmt(adh.kmDone) + '<small>/' + fmt(adh.kmDue) + '</small></b><span>km banked</span></div>' +
+        '<div class="stat"><b>' + adh.runsDone + '<small>/' + adh.runsDue + '</small></b><span>runs</span></div>' +
+        '<div class="stat"><b>' + adh.streak + (adh.bestStreak > adh.streak ? '<small>best ' + adh.bestStreak + '</small>' : '') + '</b><span>run streak</span></div>' +
+        '</div>'
+      ));
+      /* phase strip: base 10 · build 17 · taper 3 wks, marker = today.
+         Identity is order + labels, never colour alone (muted brand tokens). */
+      const pct = Math.min(100, (adh.day / adh.days) * 100).toFixed(1);
+      view.appendChild(el(
+        '<div class="blockbar" role="img" aria-label="Day ' + adh.day + ' of ' + adh.days + ' — base, build, taper">' +
+        '<i class="bb-base" style="flex-grow:10"></i>' +
+        '<i class="bb-build" style="flex-grow:17"></i>' +
+        '<i class="bb-taper" style="flex-grow:3"></i>' +
+        '<span class="bb-mark" style="left:' + pct + '%"></span></div>'
+      ));
+    }
+
     const rows = el('<div class="plan-rows"></div>');
     const PHASE = { base: 'var(--phase-base)', build: 'var(--phase-build)', taper: 'var(--phase-taper)' };
     for (const row of block.weekTable) {
@@ -424,8 +482,9 @@
         '<span class="p-sess">' + sess + '</span>' +
         (flags ? '<span class="p-flags">' + flags + '</span>' : '') +
         (row.notes && !row.race ? '<span class="p-dates">' + esc(row.notes) + '</span>' : '') + '</span>' +
-        '<span class="p-km"><b>' + row.km + '</b>km<small>LR ' + row.lr + '</small></span>' +
-        '</button>'
+        '<span class="p-km"><b>' + row.km + '</b>km<small>LR ' + row.lr + '</small>' +
+        (adh.weekKmDone[row.wk] ? '<small class="p-done">✓ ' + fmt(adh.weekKmDone[row.wk]) + '</small>' : '') +
+        '</span></button>'
       );
       r.addEventListener('click', () => {
         state.view = 'week';
@@ -465,6 +524,80 @@
       '<h2>App</h2><div class="ref-note">Week OS v' + APP_VERSION + ' · offline-first · plan lives in data/plan.js</div>' +
       '</div>'
     ));
+    view.appendChild(buildDataSection());
+  }
+
+  /* ---- backup / restore (ticks, skips, moves — everything local) ---- */
+  const STORE_KEY = /^(done|ovr|movein)-\d{4}-\d{2}-\d{2}$/;
+
+  function buildDataSection() {
+    let count = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      if (STORE_KEY.test(localStorage.key(i))) count++;
+    }
+    const wrap = el(
+      '<div class="ref"><h2>Data</h2><div class="ref-card data-card">' +
+      '<div class="ref-note">' + count + ' day-entr' + (count === 1 ? 'y' : 'ies') +
+      ' stored on this phone. Backups are a JSON blob — paste one into Notes now and again.</div>' +
+      '<div class="data-actions">' +
+      '<button data-io="export">Copy backup</button>' +
+      '<button data-io="restore">Restore…</button></div>' +
+      '<textarea class="data-box hidden" rows="4" aria-label="Backup JSON" ' +
+      'placeholder="Paste a backup here, then tap Restore again"></textarea>' +
+      '<div class="data-msg" role="status"></div></div></div>'
+    );
+    const box = wrap.querySelector('.data-box');
+    const msg = wrap.querySelector('.data-msg');
+
+    wrap.querySelector('[data-io="export"]').addEventListener('click', () => {
+      const entries = {};
+      let n = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (STORE_KEY.test(k)) { entries[k] = localStorage.getItem(k); n++; }
+      }
+      const blob = JSON.stringify({ app: 'week-os', exportedAt: new Date().toISOString(), entries });
+      const fallback = () => {
+        box.classList.remove('hidden');
+        box.value = blob;
+        box.select();
+        msg.textContent = 'Clipboard blocked — copy the text above by hand.';
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(blob)
+          .then(() => { msg.textContent = 'Backup copied — ' + n + ' entries. Paste it somewhere safe.'; })
+          .catch(fallback);
+      } else fallback();
+    });
+
+    wrap.querySelector('[data-io="restore"]').addEventListener('click', () => {
+      if (box.classList.contains('hidden')) {
+        box.classList.remove('hidden');
+        box.value = '';
+        box.focus();
+        msg.textContent = 'Paste a backup, then tap Restore again.';
+        return;
+      }
+      try {
+        const parsed = JSON.parse(box.value);
+        const entries = parsed && parsed.entries;
+        if (!entries || typeof entries !== 'object') throw new Error('no entries');
+        let n = 0;
+        for (const k of Object.keys(entries)) {
+          if (!STORE_KEY.test(k) || typeof entries[k] !== 'string') continue;
+          try {
+            JSON.parse(entries[k]);          // each entry must be valid JSON
+            localStorage.setItem(k, entries[k]);
+            n++;
+          } catch (bad) { /* skip the corrupt entry, keep the rest */ }
+        }
+        msg.textContent = 'Restored ' + n + ' entr' + (n === 1 ? 'y' : 'ies') + '.';
+        box.classList.add('hidden');
+      } catch (e) {
+        msg.textContent = 'That doesn’t look like a Week OS backup — nothing changed.';
+      }
+    });
+    return wrap;
   }
 
   /* ================= router ================= */
@@ -499,24 +632,63 @@
     if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
   });
 
-  /* ---- minute tick: NOW indicator + date rollover ---- */
+  /* ---- minute tick: full render only when the NOW block changes ---- */
   let lastISO = todayISO();
   setInterval(() => {
     const iso = todayISO();
     if (iso !== lastISO) {           // midnight rollover
       if (state.dateISO === lastISO) state.dateISO = iso;
       lastISO = iso;
+      render();
+      return;
     }
-    if (state.view === 'today' || state.view === 'week') render();
-    else renderHeader();
+    if (state.view !== 'today' || state.dateISO !== iso) return;
+    const day = DB.buildDay(iso);
+    const n = nowMin();
+    const cur = day.blocks.find((b) => n >= b.startMin && n < b.endMin);
+    const nxt = day.blocks.find((b) => b.startMin > n);
+    const key = iso + '|' + (cur ? cur.id : '-') + '|' + (nxt ? nxt.id : '-');
+    if (key !== nowKey) { render(); return; }
+    /* same block — just move the needle */
+    const bar = document.querySelector('.nn-bar i');
+    if (bar && cur) {
+      bar.style.width = Math.round(((n - cur.startMin) / (cur.endMin - cur.startMin)) * 100) + '%';
+    }
+    const line = document.querySelector('.tl-now');
+    if (line) line.textContent = 'NOW ' + DB.fmtHM(n);
   }, 60000);
+
+  /* ---- swipe: left/right moves a day (Today) or a week (Week) ---- */
+  let swipeX = null, swipeY = null;
+  document.addEventListener('touchstart', (e) => {
+    swipeX = e.touches[0].clientX;
+    swipeY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (swipeX === null) return;
+    const dx = e.changedTouches[0].clientX - swipeX;
+    const dy = e.changedTouches[0].clientY - swipeY;
+    swipeX = swipeY = null;
+    if (Math.abs(dx) < 64 || Math.abs(dy) > 48) return;
+    const dir = dx < 0 ? 1 : -1;
+    if (state.view === 'today') {
+      state.dateISO = DB.addDays(state.dateISO, dir);
+      state.expanded = null;
+      render();
+    } else if (state.view === 'week') {
+      state.weekAnchor = DB.addDays(state.weekAnchor || mondayOf(todayISO()), dir * 7);
+      render();
+    }
+  }, { passive: true });
 
   /* ---- service worker + update toast ---- */
   if ('serviceWorker' in navigator) {
+    let updateAccepted = false;
     navigator.serviceWorker.register('sw.js').then((reg) => {
       const offer = (worker) => {
         document.getElementById('toast').classList.remove('hidden');
         document.getElementById('toast-reload').onclick = () => {
+          updateAccepted = true;
           worker.postMessage({ type: 'SKIP_WAITING' });
         };
       };
@@ -530,9 +702,13 @@
         });
       });
     }).catch(() => { /* offline first load — fine */ });
+    /* Reload only when an UPDATE takes over. The first-ever visit also
+       fires controllerchange (clients.claim()) — reloading then would
+       yank the app out from under the user seconds after install. */
+    const hadController = !!navigator.serviceWorker.controller;
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloading) return;
+      if (reloading || !(hadController || updateAccepted)) return;
       reloading = true;
       location.reload();
     });

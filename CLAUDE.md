@@ -387,4 +387,5 @@ the plan file stays canonical.
 1. **Tuesdays after ~September 2026**: HNC ends; does Tuesday become a
    work day? The daytime scaffold for Wks ~12+ needs confirming.
 2. **Basketball**: confirm Friday ~19:00 from Mum's is right (time/place).
-3. Whether ticked-history export (JSON) is wanted in v1 or later.
+3. ~~Ticked-history export (JSON)~~ — SHIPPED v1.2: copy-paste backup /
+   restore lives on the Reference page.

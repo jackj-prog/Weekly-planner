@@ -71,7 +71,8 @@ function dayOfWeek(wk, di) {
   return DB.buildDay(DB.addDays(START, (wk - 1) * 7 + di));
 }
 function hasBlock(day, re) {
-  return day.blocks.some((b) => re.test(b.title) || re.test(b.detail));
+  return day.blocks.some((b) => re.test(b.title) || re.test(b.detail) ||
+    (b.plan || []).some((p) => re.test(p.ex + ' ' + p.sets)));
 }
 ok(hasBlock(dayOfWeek(17, 5), /PARKRUN 5K/i), 'wk 17 Sat should hold the parkrun');
 ok(hasBlock(dayOfWeek(24, 6), /TUNE-UP HALF/i), 'wk 24 Sun should hold the tune-up half');
@@ -113,13 +114,24 @@ ok(hasBlock(dayOfWeek(5, 5), /Lower B/i), 'Base Sat should hold Lower B');
 ok(hasBlock(dayOfWeek(12, 5), /Core \+ mobility/i), 'Wk 11+ Sat should hold optional core');
 ok(hasBlock(dayOfWeek(23, 1), /maintenance/i), 'Wk 23 Tue gym should be maintenance');
 
-/* gym programming */
-ok(hasBlock(dayOfWeek(5, 1), /Bench 4×6–8/), 'Upper A should carry the full prescription');
-ok(hasBlock(dayOfWeek(5, 4), /Incline bench 4×8–10/), 'Upper B should carry the full prescription');
-ok(hasBlock(dayOfWeek(5, 5), /Deadlift 3×5/), 'Base Lower B should carry the prescription');
-ok(hasBlock(dayOfWeek(12, 5), /Plank 3×45s/), 'Wk 11+ core session should carry the prescription');
+/* gym programming — structured plans on the blocks */
+ok(hasBlock(dayOfWeek(5, 1), /Bench press 4 × 6–8/), 'Upper A should carry the full prescription');
+ok(hasBlock(dayOfWeek(5, 4), /Incline bench 4 × 8–10/), 'Upper B should carry the full prescription');
+ok(hasBlock(dayOfWeek(5, 5), /Deadlift 3 × 5/), 'Base Lower B should carry the prescription');
+ok(hasBlock(dayOfWeek(12, 5), /Plank 3 × 45s/), 'Wk 11+ core session should carry the prescription');
 ok(hasBlock(dayOfWeek(23, 1), /3 reps in reserve/), 'Wk 23 Upper A should swap to the maintenance session');
-ok(!hasBlock(dayOfWeek(23, 1), /Bench 4×6–8/), 'Wk 23 Upper A should not show the full-volume session');
+ok(hasBlock(dayOfWeek(23, 1), /Bench press 2 × 6–8/), 'Wk 23 Upper A plan should be the reduced sets');
+ok(!hasBlock(dayOfWeek(23, 1), /Bench press 4 × 6–8/), 'Wk 23 Upper A should not show the full-volume session');
+{
+  const gymBlocks = [];
+  for (let i = 0; i < 210; i++) {
+    for (const b of DB.buildDay(DB.addDays(START, i)).blocks) {
+      if (b.cat === 'gym') gymBlocks.push(b);
+    }
+  }
+  ok(gymBlocks.length > 0 && gymBlocks.every((b) => Array.isArray(b.plan) && b.plan.length >= 3),
+    'every gym block in the block should carry a structured plan');
+}
 for (let i = 0; i < 210; i++) {
   const day = DB.buildDay(DB.addDays(START, i));
   for (const b of day.blocks) ok(!/\bNan\b/.test(b.title + ' ' + b.detail), day.iso + ' still mentions Nan: ' + b.title);
@@ -153,6 +165,47 @@ ok(!DB.buildDay('2027-01-26').blocks.some((b) => b.cat === 'run' && b.doable && 
   'recovery wk 1 Tue should hide the wk-2 run');
 ok(DB.buildDay('2027-02-02').blocks.some((b) => b.cat === 'run'),
   'recovery wk 2 Tue should offer the easy run');
+
+/* ---- 7. Adherence helpers ---- */
+section('adherence');
+{
+  // fake ticks: every run in the first 10 days done
+  const fakeDone = {};
+  for (let i = 0; i < 10; i++) {
+    const d = DB.buildDay(DB.addDays(START, i));
+    if (d.run) fakeDone[d.iso] = { [d.run.id]: true };
+  }
+  const today10 = DB.addDays(START, 10);
+  const a = DB.adherence((iso) => fakeDone[iso], () => null, today10);
+  // wk1 runs: Tue 3, Wed 2, Thu 2, Sun 8 (Sat rest) · wk2 so far: Tue 3, Wed 3
+  ok(a.runsDone === 6 && a.runsDue === 6, 'adherence: 6/6 runs, got ' + a.runsDone + '/' + a.runsDue);
+  ok(a.kmDone === 21, 'adherence: 21 km banked, got ' + a.kmDone);
+  ok(a.streak === 6 && a.bestStreak === 6, 'adherence: streak 6, got ' + a.streak);
+  ok(a.weekKmDone[1] === 15, 'adherence: wk1 banked 15, got ' + a.weekKmDone[1]);
+  ok(a.day === 11 && a.days === 210, 'adherence: day 11/210, got ' + a.day + '/' + a.days);
+
+  // a silently missed past run resets the streak…
+  const missed = Object.assign({}, fakeDone);
+  delete missed[DB.addDays(START, 3)];              // Thu wk1 unticked
+  const m = DB.adherence((iso) => missed[iso], () => null, today10);
+  ok(m.streak === 3 && m.bestStreak === 3 && m.runsDue === 6 && m.runsDone === 5,
+    'missed run: streak 3, 5/6 runs, got ' + m.streak + ', ' + m.runsDone + '/' + m.runsDue);
+
+  // …but an explicit skip (niggle protocol) is excluded and keeps the streak
+  const thuIso = DB.addDays(START, 3);
+  const thuRun = DB.buildDay(thuIso).run;
+  const sk = DB.adherence((iso) => missed[iso],
+    (iso) => (iso === thuIso ? { [thuRun.id]: true } : null), today10);
+  ok(sk.streak === 5 && sk.runsDue === 5 && sk.runsDone === 5,
+    'skipped run: unbroken streak 5, 5/5 runs, got ' + sk.streak + ', ' + sk.runsDone + '/' + sk.runsDue);
+
+  // pre-block and empty storage are zeroes, no crash
+  const z = DB.adherence(() => null, () => null, '2026-06-01');
+  ok(z.kmDone === 0 && z.streak === 0 && z.day === 0, 'pre-block adherence is zeroed');
+
+  const wk = DB.weekKm((iso) => fakeDone[iso], START);
+  ok(wk.planned === 15 && wk.done === 15, 'weekKm wk1: 15/15, got ' + wk.done + '/' + wk.planned);
+}
 
 /* ---- result ---- */
 console.log('\n' + checks + ' checks, ' + failures + ' failure' + (failures === 1 ? '' : 's'));
