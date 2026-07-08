@@ -403,6 +403,44 @@
     return lines.join('\r\n') + '\r\n';
   }
 
+  /* ---- Pro 4 odometer (§11): planned outings vs the ≈50 km cap ---- */
+  function pro4Status(getDone, todayIso) {
+    const b = PLAN.blocks[0];
+    const out = { cap: PLAN.pro4Cap, used: 0, toCome: 0, optional: 0, outings: [] };
+    for (const o of PLAN.pro4Outings) {
+      const iso = addDays(b.start, (o.wk - 1) * 7 + o.di);
+      const day = buildDay(iso);
+      const done = !!(day.run && (getDone(iso) || {})[day.run.id]);
+      out.outings.push({ wk: o.wk, km: o.km, label: o.label, optional: !!o.optional, iso, done });
+      if (done) out.used += o.km;
+      else if (iso >= todayIso) {
+        if (o.optional) out.optional += o.km;
+        else out.toCome += o.km;
+      }
+      /* past + unticked = outing missed; it costs no bounce */
+    }
+    return out;
+  }
+
+  /* ---- every planned run in block one, with its outcome ---- */
+  function runLog(getDone, getSkips, todayIso) {
+    const b = PLAN.blocks[0];
+    const log = [];
+    for (let i = 0; i < b.weeks * 7; i++) {
+      const iso = addDays(b.start, i);
+      const day = buildDay(iso);
+      if (!day.run) continue;
+      const done = (getDone(iso) || {})[day.run.id];
+      const skipped = getSkips && (getSkips(iso) || {})[day.run.id];
+      const state = done ? 'done'
+        : skipped ? 'skipped'
+        : iso < todayIso ? 'missed'
+        : iso === todayIso ? 'today' : 'future';
+      log.push({ iso, wk: day.week, phase: day.phase, state, km: day.run.run.km });
+    }
+    return log;
+  }
+
   /* Run km banked vs planned across the 7 days from anchor (any block). */
   function weekKm(getDone, anchorIso) {
     const out = { done: 0, planned: 0 };
@@ -419,6 +457,7 @@
   return {
     buildDay, resolveBlock, weekNumber, dayIndex, distancesForWeek,
     weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
+    pro4Status, runLog,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

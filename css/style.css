@@ -505,3 +505,29 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     from { opacity: 0; transform: translateY(5px); }
   }
 }
+
+/* ---- run log dots (Plan) -------------------------------------------------- */
+.runlog { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 2px 16px; }
+.runlog .rl { width: 9px; height: 9px; border-radius: 50%; background: var(--line); flex: none; }
+.rl-done.ph-base { background: var(--phase-base); }
+.rl-done.ph-build { background: var(--phase-build); }
+.rl-done.ph-taper { background: var(--phase-taper); }
+.rl-missed { background: transparent; border: 2px solid var(--accent); opacity: 0.7; }
+.rl-skipped { background: transparent; border: 2px solid var(--t3); }
+.rl-today { background: transparent; border: 2px solid var(--text); }
+
+/* ---- Pro 4 odometer bar --------------------------------------------------- */
+.odo {
+  display: flex; height: 8px; border-radius: 4px; overflow: hidden;
+  background: var(--line); margin: 10px 2px 6px;
+}
+.odo-used { background: var(--accent); }
+.odo-plan { background: var(--accent); opacity: 0.35; }
+
+/* ---- recalibrator input --------------------------------------------------- */
+.recal-in {
+  font-family: var(--mono); font-size: 13px; width: 110px;
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--paper); color: var(--text);
+}
+.recal-out b { font-family: var(--mono); }

@@ -207,6 +207,39 @@ section('adherence');
   ok(wk.planned === 15 && wk.done === 15, 'weekKm wk1: 15/15, got ' + wk.done + '/' + wk.planned);
 }
 
+/* ---- 7b. Pro 4 odometer + run log ---- */
+section('pro 4 odometer');
+{
+  const empty = DB.pro4Status(() => null, START);
+  ok(empty.used === 0 && empty.toCome === 42 && empty.optional === 5,
+    'untouched budget: 42 planned + 5 optional, got ' + empty.toCome + '+' + empty.optional);
+  ok(empty.toCome + empty.optional <= empty.cap, 'planned outings fit the ≈50 km cap');
+  ok(empty.outings.length === PLAN.pro4Outings.length &&
+     empty.outings.every((o) => DB.buildDay(o.iso).run),
+    'every outing lands on a day with a run');
+  // tick the fit-check → 5 km used
+  const fitIso = empty.outings[0].iso;
+  const fitRun = DB.buildDay(fitIso).run;
+  const t = DB.pro4Status((iso) => (iso === fitIso ? { [fitRun.id]: true } : null), DB.addDays(fitIso, 1));
+  ok(t.used === 5 && t.toCome === 37, 'ticked fit-check: 5 used, 37 to come, got ' + t.used + '/' + t.toCome);
+  ok(hasBlock(dayOfWeek(30, 3), /Pro 4/), 'race-week shakeout is a Pro 4 outing (§11)');
+}
+
+section('run log');
+{
+  let runDays = 0;
+  for (let i = 0; i < 210; i++) if (DB.buildDay(DB.addDays(START, i)).run) runDays++;
+  const log = DB.runLog(() => null, () => null, DB.addDays(START, 3));
+  ok(log.length === runDays, 'log covers every planned run: ' + log.length + '/' + runDays);
+  ok(log[0].state === 'missed' && log[log.length - 1].state === 'future',
+    'states resolve past/future, got ' + log[0].state + '/' + log[log.length - 1].state);
+  const day1 = DB.buildDay(DB.addDays(START, 1));
+  const l2 = DB.runLog((iso) => (iso === day1.iso ? { [day1.run.id]: true } : null), () => null, DB.addDays(START, 3));
+  ok(l2[0].state === 'done', 'ticked run logs as done');
+  const l3 = DB.runLog(() => null, (iso) => (iso === day1.iso ? { [day1.run.id]: true } : null), DB.addDays(START, 3));
+  ok(l3[0].state === 'skipped', 'skipped run logs as skipped');
+}
+
 /* ---- 8. .ics export ---- */
 section('ics export');
 {

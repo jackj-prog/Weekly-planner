@@ -44,6 +44,16 @@ const PLAN = {
     '(26 km, last 14–16 @ MP) → Wk 28 sharpener (mid 6–8 @ MP) → race-week ' +
     'shakeout → RACE. Every unplanned easy km in them is bounce borrowed ' +
     'from mile 22.',
+  /* The §11 outings as data — drives the odometer. km = Pro 4 kilometres
+     within that run (fit-check and sharpener are partial-shoe runs). */
+  pro4Cap: 50,
+  pro4Outings: [
+    { wk: 23, di: 1, km: 5,  label: 'Fit-check (first 5 km of Tue run)' },
+    { wk: 25, di: 5, km: 5,  label: 'Controlled parkrun', optional: true },
+    { wk: 26, di: 6, km: 26, label: 'Dress rehearsal' },
+    { wk: 28, di: 6, km: 7,  label: 'Sharpener (mid 6–8 @ MP)' },
+    { wk: 30, di: 3, km: 4,  label: 'Race-week shakeout' },
+  ],
 
   /* ---- Rules of the block (§12) --------------------------------------- */
   rules: [
@@ -487,7 +497,7 @@ const PLAN = {
             { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
             { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
             { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
-            { t: '17:10', end: '17:40', title: 'Shakeout 3–4 km — last run', detail: 'Ghost · easy, smile, done', cat: 'run', doable: true, runKm: 4, shoe: 'Ghost' },
+            { t: '17:10', end: '17:40', title: 'Shakeout 3–4 km — last run', detail: 'Pro 4 · easy, smile, done — last outing before the gun (§11)', cat: 'run', doable: true, runKm: 4, shoe: 'Pro 4' },
             { t: '17:40', end: '17:55', title: 'Shower', cat: 'routine', quiet: true },
             { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
             { t: '19:30', end: '21:00', title: 'Protected free evening', cat: 'free', quiet: true },

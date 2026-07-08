@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.4.0';
+  const APP_VERSION = '1.5.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -489,6 +489,15 @@
         '<i class="bb-taper" style="flex-grow:3"></i>' +
         '<span class="bb-mark" style="left:' + pct + '%"></span></div>'
       ));
+      /* every planned run in the block, one dot each */
+      const log = DB.runLog(getDone, (iso) => getOvr(iso).skip, today);
+      const doneN = log.filter((r) => r.state === 'done').length;
+      view.appendChild(el(
+        '<div class="runlog" role="img" aria-label="' + doneN + ' of ' + log.length + ' runs done">' +
+        log.map((r) =>
+          '<i class="rl rl-' + r.state + ' ph-' + esc(r.phase) + '" title="' + r.iso + ' · ' + r.km + ' km"></i>'
+        ).join('') + '</div>'
+      ));
     }
 
     const rows = el('<div class="plan-rows"></div>');
@@ -543,9 +552,19 @@
       '<h2>Paces</h2><div class="ref-card">' +
       PLAN.paces.map((p) => refRow(p.type, p.pace)).join('') + '</div>' +
       '<div class="ref-note">' + esc(PLAN.recalibration) + '</div>' +
+      '</div>'
+    ));
+    view.appendChild(buildRecalSection());
+    view.appendChild(el(
+      '<div class="ref">' +
       '<h2>Shoes</h2><div class="ref-card">' +
       PLAN.shoes.map((s) => refRow(s.shoe + ' · ' + s.size, s.job)).join('') + '</div>' +
       '<div class="ref-note">' + esc(PLAN.pro4Budget) + '</div>' +
+      '</div>'
+    ));
+    view.appendChild(buildOdoSection());
+    view.appendChild(el(
+      '<div class="ref">' +
       '<h2>Rules of the block</h2><ol class="ref-list">' +
       PLAN.rules.map((r) => '<li>' + esc(r) + '</li>').join('') + '</ol>' +
       '<h2>Weekly load budget</h2><div class="ref-note">' + esc(PLAN.loadBudget) + '</div>' +
@@ -556,6 +575,88 @@
     ));
     view.appendChild(buildCalendarSection());
     view.appendChild(buildDataSection());
+  }
+
+  /* ---- tune-up recalibrator (§10, advisory — the plan file stays canonical) ---- */
+  function parseHalf(s) {
+    const m = String(s).trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (!m) return null;
+    const sec = (+m[1]) * 3600 + (+m[2]) * 60 + (+(m[3] || 0));
+    return sec >= 4200 && sec <= 12000 ? sec : null;      // 1:10–3:20 sanity band
+  }
+  function fmtClock(sec) {
+    const h = Math.floor(sec / 3600);
+    const m = Math.round((sec % 3600) / 60);
+    return h + ':' + String(m).padStart(2, '0');
+  }
+  function fmtPace(secPerKm) {
+    const m = Math.floor(secPerKm / 60);
+    const s = Math.round(secPerKm % 60);
+    return m + ':' + String(s).padStart(2, '0') + '/km';
+  }
+  function recalVerdict(halfSec) {
+    const riegel = halfSec * Math.pow(2, 1.06);           // T×(42.195/21.0975)^1.06
+    let verdict;
+    if (halfSec <= 115 * 60) {
+      verdict = 'Sub-4:00 is ON — lock MP 5:41/km.' +
+        (halfSec <= 112 * 60 ? ' The 3:45 stretch bet is in play — decide with a cool head.' : '');
+    } else if (halfSec >= 120 * 60) {
+      verdict = 'Lock 4:10–4:15 and run it smart — MP 5:55–6:02/km.';
+    } else {
+      verdict = 'Between the §10 anchors — aim ~4:05 (MP ~5:48/km) and decide in the final weeks.';
+    }
+    return esc(verdict) +
+      '<br>Riegel projection: <b>' + esc(fmtClock(riegel)) + '</b> (' + esc(fmtPace(riegel / 42.195)) + ')' +
+      '<br>To lock a new target in, amend data/plan.js — the plan stays canonical.';
+  }
+  function buildRecalSection() {
+    const saved = readJSONSafeString('recal');
+    const wrap = el(
+      '<div class="ref"><h2>Tune-up recalibrator</h2><div class="ref-card data-card">' +
+      '<div class="ref-note">After the Week-24 half (Sun 13 Dec), enter your time. §10 sets the target — ambition doesn’t.</div>' +
+      '<div class="data-actions"><input class="recal-in" inputmode="numeric" ' +
+      'placeholder="1:54:30" value="' + esc(saved) + '" aria-label="Half marathon time"> ' +
+      '<button data-io="recal">Set target</button></div>' +
+      '<div class="data-msg recal-out" role="status"></div></div></div>'
+    );
+    const input = wrap.querySelector('.recal-in');
+    const out = wrap.querySelector('.recal-out');
+    const show = (raw) => {
+      const sec = parseHalf(raw);
+      if (!sec) { out.textContent = raw ? 'Time reads as h:mm or h:mm:ss — e.g. 1:54:30.' : ''; return; }
+      out.innerHTML = recalVerdict(sec);
+    };
+    wrap.querySelector('[data-io="recal"]').addEventListener('click', () => {
+      try { localStorage.setItem('recal', input.value.trim()); } catch (e) { /* fine */ }
+      show(input.value.trim());
+    });
+    if (saved) show(saved);
+    return wrap;
+  }
+  function readJSONSafeString(key) {
+    try { return localStorage.getItem(key) || ''; } catch (e) { return ''; }
+  }
+
+  /* ---- Pro 4 odometer (§11) ---- */
+  function buildOdoSection() {
+    const p4 = DB.pro4Status(getDone, todayISO());
+    const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
+    const usedPct = Math.min(100, (p4.used / p4.cap) * 100);
+    const planPct = Math.min(100 - usedPct, (p4.toCome / p4.cap) * 100);
+    const rows = p4.outings.map((o) =>
+      '<div class="ref-row"><span>Wk ' + o.wk + ' · ' + esc(o.label) +
+      (o.optional ? ' (optional)' : '') + '</span>' +
+      '<span class="v">' + (o.done ? '✓ ' : '') + o.km + ' km</span></div>').join('');
+    return el(
+      '<div class="ref"><h2>Pro 4 odometer</h2><div class="ref-card">' + rows + '</div>' +
+      '<div class="odo" role="img" aria-label="' + fmt(p4.used) + ' km used, ' + fmt(p4.toCome) +
+      ' to come, of about ' + p4.cap + '">' +
+      '<i class="odo-used" style="width:' + usedPct + '%"></i>' +
+      '<i class="odo-plan" style="width:' + planPct + '%"></i></div>' +
+      '<div class="ref-note">Used ' + fmt(p4.used) + ' km · to come ' + fmt(p4.toCome) +
+      (p4.optional ? ' (+' + p4.optional + ' optional)' : '') + ' · cap ≈' + p4.cap +
+      ' km. Every unplanned km is bounce borrowed from mile 22.</div></div>'
+    );
   }
 
   /* ---- .ics export: native reminders with zero backend ---- */

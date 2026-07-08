@@ -61,18 +61,24 @@ sanctioned mitigation: phase identity is always carried by order
    floating-local-time events with 15-minute VALARMs; stable UIDs make
    re-imports update-in-place; share-sheet first, blob download
    fallback. Native iOS reminders with zero backend.
-2. **Tune-up recalibrator** — Reference widget: enter the Week-24 half
-   time → applies §10's rule, shows the locked race pace. Deterministic,
-   ~30 lines.
-3. **Pro 4 odometer** — the shoe has a ≈50 km pre-race budget and every
-   outing is planned data; show "Pro 4: 12 of ~50 km used" on Reference.
+2. ~~**Tune-up recalibrator**~~ — SHIPPED v1.5: Reference widget takes
+   the Week-24 half time, returns the §10 verdict + a Riegel projection
+   (advisory — locking a target stays a data/plan.js edit). Input
+   persists locally.
+3. ~~**Pro 4 odometer**~~ — SHIPPED v1.5: §11's outings became
+   `pro4Outings` data; Reference shows each outing with tick state and
+   a used/planned bar against the ≈50 km cap. Also fixed a spec
+   inconsistency: the race-week shakeout is now in the Pro 4s per §11
+   (data said Ghost).
 4. **Wake-block "today at a glance"** — during the first block of the
    day, Now/Next could append the day's run line (mirror of the
    tomorrow preview).
 
 **Medium**
-5. **History view** — a month grid of run-day dots (done/missed/skipped)
-   behind More. The streak number shipped; this is its picture.
+5. ~~**History view**~~ — SHIPPED v1.5 as the run log: every planned
+   run in the block as one dot on the Plan view (filled phase-colour =
+   done, hollow accent = missed, hollow grey = skipped, ring = today,
+   faint = future). 141 runs, one glance.
 6. **Illness/niggle mode** — one action that skips the next N days'
    runs and stamps the reason, so streak/stats stay honest without
    ceremony (currently N separate skips).
