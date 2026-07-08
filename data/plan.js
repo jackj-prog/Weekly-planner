@@ -155,12 +155,13 @@ const PLAN = {
     ],
     satGym: [
       { fromWk: 1,  mins: 50, title: 'Gym — Lower B (light–moderate)',
-        detail: 'Base only · never grind — the long run owns tomorrow',
+        detail: 'Base only · RPE cap, no progression chasing — the long run owns tomorrow',
         plan: [
           { ex: 'Deadlift',          sets: '3 × 5 @ RPE 7' },
           { ex: 'Romanian deadlift', sets: '3 × 8 light' },
           { ex: 'Step-ups',          sets: '2 × 10/leg' },
           { ex: 'Calf raises',       sets: '3 × 15' },
+          { ex: 'Plank finisher',    sets: '3 × 45s' },
         ] },
       { fromWk: 11, mins: 20, title: 'Core + mobility (optional)',
         detail: 'Lower B retired — running owns the legs',
@@ -196,7 +197,7 @@ const PLAN = {
         { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
         { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
         { t: '16:30', end: '17:00', title: 'Commute home', detail: 'German podcasts', cat: 'work', quiet: true },
-        { t: '17:00', end: '17:30', title: 'Punchbag', detail: '30 min cross-training — Monday has no run', cat: 'xt', doable: true },
+        { t: '17:00', end: '17:30', title: 'Punchbag', detail: '6 × 3 min rounds, 1 min rest — Monday has no run', cat: 'xt', doable: true },
         { t: '17:30', end: '18:30', title: 'Shower + snack', cat: 'routine', quiet: true },
         { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
         { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
@@ -215,7 +216,7 @@ const PLAN = {
         { after: true, end: '18:30', title: 'OU study', detail: 'Until dinner', cat: 'study', doable: true },
         { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
         { t: '19:30', end: '20:45', title: 'Gym — Upper A', cat: 'gym', doable: true, gym: 'upper',
-          detail: 'Drive over, no run-commute — legs are for running',
+          detail: 'Ramp 2 warm-up sets on bench · top of the range on every set → +2.5 kg next week · drive over, no run-commute',
           plan: [
             { ex: 'Bench press',    sets: '4 × 6–8' },
             { ex: 'Barbell row',    sets: '4 × 6–8' },
@@ -271,7 +272,7 @@ const PLAN = {
         { t: '07:30', end: '12:00', title: 'German active study', detail: 'The deep German block — end time set by phase', cat: 'german', doable: true, friGerman: true },
         { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
         { t: '13:00', end: '14:30', title: 'Gym — Upper B', cat: 'gym', doable: true, gym: 'upper',
-          detail: 'On the commute to Mum’s',
+          detail: 'Ramp 2 warm-up sets on incline · same rule: top of the range → +2.5 kg · on the commute to Mum’s',
           plan: [
             { ex: 'Incline bench',  sets: '4 × 8–10' },
             { ex: 'Pull-ups',       sets: '4 × max' },
@@ -546,7 +547,7 @@ const PLAN = {
     namedTemplates: {
       holidayMon: [
         { t: '08:00', end: '08:45', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
-        { t: '09:30', end: '10:00', title: 'Punchbag', detail: '30 min — Monday has no run, holiday or not', cat: 'xt', doable: true },
+        { t: '09:30', end: '10:00', title: 'Punchbag', detail: '6 × 3 min rounds, 1 min rest — Monday has no run, holiday or not', cat: 'xt', doable: true },
         { t: '10:00', end: '10:30', title: 'Shower', cat: 'routine', quiet: true },
         { t: '10:30', end: '13:00', title: 'Family / free', cat: 'free', quiet: true },
         { t: '13:00', end: '14:00', title: 'Lunch', cat: 'meal', quiet: true },

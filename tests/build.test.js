@@ -118,6 +118,9 @@ ok(hasBlock(dayOfWeek(23, 1), /maintenance/i), 'Wk 23 Tue gym should be maintena
 ok(hasBlock(dayOfWeek(5, 1), /Bench press 4 × 6–8/), 'Upper A should carry the full prescription');
 ok(hasBlock(dayOfWeek(5, 4), /Incline bench 4 × 8–10/), 'Upper B should carry the full prescription');
 ok(hasBlock(dayOfWeek(5, 5), /Deadlift 3 × 5/), 'Base Lower B should carry the prescription');
+ok(hasBlock(dayOfWeek(5, 5), /Plank finisher/), 'Base Lower B should carry the core finisher');
+ok(hasBlock(dayOfWeek(5, 1), /\+2\.5 kg/), 'Upper A should carry the progression rule');
+ok(hasBlock(dayOfWeek(5, 0), /6 × 3 min rounds/), 'Punchbag should carry its round structure');
 ok(hasBlock(dayOfWeek(12, 5), /Plank 3 × 45s/), 'Wk 11+ core session should carry the prescription');
 ok(hasBlock(dayOfWeek(23, 1), /3 reps in reserve/), 'Wk 23 Upper A should swap to the maintenance session');
 ok(hasBlock(dayOfWeek(23, 1), /Bench press 2 × 6–8/), 'Wk 23 Upper A plan should be the reduced sets');
@@ -263,7 +266,7 @@ section('ics export');
     'race day event at 09:00–13:00');
   ok(/SUMMARY:MARATHON — 42\.2 km/.test(flat), 'race summary not doubled');
   ok(/SUMMARY:Easy run — \d+ km/.test(flat), 'run summaries carry distance');
-  ok(flat.includes('Drive over\\, no run-commute'), 'commas escaped');
+  ok(flat.includes('drive over\\, no run-commute'), 'commas escaped');
   ok(flat.includes('Bench press 4 × 6–8\\nBarbell row'), 'gym plan in description');
   ok((ics.match(/TRIGGER:-PT15M/g) || []).length === events, 'one 15-min alarm per event');
 

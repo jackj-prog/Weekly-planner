@@ -161,8 +161,12 @@ fatigue near key runs. Compounds first, nothing to failure.
   lateral raises 3×12 · curls 3×12 + pushdowns 3×12.
 - **Lower B — Sat after the buffer run (Base, Wks 1–10, ~50 min):**
   deadlift 3×5 @ RPE 7 · RDL 3×8 light · step-ups 2×10/leg · calf
-  raises 3×15. Calf/tendon work now is injury insurance later. Never
-  grind — the long run owns tomorrow.
+  raises 3×15 · plank finisher 3×45s. Calf/tendon work now is injury
+  insurance later. Never grind — the long run owns tomorrow.
+- **Session rules:** ramp 2 warm-up sets on the first lift · top of the
+  rep range on every set → +2.5 kg next week (upper days only; Lower B
+  holds at RPE ≤ 7, it is insurance not progression) · rest 2–3 min on
+  compounds, 60–90 s on accessories.
 - **Core + mobility — Sat from Wk 11 (20 min, optional):** plank 3×45s ·
   side plank 2×30s/side · dead bugs 3×10 · glute bridges 2×15 · calves +
   hips stretch.
