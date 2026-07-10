@@ -26,6 +26,9 @@ jobs:
       - name: Run the definition-of-done tests
         run: node tests/build.test.js
 
+      - name: Generate the calendar feed
+        run: node tools/make-ics.js
+
       - name: Configure Pages (enables the site on first run)
         uses: actions/configure-pages@v5
         with:

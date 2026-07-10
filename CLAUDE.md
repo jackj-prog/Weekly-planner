@@ -114,7 +114,7 @@ from §7, ~Wed km, Evo SL, warm up 10 min easy first) · quick shower ·
 21:00 wind down · 22:00 read · 22:30 sleep.
 
 ### Thursday — easy run + protected evening
-Work day scaffold · **17:10 Easy run (Thu km)** · shower + snack ·
+Work day scaffold · **17:10 Easy run (Thu km) + 4×20 s strides** · shower + snack ·
 18:30 dinner · **19:00–21:00 protected free evening** (the release
 valve; flex ≤1h to OU only on deadline weeks) · 21:00 deep reading
 anchor · 22:00 read · 22:30 sleep.
@@ -133,7 +133,8 @@ gym after the run: **Base phase (Wks 1–10): Lower B light-moderate ~50 min**
 (deadlift/RDL kept through Base only, no grinding PRs) ·
 **from Wk 11: Core + mobility 20 min, optional** (Lower B retired —
 running owns the legs) · shower · 12:00 lunch · 13:00–16:30 OU/HNC
-study · 16:30 free (social/hobbies) · 19:00 dinner · free evening ·
+study · 16:30 free (social/hobbies) · 19:00 dinner (carb-forward from
+Wk 14 whenever tomorrow’s long run ≥ 22 km) · free evening ·
 22:00 read · 22:30 sleep.
 
 ### Sunday — long run + reading
@@ -274,7 +275,9 @@ Anki guilt. New Year's Day (Fri Wk 27): rest — peak 32 km is in two days.
 
 The Week 24 half sets the real target: **1:52–1:55 → sub-4:00 is on ·
 ~2:00 → lock 4:10–4:15 and run it smart.** Race-day pacing is a
-negative split — first half slightly easier than goal.
+negative split — first half slightly easier than goal. Caveat: the
+half comes six days after the 60 km peak week, so the legs will be
+heavy — read a near-miss generously.
 
 ## 11. Shoe rotation & the Pro 4 budget
 
@@ -304,6 +307,8 @@ from mile 22.
    stress injury.
 6. Sleep is where training sticks: 22:30 lights out is part of the plan.
 7. The December tune-up sets the race pace — ambition doesn't.
+8. From October, evening runs are dark runs: headtorch, hi-vis, lit
+   routes.
 
 ## 13. Sacrifice ledger (what changed vs life-planner v6.4, and why)
 

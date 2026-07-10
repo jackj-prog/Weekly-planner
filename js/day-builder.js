@@ -125,7 +125,21 @@
       };
     }
     const names = { tue: 'Easy run', thu: 'Easy run', sat: 'Easy buffer run' };
-    return { km, title: names[slot], shoe: 'Ghost', paceMin: pace.easy, detail: EASY_PACE_TEXT, hard: false };
+    return {
+      km, title: names[slot], shoe: 'Ghost', paceMin: pace.easy,
+      /* Thursday carries weekly strides — cheap running economy (§6) */
+      detail: EASY_PACE_TEXT + (slot === 'thu' ? ' · finish with 4×20 s relaxed strides' : ''),
+      hard: false,
+    };
+  }
+
+  /* Evening runs are dark runs once the light goes (§12 rule 8). */
+  function darkKitText(iso, startMin) {
+    if (!PLAN.darkKit) return null;
+    for (const tier of PLAN.darkKit.tiers) {
+      if (iso >= tier.fromDate && startMin >= tier.afterMin) return PLAN.darkKit.text;
+    }
+    return null;
   }
 
   /* ==================================================================
@@ -190,9 +204,10 @@
         }
         const start = parseHM(entry.t);
         const dur = Math.ceil(spec.km * spec.paceMin);
+        const dark = darkKitText(iso, start);
         const runBlock = mk(start, start + dur, {
           title: spec.title,
-          detail: spec.km + ' km · ' + spec.shoe + ' · ' + spec.detail,
+          detail: spec.km + ' km · ' + spec.shoe + ' · ' + spec.detail + (dark ? ' · ' + dark : ''),
           cat: 'run', doable: true,
         });
         runBlock.run = { km: spec.km, shoe: spec.shoe, slot: entry.run, hard: spec.hard };
@@ -221,6 +236,10 @@
       if (end <= start) continue;            /* squeezed out — drop it */
 
       const b = mk(start, end, entry);
+      /* Saturday dinner goes carb-forward before the big MP long runs */
+      if (entry.carbEve && row && week >= 14 && row.lr >= 22) {
+        b.detail = (b.detail ? b.detail + ' · ' : '') + 'Carb-forward — ' + row.lr + ' km tomorrow';
+      }
       /* gym → maintenance from Wk 23 (§6 deltas): swap in the reduced session */
       if (entry.gym === 'upper' && block.gymMaintenanceFromWk && week >= block.gymMaintenanceFromWk
           && !/maintenance/i.test(b.title)) {

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.6.0';
+  const APP_VERSION = '1.7.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -661,11 +661,18 @@
 
   /* ---- .ics export: native reminders with zero backend ---- */
   function buildCalendarSection() {
+    const webcal = /^https?:/.test(location.protocol)
+      ? location.href.replace(/[^/]*(?:[?#].*)?$/, '').replace(/^https?:/, 'webcal:') + 'training.ics'
+      : null;
     const wrap = el(
       '<div class="ref"><h2>Reminders</h2><div class="ref-card data-card">' +
-      '<div class="ref-note">Every run, gym session and cross-training block from today to the ' +
-      'end of the block, as calendar events with 15-minute alerts. Times are local. ' +
-      'Re-importing after a plan change updates events instead of duplicating them.</div>' +
+      (webcal
+        ? '<div class="ref-note"><b>Best:</b> <a class="webcal" href="' + esc(webcal) + '">subscribe to the live feed</a>' +
+          ' — every plan change flows to your calendar automatically.</div>'
+        : '') +
+      '<div class="ref-note">Or a one-off import: every run, gym session and cross-training block ' +
+      'from today to the end of the block, with 15-minute alerts. Times are local; re-importing ' +
+      'updates events instead of duplicating them.</div>' +
       '<div class="data-actions"><button data-io="ics">Add to Calendar (.ics)</button></div>' +
       '<div class="data-msg" role="status"></div></div></div>'
     );

@@ -218,6 +218,28 @@ section('adherence');
   ok(wk.planned === 15 && wk.done === 15, 'weekKm wk1: 15/15, got ' + wk.done + '/' + wk.planned);
 }
 
+/* ---- 6b. schedule refinements ---- */
+section('schedule refinements');
+ok(/4×20 s relaxed strides/.test(dayOfWeek(5, 3).run.detail), 'Thu easy runs carry strides');
+ok(!/relaxed strides/.test(dayOfWeek(5, 1).run.detail), 'Tue easy runs stay plain');
+ok(/headtorch/i.test(dayOfWeek(15, 2).run.detail), 'Oct Wed 17:10 carries the dark-kit note');
+ok(!/headtorch/i.test(dayOfWeek(15, 1).run.detail), 'Oct Tue 16:15 is not yet dark');
+ok(/headtorch/i.test(dayOfWeek(20, 1).run.detail), 'Nov Tue 16:15 is dark');
+ok(!/headtorch/i.test(dayOfWeek(8, 2).run.detail), 'Aug Wed is daylight');
+ok(!/headtorch/i.test(dayOfWeek(26, 2).run.detail), 'holiday-week 09:30 runs are daylight');
+ok(hasBlock(dayOfWeek(20, 5), /Carb-forward — 30 km tomorrow/), 'Sat dinner goes carb-forward before big long runs');
+ok(!hasBlock(dayOfWeek(5, 5), /Carb-forward/), 'Base Sat dinner stays plain');
+ok(!hasBlock(dayOfWeek(28, 5), /Carb-forward/), 'taper Sat (LR 18) stays plain');
+{
+  const { execFileSync } = require('child_process');
+  const fs = require('fs');
+  execFileSync(process.execPath, [path.join(__dirname, '..', 'tools', 'make-ics.js')], { stdio: 'pipe' });
+  const feed = path.join(__dirname, '..', 'training.ics');
+  const txt = fs.readFileSync(feed, 'utf8');
+  ok((txt.match(/BEGIN:VEVENT/g) || []).length > 250, 'calendar feed generates the full block');
+  fs.unlinkSync(feed);
+}
+
 /* ---- 7b. Pro 4 odometer + run log ---- */
 section('pro 4 odometer');
 {

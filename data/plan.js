@@ -30,7 +30,9 @@ const PLAN = {
   recalibration:
     'The Week 24 half sets the real target: 1:52–1:55 → sub-4:00 is on · ' +
     '~2:00 → lock 4:10–4:15 and run it smart. Race-day pacing is a negative ' +
-    'split — first half slightly easier than goal.',
+    'split — first half slightly easier than goal. Caveat: the half comes ' +
+    'six days after the 60 km peak week, so the legs will be heavy — read ' +
+    'a near-miss generously.',
 
   /* ---- Shoes (§11) ---------------------------------------------------- */
   shoes: [
@@ -64,6 +66,7 @@ const PLAN = {
     'Niggle protocol: anything sharp or one-sided = 2 days off running before it becomes 2 weeks. The plan survives missed days, not a stress injury.',
     'Sleep is where training sticks: 22:30 lights out is part of the plan.',
     'The December tune-up sets the race pace — ambition doesn’t.',
+    'From October, evening runs are dark runs: headtorch, hi-vis, lit routes.',
   ],
 
   /* ---- Weekly load budget (§5) ---------------------------------------- */
@@ -88,6 +91,16 @@ const PLAN = {
 
   /* Gels rule (§12 rule 4): every 35–40 min on runs > 90 min, from October. */
   gels: { fromDate: '2026-10-01', minRunMin: 90, text: 'Gel every 35–40 min' },
+
+  /* Dark-runs rule (§12 rule 8): evening runs need kit once the light goes.
+     Oct: 17:10 runs are dusk/dark · Nov onwards: even 16:15 is dark. */
+  darkKit: {
+    text: 'Dark out — headtorch + hi-vis',
+    tiers: [
+      { fromDate: '2026-10-01', afterMin: 1020 },   // ≥17:00 starts
+      { fromDate: '2026-11-01', afterMin: 960 },    // ≥16:00 starts
+    ],
+  },
 
   /* ====================================================================
      BLOCKS — the app is built around this array (§14). Block one is the
@@ -307,7 +320,7 @@ const PLAN = {
         { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
         { t: '13:00', end: '16:30', title: 'OU / HNC study', cat: 'study', doable: true },
         { t: '16:30', end: '19:00', title: 'Free — social / hobbies', cat: 'free', quiet: true },
-        { t: '19:00', end: '20:00', title: 'Dinner', cat: 'meal', quiet: true },
+        { t: '19:00', end: '20:00', title: 'Dinner', cat: 'meal', quiet: true, carbEve: true },
         { t: '20:00', end: '22:00', title: 'Free evening', cat: 'free', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
