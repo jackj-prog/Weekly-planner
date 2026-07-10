@@ -101,8 +101,8 @@ media (TV/film) · 22:00 read · 22:30 sleep.
 06:45 wake + Anki + breakfast (lie-in vs work days) · 07:45 commute ·
 08:00–15:00 College (incl ~3h OU periods) · 15:00 commute + snack, home
 ~16:00 · **16:15 Easy run (Tue km)** · shower · OU study until 18:30 ·
-18:30 dinner · **19:30 Gym — Upper A** (bench/row/OHP; drive over, no
-run-commute — legs are for running) · 20:45 wind down · 22:00 read ·
+18:30 dinner · **19:30 Gym — Upper A** (bench/row/OHP/dips/curls;
+drive over, no run-commute — legs are for running) · 20:45 wind down · 22:00 read ·
 22:30 sleep.
 Week 23 special: the Tue run's first 5 km are the **Pro 4 fit-check**
 (exchange window opens).
@@ -156,9 +156,11 @@ Strength serves the marathon: low volume, decent intensity, zero leg
 fatigue near key runs. Compounds first, nothing to failure.
 
 - **Upper A — Tue 19:30:** bench 4×6–8 · row 4×6–8 · OHP 3×8 ·
-  face pulls 3×15.
-- **Upper B — Fri 13:00:** incline bench 4×8–10 · pull-ups 4×max ·
-  lateral raises 3×12 · curls 3×12 + pushdowns 3×12.
+  weighted dips 3×8–10 · EZ bar curls 3×10–12 · face pulls 3×15
+  (superset curls + face pulls to finish inside the 75 min).
+- **Upper B — Fri 13:00:** incline bench 4×8–10 · pull-ups 4×max
+  (add weight past 10 reps) · lateral raises 4×12–15 · hammer curls
+  3×10–12 · rope pushdowns 3×10–12 · hanging leg raises 3×10–15.
 - **Lower B — Sat after the buffer run (Base, Wks 1–10, ~50 min):**
   deadlift 3×5 @ RPE 7 · RDL 3×8 light · step-ups 2×10/leg · calf
   raises 3×15 · plank finisher 3×45s. Calf/tendon work now is injury

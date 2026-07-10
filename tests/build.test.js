@@ -116,7 +116,15 @@ ok(hasBlock(dayOfWeek(23, 1), /maintenance/i), 'Wk 23 Tue gym should be maintena
 
 /* gym programming — structured plans on the blocks */
 ok(hasBlock(dayOfWeek(5, 1), /Bench press 4 × 6–8/), 'Upper A should carry the full prescription');
+ok(hasBlock(dayOfWeek(5, 1), /Weighted dips 3 × 8–10/), 'Upper A should carry weighted dips');
+ok(hasBlock(dayOfWeek(5, 1), /EZ bar curls 3 × 10–12/), 'Upper A should carry EZ bar curls');
+ok(hasBlock(dayOfWeek(5, 1), /Face pulls 3 × 15/), 'Upper A should keep face pulls');
 ok(hasBlock(dayOfWeek(5, 4), /Incline bench 4 × 8–10/), 'Upper B should carry the full prescription');
+ok(hasBlock(dayOfWeek(5, 4), /Lateral raises 4 × 12–15/), 'Upper B should carry 4 sets of laterals');
+ok(hasBlock(dayOfWeek(5, 4), /Hanging leg raises/), 'Upper B should carry the ab work');
+ok(hasBlock(dayOfWeek(23, 1), /Weighted dips 2 × 8/), 'Wk 23 maintenance keeps dips');
+ok(hasBlock(dayOfWeek(23, 1), /EZ bar curls 2 × 10/), 'Wk 23 maintenance keeps curls');
+ok(hasBlock(dayOfWeek(23, 4), /Lateral raises 2 × 12/), 'Wk 23 Upper B maintenance keeps laterals');
 ok(hasBlock(dayOfWeek(5, 5), /Deadlift 3 × 5/), 'Base Lower B should carry the prescription');
 ok(hasBlock(dayOfWeek(5, 5), /Plank finisher/), 'Base Lower B should carry the core finisher');
 ok(hasBlock(dayOfWeek(5, 1), /\+2\.5 kg/), 'Upper A should carry the progression rule');
