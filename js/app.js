@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.9.0';
+  const APP_VERSION = '2.0.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -729,39 +729,39 @@
     );
   }
 
-  /* ---- .ics export: native reminders with zero backend ---- */
+  /* ---- .ics reminders: native calendar with zero backend ----
+     iOS reliably offers "Add to Calendar" when you OPEN a real .ics URL;
+     it mishandles blob: URLs (shows raw text) and often hides Calendar
+     from the Web Share sheet. So on the hosted site the primary action
+     is a plain link to the CI-generated training.ics. The blob export
+     is only the offline / file:// fallback. */
   function buildCalendarSection() {
-    const webcal = /^https?:/.test(location.protocol)
-      ? location.href.replace(/[^/]*(?:[?#].*)?$/, '').replace(/^https?:/, 'webcal:') + 'training.ics'
-      : null;
+    const hosted = /^https?:/.test(location.protocol);
+    const base = location.href.replace(/[^/]*(?:[?#].*)?$/, '');
+    const webcal = hosted ? base.replace(/^https?:/, 'webcal:') + 'training.ics' : null;
     const wrap = el(
       '<div class="ref"><h2>Reminders</h2><div class="ref-card data-card">' +
-      (webcal
-        ? '<div class="ref-note"><b>Best:</b> <a class="webcal" href="' + esc(webcal) + '">subscribe to the live feed</a>' +
-          ' — every plan change flows to your calendar automatically.</div>'
-        : '') +
-      '<div class="ref-note">Or a one-off import: every run, gym session and cross-training block ' +
-      'from today to the end of the block, with 15-minute alerts. Times are local; re-importing ' +
-      'updates events instead of duplicating them.</div>' +
-      '<div class="data-actions"><button data-io="ics">Add to Calendar (.ics)</button></div>' +
+      (hosted
+        ? '<a class="cta cta-primary" href="' + esc(webcal) + '">Subscribe — auto-updating</a>' +
+          '<div class="ref-note">Best option: the calendar refreshes itself whenever the plan changes. ' +
+          'iPhone → “Subscribe”.</div>' +
+          '<a class="cta cta-ghost" href="training.ics" target="_blank" rel="noopener" download="week-os-training.ics">Add once (import .ics)</a>' +
+          '<div class="ref-note">A one-off snapshot — the whole block with 15-minute alerts.</div>'
+        : '<div class="ref-note">Every run, gym session and cross-training block with 15-minute ' +
+          'alerts. Open Week OS online to subscribe to a live, auto-updating calendar.</div>' +
+          '<div class="data-actions"><button data-io="ics">Download .ics</button></div>') +
       '<div class="data-msg" role="status"></div></div></div>'
     );
-    const msg = wrap.querySelector('.data-msg');
-    wrap.querySelector('[data-io="ics"]').addEventListener('click', () => {
-      const ics = DB.buildICS(todayISO());
-      const n = (ics.match(/BEGIN:VEVENT/g) || []).length;
-      if (!n) { msg.textContent = 'No upcoming sessions — the block is over.'; return; }
-      const ok = () => { msg.textContent = n + ' sessions exported — open the file and tap “Add All”.'; };
-      let file = null;
-      try { file = new File([ics], 'week-os-training.ics', { type: 'text/calendar' }); } catch (e) { /* old engine */ }
-      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: 'Week OS training' })
-          .then(ok)
-          .catch((e) => { if (!e || e.name !== 'AbortError') downloadICS(ics, n, msg); });
-      } else {
+    const btn = wrap.querySelector('[data-io="ics"]');
+    if (btn) {
+      const msg = wrap.querySelector('.data-msg');
+      btn.addEventListener('click', () => {
+        const ics = DB.buildICS(todayISO());
+        const n = (ics.match(/BEGIN:VEVENT/g) || []).length;
+        if (!n) { msg.textContent = 'No upcoming sessions — the block is over.'; return; }
         downloadICS(ics, n, msg);
-      }
-    });
+      });
+    }
     return wrap;
   }
 

@@ -158,8 +158,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 /* ---- now / next ------------------------------------------------------ */
 .nownext {
-  background: var(--chrome-bg); color: var(--chrome-text);
-  border-radius: 14px; padding: 14px; margin-bottom: 12px;
+  background: var(--chrome-bg);
+  background: linear-gradient(155deg, color-mix(in srgb, var(--chrome-bg) 88%, #fff) 0%, var(--chrome-bg) 60%);
+  color: var(--chrome-text);
+  border-radius: 18px; padding: 15px 16px; margin-bottom: 13px;
+  box-shadow: 0 10px 26px rgba(22,36,42,0.16);
 }
 .nownext .nn-tag {
   font-family: var(--mono); font-size: 10px; font-weight: 700;
@@ -176,10 +179,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ---- run hero -------------------------------------------------------- */
 .hero {
   position: relative; overflow: hidden;
-  background: var(--hero-bg); color: #fff;
-  border-radius: 14px; padding: 16px 14px 14px; margin-bottom: 14px;
+  background: var(--hero-bg);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--hero-bg) 82%, #fff) 0%, var(--hero-bg) 55%, color-mix(in srgb, var(--hero-bg) 82%, #000) 100%);
+  color: #fff;
+  border-radius: 18px; padding: 17px 16px 15px; margin-bottom: 15px;
+  box-shadow: 0 12px 30px rgba(22,36,42,0.18);
 }
-.hero.race { background: var(--accent); }
+.hero.race { background: var(--accent); background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 84%, #fff) 0%, var(--accent) 55%, color-mix(in srgb, var(--accent) 82%, #000) 100%); }
 .hero.done { opacity: 0.72; }
 .hero .h-tag { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.14em; opacity: 0.8; text-transform: uppercase; }
 .hero .h-row { display: flex; align-items: baseline; gap: 10px; margin-top: 2px; }
@@ -209,59 +215,90 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .resthero b { font-family: var(--display); font-weight: 800; color: var(--text); display: block; font-size: 15px; }
 
-/* ---- timeline -------------------------------------------------------- */
-.tl { display: flex; flex-direction: column; gap: 6px; }
-.tl-quiet {
-  display: flex; gap: 10px; align-items: baseline;
-  padding: 3px 10px 3px 12px; min-height: 22px;
-  color: var(--t2); font-size: 12.5px;
-  border-left: 2px solid var(--line);
-  margin-left: 2px;
+/* ---- timeline (a day as a spine, nodes hung off it) ------------------ */
+.tl { position: relative; display: flex; flex-direction: column; gap: 7px; padding-left: 26px; }
+.tl::before {                       /* the spine */
+  content: ""; position: absolute; left: 8px; top: 10px; bottom: 10px; width: 2px;
+  background: linear-gradient(var(--line), var(--line)); border-radius: 1px;
 }
-.tl-quiet .t { font-family: var(--mono); font-size: 11px; min-width: 76px; color: var(--t3); }
+
+/* fixed-life rows recede to the spine — time + label, no box */
+.tl-quiet {
+  position: relative; display: flex; gap: 10px; align-items: baseline;
+  padding: 4px 4px 4px 0; min-height: 22px;
+  color: var(--t2); font-size: 12.5px;
+}
+.tl-quiet::before {                 /* small hollow node */
+  content: ""; position: absolute; left: -22px; top: 8px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--paper); border: 2px solid var(--line);
+}
+.tl-quiet .t { font-family: var(--mono); font-size: 11px; min-width: 74px; color: var(--t3); }
 .tl-quiet .d { color: var(--t3); }
+
+/* doable blocks are cards: category-tinted, soft depth, colour node */
 .tl-card {
   position: relative; display: flex; gap: 10px;
-  background: var(--surface); border: 1px solid var(--line);
-  border-radius: 12px; padding: 10px 12px 10px 14px;
+  background: var(--surface);
+  background: color-mix(in srgb, var(--cat, var(--cat-routine)) 7%, var(--surface));
+  border: 1px solid var(--line);
+  border-radius: 16px; padding: 12px 13px 12px 15px;
+  box-shadow: 0 1px 2px rgba(22,36,42,0.05), 0 6px 16px rgba(22,36,42,0.05);
 }
-.tl-card::before {
-  content: ""; position: absolute; left: 0; top: 0; bottom: 0;
-  width: 4px; border-radius: 12px 0 0 12px; background: var(--cat, var(--cat-routine));
+.tl-card::before {                  /* filled category node on the spine */
+  content: ""; position: absolute; left: -22px; top: 16px;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--cat, var(--cat-routine));
+  border: 2px solid var(--paper);
+  box-shadow: 0 0 0 1px var(--cat, var(--cat-routine));
 }
 .tl-card .c-main { flex: 1; min-width: 0; }
 .tl-card .c-time { font-family: var(--mono); font-size: 11px; color: var(--t3); }
-.tl-card .c-title { font-weight: 600; font-size: 14.5px; line-height: 1.25; }
-.tl-card .c-detail { font-size: 12.5px; color: var(--t2); margin-top: 1px; }
+.tl-card .c-title { font-family: var(--display); font-weight: 800; font-size: 15.5px; line-height: 1.2; letter-spacing: -0.005em; }
+.tl-card .c-detail { font-size: 12.5px; color: var(--t2); margin-top: 3px; }
 .tl-card .c-cat {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 8px;
   font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--cat, var(--cat-routine));
 }
+.tl-card .c-cat::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--cat, var(--cat-routine)); }
 .tl-card .c-side { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .tick {
-  width: 30px; height: 30px; border-radius: 50%;
-  border: 2px solid var(--line); color: transparent; font-size: 15px; flex: none;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--line); color: transparent; font-size: 16px; flex: none;
+  background: var(--surface); transition: transform 0.12s ease;
 }
 .tick.on { background: var(--cat, var(--cat-run)); border-color: var(--cat, var(--cat-run)); color: #fff; }
-.more-btn { color: var(--t3); font-size: 16px; line-height: 1; padding: 2px 4px; }
-.tl-card.done .c-title { text-decoration: line-through; opacity: 0.55; }
-.tl-card.done .c-detail { opacity: 0.5; }
-.tl-card.skipped { opacity: 0.55; border-style: dashed; }
+.tick:active { transform: scale(0.9); }
+.more-btn { color: var(--t3); font-size: 18px; line-height: 1; padding: 2px 4px; }
+.tl-card.done { box-shadow: none; }
+.tl-card.done .c-title { text-decoration: line-through; opacity: 0.5; }
+.tl-card.done .c-detail { opacity: 0.45; }
+.tl-card.done .c-plan { opacity: 0.5; }
+.tl-card.skipped { opacity: 0.6; box-shadow: none; border-style: dashed; }
 .tl-card.skipped .c-title { text-decoration: line-through; }
-.tl-card .c-actions { display: flex; gap: 8px; margin-top: 8px; }
+.tl-card .c-actions { display: flex; gap: 8px; margin-top: 10px; }
 .tl-card .c-actions button {
-  font-size: 11.5px; font-family: var(--mono); padding: 4px 10px;
-  border: 1px solid var(--line); border-radius: 8px; color: var(--t2);
+  font-size: 11.5px; font-family: var(--mono); padding: 6px 11px;
+  border: 1px solid var(--line); border-radius: 9px; color: var(--t2); background: var(--surface);
 }
 .tl-now {
-  display: flex; align-items: center; gap: 8px; margin: 2px 0;
+  position: relative; display: flex; align-items: center; gap: 8px; margin: 4px 0;
   font-family: var(--mono); font-size: 10px; font-weight: 700;
   color: var(--accent); letter-spacing: 0.12em;
 }
-.tl-now::after { content: ""; flex: 1; height: 2px; background: var(--accent); border-radius: 1px; }
-.tl-card.current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.tl-quiet.current { border-left-color: var(--accent); color: var(--text); }
-.moved-tag { font-family: var(--mono); font-size: 10px; color: var(--accent); }
+.tl-now::before {                   /* pulsing node on the spine */
+  content: ""; position: absolute; left: -21px; top: 3px;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--accent); border: 2px solid var(--paper);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.tl-now::after { content: ""; flex: 1; height: 2px; background: color-mix(in srgb, var(--accent) 45%, transparent); border-radius: 1px; }
+.tl-card.current { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent), 0 6px 16px rgba(22,36,42,0.06); }
+.tl-card.current::before { background: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.tl-quiet.current { color: var(--text); font-weight: 500; }
+.tl-quiet.current::before { background: var(--accent); border-color: var(--accent); }
+.moved-tag { font-family: var(--mono); font-size: 10px; color: var(--accent); margin-top: 4px; }
 
 /* ---- week view ------------------------------------------------------- */
 .wk-head { display: flex; align-items: center; gap: 8px; margin: 2px 2px 12px; }
@@ -550,3 +587,24 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   background: var(--paper); color: var(--text);
 }
 .c-actions { flex-wrap: wrap; }
+
+/* ---- calendar CTAs (Reference → Reminders) -------------------------------- */
+.cta {
+  display: block; text-align: center; text-decoration: none;
+  font-family: var(--display); font-weight: 800; font-size: 15px;
+  padding: 13px; border-radius: 12px; margin: 4px 0 2px;
+}
+.cta-primary { background: var(--accent); color: #fff; box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 32%, transparent); }
+.cta-ghost { background: var(--paper); color: var(--text); border: 1px solid var(--line); }
+
+/* ---- cross-view depth: one card language everywhere ---------------------- */
+.wk-day, .plan-row, .stat, .ref-card, .sheet-item {
+  box-shadow: 0 1px 2px rgba(22,36,42,0.04), 0 4px 12px rgba(22,36,42,0.045);
+}
+.wk-day { border-radius: 14px; }
+.stat { border-radius: 12px; }
+.wk-day.today { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent), 0 4px 12px rgba(22,36,42,0.05); }
+.plan-row.now { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent), 0 4px 12px rgba(22,36,42,0.05); }
+.wk-day .d-km, .stat b { font-family: var(--mono); }
+/* the run distance in week rows gets a touch more presence */
+.wk-day .d-km { font-size: 15px; }
