@@ -160,7 +160,15 @@
     const special = (block.specialWeeks || {})[week] || null;
     const dayOverride = special && special.days ? special.days[di] : null;
 
+    /* Scaffold era (§16): the day's base template swaps once life changes
+       (HNC→work, HND→Mondays). Latest matching era wins; special weeks
+       still override on top of whichever scaffold is live. */
     let template = block.templates[di];
+    if (block.scaffolds) {
+      for (const era of block.scaffolds) {
+        if (week >= era.fromWk && era.days && era.days[di]) template = era.days[di];
+      }
+    }
     if (dayOverride && dayOverride.blocks) {
       template = typeof dayOverride.blocks === 'string'
         ? block.namedTemplates[dayOverride.blocks]

@@ -223,8 +223,8 @@ section('schedule refinements');
 ok(/4×20 s relaxed strides/.test(dayOfWeek(5, 3).run.detail), 'Thu easy runs carry strides');
 ok(!/relaxed strides/.test(dayOfWeek(5, 1).run.detail), 'Tue easy runs stay plain');
 ok(/headtorch/i.test(dayOfWeek(15, 2).run.detail), 'Oct Wed 17:10 carries the dark-kit note');
-ok(!/headtorch/i.test(dayOfWeek(15, 1).run.detail), 'Oct Tue 16:15 is not yet dark');
-ok(/headtorch/i.test(dayOfWeek(20, 1).run.detail), 'Nov Tue 16:15 is dark');
+ok(/headtorch/i.test(dayOfWeek(15, 1).run.detail), 'Oct Tue 17:10 (post-HNC) is dark');
+ok(/headtorch/i.test(dayOfWeek(20, 1).run.detail), 'Nov Tue is dark');
 ok(!/headtorch/i.test(dayOfWeek(8, 2).run.detail), 'Aug Wed is daylight');
 ok(!/headtorch/i.test(dayOfWeek(26, 2).run.detail), 'holiday-week 09:30 runs are daylight');
 ok(hasBlock(dayOfWeek(20, 5), /Carb-forward — 30 km tomorrow/), 'Sat dinner goes carb-forward before big long runs');
@@ -238,6 +238,33 @@ ok(!hasBlock(dayOfWeek(28, 5), /Carb-forward/), 'taper Sat (LR 18) stays plain')
   const txt = fs.readFileSync(feed, 'utf8');
   ok((txt.match(/BEGIN:VEVENT/g) || []).length > 250, 'calendar feed generates the full block');
   fs.unlinkSync(feed);
+}
+
+/* ---- 6c. scaffold eras (§16 answered) ---- */
+section('scaffold eras');
+{
+  const hasRunAt = (day, hm) => day.blocks.some((b) => b.cat === 'run' && b.doable && b.start === hm);
+  // Weeks 1–2: original — Tue college morning, run 16:15
+  ok(hasBlock(dayOfWeek(1, 1), /College/), 'wk1 Tue is still a college day');
+  ok(hasRunAt(dayOfWeek(1, 1), '16:15'), 'wk1 Tue run stays at 16:15');
+  // Wk 3–11: Tuesday becomes a work day, run slides to 17:10
+  ok(hasBlock(dayOfWeek(5, 1), /Work/), 'wk5 Tue is a work day (HNC done)');
+  ok(!hasBlock(dayOfWeek(5, 1), /College/), 'wk5 Tue no longer college');
+  ok(hasRunAt(dayOfWeek(5, 1), '17:10'), 'wk5 Tue run moved to 17:10');
+  ok(hasBlock(dayOfWeek(5, 1), /Upper A/), 'wk5 Tue keeps Upper A at 19:30');
+  ok(hasBlock(dayOfWeek(5, 0), /Punchbag/), 'wk5 Mon still the recovery day (no college yet)');
+  // Wk 12+: Monday becomes the HND college day
+  ok(hasBlock(dayOfWeek(12, 0), /College — HND/), 'wk12 Mon is the HND college day');
+  ok(hasBlock(dayOfWeek(12, 0), /Punchbag/), 'wk12 Mon keeps punchbag in the evening');
+  ok(dayOfWeek(12, 0).run === null, 'wk12 Mon still has no run');
+  ok(hasBlock(dayOfWeek(12, 1), /Work/), 'wk12 Tue stays a work day');
+  ok(hasRunAt(dayOfWeek(12, 1), '17:10'), 'wk12 Tue run still 17:10');
+  // Special weeks still win over the scaffold
+  ok(hasBlock(dayOfWeek(26, 0), /CHRISTMAS|full rest|holiday|Family/i) || dayOfWeek(26, 0).blocks.some((b) => /Punchbag/.test(b.title)),
+    'wk26 Mon holiday template overrides the HND scaffold');
+  ok(hasBlock(dayOfWeek(24, 3), /REST/), 'wk24 Thu rest still applies over the scaffold');
+  ok(hasBlock(dayOfWeek(30, 0), /Work/) && dayOfWeek(30, 0).blocks.some((b) => /Easy 5/.test(b.title)),
+    'wk30 race-week Monday still fully scripted');
 }
 
 /* ---- 7b. Pro 4 odometer + run log ---- */

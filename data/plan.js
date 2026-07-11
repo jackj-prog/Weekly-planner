@@ -7,6 +7,28 @@
    (One change per prompt → edit here → run tests → bump SW version → ship.)
    ========================================================================== */
 
+/* Shared gym sessions — one definition, referenced by every scaffold
+   that carries them, so the protocol can never diverge between eras. */
+const UPPER_A = {
+  title: 'Gym — Upper A', cat: 'gym', doable: true, gym: 'upper',
+  detail: 'Ramp 2 warm-up sets on bench · top of the range → +2.5 kg next week · superset curls + face pulls to finish · drive over, no run-commute',
+  plan: [
+    { ex: 'Bench press',    sets: '4 × 6–8' },
+    { ex: 'Barbell row',    sets: '4 × 6–8' },
+    { ex: 'Overhead press', sets: '3 × 8' },
+    { ex: 'Weighted dips',  sets: '3 × 8–10' },
+    { ex: 'EZ bar curls',   sets: '3 × 10–12' },
+    { ex: 'Face pulls',     sets: '3 × 15' },
+  ],
+  maintDetail: '2 hard sets each, 3 reps in reserve — keep the look through the taper',
+  maintPlan: [
+    { ex: 'Bench press',   sets: '2 × 6–8' },
+    { ex: 'Barbell row',   sets: '2 × 8' },
+    { ex: 'Weighted dips', sets: '2 × 8' },
+    { ex: 'EZ bar curls',  sets: '2 × 10' },
+  ],
+};
+
 const PLAN = {
 
   /* ---- Race & targets (§1, §10) ------------------------------------- */
@@ -228,23 +250,7 @@ const PLAN = {
         { t: '16:15', run: 'tue' },
         { after: true, end: '18:30', title: 'OU study', detail: 'Until dinner', cat: 'study', doable: true },
         { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
-        { t: '19:30', end: '20:45', title: 'Gym — Upper A', cat: 'gym', doable: true, gym: 'upper',
-          detail: 'Ramp 2 warm-up sets on bench · top of the range → +2.5 kg next week · superset curls + face pulls to finish · drive over, no run-commute',
-          plan: [
-            { ex: 'Bench press',    sets: '4 × 6–8' },
-            { ex: 'Barbell row',    sets: '4 × 6–8' },
-            { ex: 'Overhead press', sets: '3 × 8' },
-            { ex: 'Weighted dips',  sets: '3 × 8–10' },
-            { ex: 'EZ bar curls',   sets: '3 × 10–12' },
-            { ex: 'Face pulls',     sets: '3 × 15' },
-          ],
-          maintDetail: '2 hard sets each, 3 reps in reserve — keep the look through the taper',
-          maintPlan: [
-            { ex: 'Bench press',   sets: '2 × 6–8' },
-            { ex: 'Barbell row',   sets: '2 × 8' },
-            { ex: 'Weighted dips', sets: '2 × 8' },
-            { ex: 'EZ bar curls',  sets: '2 × 10' },
-          ] },
+        Object.assign({ t: '19:30', end: '20:45' }, UPPER_A),
         { t: '20:45', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
@@ -342,6 +348,46 @@ const PLAN = {
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
       ],
     },
+
+    /* ---- Scaffold eras (§16 answered, Jul 2026) ----
+       HNC finished early: from Wk 3 Tuesday is a work day (run
+       moves 16:15 → 17:10; OU rides the quiet spells at work — never
+       flat out). From Wk 12 (Mon 14 Sep, second Monday) the HND lands
+       on Mondays: Monday becomes the college day, evening unchanged.
+       Weeks 1–2 keep the original templates so history stays true. */
+    scaffolds: [
+      { fromWk: 3, days: {
+        1: [
+          { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating', cat: 'routine', quiet: true },
+          { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
+          { t: '07:00', end: '12:00', title: 'Work', detail: 'Quiet spells = OU study — never flat out', cat: 'work', quiet: true },
+          { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+          { t: '13:00', end: '16:30', title: 'Work', detail: 'More OU in the gaps', cat: 'work', quiet: true },
+          { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
+          { t: '17:10', run: 'tue' },
+          { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
+          Object.assign({ t: '19:30', end: '20:45' }, UPPER_A),
+          { t: '20:45', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
+          { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+          { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+        ],
+      } },
+      { fromWk: 12, days: {
+        0: [
+          { t: '06:45', end: '07:45', title: 'Wake · Anki · breakfast', detail: 'College lie-in vs work days · 15 min Anki', cat: 'routine', quiet: true },
+          { t: '07:45', end: '08:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
+          { t: '08:00', end: '15:00', title: 'College — HND', detail: 'HND day (Mondays from 14 Sep) · use any free periods for OU', cat: 'study', quiet: true },
+          { t: '15:00', end: '16:00', title: 'Commute + snack', detail: 'Home ~16:00', cat: 'work', quiet: true },
+          { t: '17:00', end: '17:30', title: 'Punchbag', detail: '6 × 3 min rounds, 1 min rest — Monday has no run', cat: 'xt', doable: true },
+          { t: '17:30', end: '18:30', title: 'Shower + snack', cat: 'routine', quiet: true },
+          { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
+          { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
+          { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
+          { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+          { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+        ],
+      } },
+    ],
 
     /* ---- Special weeks & templates (§9) — override the standard day ----
        Per week: days[dayIndex] with either

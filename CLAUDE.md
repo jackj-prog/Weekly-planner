@@ -69,20 +69,32 @@ First-principles design is welcome. These behaviours are the intent:
 
 | Anchor | When | Detail |
 |---|---|---|
-| Work | Mon/Wed/Thu 07:00–16:30 | Lunch 12:00–13:00. ~2h passive German listening during work. |
+| Work | See scaffold eras below | Lunch 12:00–13:00. ~2h passive German listening. Quiet spells absorb OU study — never flat out. |
 | Commute | Work days 06:45 & 16:30, ~15–30 min | German podcasts. |
-| College | Tue 08:00–15:00 (until ~Sep 2026) | Includes ~3h flexible OU/HNC study periods. **Open question §16.** |
+| College | HNC Tue → HND Mon (see eras) | Includes flexible OU study in free periods (08:00–15:00). |
 | Dinner | Mon–Thu 18:30–19:30 | Family anchor. Never scheduled over. |
 | Mum's | Fri from ~15:30 through the evening | Family time; basketball happens from here. |
 | Anki (German) | Daily, 15 min with breakfast | Non-negotiable. |
 | Reading | Nightly 22:00–22:30 · Thu anchor 21:00–22:00 · Sun catch-up 19:30–21:00 | ~200 pages/week target. |
-| Sleep | Lights out 22:30 every night | Wake 06:00 work days, 06:45 Tue, 07:00 Fri, 07:30 weekend. |
-| Punchbag | Mon 17:00–17:30 (after work) | Cross-training; Monday has no run. |
+| Sleep | Lights out 22:30 every night | Wake 06:00 work days, 06:45 on the college day (Tue then Mon), 07:00 Fri, 07:30 weekend. |
+| Punchbag | Mon 17:00–17:30 | Cross-training; Monday has no run. |
 | Basketball | Fri ~19:00–20:00 (from Mum's) | Cross-training; flexes first (§12). |
 
 Weekly load budget for sanity: work 25.5h · college 7.5h · OU ~12h ·
 German total ~16–17h (only ~4–5.5h active; rest is passive/media/Anki) ·
 gym 2–2.5h · running per plan · reading 6h.
+
+**Scaffold eras (§16 Q1 answered, Jul 2026).** Life changes twice mid-block:
+- **Wks 1–2** (until 12 Jul): HNC as originally planned — **Tuesday is a
+  college day** (08:00–15:00), easy run 16:15, Upper A 19:30.
+- **Wks 3–11** (from 13 Jul): HNC finished. **Tuesday becomes a work
+  day** (07:00–16:30) — the easy run slides to **17:10** (home off the
+  16:30 commute), Upper A unchanged at 19:30. OU no longer needs its own
+  Tuesday evening slot; it rides the quiet spells at work.
+- **Wks 12–30** (from Mon 14 Sep, the second Monday): **HND starts on
+  Mondays.** Monday becomes the college day (08:00–15:00, wake 06:45) while
+  keeping its evening intact — punchbag 17:00, German active 19:30, still
+  no run. Tuesday stays a work day. Holiday/race weeks still override.
 
 ## 6. Standard week templates (with times)
 
@@ -90,20 +102,27 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
 6.1 min/km (includes ~10 min easy warm-up guidance) · Sunday long ≈
 6.75 min/km. Add 15 min shower after every run.
 
-### Monday — recovery, no run
-06:00 Wake + Anki (15 min while eating) · 06:45 commute (podcast) ·
-07:00–12:00 Work · 12:00 lunch · 13:00–16:30 Work · 16:30 commute ·
-**17:00 Punchbag 30 min** · 17:30 shower + snack · 18:30 dinner ·
-19:30–21:00 German active study (grammar/writing) · 21:00–22:00 German
-media (TV/film) · 22:00 read · 22:30 sleep.
+### Monday — recovery, no run (day-job Wks 1–11; HND college from Wk 12)
+- **Wks 1–11 (work):** 06:00 Wake + Anki · 06:45 commute · 07:00–16:30
+  Work · 16:30 commute.
+- **Wks 12+ (HND):** 06:45 Wake + Anki · 08:00–15:00 College — HND · home
+  ~16:00.
+- **Both:** **17:00 Punchbag** (6×3 min rounds) · 17:30 shower + snack ·
+  18:30 dinner · 19:30–21:00 German active study · 21:00–22:00 German
+  media · 22:00 read · 22:30 sleep. Monday never carries a run.
 
-### Tuesday — easy run + Upper A
-06:45 wake + Anki + breakfast (lie-in vs work days) · 07:45 commute ·
-08:00–15:00 College (incl ~3h OU periods) · 15:00 commute + snack, home
-~16:00 · **16:15 Easy run (Tue km)** · shower · OU study until 18:30 ·
-18:30 dinner · **19:30 Gym — Upper A** (bench/row/OHP/dips/curls;
-drive over, no run-commute — legs are for running) · 20:45 wind down · 22:00 read ·
-22:30 sleep.
+### Tuesday — easy run + Upper A (scaffold varies by era — see §5)
+- **Wks 1–2 (HNC):** 06:45 wake + Anki · 08:00–15:00 College (incl OU
+  periods) · home ~16:00 · **16:15 Easy run** · OU until 18:30 · 18:30
+  dinner · **19:30 Upper A** · wind down · read · sleep.
+- **Wks 3+ (work day):** 06:00 wake + Anki · 07:00–16:30 Work (OU in the
+  quiet spells) · 16:30 commute · **17:10 Easy run (Tue km)** · shower ·
+  18:30 dinner · **19:30 Gym — Upper A** (bench/row/OHP/dips/curls;
+  drive over, no run-commute — legs are for running) · 20:45 wind down ·
+  22:00 read · 22:30 sleep.
+
+Upper A every era: **bench 4×6–8 · row 4×6–8 · OHP 3×8 · weighted dips
+3×8–10 · EZ bar curls 3×10–12 · face pulls 3×15** (see gym programming).
 Week 23 special: the Tue run's first 5 km are the **Pro 4 fit-check**
 (exchange window opens).
 
@@ -395,8 +414,10 @@ the plan file stays canonical.
 
 ## 16. Open questions (ask the user, don't guess)
 
-1. **Tuesdays after ~September 2026**: HNC ends; does Tuesday become a
-   work day? The daytime scaffold for Wks ~12+ needs confirming.
+1. ~~**Tuesdays after ~September 2026**~~ — ANSWERED (Jul 2026, see §5
+   scaffold eras): HNC finished early. Tuesday → work day from Wk 3
+   (run to 17:10); from Wk 12 (Mon 14 Sep) HND moves to Mondays. OU
+   study rides work's quiet spells rather than a fixed slot.
 2. **Basketball**: confirm Friday ~19:00 from Mum's is right (time/place).
 3. ~~Ticked-history export (JSON)~~ — SHIPPED v1.2: copy-paste backup /
    restore lives on the Reference page.
