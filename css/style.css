@@ -534,3 +534,19 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---- webcal link ---------------------------------------------------------- */
 .webcal { color: var(--accent); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--accent); }
+
+/* ---- gym weight memory ---------------------------------------------------- */
+.c-plan .xr { gap: 8px; }
+.c-plan .xn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xw {
+  font-family: var(--mono); font-size: 11px; color: var(--t3);
+  border: 1px dashed var(--line); border-radius: 6px;
+  padding: 2px 7px; min-width: 54px; text-align: center; flex: none;
+}
+.xw.logged { border: 1px solid var(--cat-gym); color: var(--text); font-weight: 700; }
+.xw-in {
+  width: 64px; flex: none; font-family: var(--mono); font-size: 12px;
+  padding: 2px 6px; border: 1px solid var(--accent); border-radius: 6px;
+  background: var(--paper); color: var(--text);
+}
+.c-actions { flex-wrap: wrap; }

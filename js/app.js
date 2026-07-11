@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.7.0';
+  const APP_VERSION = '1.8.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -25,6 +25,7 @@
     dateISO: todayISO(),
     weekAnchor: null,          // Monday ISO shown in week view
     expanded: null,            // block id with actions open
+    wtEdit: null,              // { block, ex } — weight input open on that row
   };
   let nowKey = '';             // today's current|next block ids — minute tick
                                // re-renders only when this changes
@@ -96,6 +97,32 @@
   function returnMoved(iso, movedId) {
     const item = getMoveIn(iso).find((m) => m.id === movedId);
     if (item) undoMove(item.fromIso, item.srcId);
+  }
+
+  /* ---- gym weight memory: the +2.5 kg rule needs to know last week ---- */
+  function exKey(ex) {
+    return 'wt-' + String(ex).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+  function lastWeight(key) {
+    const arr = readJSON(key, []);
+    return arr.length ? arr[arr.length - 1] : null;
+  }
+  function saveWeight(key, iso, kg) {
+    const arr = readJSON(key, []).filter((e) => e && e.d !== iso);
+    arr.push({ d: iso, kg });
+    writeJSON(key, arr.slice(-20));
+  }
+  function fmtKg(kg) {
+    return (kg === Math.round(kg) ? kg : kg.toFixed(1)) + 'kg';
+  }
+
+  /* ---- illness mode: rule 5, one tap instead of N ---- */
+  function skipRunDays(fromIso, days) {
+    for (let i = 0; i < days; i++) {
+      const d = DB.addDays(fromIso, i);
+      const day = DB.buildDay(d);
+      if (day.run) setSkip(d, day.run.id, true);
+    }
   }
 
   /* ---- tiny html helpers ---- */
@@ -237,6 +264,10 @@
     }
     if (!nowPlaced) tl.appendChild(el('<div class="tl-now">NOW ' + DB.fmtHM(nMin) + '</div>'));
     view.appendChild(tl);
+
+    /* weight input just opened — put the cursor in it */
+    const wi = view.querySelector('.xw-in');
+    if (wi) { wi.focus(); wi.select(); }
   }
 
   function buildNowNext(day) {
@@ -310,15 +341,32 @@
       (opts.current ? ' <span class="nowflag">· NOW</span>' : '') + '</div>' +
       '<div class="c-title">' + esc(b.title) + '</div>' +
       (b.detail ? '<div class="c-detail">' + esc(b.detail) + '</div>' : '') +
-      (b.plan ? '<div class="c-plan">' + b.plan.map((p) =>
-        '<div class="xr"><span>' + esc(p.ex) + '</span><span class="xs">' + esc(p.sets) + '</span></div>'
-      ).join('') + '</div>' : '') +
+      (b.plan ? '<div class="c-plan">' + b.plan.map((p) => {
+        let w = '';
+        if (b.cat === 'gym') {
+          const key = exKey(p.ex);
+          const last = lastWeight(key);
+          const editing = state.wtEdit && state.wtEdit.block === b.id && state.wtEdit.ex === key;
+          w = editing
+            ? '<input class="xw-in" inputmode="decimal" data-ex="' + key + '" value="' +
+              (last ? last.kg : '') + '" aria-label="Weight for ' + esc(p.ex) + '">'
+            : '<button class="xw' + (last && last.d === iso ? ' logged' : '') + '" data-ex="' + key +
+              '" title="' + (last ? 'last logged ' + last.d : 'log weight') + '">' +
+              (last ? fmtKg(last.kg) : '· kg') + '</button>';
+        }
+        return '<div class="xr"><span class="xn">' + esc(p.ex) + '</span>' +
+          '<span class="xs">' + esc(p.sets) + '</span>' + w + '</div>';
+      }).join('') + '</div>' : '') +
       '<div class="c-cat">' + esc(b.cat) + (opts.skipped ? ' · skipped' : '') +
       (opts.moved ? ' · moved from ' + esc(fmtShort(opts.moved.fromIso)) : '') + '</div>' +
       (expanded ? '<div class="c-actions">' +
         (opts.skipped ? '<button data-act="unskip">Unskip</button>' : '<button data-act="skip">Skip</button>') +
         (opts.moved ? '<button data-act="return">Return to ' + esc(fmtShort(opts.moved.fromIso)) + '</button>'
                     : '<button data-act="move">Move to tomorrow</button>') +
+        (b.cat === 'run' && !opts.moved
+          ? '<button data-act="niggle">Niggle — rest 2 days</button>' +
+            '<button data-act="illweek">Ill — rest to Sunday</button>'
+          : '') +
         '</div>' : '') +
       '</div>' +
       '<div class="c-side">' +
@@ -341,9 +389,31 @@
       if (act === 'unskip') setSkip(iso, b.id, false);
       if (act === 'move') moveToTomorrow(iso, b);
       if (act === 'return') returnMoved(iso, b.id);
+      if (act === 'niggle') skipRunDays(iso, 2);
+      if (act === 'illweek') skipRunDays(iso, 7 - DB.dayIndex(iso));
       state.expanded = null;
       render();
     }));
+    card.querySelectorAll('.xw').forEach((btn) => btn.addEventListener('click', () => {
+      state.wtEdit = { block: b.id, ex: btn.getAttribute('data-ex') };
+      render();
+    }));
+    card.querySelectorAll('.xw-in').forEach((inp) => {
+      let doneWith = false;
+      const commit = () => {
+        if (doneWith) return;
+        doneWith = true;
+        const v = parseFloat(String(inp.value).replace(',', '.'));
+        if (isFinite(v) && v > 0 && v < 500) saveWeight(inp.getAttribute('data-ex'), iso, v);
+        state.wtEdit = null;
+        render();
+      };
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); commit(); }
+        if (e.key === 'Escape') { doneWith = true; state.wtEdit = null; render(); }
+      });
+      inp.addEventListener('blur', commit);
+    });
     return card;
   }
 
@@ -707,8 +777,8 @@
     msg.textContent = n + ' sessions exported — open week-os-training.ics to add them.';
   }
 
-  /* ---- backup / restore (ticks, skips, moves — everything local) ---- */
-  const STORE_KEY = /^(done|ovr|movein)-\d{4}-\d{2}-\d{2}$/;
+  /* ---- backup / restore (ticks, skips, moves, gym weights) ---- */
+  const STORE_KEY = /^(?:(?:done|ovr|movein)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+)$/;
 
   function buildDataSection() {
     let count = 0;
@@ -717,8 +787,8 @@
     }
     const wrap = el(
       '<div class="ref"><h2>Data</h2><div class="ref-card data-card">' +
-      '<div class="ref-note">' + count + ' day-entr' + (count === 1 ? 'y' : 'ies') +
-      ' stored on this phone. Backups are a JSON blob — paste one into Notes now and again.</div>' +
+      '<div class="ref-note">' + count + ' entr' + (count === 1 ? 'y' : 'ies') +
+      ' stored on this phone (ticks, skips, gym weights). Backups are a JSON blob — paste one into Notes now and again.</div>' +
       '<div class="data-actions">' +
       '<button data-io="export">Copy backup</button>' +
       '<button data-io="restore">Restore…</button></div>' +

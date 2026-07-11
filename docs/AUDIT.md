@@ -79,9 +79,13 @@ sanctioned mitigation: phase identity is always carried by order
    run in the block as one dot on the Plan view (filled phase-colour =
    done, hollow accent = missed, hollow grey = skipped, ring = today,
    faint = future). 141 runs, one glance.
-6. **Illness/niggle mode** — one action that skips the next N days'
-   runs and stamps the reason, so streak/stats stay honest without
-   ceremony (currently N separate skips).
+6. ~~**Illness/niggle mode**~~ — SHIPPED v1.8: run cards' action menu
+   gains "Niggle — rest 2 days" (rule 5) and "Ill — rest to Sunday";
+   one tap skips every run in the window, excluded from streak/stats
+   as deliberate rest. v1.8 also shipped gym weight memory: tap the
+   kg chip on any exercise row to log the top-set weight; the next
+   session shows it as "last" — the +2.5 kg rule finally has memory.
+   Weights ride along in backups (wt-* keys).
 7. ~~**Self-hosted fonts**~~ — SHIPPED v1.4: Archivo 800/900, Space
    Mono 400/700, Inter 400/600 (latin woff2 via fontsource, ~124KB),
    `font-display: swap`, precached by the SW. v1.4 also shipped the
