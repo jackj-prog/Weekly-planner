@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.0.0';
+  const APP_VERSION = '2.1.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -144,9 +144,13 @@
   }
 
   /* ================= header ================= */
+  const PHASE_TONE = { base: 'var(--phase-base)', build: 'var(--phase-build)', taper: 'var(--phase-taper)' };
   function renderHeader() {
     const iso = todayISO();
     const day = DB.buildDay(iso);
+    /* the whole app takes on the current phase's colour (§3 tokens) */
+    document.documentElement.style.setProperty('--phase-accent', PHASE_TONE[day.phase] || 'var(--accent)');
+    document.body.dataset.phase = day.phase || 'none';
     const wkEl = document.getElementById('hdr-week');
     if (day.blockId === 'marathon') {
       wkEl.innerHTML = 'WK <span class="ph-' + esc(day.phase) + '">' + day.week + '/30</span>';
@@ -263,6 +267,8 @@
       }
     }
     if (!nowPlaced) tl.appendChild(el('<div class="tl-now">NOW ' + DB.fmtHM(nMin) + '</div>'));
+    /* stagger index → cascading entrance (CSS, motion-gated) */
+    Array.prototype.forEach.call(tl.children, (c, i) => c.style.setProperty('--i', i));
     view.appendChild(tl);
 
     /* weight input just opened — put the cursor in it */
