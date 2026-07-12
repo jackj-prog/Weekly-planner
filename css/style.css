@@ -398,6 +398,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   position: absolute; left: 0; top: 0; bottom: 0; display: block;
   background: var(--pc, var(--line)); border-radius: inherit;
 }
+.plan-row.rec .p-wk { color: var(--phase-taper); }
+.plan-row.rec .p-sess { color: var(--t2); }
 
 /* ---- reference view -------------------------------------------------- */
 .ref h1 { font-family: var(--display); font-weight: 900; font-size: 24px; margin: 2px 2px 12px; }

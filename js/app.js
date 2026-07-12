@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.3.0';
+  const APP_VERSION = '2.4.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -646,9 +646,40 @@
       });
       rows.appendChild(r);
     }
+
+    /* the recovery fortnight rides at the bottom of the board */
+    const rec = PLAN.blocks.find((b) => b.id === 'recovery');
+    if (rec) {
+      rows.appendChild(el(
+        '<div class="p-phasehead" style="--pc:' + PHASE.taper + '"><b>' + esc(rec.name) + '</b>' +
+        '<span>' + rec.weeks + ' wks post-race</span></div>'
+      ));
+      for (const row of rec.weekTable) {
+        const dates = DB.weekDates(rec, row.wk);
+        const isNow = cur.block && cur.block.id === 'recovery' && cur.week === row.wk;
+        const r = el(
+          '<button class="plan-row rec' + (isNow ? ' now' : dates.end < today ? ' past' : '') + '">' +
+          '<span class="p-wk">R' + row.wk + '</span>' +
+          '<span class="p-bar" style="background:' + PHASE.taper + '"></span>' +
+          '<span class="p-main"><span class="p-dates">' + fmtShort(dates.start) + '–' + fmtShort(dates.end) + '</span>' +
+          '<span class="p-sess">' + esc(row.notes || '') + '</span></span>' +
+          '<span class="p-km"><b>' + row.km + '</b>km</span>' +
+          '<span class="p-load" style="width:' + ((row.km / maxKm) * 100).toFixed(1) + '%;--pc:' + PHASE.taper + '"></span>' +
+          '</button>'
+        );
+        r.addEventListener('click', () => {
+          state.view = 'week';
+          state.weekAnchor = dates.start;
+          window.scrollTo(0, 0);
+          render();
+        });
+        rows.appendChild(r);
+      }
+    }
+
     Array.prototype.forEach.call(rows.children, (c, i) => c.style.setProperty('--i', i));
     view.appendChild(rows);
-    view.appendChild(el('<div class="ref-note">Then: <b>Recovery &amp; return</b> — 2 weeks, a reverse taper of celebration. After that the standing week takes over until the next block is written.</div>'));
+    view.appendChild(el('<div class="ref-note">After the fortnight the standing week takes over — until the next block is written into data/plan.js.</div>'));
   }
 
   /* ================= reference view ================= */

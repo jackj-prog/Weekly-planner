@@ -99,11 +99,15 @@ sanctioned mitigation: phase identity is always carried by order
    (rejected for now).
 
 **Long-term**
-9. **AI plan surgery loop, formalised** — the amendment workflow (edit
-   `data/plan.js` via Claude Code, tests as guardrails) already works;
-   add a `docs/PROMPTS.md` of recipes: "convert week N to cutback",
-   "shift Tuesday scaffold post-HNC", "generate spring-half block two".
-   The 12,839-check suite is what makes AI edits safe.
+9. ~~**AI plan surgery loop, formalised**~~ — SHIPPED v2.4:
+   `docs/PROMPTS.md` is the recipe book ("convert week N to cutback",
+   "retime a scaffold", "author block three"), each recipe ending in
+   the same test → version-bump → push checklist. The suite (12,869
+   checks after the scaffold-era work) is what makes AI edits safe.
+   En route, v2.1–2.3 shipped the visual-delight arc (phase aura, Week
+   strip with load bars, Plan season board incl. the recovery
+   fortnight, Reference race card) and realigned race week, recovery
+   and the standing week onto the HND era (§16 Q1).
 10. **Adaptive recalibration** — feed tune-up + parkrun results into
     pace-table updates as data edits (still no runtime AI: the app stays
     deterministic; intelligence lives in the editing loop).
