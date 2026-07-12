@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.2.0';
+  const APP_VERSION = '2.3.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -656,23 +656,38 @@
     const view = document.getElementById('view');
     view.innerHTML = '';
     const refRow = (k, v) => '<div class="ref-row"><span>' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>';
+    /* the race gets a statement card, not a table */
+    const cd = DB.raceCountdown(todayISO());
+    const cdBit = cd.past ? 'DONE — MARATHONER'
+      : cd.days === 0 ? 'RACE DAY'
+      : cd.weeks === 0 ? cd.rem + ' DAY' + (cd.rem === 1 ? '' : 'S') + ' TO THE GUN'
+      : cd.weeks + 'W ' + cd.rem + 'D TO THE GUN';
+    view.appendChild(el('<div class="ref"><h1>Reference</h1></div>'));
+    view.appendChild(el(
+      '<div class="race-card">' +
+      '<div class="rc-kicker">The race · ' + esc(fmtDate(PLAN.race.date)) + ' · gun ~' + esc(PLAN.race.gun) + '</div>' +
+      '<div class="rc-goal">' + esc(PLAN.race.goal) + '<small>' + esc(PLAN.race.goalPace) + '</small></div>' +
+      '<div class="rc-meta"><span>Stretch bet ' + esc(PLAN.race.stretch) + ' · ' + esc(PLAN.race.stretchPace) + '</span>' +
+      '<span class="rc-cd">' + esc(cdBit) + '</span></div>' +
+      '</div>'
+    ));
     view.appendChild(el(
       '<div class="ref">' +
-      '<h1>Reference</h1>' +
-      '<h2>Race</h2><div class="ref-card">' +
-      refRow('Date', fmtDate(PLAN.race.date)) + refRow('Gun', '~' + PLAN.race.gun) +
-      refRow('Goal', PLAN.race.goal + ' · ' + PLAN.race.goalPace) +
-      refRow('Stretch bet', PLAN.race.stretch + ' · ' + PLAN.race.stretchPace) + '</div>' +
       '<h2>Paces</h2><div class="ref-card">' +
       PLAN.paces.map((p) => refRow(p.type, p.pace)).join('') + '</div>' +
       '<div class="ref-note">' + esc(PLAN.recalibration) + '</div>' +
       '</div>'
     ));
     view.appendChild(buildRecalSection());
+    /* shoes wear their tier: easy / quality / race */
+    const shoeTone = (job) => /race/i.test(job) ? 'var(--accent)'
+      : /quality|MP/i.test(job) ? 'var(--phase-build)' : 'var(--cat-run)';
     view.appendChild(el(
       '<div class="ref">' +
       '<h2>Shoes</h2><div class="ref-card">' +
-      PLAN.shoes.map((s) => refRow(s.shoe + ' · ' + s.size, s.job)).join('') + '</div>' +
+      PLAN.shoes.map((s) =>
+        '<div class="ref-row"><span><i class="dot" style="background:' + shoeTone(s.job) + '"></i>' +
+        esc(s.shoe + ' · ' + s.size) + '</span><span class="v">' + esc(s.job) + '</span></div>').join('') + '</div>' +
       '<div class="ref-note">' + esc(PLAN.pro4Budget) + '</div>' +
       '</div>'
     ));
@@ -905,6 +920,10 @@
     else if (state.view === 'week') renderWeek();
     else if (state.view === 'plan') renderPlan();
     else renderRef();
+
+    /* stagger the view's sections so arrival cascades everywhere */
+    const vc = document.getElementById('view');
+    Array.prototype.forEach.call(vc.children, (c, i) => c.style.setProperty('--i', i));
 
     /* fade content in on real navigation only — never on tick re-renders */
     const viewKey = state.view + '|' +

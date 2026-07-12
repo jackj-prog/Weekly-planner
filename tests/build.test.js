@@ -263,8 +263,19 @@ section('scaffold eras');
   ok(hasBlock(dayOfWeek(26, 0), /CHRISTMAS|full rest|holiday|Family/i) || dayOfWeek(26, 0).blocks.some((b) => /Punchbag/.test(b.title)),
     'wk26 Mon holiday template overrides the HND scaffold');
   ok(hasBlock(dayOfWeek(24, 3), /REST/), 'wk24 Thu rest still applies over the scaffold');
-  ok(hasBlock(dayOfWeek(30, 0), /Work/) && dayOfWeek(30, 0).blocks.some((b) => /Easy 5/.test(b.title)),
-    'wk30 race-week Monday still fully scripted');
+  // Race week, recovery and the standing week live on the same era
+  ok(hasBlock(dayOfWeek(30, 0), /College — HND/) && dayOfWeek(30, 0).blocks.some((b) => /Easy 5/.test(b.title)),
+    'wk30 race-week Monday is an HND college day with the easy 5');
+  ok(hasBlock(dayOfWeek(30, 1), /Work/) && hasRunAt(dayOfWeek(30, 1), '17:10'),
+    'wk30 race-week Tuesday is a work day, easy 4 at 17:10');
+  ok(hasBlock(DB.buildDay('2027-01-25'), /College — HND/),
+    'recovery Monday (day after the race) is an HND college day');
+  ok(hasBlock(DB.buildDay('2027-01-26'), /Work/),
+    'recovery Tuesday is a work day');
+  ok(hasBlock(DB.buildDay('2027-03-01'), /College — HND/),
+    'standing-week Monday stays the HND college day');
+  ok(hasBlock(DB.buildDay('2027-03-02'), /Work/) && hasRunAt(DB.buildDay('2027-03-02'), '17:10'),
+    'standing-week Tuesday is a work day, hobby run at 17:10');
 }
 
 /* ---- 7b. Pro 4 odometer + run log ---- */

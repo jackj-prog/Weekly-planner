@@ -267,8 +267,10 @@ evening · read 22:00. Christmas Day (Fri Wk 26): full rest, family, no
 Anki guilt. New Year's Day (Fri Wk 27): rest — peak 32 km is in two days.
 
 **Week 30 — race week, day by day.**
-- Mon: work · easy 5 (17:10) · dinner · free evening, feet up.
-- Tue: normal daytime · easy 4 (16:15) · OU 1.5h · dinner · NO gym.
+- Mon: college — HND · easy 5 (16:15, home off college) · dinner · free
+  evening, feet up.
+- Tue: work · easy 4 (17:10) · dinner · OU 1.5h (19:30, the gym slot) ·
+  NO gym.
 - Wed: work · easy 4 + strides · dinner · OU light.
 - Thu: work · shakeout 3–4 km (last run) · dinner · protected evening + reading anchor.
 - Fri: no German block (rest the brain) · kit prep + logistics (number,
@@ -386,6 +388,8 @@ the plan file stays canonical.
   (v6.4 scaffold restored: 5-day gym split returns including Lower B
   and Sunday full body, German active back to ~6h, lean bulk resumes,
   running defaults to 3 easy runs/week as a hobby until a new goal).
+  The §5 era carries through: Monday stays the HND college day and
+  Tuesday the work day in the recovery block and standing week too.
 - Ship block two pre-defined — **"Recovery & return", 2 weeks
   post-race**: days 1–3 no running (walk, eat, sleep, celebrate);
   rest of week 1 optional 2×20 min very easy; week 2 easy 4–5 km ×3 if
