@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.1.0';
+  const APP_VERSION = '2.2.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -441,6 +441,9 @@
     const anchor = state.weekAnchor || mondayOf(todayISO());
     state.weekAnchor = anchor;
     const day0 = DB.buildDay(anchor);
+    /* the aura follows the week being browsed — page into Build, the app turns blue */
+    document.documentElement.style.setProperty('--phase-accent', PHASE_TONE[day0.phase] || 'var(--accent)');
+    document.body.dataset.phase = day0.phase || 'none';
     const view = document.getElementById('view');
     view.innerHTML = '';
 
@@ -481,26 +484,42 @@
       const km = DB.weekKm(getDone, anchor);
       if (km.planned > 0) {
         const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
-        view.appendChild(el('<div class="wk-banked">✓ ' + fmt(km.done) + ' of ' + fmt(km.planned) + ' km banked</div>'));
+        const pct = Math.min(100, (km.done / km.planned) * 100).toFixed(1);
+        view.appendChild(el(
+          '<div class="wkp" role="img" aria-label="' + fmt(km.done) + ' of ' + fmt(km.planned) + ' km banked">' +
+          '<div class="wkp-label">✓ <b>' + fmt(km.done) + '</b> of ' + fmt(km.planned) + ' km banked</div>' +
+          '<div class="wkp-track"><i style="width:' + pct + '%"></i></div></div>'
+        ));
       }
     }
 
-    const days = el('<div class="wk-days"></div>');
+    /* seven days, run distances as the anchors — rows double as a bar chart */
     const real = todayISO();
+    const week7 = [];
+    for (let i = 0; i < 7; i++) week7.push(DB.buildDay(DB.addDays(anchor, i)));
+    const maxKm = Math.max(1, ...week7.map((dd) => (dd.run ? dd.run.run.km : 0)));
+
+    const days = el('<div class="wk-days"></div>');
     for (let i = 0; i < 7; i++) {
       const iso = DB.addDays(anchor, i);
-      const day = DB.buildDay(iso);
+      const day = week7[i];
       const done = getDone(iso);
       const doables = day.blocks.filter((b) => b.doable);
       const doneCount = doables.filter((b) => done[b.id]).length;
       const d = DB.parseLocalDate(iso);
 
-      let runHtml;
+      let cls = 'wk-day' + (iso === real ? ' today' : iso < real ? ' past' : '');
+      let runHtml, barHtml = '';
       if (day.run) {
         const km = day.run.run.km;
-        runHtml = '<div class="d-run">' + esc(day.run.title) + '</div>' +
-          '<div class="d-extras">' + esc(day.run.run.shoe) + extraBits(day) + '</div>';
-        runHtml = { run: runHtml, km: (km === Math.round(km) ? km : km.toFixed(1)) + '<small>km</small>' };
+        cls += ' has-run' + (km === maxKm ? ' lr' : '');
+        barHtml = '<i class="d-bar' + (done[day.run.id] ? ' done' : '') +
+          '" style="width:' + ((km / maxKm) * 100).toFixed(1) + '%"></i>';
+        runHtml = {
+          run: '<div class="d-run">' + esc(day.run.title) + '</div>' +
+            '<div class="d-extras">' + esc(day.run.run.shoe) + extraBits(day) + '</div>',
+          km: (km === Math.round(km) ? km : km.toFixed(1)) + '<small>km</small>',
+        };
       } else {
         runHtml = {
           run: '<div class="d-run rest">No run</div><div class="d-extras">' + (extraBits(day).replace(/^ · /, '') || 'recovery') + '</div>',
@@ -509,17 +528,19 @@
       }
 
       const row = el(
-        '<button class="wk-day' + (iso === real ? ' today' : iso < real ? ' past' : '') + '">' +
+        '<button class="' + cls + '">' +
         '<span class="d-date"><b>' + DAY_SHORT[i] + '</b><span>' + d.getDate() + '</span></span>' +
         '<span class="d-main">' + runHtml.run + '</span>' +
-        '<span style="text-align:right"><span class="d-km">' + runHtml.km + '</span>' +
+        '<span class="d-right"><span class="d-km">' + runHtml.km + '</span>' +
         '<span class="d-done' + (doables.length && doneCount === doables.length ? ' all' : '') + '">' +
         (iso <= real && doables.length ? '<br>' + doneCount + '/' + doables.length : '') + '</span></span>' +
+        barHtml +
         '</button>'
       );
       row.addEventListener('click', () => { state.view = 'today'; state.dateISO = iso; window.scrollTo(0, 0); render(); });
       days.appendChild(row);
     }
+    Array.prototype.forEach.call(days.children, (c, i) => c.style.setProperty('--i', i));
     view.appendChild(days);
   }
 
@@ -578,7 +599,18 @@
 
     const rows = el('<div class="plan-rows"></div>');
     const PHASE = { base: 'var(--phase-base)', build: 'var(--phase-build)', taper: 'var(--phase-taper)' };
+    const maxKm = Math.max(...block.weekTable.map((r) => r.km));
+    let lastPhase = '';
     for (const row of block.weekTable) {
+      /* phase headers turn the list into a season board */
+      if (row.phase !== lastPhase) {
+        lastPhase = row.phase;
+        const span = block.weekTable.filter((r) => r.phase === row.phase);
+        rows.appendChild(el(
+          '<div class="p-phasehead" style="--pc:' + PHASE[row.phase] + '"><b>' + esc(row.phase) + '</b>' +
+          '<span>wks ' + span[0].wk + '–' + span[span.length - 1].wk + '</span></div>'
+        ));
+      }
       const dates = DB.weekDates(block, row.wk);
       const isNow = cur.block && cur.block.id === 'marathon' && cur.week === row.wk;
       const isPast = dates.end < today;
@@ -589,8 +621,13 @@
       const sess = row.race ? 'Race week — see the day plans'
         : (row.wed || row.sun) ? esc((row.wed || '—') + ' / ' + (row.sun || '—'))
         : esc(row.notes || '');
+      /* per-week load bar: stacked, the rows read as the block's mountain profile */
+      const banked = adh.weekKmDone[row.wk] || 0;
+      const loadHtml = '<span class="p-load" style="width:' + ((row.km / maxKm) * 100).toFixed(1) +
+        '%;--pc:' + PHASE[row.phase] + '"><i style="width:' +
+        (row.km ? Math.min(100, (banked / row.km) * 100).toFixed(1) : 0) + '%"></i></span>';
       const r = el(
-        '<button class="plan-row' + (isNow ? ' now' : isPast ? ' past' : '') + '">' +
+        '<button class="plan-row' + (isNow ? ' now' : isPast ? ' past' : '') + (row.race ? ' race' : '') + '">' +
         '<span class="p-wk">' + row.wk + '</span>' +
         '<span class="p-bar" style="background:' + PHASE[row.phase] + '"></span>' +
         '<span class="p-main"><span class="p-dates">' + fmtShort(dates.start) + '–' + fmtShort(dates.end) + '</span>' +
@@ -599,7 +636,7 @@
         (row.notes && !row.race ? '<span class="p-dates">' + esc(row.notes) + '</span>' : '') + '</span>' +
         '<span class="p-km"><b>' + row.km + '</b>km<small>LR ' + row.lr + '</small>' +
         (adh.weekKmDone[row.wk] ? '<small class="p-done">✓ ' + fmt(adh.weekKmDone[row.wk]) + '</small>' : '') +
-        '</span></button>'
+        '</span>' + loadHtml + '</button>'
       );
       r.addEventListener('click', () => {
         state.view = 'week';
@@ -609,6 +646,7 @@
       });
       rows.appendChild(r);
     }
+    Array.prototype.forEach.call(rows.children, (c, i) => c.style.setProperty('--i', i));
     view.appendChild(rows);
     view.appendChild(el('<div class="ref-note">Then: <b>Recovery &amp; return</b> — 2 weeks, a reverse taper of celebration. After that the standing week takes over until the next block is written.</div>'));
   }
