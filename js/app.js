@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.4.0';
+  const APP_VERSION = '2.5.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -867,18 +867,31 @@
     msg.textContent = n + ' sessions exported — open week-os-training.ics to add them.';
   }
 
-  /* ---- backup / restore (ticks, skips, moves, gym weights) ---- */
-  const STORE_KEY = /^(?:(?:done|ovr|movein)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+)$/;
+  /* ---- backup / restore (ticks, skips, moves, gym weights, tune-up time) ---- */
+  const STORE_KEY = /^(?:(?:done|ovr|movein)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+|recal)$/;
 
   function buildDataSection() {
     let count = 0;
     for (let i = 0; i < localStorage.length; i++) {
       if (STORE_KEY.test(localStorage.key(i))) count++;
     }
+    /* freshness: this phone holds the only copy of the ticks */
+    const bAt = readJSONSafeString('backup-at');
+    let bNote = 'Never backed up.';
+    let stale = count > 0;
+    if (bAt) {
+      const days = Math.max(0, Math.round(
+        (DB.parseLocalDate(todayISO()) - DB.parseLocalDate(bAt)) / 86400000));
+      bNote = days === 0 ? 'Backed up today.'
+        : 'Last backup ' + days + ' day' + (days === 1 ? '' : 's') + ' ago.';
+      stale = days > 21;
+    }
     const wrap = el(
       '<div class="ref"><h2>Data</h2><div class="ref-card data-card">' +
       '<div class="ref-note">' + count + ' entr' + (count === 1 ? 'y' : 'ies') +
-      ' stored on this phone (ticks, skips, gym weights). Backups are a JSON blob — paste one into Notes now and again.</div>' +
+      ' stored on this phone (ticks, skips, gym weights, tune-up time). Backups are a JSON blob — paste one into Notes now and again.</div>' +
+      '<div class="ref-note backup-note' + (stale ? ' stale' : '') + '">' + bNote +
+      (stale ? ' This phone holds the only copy.' : '') + '</div>' +
       '<div class="data-actions">' +
       '<button data-io="export">Copy backup</button>' +
       '<button data-io="restore">Restore…</button></div>' +
@@ -897,6 +910,7 @@
         if (STORE_KEY.test(k)) { entries[k] = localStorage.getItem(k); n++; }
       }
       const blob = JSON.stringify({ app: 'week-os', exportedAt: new Date().toISOString(), entries });
+      try { localStorage.setItem('backup-at', todayISO()); } catch (e) { /* fine */ }
       const fallback = () => {
         box.classList.remove('hidden');
         box.value = blob;
@@ -925,6 +939,10 @@
         let n = 0;
         for (const k of Object.keys(entries)) {
           if (!STORE_KEY.test(k) || typeof entries[k] !== 'string') continue;
+          if (k === 'recal') {               // stored as a raw h:mm:ss string, not JSON
+            if (parseHalf(entries[k])) { localStorage.setItem(k, entries[k]); n++; }
+            continue;
+          }
           try {
             JSON.parse(entries[k]);          // each entry must be valid JSON
             localStorage.setItem(k, entries[k]);

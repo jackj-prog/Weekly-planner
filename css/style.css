@@ -507,6 +507,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   letter-spacing: 0.1em; color: var(--accent); min-width: 44px; padding-top: 1px;
 }
 
+/* ---- backup freshness (Reference → Data) ---------------------------------- */
+.backup-note.stale { color: var(--accent); font-weight: 600; }
+
 /* ---- week banked progress ----------------------------------------------- */
 .wkp { margin: -2px 2px 14px; }
 .wkp-label { font-family: var(--mono); font-size: 12px; color: var(--t2); margin-bottom: 5px; }
@@ -682,9 +685,6 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   background: var(--paper); color: var(--text);
 }
 .recal-out b { font-family: var(--mono); }
-
-/* ---- webcal link ---------------------------------------------------------- */
-.webcal { color: var(--accent); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--accent); }
 
 /* ---- gym weight memory ---------------------------------------------------- */
 .c-plan .xr { gap: 8px; }
