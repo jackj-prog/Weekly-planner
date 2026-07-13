@@ -114,7 +114,7 @@ ok(friGerman(5).end === '12:00', 'Base Fri German ends 12:00');
 ok(friGerman(15).end === '11:30', 'Build Fri German ends 11:30');
 ok(friGerman(23).end === '10:30', 'Wk 23 Fri German ends 10:30');
 ok(hasBlock(dayOfWeek(5, 5), /Lower B/i), 'Base Sat should hold Lower B');
-ok(hasBlock(dayOfWeek(12, 5), /Core \+ mobility/i), 'Wk 11+ Sat should hold optional core');
+ok(hasBlock(dayOfWeek(12, 5), /Core \+ calves/i), 'Wk 11+ Sat should hold the core + calves block');
 ok(hasBlock(dayOfWeek(23, 1), /maintenance/i), 'Wk 23 Tue gym should be maintenance');
 
 /* gym programming — structured plans on the blocks */
@@ -133,6 +133,14 @@ ok(hasBlock(dayOfWeek(5, 5), /Plank finisher/), 'Base Lower B should carry the c
 ok(hasBlock(dayOfWeek(5, 1), /\+2\.5 kg/), 'Upper A should carry the progression rule');
 ok(hasBlock(dayOfWeek(5, 0), /6 × 3 min rounds/), 'Punchbag should carry its round structure');
 ok(hasBlock(dayOfWeek(12, 5), /Plank 3 × 45s/), 'Wk 11+ core session should carry the prescription');
+/* push:pull rebalance + calves-all-block (assessed from first principles) */
+ok(hasBlock(dayOfWeek(5, 1), /Band pull-aparts 4 × 15–20/), 'Upper A should carry pull-aparts in the bench rests');
+ok(hasBlock(dayOfWeek(5, 4), /Rear-delt flyes 3 × 12–15/), 'Upper B should carry rear-delt flyes');
+ok(hasBlock(dayOfWeek(23, 1), /Band pull-aparts 2 × 15/), 'Wk 23 maintenance keeps pull-aparts');
+ok(hasBlock(dayOfWeek(23, 4), /Rear-delt flyes 2 × 12/), 'Wk 23 Upper B maintenance keeps rear delts');
+ok(hasBlock(dayOfWeek(12, 5), /Straight-leg calf raises 2 × 15/), 'Wk 11+ Sat keeps straight-leg calf work');
+ok(hasBlock(dayOfWeek(12, 5), /Bent-knee calf raises/), 'Wk 11+ Sat keeps soleus work');
+ok(hasBlock(dayOfWeek(5, 5), /Calf raises 3 × 15/), 'Base Lower B still carries its calf raises');
 ok(hasBlock(dayOfWeek(23, 1), /3 reps in reserve/), 'Wk 23 Upper A should swap to the maintenance session');
 ok(hasBlock(dayOfWeek(23, 1), /Bench press 2 × 6–8/), 'Wk 23 Upper A plan should be the reduced sets');
 ok(!hasBlock(dayOfWeek(23, 1), /Bench press 4 × 6–8/), 'Wk 23 Upper A should not show the full-volume session');
@@ -224,7 +232,10 @@ section('adherence');
 /* ---- 6b. schedule refinements ---- */
 section('schedule refinements');
 ok(/4×20 s relaxed strides/.test(dayOfWeek(5, 3).run.detail), 'Thu easy runs carry strides');
-ok(!/relaxed strides/.test(dayOfWeek(5, 1).run.detail), 'Tue easy runs stay plain');
+ok(/2×15 pogo hops/.test(dayOfWeek(5, 3).run.detail), 'Thu easy runs start with pogo hops');
+ok(/2×15 pogo hops/.test(dayOfWeek(5, 1).run.detail), 'Tue easy runs start with pogo hops');
+ok(!/relaxed strides/.test(dayOfWeek(5, 1).run.detail), 'Tue easy runs carry no strides');
+ok(!/pogo|strides/.test(dayOfWeek(12, 5).run.detail), 'Sat buffer run stays plain — nothing before the long run');
 ok(/headtorch/i.test(dayOfWeek(15, 2).run.detail), 'Oct Wed 17:10 carries the dark-kit note');
 ok(/headtorch/i.test(dayOfWeek(15, 1).run.detail), 'Oct Tue 17:10 (post-HNC) is dark');
 ok(/headtorch/i.test(dayOfWeek(20, 1).run.detail), 'Nov Tue is dark');
@@ -338,7 +349,7 @@ section('ics export');
   ok(/SUMMARY:MARATHON — 42\.2 km/.test(flat), 'race summary not doubled');
   ok(/SUMMARY:Easy run — \d+ km/.test(flat), 'run summaries carry distance');
   ok(flat.includes('drive over\\, no run-commute'), 'commas escaped');
-  ok(flat.includes('Bench press 4 × 6–8\\nBarbell row'), 'gym plan in description');
+  ok(flat.includes('Bench press 4 × 6–8\\nBand pull-aparts 4 × 15–20\\nBarbell row'), 'gym plan in description');
   ok((ics.match(/TRIGGER:-PT15M/g) || []).length === events, 'one 15-min alarm per event');
 
   const uids = [...flat.matchAll(/UID:([^\r\n]+)/g)].map((m) => m[1]);

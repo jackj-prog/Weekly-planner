@@ -11,21 +11,23 @@
    that carries them, so the protocol can never diverge between eras. */
 const UPPER_A = {
   title: 'Gym — Upper A', cat: 'gym', doable: true, gym: 'upper',
-  detail: 'Ramp 2 warm-up sets on bench · top of the range → +2.5 kg next week · superset curls + face pulls to finish · drive over, no run-commute',
+  detail: 'Ramp 2 warm-up sets on bench · top of the range → +2.5 kg next week · pull-aparts ride the bench rests · superset curls + face pulls to finish · drive over, no run-commute',
   plan: [
-    { ex: 'Bench press',    sets: '4 × 6–8' },
-    { ex: 'Barbell row',    sets: '4 × 6–8' },
-    { ex: 'Overhead press', sets: '3 × 8' },
-    { ex: 'Weighted dips',  sets: '3 × 8–10' },
-    { ex: 'EZ bar curls',   sets: '3 × 10–12' },
-    { ex: 'Face pulls',     sets: '3 × 15' },
+    { ex: 'Bench press',      sets: '4 × 6–8' },
+    { ex: 'Band pull-aparts', sets: '4 × 15–20' },
+    { ex: 'Barbell row',      sets: '4 × 6–8' },
+    { ex: 'Overhead press',   sets: '3 × 8' },
+    { ex: 'Weighted dips',    sets: '3 × 8–10' },
+    { ex: 'EZ bar curls',     sets: '3 × 10–12' },
+    { ex: 'Face pulls',       sets: '3 × 15' },
   ],
   maintDetail: '2 hard sets each, 3 reps in reserve — keep the look through the taper',
   maintPlan: [
-    { ex: 'Bench press',   sets: '2 × 6–8' },
-    { ex: 'Barbell row',   sets: '2 × 8' },
-    { ex: 'Weighted dips', sets: '2 × 8' },
-    { ex: 'EZ bar curls',  sets: '2 × 10' },
+    { ex: 'Bench press',      sets: '2 × 6–8' },
+    { ex: 'Band pull-aparts', sets: '2 × 15' },
+    { ex: 'Barbell row',      sets: '2 × 8' },
+    { ex: 'Weighted dips',    sets: '2 × 8' },
+    { ex: 'EZ bar curls',     sets: '2 × 10' },
   ],
 };
 
@@ -113,6 +115,14 @@ const PLAN = {
   /* Gels rule (§12 rule 4): every 35–40 min on runs > 90 min, from October. */
   gels: { fromDate: '2026-10-01', minRunMin: 90, text: 'Gel every 35–40 min' },
 
+  /* Run cues (§6): micro-doses stapled onto the easy runs — pogo hops for
+     tendon stiffness/running economy, Thursday strides to stay sharp.
+     Keyed by run slot; special-week fixed runs carry their own details. */
+  runCues: {
+    tue: 'start with 2×15 pogo hops',
+    thu: 'start with 2×15 pogo hops · finish with 4×20 s relaxed strides',
+  },
+
   /* Dark-runs rule (§12 rule 8): evening runs need kit once the light goes.
      Oct: 17:10 runs are dusk/dark · Nov onwards: even 16:15 is dark. */
   darkKit: {
@@ -197,9 +207,11 @@ const PLAN = {
           { ex: 'Calf raises',       sets: '3 × 15' },
           { ex: 'Plank finisher',    sets: '3 × 45s' },
         ] },
-      { fromWk: 11, mins: 20, title: 'Core + mobility (optional)',
-        detail: 'Lower B retired — running owns the legs',
+      { fromWk: 11, mins: 25, title: 'Core + calves',
+        detail: 'Lower B retired — running owns the legs. The trunk and calves carry km 30+, so this stays through Build; optional again in taper',
         plan: [
+          { ex: 'Straight-leg calf raises', sets: '2 × 15' },
+          { ex: 'Bent-knee calf raises',    sets: '2 × 12 — soleus, the marathon muscle' },
           { ex: 'Plank',                sets: '3 × 45s' },
           { ex: 'Side plank',           sets: '2 × 30s/side' },
           { ex: 'Dead bugs',            sets: '3 × 10' },
@@ -293,21 +305,23 @@ const PLAN = {
         { t: '07:30', end: '12:00', title: 'German active study', detail: 'The deep German block — end time set by phase', cat: 'german', doable: true, friGerman: true },
         { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
         { t: '13:00', end: '14:30', title: 'Gym — Upper B', cat: 'gym', doable: true, gym: 'upper',
-          detail: 'Ramp 2 warm-up sets on incline · same rule: top of the range → +2.5 kg · add weight to pull-ups past 10 reps · on the commute to Mum’s',
+          detail: 'Ramp 2 warm-up sets on incline · same rule: top of the range → +2.5 kg · add weight to pull-ups past 10 reps · superset curls + pushdowns to hold the slot · on the commute to Mum’s',
           plan: [
             { ex: 'Incline bench',      sets: '4 × 8–10' },
             { ex: 'Pull-ups',           sets: '4 × max' },
             { ex: 'Lateral raises',     sets: '4 × 12–15' },
+            { ex: 'Rear-delt flyes',    sets: '3 × 12–15' },
             { ex: 'Hammer curls',       sets: '3 × 10–12' },
             { ex: 'Rope pushdowns',     sets: '3 × 10–12' },
             { ex: 'Hanging leg raises', sets: '3 × 10–15' },
           ],
           maintDetail: 'In and out — the race is the priority, the look keeps ticking',
           maintPlan: [
-            { ex: 'Incline bench',  sets: '2 × 8' },
-            { ex: 'Pull-ups',       sets: '2 × max−3' },
-            { ex: 'Lateral raises', sets: '2 × 12' },
-            { ex: 'Arms superset',  sets: '1 × 12 + 12' },
+            { ex: 'Incline bench',   sets: '2 × 8' },
+            { ex: 'Pull-ups',        sets: '2 × max−3' },
+            { ex: 'Lateral raises',  sets: '2 × 12' },
+            { ex: 'Rear-delt flyes', sets: '2 × 12' },
+            { ex: 'Arms superset',   sets: '1 × 12 + 12' },
           ] },
         { t: '15:30', end: '19:00', title: 'Mum’s — family', detail: 'Family time through the evening', cat: 'free', quiet: true },
         { t: '19:00', end: '20:00', title: 'Basketball', detail: 'Cross-training — flexes first: skip whenever legs are cooked', cat: 'xt', doable: true, basketball: true },

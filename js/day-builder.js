@@ -125,10 +125,10 @@
       };
     }
     const names = { tue: 'Easy run', thu: 'Easy run', sat: 'Easy buffer run' };
+    const cue = PLAN.runCues && PLAN.runCues[slot];   // strides/pogos live in the data (§14)
     return {
       km, title: names[slot], shoe: 'Ghost', paceMin: pace.easy,
-      /* Thursday carries weekly strides — cheap running economy (§6) */
-      detail: EASY_PACE_TEXT + (slot === 'thu' ? ' · finish with 4×20 s relaxed strides' : ''),
+      detail: EASY_PACE_TEXT + (cue ? ' · ' + cue : ''),
       hard: false,
     };
   }

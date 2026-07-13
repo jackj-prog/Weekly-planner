@@ -121,8 +121,9 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
   drive over, no run-commute — legs are for running) · 20:45 wind down ·
   22:00 read · 22:30 sleep.
 
-Upper A every era: **bench 4×6–8 · row 4×6–8 · OHP 3×8 · weighted dips
-3×8–10 · EZ bar curls 3×10–12 · face pulls 3×15** (see gym programming).
+Upper A every era: **bench 4×6–8 (pull-aparts 4×15–20 in the rests) ·
+row 4×6–8 · OHP 3×8 · weighted dips 3×8–10 · EZ bar curls 3×10–12 ·
+face pulls 3×15** (see gym programming).
 Week 23 special: the Tue run's first 5 km are the **Pro 4 fit-check**
 (exchange window opens).
 
@@ -133,7 +134,9 @@ from §7, ~Wed km, Evo SL, warm up 10 min easy first) · quick shower ·
 21:00 wind down · 22:00 read · 22:30 sleep.
 
 ### Thursday — easy run + protected evening
-Work day scaffold · **17:10 Easy run (Thu km) + 4×20 s strides** · shower + snack ·
+Work day scaffold · **17:10 Easy run (Thu km) + 4×20 s strides** ·
+Tue/Thu easy runs start with **2×15 pogo hops** (tendon stiffness —
+running economy for free) · shower + snack ·
 18:30 dinner · **19:00–21:00 protected free evening** (the release
 valve; flex ≤1h to OU only on deadline weeks) · 21:00 deep reading
 anchor · 22:00 read · 22:30 sleep.
@@ -150,8 +153,9 @@ skip — §7/§9) · evening free at Mum's · 22:00 read · sleep.
 — if Sat km = 0: full rest before the long run ·
 gym after the run: **Base phase (Wks 1–10): Lower B light-moderate ~50 min**
 (deadlift/RDL kept through Base only, no grinding PRs) ·
-**from Wk 11: Core + mobility 20 min, optional** (Lower B retired —
-running owns the legs) · shower · 12:00 lunch · 13:00–16:30 OU/HNC
+**from Wk 11: Core + calves ~25 min** (Lower B retired — running owns
+the legs; stays through Build, optional in Taper) · shower · 12:00
+lunch · 13:00–16:30 OU/HNC
 study · 16:30 free (social/hobbies) · 19:00 dinner (carb-forward from
 Wk 14 whenever tomorrow’s long run ≥ 22 km) · free evening ·
 22:00 read · 22:30 sleep.
@@ -166,34 +170,46 @@ Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
 
 ### Phase deltas summary
 - Fri German active end: 12:00 (Base) → 11:30 (Build) → 10:30 (Wk 23+ and Taper).
-- Sat gym: Lower B light (Base) → optional 20-min core (Wk 11+).
+- Sat gym: Lower B light (Base) → Core + calves ~25 min (Wk 11+;
+  optional in Taper).
 - Gym intensity from Wk 23: both upper sessions labelled **maintenance**
   (reduced sets, keep the strength). Race week (30): no gym at all.
 - Lean bulk pauses ~Oct–Jan: eat maintenance-plus to fuel mileage.
 
 ### Gym programming (exact sessions)
 Strength serves the marathon: low volume, decent intensity, zero leg
-fatigue near key runs. Compounds first, nothing to failure.
+fatigue near key runs. Compounds first, nothing to failure. The brief:
+**functional fit legs, aesthetic fit upper body** — pulling volume kept
+close to pushing (rear delts + pull-aparts are shoulder insurance AND
+the 3D look).
 
-- **Upper A — Tue 19:30:** bench 4×6–8 · row 4×6–8 · OHP 3×8 ·
-  weighted dips 3×8–10 · EZ bar curls 3×10–12 · face pulls 3×15
-  (superset curls + face pulls to finish inside the 75 min).
+- **Upper A — Tue 19:30:** bench 4×6–8 · band pull-aparts 4×15–20 (in
+  the bench rests) · row 4×6–8 · OHP 3×8 · weighted dips 3×8–10 ·
+  EZ bar curls 3×10–12 · face pulls 3×15 (superset curls + face pulls
+  to finish inside the 75 min).
 - **Upper B — Fri 13:00:** incline bench 4×8–10 · pull-ups 4×max
-  (add weight past 10 reps) · lateral raises 4×12–15 · hammer curls
-  3×10–12 · rope pushdowns 3×10–12 · hanging leg raises 3×10–15.
+  (add weight past 10 reps) · lateral raises 4×12–15 · rear-delt flyes
+  3×12–15 · hammer curls 3×10–12 · rope pushdowns 3×10–12 (superset
+  curls + pushdowns to hold the slot) · hanging leg raises 3×10–15.
 - **Lower B — Sat after the buffer run (Base, Wks 1–10, ~50 min):**
   deadlift 3×5 @ RPE 7 · RDL 3×8 light · step-ups 2×10/leg · calf
   raises 3×15 · plank finisher 3×45s. Calf/tendon work now is injury
   insurance later. Never grind — the long run owns tomorrow.
+- **Plyo micro-dose:** Tue/Thu easy runs start with 2×15 pogo hops
+  (stiff ankles, quiet landings) — tendon stiffness and running economy
+  at near-zero fatigue cost. Thu still finishes with the 4×20 s strides.
 - **Session rules:** ramp 2 warm-up sets on the first lift · top of the
   rep range on every set → +2.5 kg next week (upper days only; Lower B
   holds at RPE ≤ 7, it is insurance not progression) · rest 2–3 min on
   compounds, 60–90 s on accessories.
-- **Core + mobility — Sat from Wk 11 (20 min, optional):** plank 3×45s ·
-  side plank 2×30s/side · dead bugs 3×10 · glute bridges 2×15 · calves +
-  hips stretch.
+- **Core + calves — Sat from Wk 11 (~25 min):** straight-leg calf
+  raises 2×15 · bent-knee calf raises 2×12 (soleus — the marathon
+  muscle) · plank 3×45s · side plank 2×30s/side · dead bugs 3×10 ·
+  glute bridges 2×15 · calves + hips stretch. Non-negotiable through
+  Build — the trunk and calves carry km 30+; optional again in Taper.
 - **Maintenance from Wk 23 (both upper days):** 2 hard sets per lift,
-  3 reps in reserve. Strength holds on far less than it was built on.
+  3 reps in reserve (pull-aparts and rear delts stay — they cost
+  nothing). Strength holds on far less than it was built on.
 - **Race week (30):** no gym at all.
 
 ## 7. The 30-week block
