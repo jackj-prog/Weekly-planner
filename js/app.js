@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.5.0';
+  const APP_VERSION = '2.6.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -115,6 +115,63 @@
   function fmtKg(kg) {
     return (kg === Math.round(kg) ? kg : kg.toFixed(1)) + 'kg';
   }
+
+  /* ---- id migration: v2.6 moved tick ids from 'b{i}-{title-slug}' to
+     't{HHMM}-{cat}' so plan amendments stop orphaning history. Remaps
+     every stored entry once (and again after restoring an old backup —
+     it's idempotent: already-new ids pass through untouched). ---- */
+  function migrateIds() {
+    const legacySlug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24);
+    const maps = {};
+    const mapFor = (iso) => {
+      if (!maps[iso]) {
+        const m = {};
+        DB.buildDay(iso).blocks.forEach((b, i) => { m['b' + i + '-' + legacySlug(b.title)] = b.id; });
+        maps[iso] = m;
+      }
+      return maps[iso];
+    };
+    const remapId = (id) => {
+      const mv = id.match(/^mv-(\d{4}-\d{2}-\d{2})-(.+)$/);   // ticks on moved-in blocks
+      if (mv) return 'mv-' + mv[1] + '-' + (mapFor(mv[1])[mv[2]] || mv[2]);
+      return id;
+    };
+    const remapObj = (obj, m) => {
+      const out = {};
+      for (const k of Object.keys(obj)) out[m[remapId(k)] || remapId(k)] = obj[k];
+      return out;
+    };
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+    for (const k of keys) {
+      const m = k.match(/^(done|ovr|movein)-(\d{4}-\d{2}-\d{2})$/);
+      if (!m) continue;
+      try {
+        if (m[1] === 'done') {
+          writeJSON(k, remapObj(getDone(m[2]), mapFor(m[2])));
+        } else if (m[1] === 'ovr') {
+          const o = getOvr(m[2]);
+          o.skip = remapObj(o.skip, mapFor(m[2]));
+          o.moved = remapObj(o.moved, mapFor(m[2]));
+          writeJSON(k, o);
+        } else {
+          const list = getMoveIn(m[2]);
+          list.forEach((it) => {
+            if (!it || !it.fromIso || !it.srcId) return;
+            const nid = mapFor(it.fromIso)[it.srcId];
+            if (nid) { it.srcId = nid; it.id = 'mv-' + it.fromIso + '-' + nid; }
+          });
+          writeJSON(k, list);
+        }
+      } catch (e) { /* leave that entry as it was */ }
+    }
+  }
+  try {
+    if (localStorage.getItem('schema-v') !== '2') {
+      migrateIds();
+      localStorage.setItem('schema-v', '2');
+    }
+  } catch (e) { /* storage blocked — nothing to migrate */ }
 
   /* ---- illness mode: rule 5, one tap instead of N ---- */
   function skipRunDays(fromIso, days) {
@@ -949,6 +1006,7 @@
             n++;
           } catch (bad) { /* skip the corrupt entry, keep the rest */ }
         }
+        migrateIds();                      // old backups carry pre-v2.6 ids
         msg.textContent = 'Restored ' + n + ' entr' + (n === 1 ? 'y' : 'ies') + '.';
         box.classList.add('hidden');
       } catch (e) {

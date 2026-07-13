@@ -120,7 +120,10 @@ Kept as-is, deliberately: vanilla JS + full-view re-render (~35 nodes
 per day) is the *right* size for this app; a framework or vDOM would be
 pure overhead. The load-bearing walls are (a) plan-as-data with zero
 content in render code, (b) pure day-builder shared by app and tests,
-(c) the definition-of-done suite. Known accepted risk: block tick-ids
-embed a title slug, so renaming a block in the plan orphans that
-block's *past* ticks (stats undercount historical days). Acceptable for
-a single user; fix would be content-hash ids with a migration.
+(c) the definition-of-done suite. The one accepted risk — tick-ids
+embedding an index + title slug, so renames or insertions orphaned past
+ticks — was RESOLVED in v2.6: ids are now `t{HHMM}-{cat}` (start times
+are unique within a day by the ordering invariant), with a one-time
+localStorage migration that also re-runs after restoring an old backup.
+Retiming a historical day still rewrites history, but the scaffold-era
+pattern exists precisely so past weeks keep their old times.

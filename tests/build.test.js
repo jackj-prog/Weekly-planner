@@ -38,11 +38,14 @@ for (let i = 0; i < 210; i++) {
   const day = DB.buildDay(iso);
   ok(day.blocks.length > 0, iso + ' is empty');
   let prevStart = -1, prevEnd = 0;
+  const ids = new Set();
   for (const b of day.blocks) {
     ok(b.startMin < b.endMin, iso + ' "' + b.title + '" start !< end');
     ok(b.startMin >= 0 && b.endMin <= 1439, iso + ' "' + b.title + '" outside 00:00–23:59');
     ok(b.startMin > prevStart, iso + ' "' + b.title + '" not strictly after previous start');
     ok(b.startMin >= prevEnd, iso + ' "' + b.title + '" overlaps previous block');
+    ok(/^t\d{4}-[a-z]+$/.test(b.id) && !ids.has(b.id), iso + ' "' + b.title + '" id not time-stable/unique: ' + b.id);
+    ids.add(b.id);
     prevStart = b.startMin; prevEnd = b.endMin;
   }
 }

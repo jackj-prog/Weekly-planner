@@ -268,7 +268,10 @@
     }
 
     out.sort((a, b) => a.startMin - b.startMin || a.endMin - b.endMin);
-    out.forEach((b, i) => { b.id = 'b' + i + '-' + slug(b.title); });
+    /* ids key the per-date ticks in localStorage. Start times are unique
+       within a day (block times are strictly ordered), so time+category
+       survives renames and block insertions — §14 says the plan WILL change. */
+    out.forEach((b) => { b.id = 't' + b.start.replace(':', '') + '-' + b.cat; });
 
     const runHero = out.find((b) => b.run && b.cat === 'run') || null;
 
@@ -290,10 +293,6 @@
       cat: entry.cat || 'routine',
       doable: !!entry.doable, quiet: !!entry.quiet,
     };
-  }
-
-  function slug(s) {
-    return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24);
   }
 
   /* ---- countdown to the gun (weeks + days) ---- */
