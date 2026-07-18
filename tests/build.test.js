@@ -113,7 +113,10 @@ function friGerman(wk) {
 ok(friGerman(5).end === '12:00', 'Base Fri German ends 12:00');
 ok(friGerman(15).end === '11:30', 'Build Fri German ends 11:30');
 ok(friGerman(23).end === '10:30', 'Wk 23 Fri German ends 10:30');
-ok(hasBlock(dayOfWeek(5, 5), /Lower B/i), 'Base Sat should hold Lower B');
+ok(hasBlock(dayOfWeek(3, 5), /Lower B/i), 'Wks 1–3 Sat holds Lower B (as lived)');
+ok(hasBlock(dayOfWeek(5, 0), /Lower B/i), 'Wks 4–10 Mon holds Lower B (day after the long run)');
+ok(!dayOfWeek(5, 5).blocks.some((b) => b.cat === 'gym'), 'Wks 4–10 Sat has no gym — legs fresh for Sunday');
+ok(!dayOfWeek(11, 0).blocks.some((b) => b.cat === 'gym' || b.cat === 'xt'), 'Wk 11+ Mon is the zero day');
 ok(hasBlock(dayOfWeek(12, 5), /Core \+ calves/i), 'Wk 11+ Sat should hold the core + calves block');
 ok(hasBlock(dayOfWeek(23, 1), /maintenance/i), 'Wk 23 Tue gym should be maintenance');
 
@@ -128,10 +131,10 @@ ok(hasBlock(dayOfWeek(5, 4), /Hanging leg raises/), 'Upper B should carry the ab
 ok(hasBlock(dayOfWeek(23, 1), /Weighted dips 2 × 8/), 'Wk 23 maintenance keeps dips');
 ok(hasBlock(dayOfWeek(23, 1), /EZ bar curls 2 × 10/), 'Wk 23 maintenance keeps curls');
 ok(hasBlock(dayOfWeek(23, 4), /Lateral raises 2 × 12/), 'Wk 23 Upper B maintenance keeps laterals');
-ok(hasBlock(dayOfWeek(5, 5), /Deadlift 3 × 5/), 'Base Lower B should carry the prescription');
-ok(hasBlock(dayOfWeek(5, 5), /Plank finisher/), 'Base Lower B should carry the core finisher');
+ok(hasBlock(dayOfWeek(5, 0), /Deadlift 3 × 5/), 'Base Lower B should carry the prescription');
+ok(hasBlock(dayOfWeek(5, 0), /Plank finisher/), 'Base Lower B should carry the core finisher');
 ok(hasBlock(dayOfWeek(5, 1), /\+2\.5 kg/), 'Upper A should carry the progression rule');
-ok(hasBlock(dayOfWeek(5, 0), /6 × 3 min rounds/), 'Punchbag should carry its round structure');
+ok(hasBlock(dayOfWeek(3, 0), /6 × 3 min rounds/), 'Wks 1–3 Mondays keep punchbag (as lived)');
 ok(hasBlock(dayOfWeek(12, 5), /Plank 3 × 45s/), 'Wk 11+ core session should carry the prescription');
 /* push:pull rebalance + calves-all-block (assessed from first principles) */
 ok(hasBlock(dayOfWeek(5, 1), /Band pull-aparts 4 × 15–20/), 'Upper A should carry pull-aparts in the bench rests');
@@ -140,7 +143,7 @@ ok(hasBlock(dayOfWeek(23, 1), /Band pull-aparts 2 × 15/), 'Wk 23 maintenance ke
 ok(hasBlock(dayOfWeek(23, 4), /Rear-delt flyes 2 × 12/), 'Wk 23 Upper B maintenance keeps rear delts');
 ok(hasBlock(dayOfWeek(12, 5), /Straight-leg calf raises 2 × 15/), 'Wk 11+ Sat keeps straight-leg calf work');
 ok(hasBlock(dayOfWeek(12, 5), /Bent-knee calf raises/), 'Wk 11+ Sat keeps soleus work');
-ok(hasBlock(dayOfWeek(5, 5), /Calf raises 3 × 15/), 'Base Lower B still carries its calf raises');
+ok(hasBlock(dayOfWeek(5, 0), /Calf raises 3 × 15/), 'Base Lower B still carries its calf raises');
 ok(hasBlock(dayOfWeek(23, 1), /3 reps in reserve/), 'Wk 23 Upper A should swap to the maintenance session');
 ok(hasBlock(dayOfWeek(23, 1), /Bench press 2 × 6–8/), 'Wk 23 Upper A plan should be the reduced sets');
 ok(!hasBlock(dayOfWeek(23, 1), /Bench press 4 × 6–8/), 'Wk 23 Upper A should not show the full-volume session');
@@ -266,10 +269,11 @@ section('scaffold eras');
   ok(!hasBlock(dayOfWeek(5, 1), /College/), 'wk5 Tue no longer college');
   ok(hasRunAt(dayOfWeek(5, 1), '17:10'), 'wk5 Tue run moved to 17:10');
   ok(hasBlock(dayOfWeek(5, 1), /Upper A/), 'wk5 Tue keeps Upper A at 19:30');
-  ok(hasBlock(dayOfWeek(5, 0), /Punchbag/), 'wk5 Mon still the recovery day (no college yet)');
+  ok(hasBlock(dayOfWeek(5, 0), /Lower B/i), 'wk5 Mon carries Lower B (punchbag retired from Wk 4)');
   // Wk 12+: Monday becomes the HND college day
   ok(hasBlock(dayOfWeek(12, 0), /College — HND/), 'wk12 Mon is the HND college day');
-  ok(hasBlock(dayOfWeek(12, 0), /Punchbag/), 'wk12 Mon keeps punchbag in the evening');
+  ok(hasBlock(dayOfWeek(12, 0), /zero day/i) && !dayOfWeek(12, 0).blocks.some((b) => b.cat === 'gym' || b.cat === 'xt'),
+    'wk12 Mon is the zero day — no gym, no punchbag');
   ok(dayOfWeek(12, 0).run === null, 'wk12 Mon still has no run');
   ok(hasBlock(dayOfWeek(12, 1), /Work/), 'wk12 Tue stays a work day');
   ok(hasRunAt(dayOfWeek(12, 1), '17:10'), 'wk12 Tue run still 17:10');

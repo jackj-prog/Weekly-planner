@@ -77,7 +77,6 @@ First-principles design is welcome. These behaviours are the intent:
 | Anki (German) | Daily, 15 min with breakfast | Non-negotiable. |
 | Reading | Nightly 22:00–22:30 · Thu anchor 21:00–22:00 · Sun catch-up 19:30–21:00 | ~200 pages/week target. |
 | Sleep | Lights out 22:30 every night | Wake 06:00 work days, 06:45 on the college day (Tue then Mon), 07:00 Fri, 07:30 weekend. |
-| Punchbag | Mon 17:00–17:30 | Cross-training; Monday has no run. |
 | Basketball | Fri ~19:00–20:00 (from Mum's) | Cross-training; flexes first (§12). |
 
 Weekly load budget for sanity: work 25.5h · college 7.5h · OU ~12h ·
@@ -93,8 +92,12 @@ gym 2–2.5h · running per plan · reading 6h.
   Tuesday evening slot; it rides the quiet spells at work.
 - **Wks 12–30** (from Mon 14 Sep, the second Monday): **HND starts on
   Mondays.** Monday becomes the college day (08:00–15:00, wake 06:45) while
-  keeping its evening intact — punchbag 17:00, German active 19:30, still
-  no run. Tuesday stays a work day. Holiday/race weeks still override.
+  keeping its evening intact — German active 19:30, still no run, no
+  gym. Tuesday stays a work day. Holiday/race weeks still override.
+- **Punchbag retired (Jul 2026, from Wk 4):** Lower B moves off Saturday
+  into Monday 17:10 for Wks 4–10 (day-after-long-run legs — Saturday
+  stays fresh for Sunday); from Wk 11 Monday is the week's true zero
+  day (no run, no gym). Wks 1–3 keep the original layout as lived.
 
 ## 6. Standard week templates (with times)
 
@@ -102,14 +105,17 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
 6.1 min/km (includes ~10 min easy warm-up guidance) · Sunday long ≈
 6.75 min/km. Add 15 min shower after every run.
 
-### Monday — recovery, no run (day-job Wks 1–11; HND college from Wk 12)
-- **Wks 1–11 (work):** 06:00 Wake + Anki · 06:45 commute · 07:00–16:30
-  Work · 16:30 commute.
-- **Wks 12+ (HND):** 06:45 Wake + Anki · 08:00–15:00 College — HND · home
-  ~16:00.
-- **Both:** **17:00 Punchbag** (6×3 min rounds) · 17:30 shower + snack ·
-  18:30 dinner · 19:30–21:00 German active study · 21:00–22:00 German
-  media · 22:00 read · 22:30 sleep. Monday never carries a run.
+### Monday — legs (Base) then the zero day. No run, ever.
+- **Wks 1–3 (as lived):** work scaffold · 17:00 punchbag · evening as
+  below. (Punchbag retired from Wk 4.)
+- **Wks 4–10 (work):** 06:00 Wake + Anki · 06:45 commute · 07:00–16:30
+  Work · 16:30 commute · **17:10 Gym — Lower B** (moved off Saturday —
+  day-after-long-run legs, RPE ≤ 7, never grind) · 18:05 shower + snack.
+- **Wks 11+ (work; HND college from Wk 12, wake 06:45):** evening
+  completely OFF — Monday is the week's true zero day (no run, no gym).
+- **Every era:** 18:30 dinner · 19:30–21:00 German active study ·
+  21:00–22:00 German media · 22:00 read · 22:30 sleep. Monday never
+  carries a run.
 
 ### Tuesday — easy run + Upper A (scaffold varies by era — see §5)
 - **Wks 1–2 (HNC):** 06:45 wake + Anki · 08:00–15:00 College (incl OU
@@ -151,11 +157,10 @@ skip — §7/§9) · evening free at Mum's · 22:00 read · sleep.
 ### Saturday — buffer run + study
 07:30 wake + Anki · 08:00 breakfast · **08:30 Easy buffer run (Sat km)**
 — if Sat km = 0: full rest before the long run ·
-gym after the run: **Base phase (Wks 1–10): Lower B light-moderate ~50 min**
-(deadlift/RDL kept through Base only, no grinding PRs) ·
-**from Wk 11: Core + calves ~25 min** (Lower B retired — running owns
-the legs; stays through Build, optional in Taper) · shower · 12:00
-lunch · 13:00–16:30 OU/HNC
+gym after the run: **Wks 1–3 (as lived): Lower B light-moderate ~50 min** ·
+**Wks 4–10: no Saturday gym** (Lower B lives on Monday — legs fresh for
+the long run) · **from Wk 11: Core + calves ~25 min** (stays through
+Build, optional in Taper) · shower · 12:00 lunch · 13:00–16:30 OU/HNC
 study · 16:30 free (social/hobbies) · 19:00 dinner (carb-forward from
 Wk 14 whenever tomorrow’s long run ≥ 22 km) · free evening ·
 22:00 read · 22:30 sleep.
@@ -170,8 +175,10 @@ Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
 
 ### Phase deltas summary
 - Fri German active end: 12:00 (Base) → 11:30 (Build) → 10:30 (Wk 23+ and Taper).
-- Sat gym: Lower B light (Base) → Core + calves ~25 min (Wk 11+;
-  optional in Taper).
+- Mon gym: punchbag (Wks 1–3, retired) → Lower B 17:10 (Wks 4–10) →
+  zero day (Wk 11+).
+- Sat gym: Lower B (Wks 1–3 as lived) → none (Wks 4–10) → Core +
+  calves ~25 min (Wk 11+; optional in Taper).
 - Gym intensity from Wk 23: both upper sessions labelled **maintenance**
   (reduced sets, keep the strength). Race week (30): no gym at all.
 - Lean bulk pauses ~Oct–Jan: eat maintenance-plus to fuel mileage.
@@ -191,10 +198,12 @@ the 3D look).
   (add weight past 10 reps) · lateral raises 4×12–15 · rear-delt flyes
   3×12–15 · hammer curls 3×10–12 · rope pushdowns 3×10–12 (superset
   curls + pushdowns to hold the slot) · hanging leg raises 3×10–15.
-- **Lower B — Sat after the buffer run (Base, Wks 1–10, ~50 min):**
-  deadlift 3×5 @ RPE 7 · RDL 3×8 light · step-ups 2×10/leg · calf
-  raises 3×15 · plank finisher 3×45s. Calf/tendon work now is injury
-  insurance later. Never grind — the long run owns tomorrow.
+- **Lower B — Mon 17:10 (Base only; Sat in Wks 1–3 as lived, Monday
+  from Wk 4, retired from Wk 11):** deadlift 3×5 @ RPE 7 · RDL 3×8
+  light · step-ups 2×10/leg · calf raises 3×15 · plank finisher 3×45s.
+  Day-after-long-run legs — stress stacks on tired legs, Saturday stays
+  fresh. Calf/tendon work now is injury insurance later. Never grind —
+  Wednesday quality is two days off.
 - **Plyo micro-dose:** Tue/Thu easy runs start with 2×15 pogo hops
   (stiff ankles, quiet landings) — tendon stiffness and running economy
   at near-zero fatigue cost. Thu still finishes with the 4×20 s strides.
@@ -267,7 +276,7 @@ breakfast 90 min before · travel + 2 km warm-up + 3–4 strides · **09:00
 PARKRUN 5K all-out PB in the Evo SL** · even splits, don't sprint km 1 ·
 cool-down jog · normal study afternoon. Sun: easy 16 recovery.
 
-**Week 24 — tune-up (Sun 13 Dec).** Mon: punchbag as normal, OU eased.
+**Week 24 — tune-up (Sun 13 Dec).** Mon: zero day as normal, OU eased.
 Tue: easy 6. Wed: easy 5 + strides. Thu: REST. Fri: NO basketball. Sat:
 3 km shakeout · race prep (kit, pacing plan, early carb dinner). Sun:
 **TUNE-UP HALF ~21 km, raced honest** — this sets the marathon target
@@ -277,7 +286,7 @@ Tue: easy 6. Wed: easy 5 + strides. Thu: REST. Fri: NO basketball. Sat:
 80–90% (shoe familiarisation, NOT all-out) — or easy 4 km.
 
 **Holiday template (Wks 26–27, off work Mon–Fri).** Wake 08:00 · Anki ·
-breakfast · run of the day at ~09:30 (Mon: punchbag instead, no run) ·
+breakfast · run of the day at ~09:30 (Mon: full rest, no run) ·
 family/free through the day · one light OU block ~90 min · family
 evening · read 22:00. Christmas Day (Fri Wk 26): full rest, family, no
 Anki guilt. New Year's Day (Fri Wk 27): rest — peak 32 km is in two days.
@@ -357,7 +366,9 @@ from mile 22.
 - **Runs live in the evening gaps** (Tue 16:15, Wed/Thu 17:10) and
   weekend mornings — built around the 18:30 dinner anchor. No 05:30 alarms;
   sleep protected.
-- **Mon 25-min run → punchbag 30 min**: Monday is the recovery day.
+- **Mon 25-min run → punchbag → retired (Jul 2026)**: Lower B took the
+  Monday slot through Base (day-after-long-run legs); from Wk 11 Monday
+  is the week's zero day — the only fully-off evening in Build.
 - **German active trims by phase** (Fri block 4.5h → 4h → 2.5–3h from
   Wk 23). All passive German untouched (~11.75h: Anki, commute pods,
   work listening, media).

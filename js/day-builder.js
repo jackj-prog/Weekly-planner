@@ -228,6 +228,7 @@
       if (entry.satGym) {                    /* Saturday gym variant (§6 deltas) */
         if (dayOverride && dayOverride.noGym) continue;
         const rule = fromWkPick(block.satGym, week);
+        if (rule.none) continue;             /* era with no Saturday gym at all */
         out.push(mk(prevEnd, prevEnd + rule.mins,
           { title: rule.title, detail: rule.detail, plan: rule.plan, cat: 'gym', doable: true }));
         prevEnd = out[out.length - 1].endMin;

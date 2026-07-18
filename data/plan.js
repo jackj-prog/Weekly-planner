@@ -207,6 +207,9 @@ const PLAN = {
           { ex: 'Calf raises',       sets: '3 × 15' },
           { ex: 'Plank finisher',    sets: '3 × 45s' },
         ] },
+      /* Wk 4+: Lower B moves to Monday (day AFTER the long run) — Saturday
+         legs stay fresh. Wks 1–3 keep the old slot so history stays true. */
+      { fromWk: 4, none: true },
       { fromWk: 11, mins: 25, title: 'Core + calves',
         detail: 'Lower B retired — running owns the legs. The trunk and calves carry km 30+, so this stays through Build; optional again in taper',
         plan: [
@@ -385,14 +388,57 @@ const PLAN = {
           { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
         ],
       } },
+      /* Wks 4–10: punchbag retired (Jul 2026) — Lower B moves to Monday,
+         the day AFTER the long run, so Saturday's legs stay fresh for it. */
+      { fromWk: 4, days: {
+        0: [
+          { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating — non-negotiable', cat: 'routine', quiet: true },
+          { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
+          { t: '07:00', end: '12:00', title: 'Work', detail: '~2h passive German listening across the day', cat: 'work', quiet: true },
+          { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+          { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
+          { t: '16:30', end: '17:00', title: 'Commute home', detail: 'German podcasts', cat: 'work', quiet: true },
+          { t: '17:10', end: '18:05', title: 'Gym — Lower B (light–moderate)', cat: 'gym', doable: true,
+            detail: 'Day-after-long-run legs · RPE cap 7, insurance not progression — never grind, Wednesday quality is two days off',
+            plan: [
+              { ex: 'Deadlift',          sets: '3 × 5 @ RPE 7' },
+              { ex: 'Romanian deadlift', sets: '3 × 8 light' },
+              { ex: 'Step-ups',          sets: '2 × 10/leg' },
+              { ex: 'Calf raises',       sets: '3 × 15' },
+              { ex: 'Plank finisher',    sets: '3 × 45s' },
+            ] },
+          { t: '18:05', end: '18:30', title: 'Shower + snack', cat: 'routine', quiet: true },
+          { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
+          { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
+          { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
+          { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+          { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+        ],
+      } },
+      /* Wk 11+: Lower B retired — Monday becomes the week's true zero day. */
+      { fromWk: 11, days: {
+        0: [
+          { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating — non-negotiable', cat: 'routine', quiet: true },
+          { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
+          { t: '07:00', end: '12:00', title: 'Work', detail: '~2h passive German listening across the day', cat: 'work', quiet: true },
+          { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+          { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
+          { t: '16:30', end: '17:00', title: 'Commute home', detail: 'German podcasts', cat: 'work', quiet: true },
+          { t: '17:00', end: '18:30', title: 'Full rest — the week’s zero day', detail: 'No run, no gym, nothing — Build volume is carried by this evening', cat: 'free', quiet: true },
+          { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
+          { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
+          { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
+          { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+          { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+        ],
+      } },
       { fromWk: 12, days: {
         0: [
           { t: '06:45', end: '07:45', title: 'Wake · Anki · breakfast', detail: 'College lie-in vs work days · 15 min Anki', cat: 'routine', quiet: true },
           { t: '07:45', end: '08:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
           { t: '08:00', end: '15:00', title: 'College — HND', detail: 'HND day (Mondays from 14 Sep) · use any free periods for OU', cat: 'study', quiet: true },
           { t: '15:00', end: '16:00', title: 'Commute + snack', detail: 'Home ~16:00', cat: 'work', quiet: true },
-          { t: '17:00', end: '17:30', title: 'Punchbag', detail: '6 × 3 min rounds, 1 min rest — Monday has no run', cat: 'xt', doable: true },
-          { t: '17:30', end: '18:30', title: 'Shower + snack', cat: 'routine', quiet: true },
+          { t: '16:00', end: '18:30', title: 'Full rest — the week’s zero day', detail: 'No run, no gym — home off college, feet up', cat: 'free', quiet: true },
           { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
@@ -488,7 +534,7 @@ const PLAN = {
       },
 
       /* Weeks 26–27 — holiday template (off work Mon–Fri). Wake 08:00 ·
-         run of the day ~09:30 (Mon: punchbag, no run) · one light OU
+         run of the day ~09:30 (Mon: full rest, no run) · one light OU
          block ~90 min · family evenings. The 18:30 dinner anchor stays.
          Upper A slides
          to late morning; Upper B falls on the rest-day Fridays. */
@@ -624,9 +670,7 @@ const PLAN = {
     namedTemplates: {
       holidayMon: [
         { t: '08:00', end: '08:45', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
-        { t: '09:30', end: '10:00', title: 'Punchbag', detail: '6 × 3 min rounds, 1 min rest — Monday has no run, holiday or not', cat: 'xt', doable: true },
-        { t: '10:00', end: '10:30', title: 'Shower', cat: 'routine', quiet: true },
-        { t: '10:30', end: '13:00', title: 'Family / free', cat: 'free', quiet: true },
+        { t: '09:00', end: '13:00', title: 'Family / free', detail: 'No run, no gym — holiday Monday is a full rest day', cat: 'free', quiet: true },
         { t: '13:00', end: '14:00', title: 'Lunch', cat: 'meal', quiet: true },
         { t: '14:00', end: '15:30', title: 'OU — one light block', detail: '~90 min, that’s the lot', cat: 'study', doable: true },
         { t: '15:30', end: '18:30', title: 'Family / free', cat: 'free', quiet: true },

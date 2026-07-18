@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.7.1';
+  const APP_VERSION = '2.8.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
