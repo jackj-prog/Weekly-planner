@@ -115,7 +115,7 @@ ok(friGerman(15).end === '11:30', 'Build Fri German ends 11:30');
 ok(friGerman(23).end === '10:30', 'Wk 23 Fri German ends 10:30');
 ok(hasBlock(dayOfWeek(3, 5), /Lower B/i), 'Wks 1–3 Sat holds Lower B (as lived)');
 ok(hasBlock(dayOfWeek(5, 0), /Lower B/i), 'Wks 4–10 Mon holds Lower B (day after the long run)');
-ok(!dayOfWeek(5, 5).blocks.some((b) => b.cat === 'gym'), 'Wks 4–10 Sat has no gym — legs fresh for Sunday');
+ok(!dayOfWeek(5, 5).blocks.some((b) => /Lower B|Deadlift/i.test(b.title)), 'Wks 4–10 Sat has no leg work — legs fresh for Sunday');
 ok(!dayOfWeek(11, 0).blocks.some((b) => b.cat === 'gym' || b.cat === 'xt'), 'Wk 11+ Mon is the zero day');
 ok(hasBlock(dayOfWeek(12, 5), /Core \+ calves/i), 'Wk 11+ Sat should hold the core + calves block');
 ok(hasBlock(dayOfWeek(23, 1), /maintenance/i), 'Wk 23 Tue gym should be maintenance');
@@ -125,12 +125,17 @@ ok(hasBlock(dayOfWeek(5, 1), /Bench press 4 × 6–8/), 'Upper A should carry th
 ok(hasBlock(dayOfWeek(5, 1), /Weighted dips 3 × 8–10/), 'Upper A should carry weighted dips');
 ok(hasBlock(dayOfWeek(5, 1), /EZ bar curls 3 × 10–12/), 'Upper A should carry EZ bar curls');
 ok(hasBlock(dayOfWeek(5, 1), /Face pulls 3 × 15/), 'Upper A should keep face pulls');
-ok(hasBlock(dayOfWeek(5, 4), /Incline bench 4 × 8–10/), 'Upper B should carry the full prescription');
-ok(hasBlock(dayOfWeek(5, 4), /Lateral raises 4 × 12–15/), 'Upper B should carry 4 sets of laterals');
-ok(hasBlock(dayOfWeek(5, 4), /Hanging leg raises/), 'Upper B should carry the ab work');
+ok(hasBlock(dayOfWeek(5, 5), /Incline bench 4 × 8–10/), 'Upper B should carry the full prescription');
+ok(hasBlock(dayOfWeek(5, 5), /Lateral raises 4 × 12–15/), 'Upper B should carry 4 sets of laterals');
+ok(hasBlock(dayOfWeek(5, 5), /Hanging leg raises/), 'Upper B should carry the ab work');
+/* Upper B: Fri in Wks 1–3 (as lived) → Sat 10:00 from Wk 4 */
+ok(hasBlock(dayOfWeek(2, 4), /Incline bench/), 'Wks 1–3 Fri holds Upper B (as lived)');
+ok(!dayOfWeek(5, 4).blocks.some((b) => b.cat === 'gym'), 'Wks 4+ Fri has no gym — Upper B moved to Saturday');
+ok(hasBlock(dayOfWeek(17, 5), /Upper B/), 'wk17 parkrun Saturday keeps Upper B after the PB');
+ok(!hasBlock(dayOfWeek(24, 5), /Upper B/), 'wk24 Sat has no Upper B — half taper');
 ok(hasBlock(dayOfWeek(23, 1), /Weighted dips 2 × 8/), 'Wk 23 maintenance keeps dips');
 ok(hasBlock(dayOfWeek(23, 1), /EZ bar curls 2 × 10/), 'Wk 23 maintenance keeps curls');
-ok(hasBlock(dayOfWeek(23, 4), /Lateral raises 2 × 12/), 'Wk 23 Upper B maintenance keeps laterals');
+ok(hasBlock(dayOfWeek(23, 5), /Lateral raises 2 × 12/), 'Wk 23 Upper B maintenance keeps laterals');
 ok(hasBlock(dayOfWeek(5, 0), /Deadlift 3 × 5/), 'Base Lower B should carry the prescription');
 ok(hasBlock(dayOfWeek(5, 0), /Plank finisher/), 'Base Lower B should carry the core finisher');
 ok(hasBlock(dayOfWeek(5, 1), /\+2\.5 kg/), 'Upper A should carry the progression rule');
@@ -138,9 +143,9 @@ ok(hasBlock(dayOfWeek(3, 0), /6 × 3 min rounds/), 'Wks 1–3 Mondays keep punch
 ok(hasBlock(dayOfWeek(12, 5), /Plank 3 × 45s/), 'Wk 11+ core session should carry the prescription');
 /* push:pull rebalance + calves-all-block (assessed from first principles) */
 ok(hasBlock(dayOfWeek(5, 1), /Band pull-aparts 4 × 15–20/), 'Upper A should carry pull-aparts in the bench rests');
-ok(hasBlock(dayOfWeek(5, 4), /Rear-delt flyes 3 × 12–15/), 'Upper B should carry rear-delt flyes');
+ok(hasBlock(dayOfWeek(5, 5), /Rear-delt flyes 3 × 12–15/), 'Upper B should carry rear-delt flyes');
 ok(hasBlock(dayOfWeek(23, 1), /Band pull-aparts 2 × 15/), 'Wk 23 maintenance keeps pull-aparts');
-ok(hasBlock(dayOfWeek(23, 4), /Rear-delt flyes 2 × 12/), 'Wk 23 Upper B maintenance keeps rear delts');
+ok(hasBlock(dayOfWeek(23, 5), /Rear-delt flyes 2 × 12/), 'Wk 23 Upper B maintenance keeps rear delts');
 ok(hasBlock(dayOfWeek(12, 5), /Straight-leg calf raises 2 × 15/), 'Wk 11+ Sat keeps straight-leg calf work');
 ok(hasBlock(dayOfWeek(12, 5), /Bent-knee calf raises/), 'Wk 11+ Sat keeps soleus work');
 ok(hasBlock(dayOfWeek(5, 0), /Calf raises 3 × 15/), 'Base Lower B still carries its calf raises');

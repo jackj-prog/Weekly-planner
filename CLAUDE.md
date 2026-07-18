@@ -98,6 +98,11 @@ gym 2–2.5h · running per plan · reading 6h.
   into Monday 17:10 for Wks 4–10 (day-after-long-run legs — Saturday
   stays fresh for Sunday); from Wk 11 Monday is the week's true zero
   day (no run, no gym). Wks 1–3 keep the original layout as lived.
+- **Upper B moves Fri 13:00 → Sat 10:00 (Jul 2026, from Wk 4):**
+  Fridays proved the fragile day (German + family + basketball), and
+  Base Saturdays are clear (Sat km is mostly 0 until ~Wk 11). Friday
+  becomes gym-free; Wk 17 keeps Upper B after the parkrun; Wk 24
+  Saturday has no gym (half taper).
 
 ## 6. Standard week templates (with times)
 
@@ -147,23 +152,23 @@ running economy for free) · shower + snack ·
 valve; flex ≤1h to OU only on deadline weeks) · 21:00 deep reading
 anchor · 22:00 read · 22:30 sleep.
 
-### Friday — German + Upper B + Mum's + basketball. No run.
+### Friday — German + Mum's + basketball. No run; no gym from Wk 4.
 07:00 wake + Anki · **07:30 German active study** (end time by phase:
 Base 12:00 · Build 11:30 · from Wk 23 and Taper 10:30) · lunch ·
-**13:00 Gym — Upper B** (incline/pull-ups/arms, on the commute) ·
+13:00 free/errands (Upper B lived here 13:00–14:30 in Wks 1–3) ·
 15:30 Mum's — family · **19:00 Basketball 1 hr** (unless the week says
 skip — §7/§9) · evening free at Mum's · 22:00 read · sleep.
 
 ### Saturday — buffer run + study
 07:30 wake + Anki · 08:00 breakfast · **08:30 Easy buffer run (Sat km)**
-— if Sat km = 0: full rest before the long run ·
-gym after the run: **Wks 1–3 (as lived): Lower B light-moderate ~50 min** ·
-**Wks 4–10: no Saturday gym** (Lower B lives on Monday — legs fresh for
-the long run) · **from Wk 11: Core + calves ~25 min** (stays through
-Build, optional in Taper) · shower · 12:00 lunch · 13:00–16:30 OU/HNC
-study · 16:30 free (social/hobbies) · 19:00 dinner (carb-forward from
-Wk 14 whenever tomorrow’s long run ≥ 22 km) · free evening ·
-22:00 read · 22:30 sleep.
+— if Sat km = 0 (most of Base): no run ·
+after the run: **Wks 1–3 (as lived): Lower B ~50 min** · **from Wk 11:
+Core + calves ~25 min** (stays through Build, optional in Taper) —
+no leg work Wks 4–10 (Lower B lives on Monday) ·
+**10:00 Gym — Upper B** (from Wk 4; Fri 13:00 in Wks 1–3) · shower ·
+12:00 lunch · 13:00–16:30 OU/HNC study · 16:30 free (social/hobbies) ·
+19:00 dinner (carb-forward from Wk 14 whenever tomorrow’s long run
+≥ 22 km) · free evening · 22:00 read · 22:30 sleep.
 
 ### Sunday — long run + reading
 07:30 wake + Anki · 08:15 porridge + coffee (fuel) · **08:30 LONG RUN**
@@ -194,10 +199,11 @@ the 3D look).
   the bench rests) · row 4×6–8 · OHP 3×8 · weighted dips 3×8–10 ·
   EZ bar curls 3×10–12 · face pulls 3×15 (superset curls + face pulls
   to finish inside the 75 min).
-- **Upper B — Fri 13:00:** incline bench 4×8–10 · pull-ups 4×max
-  (add weight past 10 reps) · lateral raises 4×12–15 · rear-delt flyes
-  3×12–15 · hammer curls 3×10–12 · rope pushdowns 3×10–12 (superset
-  curls + pushdowns to hold the slot) · hanging leg raises 3×10–15.
+- **Upper B — Sat 10:00 (Fri 13:00 in Wks 1–3 as lived):** incline
+  bench 4×8–10 · pull-ups 4×max (add weight past 10 reps) · lateral
+  raises 4×12–15 · rear-delt flyes 3×12–15 · hammer curls 3×10–12 ·
+  rope pushdowns 3×10–12 (superset curls + pushdowns to hold the
+  slot) · hanging leg raises 3×10–15.
 - **Lower B — Mon 17:10 (Base only; Sat in Wks 1–3 as lived, Monday
   from Wk 4, retired from Wk 11):** deadlift 3×5 @ RPE 7 · RDL 3×8
   light · step-ups 2×10/leg · calf raises 3×15 · plank finisher 3×45s.
@@ -274,7 +280,8 @@ before the long run). These four + the long run must equal weekly km
 strides. Fri: NO basketball ("fresh legs for the race"). Sat: light
 breakfast 90 min before · travel + 2 km warm-up + 3–4 strides · **09:00
 PARKRUN 5K all-out PB in the Evo SL** · even splits, don't sprint km 1 ·
-cool-down jog · normal study afternoon. Sun: easy 16 recovery.
+cool-down jog · Upper B 10:30 (legs are done — ride the PB high) ·
+normal study afternoon. Sun: easy 16 recovery.
 
 **Week 24 — tune-up (Sun 13 Dec).** Mon: zero day as normal, OU eased.
 Tue: easy 6. Wed: easy 5 + strides. Thu: REST. Fri: NO basketball. Sat:
@@ -358,7 +365,8 @@ from mile 22.
 
 ## 13. Sacrifice ledger (what changed vs life-planner v6.4, and why)
 
-- **Gym 5 → 2 sessions** (Upper A Tue 19:30 · Upper B Fri 13:00).
+- **Gym 5 → 2 sessions** (Upper A Tue 19:30 · Upper B Sat 10:00 —
+  Fri 13:00 until Wk 4, when fragile Fridays lost it).
   Lower A cut immediately; Lower B light through Base then retired from
   Wk 11 (deadlifts the day before long runs don't mix). Sunday
   full-body replaced by the long run. Running owns the legs; lean bulk

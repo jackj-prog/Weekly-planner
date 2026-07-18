@@ -31,6 +31,28 @@ const UPPER_A = {
   ],
 };
 
+const UPPER_B = {
+  title: 'Gym — Upper B', cat: 'gym', doable: true, gym: 'upper',
+  detail: 'Ramp 2 warm-up sets on incline · same rule: top of the range → +2.5 kg · add weight to pull-ups past 10 reps · superset curls + pushdowns to hold the slot',
+  plan: [
+    { ex: 'Incline bench',      sets: '4 × 8–10' },
+    { ex: 'Pull-ups',           sets: '4 × max' },
+    { ex: 'Lateral raises',     sets: '4 × 12–15' },
+    { ex: 'Rear-delt flyes',    sets: '3 × 12–15' },
+    { ex: 'Hammer curls',       sets: '3 × 10–12' },
+    { ex: 'Rope pushdowns',     sets: '3 × 10–12' },
+    { ex: 'Hanging leg raises', sets: '3 × 10–15' },
+  ],
+  maintDetail: 'In and out — the race is the priority, the look keeps ticking',
+  maintPlan: [
+    { ex: 'Incline bench',   sets: '2 × 8' },
+    { ex: 'Pull-ups',        sets: '2 × max−3' },
+    { ex: 'Lateral raises',  sets: '2 × 12' },
+    { ex: 'Rear-delt flyes', sets: '2 × 12' },
+    { ex: 'Arms superset',   sets: '1 × 12 + 12' },
+  ],
+};
+
 const PLAN = {
 
   /* ---- Race & targets (§1, §10) ------------------------------------- */
@@ -307,25 +329,7 @@ const PLAN = {
         { t: '07:00', end: '07:30', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
         { t: '07:30', end: '12:00', title: 'German active study', detail: 'The deep German block — end time set by phase', cat: 'german', doable: true, friGerman: true },
         { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
-        { t: '13:00', end: '14:30', title: 'Gym — Upper B', cat: 'gym', doable: true, gym: 'upper',
-          detail: 'Ramp 2 warm-up sets on incline · same rule: top of the range → +2.5 kg · add weight to pull-ups past 10 reps · superset curls + pushdowns to hold the slot · on the commute to Mum’s',
-          plan: [
-            { ex: 'Incline bench',      sets: '4 × 8–10' },
-            { ex: 'Pull-ups',           sets: '4 × max' },
-            { ex: 'Lateral raises',     sets: '4 × 12–15' },
-            { ex: 'Rear-delt flyes',    sets: '3 × 12–15' },
-            { ex: 'Hammer curls',       sets: '3 × 10–12' },
-            { ex: 'Rope pushdowns',     sets: '3 × 10–12' },
-            { ex: 'Hanging leg raises', sets: '3 × 10–15' },
-          ],
-          maintDetail: 'In and out — the race is the priority, the look keeps ticking',
-          maintPlan: [
-            { ex: 'Incline bench',   sets: '2 × 8' },
-            { ex: 'Pull-ups',        sets: '2 × max−3' },
-            { ex: 'Lateral raises',  sets: '2 × 12' },
-            { ex: 'Rear-delt flyes', sets: '2 × 12' },
-            { ex: 'Arms superset',   sets: '1 × 12 + 12' },
-          ] },
+        Object.assign({ t: '13:00', end: '14:30' }, UPPER_B),
         { t: '15:30', end: '19:00', title: 'Mum’s — family', detail: 'Family time through the evening', cat: 'free', quiet: true },
         { t: '19:00', end: '20:00', title: 'Basketball', detail: 'Cross-training — flexes first: skip whenever legs are cooked', cat: 'xt', doable: true, basketball: true },
         { t: '20:00', end: '22:00', title: 'Evening at Mum’s', cat: 'free', quiet: true },
@@ -414,6 +418,33 @@ const PLAN = {
           { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
           { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
         ],
+        /* Upper B also moves Fri → Sat from Wk 4: Fridays proved the
+           fragile day, and Base Saturdays are clear (Sat km mostly 0). */
+        4: [
+          { t: '07:00', end: '07:30', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
+          { t: '07:30', end: '12:00', title: 'German active study', detail: 'The deep German block — end time set by phase', cat: 'german', doable: true, friGerman: true },
+          { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+          { t: '13:00', end: '15:30', title: 'Free / errands', detail: 'Upper B lives on Saturday now — Friday breathes', cat: 'free', quiet: true },
+          { t: '15:30', end: '19:00', title: 'Mum’s — family', detail: 'Family time through the evening', cat: 'free', quiet: true },
+          { t: '19:00', end: '20:00', title: 'Basketball', detail: 'Cross-training — flexes first: skip whenever legs are cooked', cat: 'xt', doable: true, basketball: true },
+          { t: '20:00', end: '22:00', title: 'Evening at Mum’s', cat: 'free', quiet: true },
+          { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+          { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+        ],
+        5: [
+          { t: '07:30', end: '08:00', title: 'Wake · Anki', cat: 'routine', quiet: true },
+          { t: '08:00', end: '08:30', title: 'Breakfast', cat: 'meal', quiet: true },
+          { t: '08:30', run: 'sat' },
+          { after: true, satGym: true, cat: 'gym', doable: true, gym: 'lower' },
+          Object.assign({ t: '10:00', end: '11:30' }, UPPER_B),
+          { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+          { t: '13:00', end: '16:30', title: 'OU / HNC study', cat: 'study', doable: true },
+          { t: '16:30', end: '19:00', title: 'Free — social / hobbies', cat: 'free', quiet: true },
+          { t: '19:00', end: '20:00', title: 'Dinner', cat: 'meal', quiet: true, carbEve: true },
+          { t: '20:00', end: '22:00', title: 'Free evening', cat: 'free', quiet: true },
+          { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+          { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+        ],
       } },
       /* Wk 11+: Lower B retired — Monday becomes the week's true zero day. */
       { fromWk: 11, days: {
@@ -471,6 +502,7 @@ const PLAN = {
             { t: '09:00', end: '09:25', title: 'PARKRUN 5K — all-out PB', detail: 'Evo SL · even splits, don’t sprint km 1', cat: 'run', doable: true, runKm: 5, shoe: 'Evo SL' },
             { t: '09:25', end: '09:45', title: 'Cool-down jog', cat: 'run', quiet: true },
             { t: '10:00', end: '10:30', title: 'Shower + refuel', cat: 'routine', quiet: true },
+            Object.assign({ t: '10:30', end: '12:00' }, UPPER_B),
             { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
             { t: '13:00', end: '16:30', title: 'OU / HNC study', detail: 'Normal study afternoon', cat: 'study', doable: true },
             { t: '16:30', end: '19:00', title: 'Free — social / hobbies', cat: 'free', quiet: true },
