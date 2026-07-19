@@ -446,7 +446,9 @@ const PLAN = {
           { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
         ],
       } },
-      /* Wk 11+: Lower B retired — Monday becomes the week's true zero day. */
+      /* Wks 11–16: Lower B drops to maintenance — the hinge and the legs
+         stay through the first half of Build at a cost Wednesday won't
+         notice. (Wk 11 is still a work Monday; college takes over Wk 12.) */
       { fromWk: 11, days: {
         0: [
           { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating — non-negotiable', cat: 'routine', quiet: true },
@@ -455,7 +457,15 @@ const PLAN = {
           { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
           { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
           { t: '16:30', end: '17:00', title: 'Commute home', detail: 'German podcasts', cat: 'work', quiet: true },
-          { t: '17:00', end: '18:30', title: 'Full rest — the week’s zero day', detail: 'No run, no gym, nothing — Build volume is carried by this evening', cat: 'free', quiet: true },
+          { t: '17:10', end: '17:45', title: 'Gym — Lower B (maintenance)', cat: 'gym', doable: true,
+            detail: 'Keep the hinge, lose the fatigue · RPE ≤ 7, in and out',
+            plan: [
+              { ex: 'Deadlift',          sets: '2 × 5 @ RPE 6–7' },
+              { ex: 'Romanian deadlift', sets: '2 × 8 light' },
+              { ex: 'Calf raises',       sets: '3 × 15' },
+              { ex: 'Plank',             sets: '2 × 45s' },
+            ] },
+          { t: '17:45', end: '18:30', title: 'Shower + snack', cat: 'routine', quiet: true },
           { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
@@ -469,7 +479,32 @@ const PLAN = {
           { t: '07:45', end: '08:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
           { t: '08:00', end: '15:00', title: 'College — HND', detail: 'HND day (Mondays from 14 Sep) · use any free periods for OU', cat: 'study', quiet: true },
           { t: '15:00', end: '16:00', title: 'Commute + snack', detail: 'Home ~16:00', cat: 'work', quiet: true },
-          { t: '16:00', end: '18:30', title: 'Full rest — the week’s zero day', detail: 'No run, no gym — home off college, feet up', cat: 'free', quiet: true },
+          { t: '16:30', end: '17:05', title: 'Gym — Lower B (maintenance)', cat: 'gym', doable: true,
+            detail: 'Keep the hinge, lose the fatigue · RPE ≤ 7, in and out',
+            plan: [
+              { ex: 'Deadlift',          sets: '2 × 5 @ RPE 6–7' },
+              { ex: 'Romanian deadlift', sets: '2 × 8 light' },
+              { ex: 'Calf raises',       sets: '3 × 15' },
+              { ex: 'Plank',             sets: '2 × 45s' },
+            ] },
+          { t: '17:05', end: '18:30', title: 'Shower · feet up', cat: 'routine', quiet: true },
+          { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
+          { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
+          { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
+          { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+          { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+        ],
+      } },
+      /* Wk 17+: Lower B retired for real — Monday becomes the true zero
+         day exactly as the 50–60 km weeks arrive (18–23) and stays zero
+         through taper. Race week (30) overrides with its own Monday. */
+      { fromWk: 17, days: {
+        0: [
+          { t: '06:45', end: '07:45', title: 'Wake · Anki · breakfast', detail: 'College lie-in vs work days · 15 min Anki', cat: 'routine', quiet: true },
+          { t: '07:45', end: '08:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
+          { t: '08:00', end: '15:00', title: 'College — HND', detail: 'HND day (Mondays from 14 Sep) · use any free periods for OU', cat: 'study', quiet: true },
+          { t: '15:00', end: '16:00', title: 'Commute + snack', detail: 'Home ~16:00', cat: 'work', quiet: true },
+          { t: '16:00', end: '18:30', title: 'Full rest — the week’s zero day', detail: 'No run, no gym — Build volume is carried by this evening', cat: 'free', quiet: true },
           { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },

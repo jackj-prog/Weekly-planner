@@ -96,8 +96,10 @@ gym 2–2.5h · running per plan · reading 6h.
   gym. Tuesday stays a work day. Holiday/race weeks still override.
 - **Punchbag retired (Jul 2026, from Wk 4):** Lower B moves off Saturday
   into Monday 17:10 for Wks 4–10 (day-after-long-run legs — Saturday
-  stays fresh for Sunday); from Wk 11 Monday is the week's true zero
-  day (no run, no gym). Wks 1–3 keep the original layout as lived.
+  stays fresh for Sunday); Wks 11–16 it drops to a ~35-min maintenance
+  version (keep the hinge, lose the fatigue); from Wk 17 Monday is the
+  week's true zero day (no run, no gym) through the 50–60 km weeks and
+  taper. Wks 1–3 keep the original layout as lived.
 - **Upper B moves Fri 13:00 → Sat 10:00 (Jul 2026, from Wk 4):**
   Fridays proved the fragile day (German + family + basketball), and
   Base Saturdays are clear (Sat km is mostly 0 until ~Wk 11). Friday
@@ -116,8 +118,11 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
 - **Wks 4–10 (work):** 06:00 Wake + Anki · 06:45 commute · 07:00–16:30
   Work · 16:30 commute · **17:10 Gym — Lower B** (moved off Saturday —
   day-after-long-run legs, RPE ≤ 7, never grind) · 18:05 shower + snack.
-- **Wks 11+ (work; HND college from Wk 12, wake 06:45):** evening
-  completely OFF — Monday is the week's true zero day (no run, no gym).
+- **Wks 11–16 (work Wk 11; HND college from Wk 12, wake 06:45):**
+  **Lower B (maintenance)** ~35 min after work/college — deadlift 2×5 @
+  RPE 6–7 · RDL 2×8 light · calf raises 3×15 · plank 2×45s.
+- **Wks 17+ :** evening completely OFF — Monday is the week's true zero
+  day (no run, no gym) as the 50–60 km weeks arrive.
 - **Every era:** 18:30 dinner · 19:30–21:00 German active study ·
   21:00–22:00 German media · 22:00 read · 22:30 sleep. Monday never
   carries a run.
@@ -181,7 +186,7 @@ Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
 ### Phase deltas summary
 - Fri German active end: 12:00 (Base) → 11:30 (Build) → 10:30 (Wk 23+ and Taper).
 - Mon gym: punchbag (Wks 1–3, retired) → Lower B 17:10 (Wks 4–10) →
-  zero day (Wk 11+).
+  Lower B maintenance (Wks 11–16) → zero day (Wk 17+).
 - Sat gym: Lower B (Wks 1–3 as lived) → none (Wks 4–10) → Core +
   calves ~25 min (Wk 11+; optional in Taper).
 - Gym intensity from Wk 23: both upper sessions labelled **maintenance**
@@ -205,7 +210,7 @@ the 3D look).
   rope pushdowns 3×10–12 (superset curls + pushdowns to hold the
   slot) · hanging leg raises 3×10–15.
 - **Lower B — Mon 17:10 (Base only; Sat in Wks 1–3 as lived, Monday
-  from Wk 4, retired from Wk 11):** deadlift 3×5 @ RPE 7 · RDL 3×8
+  from Wk 4; maintenance 2×5 Wks 11–16, retired from Wk 17):** deadlift 3×5 @ RPE 7 · RDL 3×8
   light · step-ups 2×10/leg · calf raises 3×15 · plank finisher 3×45s.
   Day-after-long-run legs — stress stacks on tired legs, Saturday stays
   fresh. Calf/tendon work now is injury insurance later. Never grind —
@@ -375,8 +380,9 @@ from mile 22.
   weekend mornings — built around the 18:30 dinner anchor. No 05:30 alarms;
   sleep protected.
 - **Mon 25-min run → punchbag → retired (Jul 2026)**: Lower B took the
-  Monday slot through Base (day-after-long-run legs); from Wk 11 Monday
-  is the week's zero day — the only fully-off evening in Build.
+  Monday slot through Base (day-after-long-run legs), holds on as a
+  maintenance hinge Wks 11–16, and from Wk 17 Monday is the week's zero
+  day — the only fully-off evening in peak Build.
 - **German active trims by phase** (Fri block 4.5h → 4h → 2.5–3h from
   Wk 23). All passive German untouched (~11.75h: Anki, commute pods,
   work listening, media).

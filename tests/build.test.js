@@ -116,7 +116,10 @@ ok(friGerman(23).end === '10:30', 'Wk 23 Fri German ends 10:30');
 ok(hasBlock(dayOfWeek(3, 5), /Lower B/i), 'Wks 1–3 Sat holds Lower B (as lived)');
 ok(hasBlock(dayOfWeek(5, 0), /Lower B/i), 'Wks 4–10 Mon holds Lower B (day after the long run)');
 ok(!dayOfWeek(5, 5).blocks.some((b) => /Lower B|Deadlift/i.test(b.title)), 'Wks 4–10 Sat has no leg work — legs fresh for Sunday');
-ok(!dayOfWeek(11, 0).blocks.some((b) => b.cat === 'gym' || b.cat === 'xt'), 'Wk 11+ Mon is the zero day');
+ok(hasBlock(dayOfWeek(11, 0), /Lower B \(maintenance\)/) && hasBlock(dayOfWeek(11, 0), /Deadlift 2 × 5/),
+  'Wks 11–16 Mon drops Lower B to maintenance');
+ok(hasBlock(dayOfWeek(14, 0), /Lower B \(maintenance\)/), 'Wk 14 Mon still holds maintenance legs');
+ok(!dayOfWeek(18, 0).blocks.some((b) => b.cat === 'gym' || b.cat === 'xt'), 'Wk 17+ Mon is the true zero day');
 ok(hasBlock(dayOfWeek(12, 5), /Core \+ calves/i), 'Wk 11+ Sat should hold the core + calves block');
 ok(hasBlock(dayOfWeek(23, 1), /maintenance/i), 'Wk 23 Tue gym should be maintenance');
 
@@ -277,8 +280,10 @@ section('scaffold eras');
   ok(hasBlock(dayOfWeek(5, 0), /Lower B/i), 'wk5 Mon carries Lower B (punchbag retired from Wk 4)');
   // Wk 12+: Monday becomes the HND college day
   ok(hasBlock(dayOfWeek(12, 0), /College — HND/), 'wk12 Mon is the HND college day');
-  ok(hasBlock(dayOfWeek(12, 0), /zero day/i) && !dayOfWeek(12, 0).blocks.some((b) => b.cat === 'gym' || b.cat === 'xt'),
-    'wk12 Mon is the zero day — no gym, no punchbag');
+  ok(hasBlock(dayOfWeek(12, 0), /College — HND/) && hasBlock(dayOfWeek(12, 0), /Lower B \(maintenance\)/),
+    'wk12 Mon is a college day with maintenance legs after');
+  ok(hasBlock(dayOfWeek(18, 0), /zero day/i) && !dayOfWeek(18, 0).blocks.some((b) => b.cat === 'gym' || b.cat === 'xt'),
+    'wk18 Mon is the zero day — no gym, no punchbag');
   ok(dayOfWeek(12, 0).run === null, 'wk12 Mon still has no run');
   ok(hasBlock(dayOfWeek(12, 1), /Work/), 'wk12 Tue stays a work day');
   ok(hasRunAt(dayOfWeek(12, 1), '17:10'), 'wk12 Tue run still 17:10');
