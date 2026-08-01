@@ -211,7 +211,7 @@ const PLAN = {
     /* Weeks whose run distances are hand-set by §9, excluded from the
        algorithm split test. (26–27 keep algorithmic distances — only the
        day scaffold goes on holiday.) */
-    specialDistanceWeeks: [17, 24, 30],
+    specialDistanceWeeks: [8, 17, 24, 30],
 
     /* ---- Phase deltas (§6) ---- */
     friGermanEnd: [
@@ -522,34 +522,38 @@ const PLAN = {
          blocks: []   full replacement day                                 */
     specialWeeks: {
 
-      /* Week 8 — the one sanctioned benchmark before October (Fri 21 Aug).
-         Friday because the track is only open then: the effort gets a
-         proper 400 m surface, which makes the number comparable to the
-         October parkrun. Thursday becomes full rest, so the TT runs off
-         the freshest legs available; Wednesday trims to 2 km, keeping the
-         cutback week honest. Basketball stays but drops to shooting only —
-         no sprinting or cutting the same day. Warm-up and cool-down are
-         uncounted km; the 2 miles are the tickable session. */
+      /* Week 8 — the one sanctioned benchmark before October (Fri 21 Aug),
+         on the Aberdare track: 8 lanes, IAAF/UKA-certified surface, so the
+         number is properly comparable to October's parkrun. Friday-only
+         access sets the day; the 10:00 gun sets the shape. Breakfast lands
+         ~3 h before the effort — a free rehearsal of race-morning fuelling.
+         Wed trims to 2 km · Thu full rest · German ceded to travel this
+         week · Sat run dropped as the deliberate cost of an all-out effort
+         (Upper B stays). Week lands ~19 km against a planned 21, which is
+         why 8 joins specialDistanceWeeks. */
       8: {
         label: 'Cutback · 2-MILE TT',
         days: {
           2: { run: { km: 2, title: 'Easy 2', detail: 'Short and genuinely easy — a rest day and the time trial follow' } },
           3: { noRun: true, note: 'REST — no run today (time trial tomorrow)' },
           4: { blocks: [
-            { t: '07:00', end: '07:30', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
-            { t: '07:30', end: '12:00', title: 'German active study', detail: 'The deep German block — end time set by phase', cat: 'german', doable: true, friGerman: true },
-            { t: '12:00', end: '12:45', title: 'Lunch', detail: 'Light — racing this afternoon', cat: 'meal', quiet: true },
-            { t: '12:45', end: '13:15', title: 'Travel to the track', detail: '400 m track — the surface is why this is a Friday', cat: 'routine', quiet: true },
-            { t: '13:15', end: '13:35', title: 'Warm-up', detail: '2 km easy + 3–4 build-up strides — never hit a hard effort cold', cat: 'run', quiet: true },
-            { t: '13:35', end: '13:50', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps of the 400 m track (≈ 2 miles — add ~18 m past the line for the exact distance) · STAY IN LANE 1 · even or negative splits — controlled first mile, faster second · the one benchmark before the October parkrun', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL' },
-            { t: '13:50', end: '14:00', title: 'Cool-down jog', detail: 'Never just stop', cat: 'run', quiet: true },
-            { t: '14:00', end: '14:30', title: 'Shower + refuel', cat: 'routine', quiet: true },
+            { t: '06:45', end: '07:30', title: 'Wake · Anki · breakfast', detail: 'Eat now — ~3 h before the gun, same as race morning', cat: 'routine', quiet: true },
+            { t: '07:30', end: '08:30', title: 'Kit + free', detail: 'Evo SL, watch charged, water · no German block today — the track owns this morning', cat: 'free', quiet: true },
+            { t: '08:30', end: '09:30', title: 'Travel to Aberdare', detail: '~1 h — 8-lane certified track, worth the drive', cat: 'routine', quiet: true },
+            { t: '09:30', end: '09:55', title: 'Warm-up', detail: '2 km easy + 3–4 build-up strides — never hit a hard effort cold', cat: 'run', quiet: true },
+            { t: '10:00', end: '10:15', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps of the 400 m track (≈ 2 miles — add ~18 m past the line for the exact distance) · STAY IN LANE 1 · even or negative splits — controlled first mile, faster second · the one benchmark before the October parkrun', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL' },
+            { t: '10:15', end: '10:30', title: 'Cool-down jog', detail: 'Never just stop', cat: 'run', quiet: true },
+            { t: '10:30', end: '10:50', title: 'Refuel + change', cat: 'routine', quiet: true },
+            { t: '10:50', end: '11:50', title: 'Travel home', cat: 'routine', quiet: true },
+            { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+            { t: '13:00', end: '15:30', title: 'Free — legs up', detail: 'Claw back an hour of German here if the legs allow', cat: 'free', quiet: true },
             { t: '15:30', end: '19:00', title: 'Mum’s — family', detail: 'Family time through the evening', cat: 'free', quiet: true },
             { t: '19:00', end: '20:00', title: 'Basketball — shooting only', detail: 'Shots and light movement only today — no full-court games after a time trial', cat: 'xt', doable: true, basketball: true },
             { t: '20:00', end: '22:00', title: 'Evening at Mum’s', cat: 'free', quiet: true },
             { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
             { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
           ] },
+          5: { noRun: true, note: 'REST — Saturday run dropped, the cost of Friday’s all-out effort' },
         },
       },
 

@@ -83,12 +83,20 @@ ok(dayOfWeek(8, 4).run && dayOfWeek(8, 4).run.run.km === 3.2 && /Evo SL/.test(da
 ok(hasBlock(dayOfWeek(8, 4), /Warm-up/) && hasBlock(dayOfWeek(8, 4), /Cool-down/),
   'wk 8 TT is bracketed by warm-up and cool-down');
 ok(hasBlock(dayOfWeek(8, 4), /LANE 1/), 'wk 8 TT carries the track-lap guidance');
+ok(dayOfWeek(8, 4).run.start === '10:00', 'wk 8 TT goes off at 10:00 on the track');
 ok(dayOfWeek(8, 3).run === null, 'wk 8 Thu is full rest before the time trial');
+ok(dayOfWeek(8, 5).run === null, 'wk 8 Sat run is dropped after the all-out effort');
+ok(dayOfWeek(8, 5).blocks.some((b) => /Upper B/.test(b.title)), 'wk 8 Sat keeps Upper B');
 ok(dayOfWeek(8, 2).run.run.km === 2, 'wk 8 Wed trims to an easy 2 km');
 ok(hasDoable(dayOfWeek(8, 4), /Basketball/i) && hasBlock(dayOfWeek(8, 4), /shooting only/i),
   'wk 8 Fri keeps basketball but drops it to shooting only');
-ok(dayOfWeek(8, 4).blocks.some((b) => /German active/.test(b.title) && b.end === '12:00'),
-  'wk 8 TT Friday keeps the Base German block ending 12:00');
+ok(!dayOfWeek(8, 4).blocks.some((b) => /German active/.test(b.title)),
+  'wk 8 Friday cedes the German block to the track trip');
+{
+  let wk8 = 0;
+  for (let i = 0; i < 7; i++) { const d = dayOfWeek(8, i); if (d.run) wk8 += d.run.run.km; }
+  ok(Math.abs(wk8 - 19.2) < 0.01, 'wk 8 lands ~19.2 km — the deliberate cost of the TT, got ' + wk8);
+}
 ok(hasBlock(dayOfWeek(17, 5), /PARKRUN 5K/i), 'wk 17 Sat should hold the parkrun');
 ok(hasBlock(dayOfWeek(24, 6), /TUNE-UP HALF/i), 'wk 24 Sun should hold the tune-up half');
 ok(hasBlock(dayOfWeek(26, 4), /CHRISTMAS.*rest|full rest/i), 'wk 26 Fri should be Christmas rest');
