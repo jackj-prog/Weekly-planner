@@ -281,14 +281,16 @@ before the long run). These four + the long run must equal weekly km
 
 ## 9. Special weeks & templates (override the standard day)
 
-**Week 8 — 2-mile time trial (Thu 20 Aug).** The one sanctioned benchmark
-before October. Thursday rather than Wednesday: 3 days off Monday's
-Lower B, and the day already carries strides. Wed trims to an easy 2 km;
-nothing else is cut and basketball stays (flexes by choice on the Friday).
-17:10 warm-up 2 km easy + 3–4 strides · **17:30 2-MILE TIME TRIAL in the
-Evo SL** — track (8 laps of 400 m ≈ 2 miles) or flat measured route,
-even or negative splits, controlled first mile · cool-down jog ·
-protected evening as normal.
+**Week 8 — 2-mile time trial (Fri 21 Aug).** The one sanctioned benchmark
+before October, run on a 400 m track — the track's Friday-only access is
+what sets the day, and the certified surface is what makes the number
+comparable to October's parkrun. Wed trims to an easy 2 km · **Thu is
+full rest** (freshest possible legs) · Fri: German block as normal to
+12:00 · light lunch · 12:45 travel · 13:15 warm-up 2 km + 3–4 strides ·
+**13:35 2-MILE TIME TRIAL in the Evo SL** — 8 laps, stay in lane 1, even
+or negative splits, controlled first mile · cool-down jog · Mum's from
+15:30 · **basketball stays but drops to shooting only** (no full-court
+games the day of the effort). Sat and Sun unchanged.
 
 **Week 17 — parkrun PB (Sat 24 Oct).** Wed: easy 5 only. Thu: easy 4 +
 strides. Fri: NO basketball ("fresh legs for the race"). Sat: light

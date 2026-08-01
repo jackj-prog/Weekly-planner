@@ -522,30 +522,31 @@ const PLAN = {
          blocks: []   full replacement day                                 */
     specialWeeks: {
 
-      /* Week 8 — the one sanctioned benchmark before October (Thu 20 Aug).
-         Thursday, not Wednesday: 3 days off Monday's Lower B rather than 2,
-         so the legs are fresher, and the day already carries strides. Lands
-         in a cutback week so the volume is already reduced — Wednesday
-         trims to 2 km to keep the week honest, and nothing else is cut.
-         Warm-up and cool-down are uncounted km; the 2 miles are tickable. */
+      /* Week 8 — the one sanctioned benchmark before October (Fri 21 Aug).
+         Friday because the track is only open then: the effort gets a
+         proper 400 m surface, which makes the number comparable to the
+         October parkrun. Thursday becomes full rest, so the TT runs off
+         the freshest legs available; Wednesday trims to 2 km, keeping the
+         cutback week honest. Basketball stays but drops to shooting only —
+         no sprinting or cutting the same day. Warm-up and cool-down are
+         uncounted km; the 2 miles are the tickable session. */
       8: {
         label: 'Cutback · 2-MILE TT',
         days: {
-          2: { run: { km: 2, title: 'Easy 2 — TT eve', detail: 'Short and genuinely easy — the time trial is tomorrow' } },
-          3: { blocks: [
-            { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating', cat: 'routine', quiet: true },
-            { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
-            { t: '07:00', end: '12:00', title: 'Work', detail: '~2h passive German listening', cat: 'work', quiet: true },
-            { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
-            { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
-            { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
-            { t: '17:10', end: '17:30', title: 'Warm-up', detail: '2 km easy + 3–4 build-up strides — never hit a hard effort cold', cat: 'run', quiet: true },
-            { t: '17:30', end: '17:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · track or flat measured route · 8 laps of a 400 m track ≈ 2 miles · even or negative splits — controlled first mile, faster second · the one benchmark before the October parkrun · basketball tomorrow flexes freely', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL' },
-            { t: '17:45', end: '17:55', title: 'Cool-down jog', detail: 'Never just stop', cat: 'run', quiet: true },
-            { t: '17:55', end: '18:10', title: 'Shower + snack', cat: 'routine', quiet: true },
-            { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
-            { t: '19:30', end: '21:00', title: 'Protected free evening', detail: 'The release valve — earned tonight', cat: 'free', quiet: true },
-            { t: '21:00', end: '22:00', title: 'Deep reading anchor', cat: 'reading', doable: true },
+          2: { run: { km: 2, title: 'Easy 2', detail: 'Short and genuinely easy — a rest day and the time trial follow' } },
+          3: { noRun: true, note: 'REST — no run today (time trial tomorrow)' },
+          4: { blocks: [
+            { t: '07:00', end: '07:30', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
+            { t: '07:30', end: '12:00', title: 'German active study', detail: 'The deep German block — end time set by phase', cat: 'german', doable: true, friGerman: true },
+            { t: '12:00', end: '12:45', title: 'Lunch', detail: 'Light — racing this afternoon', cat: 'meal', quiet: true },
+            { t: '12:45', end: '13:15', title: 'Travel to the track', detail: '400 m track — the surface is why this is a Friday', cat: 'routine', quiet: true },
+            { t: '13:15', end: '13:35', title: 'Warm-up', detail: '2 km easy + 3–4 build-up strides — never hit a hard effort cold', cat: 'run', quiet: true },
+            { t: '13:35', end: '13:50', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps of the 400 m track (≈ 2 miles — add ~18 m past the line for the exact distance) · STAY IN LANE 1 · even or negative splits — controlled first mile, faster second · the one benchmark before the October parkrun', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL' },
+            { t: '13:50', end: '14:00', title: 'Cool-down jog', detail: 'Never just stop', cat: 'run', quiet: true },
+            { t: '14:00', end: '14:30', title: 'Shower + refuel', cat: 'routine', quiet: true },
+            { t: '15:30', end: '19:00', title: 'Mum’s — family', detail: 'Family time through the evening', cat: 'free', quiet: true },
+            { t: '19:00', end: '20:00', title: 'Basketball — shooting only', detail: 'Shots and light movement only today — no full-court games after a time trial', cat: 'xt', doable: true, basketball: true },
+            { t: '20:00', end: '22:00', title: 'Evening at Mum’s', cat: 'free', quiet: true },
             { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
             { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
           ] },
