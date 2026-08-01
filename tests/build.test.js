@@ -77,6 +77,12 @@ function hasBlock(day, re) {
   return day.blocks.some((b) => re.test(b.title) || re.test(b.detail) ||
     (b.plan || []).some((p) => re.test(p.ex + ' ' + p.sets)));
 }
+ok(hasBlock(dayOfWeek(8, 2), /2-MILE TIME TRIAL/i), 'wk 8 Wed should hold the 2-mile time trial');
+ok(dayOfWeek(8, 2).run && dayOfWeek(8, 2).run.run.km === 3.2 && /Evo SL/.test(dayOfWeek(8, 2).run.run.shoe),
+  'wk 8 TT is the tickable 3.2 km run in the Evo SL');
+ok(hasBlock(dayOfWeek(8, 2), /Warm-up/) && hasBlock(dayOfWeek(8, 2), /Cool-down/),
+  'wk 8 TT is bracketed by warm-up and cool-down');
+ok(hasBlock(dayOfWeek(8, 3), /day after the TT/i), 'wk 8 Thu eases off after the time trial');
 ok(hasBlock(dayOfWeek(17, 5), /PARKRUN 5K/i), 'wk 17 Sat should hold the parkrun');
 ok(hasBlock(dayOfWeek(24, 6), /TUNE-UP HALF/i), 'wk 24 Sun should hold the tune-up half');
 ok(hasBlock(dayOfWeek(26, 4), /CHRISTMAS.*rest|full rest/i), 'wk 26 Fri should be Christmas rest');

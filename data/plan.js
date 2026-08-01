@@ -522,6 +522,34 @@ const PLAN = {
          blocks: []   full replacement day                                 */
     specialWeeks: {
 
+      /* Week 8 — the one sanctioned benchmark before October (Wed 19 Aug).
+         Lands in a cutback week so the volume is already reduced: no other
+         compensation needed. Aerobic effort, not a sprint — warm-up and
+         cool-down are uncounted km, the 2 miles are the tickable session. */
+      8: {
+        label: 'Cutback · 2-MILE TT',
+        days: {
+          2: { blocks: [
+            { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating', cat: 'routine', quiet: true },
+            { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
+            { t: '07:00', end: '12:00', title: 'Work', detail: '~2h passive German listening', cat: 'work', quiet: true },
+            { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+            { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
+            { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
+            { t: '17:10', end: '17:30', title: 'Warm-up', detail: '2 km easy + 3–4 build-up strides — never hit a hard effort cold', cat: 'run', quiet: true },
+            { t: '17:30', end: '17:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · flat measured route · even or negative splits — controlled first mile, faster second · this is the one benchmark before the October parkrun', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL' },
+            { t: '17:45', end: '17:55', title: 'Cool-down jog', detail: 'Never just stop', cat: 'run', quiet: true },
+            { t: '17:55', end: '18:10', title: 'Shower', cat: 'routine', quiet: true },
+            { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
+            { t: '19:30', end: '21:00', title: 'OU study', detail: 'Moved into the old gym slot', cat: 'study', doable: true },
+            { t: '21:00', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
+            { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+            { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+          ] },
+          3: { run: { title: 'Easy — day after the TT', detail: 'Genuinely easy, or skip it entirely if the legs are flat' } },
+        },
+      },
+
       /* Week 17 — parkrun PB (Sat). Wed easy 5 · Thu easy 4 + strides ·
          Fri no basketball (flag) · Sun easy 16 recovery (table).
          Tue 6 keeps the 40 km week honest around the hand-set days. */
