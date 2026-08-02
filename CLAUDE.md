@@ -283,17 +283,19 @@ before the long run). These four + the long run must equal weekly km
 
 **Week 8 — 2-mile time trial (Fri 21 Aug, Aberdare track).** The one
 sanctioned benchmark before October, on an 8-lane certified 400 m
-surface — Friday-only access sets the day, the surface is what makes the
-number comparable to October's parkrun. Wed trims to an easy 2 km ·
-**Thu full rest** · Fri: 06:45 wake + Anki + breakfast (~3 h before the
-gun — a free rehearsal of race-morning fuelling) · **no German block
-this week**, the track owns the morning · 08:30 travel (~1 h) · 09:30
-warm-up 2 km + 3–4 strides · **10:00 2-MILE TIME TRIAL in the Evo SL** —
-8 laps, stay in lane 1, even or negative splits, controlled first mile ·
-cool-down · home ~11:50 · legs up · Mum's 15:30 · **basketball drops to
-shooting only** · **Sat run dropped** (Upper B stays) — the deliberate
-cost of an all-out effort. Week lands ~19 km vs a planned 21; that is
-the trade, not a miss.
+surface — Friday-only access sets the day, **16:30** sets the shape:
+late afternoon is the circadian peak for performance, and it leaves the
+German block intact. Wed easy 2 km · **Thu shakeout 2 km + strides**
+(priming, not full rest — the same way wks 24 and 30 open their race
+days) · Fri: German 07:30–12:00 as normal · carb lunch 12:00 (~3.5 h
+out) · top-up snack 14:30 · 15:00 travel · 16:00 warm-up 2 km +
+strides · **16:30 2-MILE TIME TRIAL in the Evo SL** — 8 laps, lane 1,
+laps 1–2 at 1:39–1:40, settle 1:37–38, spend the rest on 7–8 ·
+cool-down · home 18:00 family refuel · **basketball shooting only** ·
+**Sat run dropped** (Upper B stays) — the cost of an all-out effort,
+and it clears a full rest day before Sunday. Sun long run 11 km eased:
+legs heavy for 2–3 km, run by effort ~15–20 s/km slower than usual.
+Week lands ~21 km, on the cutback target.
 
 **Week 17 — parkrun PB (Sat 24 Oct).** Wed: easy 5 only. Thu: easy 4 +
 strides. Fri: NO basketball ("fresh legs for the race"). Sat: light
