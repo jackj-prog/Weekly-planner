@@ -127,3 +127,56 @@ are unique within a day by the ordering invariant), with a one-time
 localStorage migration that also re-runs after restoring an old backup.
 Retiming a historical day still rewrites history, but the scaffold-era
 pattern exists precisely so past weeks keep their old times.
+
+---
+
+## 5. Training audit — all 30 weeks (Aug 2026, shipped v2.15)
+
+Prompted by a direct challenge: *"core and legs and upper A appear on a
+Saturday later on?? With a buffer run?? Does the progression make
+sense?"* — a fair one. Five findings; four fixed, two structural
+decisions left open because they change 20 weeks of load and that is
+the athlete's call, not the tool's.
+
+### Fixed
+
+1. **Saturday was carrying a triple stack.** From Wk 11 the day read
+   *easy buffer run → Core + calves → Upper B*, putting loaded soleus
+   ~20 h before a 26–32 km long run. That is precisely the failure mode
+   that moving Lower B off Saturday was meant to eliminate; it had been
+   recreated under a different name and never reconciled against the
+   plan's own stated principle. Core + calves now runs **Tue 20:45,
+   after Upper A** — already at the gym, five days clear of Sunday.
+   Saturday from Wk 4 is Upper B and nothing else.
+2. **Peak long run 32 km → 30 km, capped by time.** 32 km at ~6:45/km
+   is ~3h36. Past ~3h20 the injury and recovery cost climbs faster than
+   the aerobic return. Wk 27 Sunday now reads "cap at 3h20, run by
+   time": if easy pace is slower on the day, the distance gives.
+3. **Week table reconciled with the days it builds.** Wk 17 40 → 36 km,
+   Wk 24 48 → 35 km. Both are race weeks whose special-day overrides
+   replace the standard runs, so the headline numbers had drifted and
+   overstated two cutbacks by 10–25%.
+4. **Two rules promoted to CLAUDE.md §12** so neither can drift back:
+   long runs capped by *time* not distance; *Saturday belongs to
+   Sunday* (no legs, no calves, no intensity from Wk 4 on). Both have
+   test coverage — including a negative assertion that no calf work
+   appears on any Saturday in peak Build.
+
+### Deliberately not changed
+
+5. **The long run is 50–58% of weekly volume** against the usual
+   30–35% guidance. This is structural, not sloppy: weekday runs are
+   capped ~9 km by the 17:10 start against the 18:30 dinner anchor, so
+   the only place volume can go is Sunday. It is the plan's largest
+   remaining injury exposure and it has exactly two fixes, both of
+   which need a human decision:
+   - **A fifth run** (Friday ~07:00 before the German block, or
+     something light restored to Monday). A 6 km fifth run at Wk 20
+     drops the long-run share from 52% to ~47%. This is the only
+     change that addresses the cause rather than the symptom.
+   - **Rebalancing weekday km upward**, which runs straight into the
+     dinner anchor — declared non-negotiable in §5.
+6. **No VO2max block added.** The marathon is threshold-limited; Wk 8's
+   2-mile TT and Wk 17's parkrun already supply top-end stimulus; and
+   the plan is carrying elevated long-run load as it is. Intervals on
+   top would be volume for its own sake.
