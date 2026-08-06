@@ -138,6 +138,10 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
   18:30 dinner · **19:30 Gym — Upper A** (bench/row/OHP/dips/curls;
   drive over, no run-commute — legs are for running) · 20:45 wind down ·
   22:00 read · 22:30 sleep.
+- **Wks 11+ :** Upper A 19:30–20:45 is followed by **Core + calves
+  20:45–21:10** (~25 min, already at the gym), then wind down 21:10.
+  Tuesday is five days clear of the Sunday long run — the only slot in
+  the week where calf loading costs nothing.
 
 Upper A every era: **bench 4×6–8 (pull-aparts 4×15–20 in the rests) ·
 row 4×6–8 · OHP 3×8 · weighted dips 3×8–10 · EZ bar curls 3×10–12 ·
@@ -169,9 +173,10 @@ skip — §7/§9) · evening free at Mum's · 22:00 read · sleep.
 ### Saturday — buffer run + study
 07:30 wake + Anki · 08:00 breakfast · **08:30 Easy buffer run (Sat km)**
 — if Sat km = 0 (most of Base): no run ·
-after the run: **Wks 1–3 (as lived): Lower B ~50 min** · **from Wk 11:
-Core + calves ~25 min** (stays through Build, optional in Taper) —
-no leg work Wks 4–10 (Lower B lives on Monday) ·
+after the run: **Wks 1–3 (as lived): Lower B ~50 min** — and **no leg
+or calf work on any Saturday from Wk 4 onward**. The day before the long
+run stays fresh; that is the whole reason Lower B left Saturday, and
+Core + calves lives on Tuesday for the same reason ·
 **10:00 Gym — Upper B** (from Wk 4; Fri 13:00 in Wks 1–3) · shower ·
 12:00 lunch · 13:00–16:30 OU/HNC study · 16:30 free (social/hobbies) ·
 19:00 dinner (carb-forward from Wk 14 whenever tomorrow’s long run
@@ -189,8 +194,11 @@ Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
 - Fri German active end: 12:00 (Base) → 11:30 (Build) → 10:30 (Wk 23+ and Taper).
 - Mon gym: punchbag (Wks 1–3, retired) → Lower B 17:10 (Wks 4–10) →
   Lower B maintenance (Wks 11–16) → zero day (Wk 17+).
-- Sat gym: Lower B (Wks 1–3 as lived) → none (Wks 4–10) → Core +
-  calves ~25 min (Wk 11+; optional in Taper).
+- Sat gym: Lower B (Wks 1–3 as lived) → Upper B only from Wk 4. No
+  lower-body or calf work on a Saturday ever again — Saturday is the
+  long run's rest day.
+- Tue gym: Upper A every era → **+ Core + calves from Wk 11** (stays
+  through Build, optional in Taper).
 - Gym intensity from Wk 23: both upper sessions labelled **maintenance**
   (reduced sets, keep the strength). Race week (30): no gym at all.
 - Lean bulk pauses ~Oct–Jan: eat maintenance-plus to fuel mileage.
@@ -224,11 +232,15 @@ the 3D look).
   rep range on every set → +2.5 kg next week (upper days only; Lower B
   holds at RPE ≤ 7, it is insurance not progression) · rest 2–3 min on
   compounds, 60–90 s on accessories.
-- **Core + calves — Sat from Wk 11 (~25 min):** straight-leg calf
-  raises 2×15 · bent-knee calf raises 2×12 (soleus — the marathon
-  muscle) · plank 3×45s · side plank 2×30s/side · dead bugs 3×10 ·
-  glute bridges 2×15 · calves + hips stretch. Non-negotiable through
-  Build — the trunk and calves carry km 30+; optional again in Taper.
+- **Core + calves — Tue 20:45, from Wk 11 (~25 min, after Upper A):**
+  straight-leg calf raises 2×15 · bent-knee calf raises 2×12 (soleus —
+  the marathon muscle) · plank 3×45s · side plank 2×30s/side · dead
+  bugs 3×10 · glute bridges 2×15 · calves + hips stretch.
+  Non-negotiable through Build — the trunk and calves carry km 30+;
+  optional again in Taper. **It sits on Tuesday, not Saturday:** loaded
+  calves ~20 h before a 26–32 km long run is the exact mistake moving
+  Lower B off Saturday was meant to prevent. Tuesday is five days clear
+  of Sunday and he is already at the gym.
 - **Maintenance from Wk 23 (both upper days):** 2 hard sets per lift,
   3 reps in reserve (pull-aparts and rear delts stay — they cost
   nothing). Strength holds on far less than it was built on.
@@ -257,17 +269,17 @@ session · Sunday session · flags/notes.
 | 14 | 28 Sep–4 Oct | Build | 42 | 22 | 5×3 min @ threshold | Long 22 — last 6 @ MP | First MP work; OU modules start |
 | 15 | 5–11 Oct | Build | 46 | 24 | Tempo 25 min | Long 24 — last 6 @ MP | |
 | 16 | 12–18 Oct | Build | 50 | 26 | 4×5 min @ threshold | Long 26 — last 8 @ MP | |
-| 17 | 19–25 Oct | Build | 40 | 16 | Easy 5 (race week) | Long 16 easy — recovery | CUTBACK · KEY · **PARKRUN 5K PB Sat** · no basketball |
+| 17 | 19–25 Oct | Build | 36 | 16 | Easy 5 (race week) | Long 16 easy — recovery | CUTBACK · KEY · **PARKRUN 5K PB Sat** · no basketball |
 | 18 | 26 Oct–1 Nov | Build | 50 | 26 | Tempo 30 min | Long 26 — 2×5 @ MP | |
 | 19 | 2–8 Nov | Build | 54 | 28 | 6×3 min @ threshold | Long 28 — last 10 @ MP | |
 | 20 | 9–15 Nov | Build | 58 | 30 | Tempo 2×15 min | Long 30 — 12 @ MP | KEY · first 30 km |
 | 21 | 16–22 Nov | Build | 46 | 22 | Easy + strides | Long 22 easy | CUTBACK |
 | 22 | 23–29 Nov | Build | 56 | 28 | Tempo 30 min | Long 28 — last 10 @ MP | KEY · racer arrives, keep boxed |
 | 23 | 30 Nov–6 Dec | Build | 60 | 30 | Tempo 2×15 min | Long 30 — last 12 @ MP (Evo SL) | KEY · peak volume · Pro 4 fit-check Tue |
-| 24 | 7–13 Dec | Build | 48 | 21 | — | — | KEY · **TUNE-UP half** · no basketball (see §9) |
+| 24 | 7–13 Dec | Build | 35 | 21 | — | — | KEY · **TUNE-UP half** · no basketball (see §9) |
 | 25 | 14–20 Dec | Build | 46 | 22 | Easy | Long 22 easy | CUTBACK · optional Pro 4 parkrun Sat (controlled) |
 | 26 | 21–27 Dec | Build | 56 | 26 | Tempo 20 min | **DRESS REHEARSAL 26 km — last 14–16 @ MP (Pro 4)** | KEY · off work · Christmas Fri · no basketball |
-| 27 | 28 Dec–3 Jan | Build | 58 | 32 | Easy + strides | **PEAK 32 km easy/steady (Evo SL)** | KEY · off work · NYD Fri · no basketball |
+| 27 | 28 Dec–3 Jan | Build | 58 | 30 | Easy + strides | **PEAK 30 km easy/steady (Evo SL) — cap at 3h20, run by time** | KEY · off work · NYD Fri · no basketball |
 | 28 | 4–10 Jan | Taper | 40 | 18 | Easy + strides | Long 18 — mid 6–8 @ MP (Pro 4 sharpener) | KEY · taper begins |
 | 29 | 11–17 Jan | Taper | 28 | 13 | 5×3 min @ MP | Long 13 easy | Fresh is the goal |
 | 30 | 18–24 Jan | Taper | 15 | 42.2 | — | — | **RACE WEEK** (see §9) · no basketball |
@@ -397,15 +409,25 @@ from mile 22.
 7. The December tune-up sets the race pace — ambition doesn't.
 8. From October, evening runs are dark runs: headtorch, hi-vis, lit
    routes.
+9. **Long runs are capped by time, not distance: ~3h20 maximum.** Past
+   that the injury and recovery cost climbs faster than the aerobic
+   return, and at 6:45/km 3h20 is 30 km. If easy pace is slower on the
+   day, cut the distance — never chase the number.
+10. **Saturday belongs to Sunday.** No leg work, no calf work, no
+   intensity on a Saturday from Wk 4 on. The buffer run is easy or it
+   doesn't happen.
 
 ## 13. Sacrifice ledger (what changed vs life-planner v6.4, and why)
 
 - **Gym 5 → 2 sessions** (Upper A Tue 19:30 · Upper B Sat 10:00 —
   Fri 13:00 until Wk 4, when fragile Fridays lost it).
-  Lower A cut immediately; Lower B light through Base then retired from
-  Wk 11 (deadlifts the day before long runs don't mix). Sunday
-  full-body replaced by the long run. Running owns the legs; lean bulk
-  pauses ~Oct–Jan, regained after the race.
+  Lower A cut immediately; Lower B light on Monday through Base,
+  maintenance Wks 11–16, retired from Wk 17 (deadlifts near long runs
+  don't mix). What survives of leg work is **Core + calves on Tuesday
+  from Wk 11** — the soleus and trunk get their insurance dose five
+  days clear of Sunday. Sunday full-body replaced by the long run.
+  Running owns the legs; lean bulk pauses ~Oct–Jan, regained after the
+  race.
 - **Runs live in the evening gaps** (Tue 16:15, Wed/Thu 17:10) and
   weekend mornings — built around the 18:30 dinner anchor. No 05:30 alarms;
   sleep protected.

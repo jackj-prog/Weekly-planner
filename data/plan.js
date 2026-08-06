@@ -31,6 +31,24 @@ const UPPER_A = {
   ],
 };
 
+/* Trunk and calves — the tissue that carries km 30+. Lives on TUESDAY from
+   Wk 11 (after Upper A, already at the gym), five days clear of the Sunday
+   long run. Deliberately not Saturday: calf loading the day before a 30 km
+   run is exactly what moving Lower B off Saturday was meant to prevent. */
+const CORE_CALVES = {
+  title: 'Core + calves', cat: 'gym', doable: true,
+  detail: '~25 min after Upper A — the soleus and the trunk carry km 30+. Light loads, this is insurance not training',
+  plan: [
+    { ex: 'Straight-leg calf raises', sets: '2 × 15' },
+    { ex: 'Bent-knee calf raises',    sets: '2 × 12 — soleus, the marathon muscle' },
+    { ex: 'Plank',                    sets: '3 × 45s' },
+    { ex: 'Side plank',               sets: '2 × 30s/side' },
+    { ex: 'Dead bugs',                sets: '3 × 10' },
+    { ex: 'Glute bridges',            sets: '2 × 15' },
+    { ex: 'Calves + hips stretch',    sets: '~5 min' },
+  ],
+};
+
 const UPPER_B = {
   title: 'Gym — Upper B', cat: 'gym', doable: true, gym: 'upper',
   detail: 'Ramp 2 warm-up sets on incline · same rule: top of the range → +2.5 kg · add weight to pull-ups past 10 reps · superset curls + pushdowns to hold the slot',
@@ -203,17 +221,17 @@ const PLAN = {
       { wk: 14, phase: 'build', km: 42, lr: 22, wed: '5×3 min @ threshold', sun: 'Long 22 — last 6 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL', notes: 'First MP work; OU modules start' },
       { wk: 15, phase: 'build', km: 46, lr: 24, wed: 'Tempo 25 min',   sun: 'Long 24 — last 6 @ MP',  wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
       { wk: 16, phase: 'build', km: 50, lr: 26, wed: '4×5 min @ threshold', sun: 'Long 26 — last 8 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
-      { wk: 17, phase: 'build', km: 40, lr: 16, wed: 'Easy 5 (race week)', sun: 'Long 16 easy — recovery', wedShoe: 'Ghost', lrShoe: 'Ghost', cutback: true, key: true, noBasketball: true, notes: 'PARKRUN 5K PB Sat' },
+      { wk: 17, phase: 'build', km: 36, lr: 16, wed: 'Easy 5 (race week)', sun: 'Long 16 easy — recovery', wedShoe: 'Ghost', lrShoe: 'Ghost', cutback: true, key: true, noBasketball: true, notes: 'PARKRUN 5K PB Sat' },
       { wk: 18, phase: 'build', km: 50, lr: 26, wed: 'Tempo 30 min',   sun: 'Long 26 — 2×5 @ MP',     wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
       { wk: 19, phase: 'build', km: 54, lr: 28, wed: '6×3 min @ threshold', sun: 'Long 28 — last 10 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
       { wk: 20, phase: 'build', km: 58, lr: 30, wed: 'Tempo 2×15 min', sun: 'Long 30 — 12 @ MP',      wedShoe: 'Evo SL', lrShoe: 'Evo SL', key: true, notes: 'First 30 km' },
       { wk: 21, phase: 'build', km: 46, lr: 22, wed: 'Easy + strides', sun: 'Long 22 easy',           wedShoe: 'Evo SL', lrShoe: 'Ghost', cutback: true },
       { wk: 22, phase: 'build', km: 56, lr: 28, wed: 'Tempo 30 min',   sun: 'Long 28 — last 10 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL', key: true, notes: 'Racer arrives, keep boxed' },
       { wk: 23, phase: 'build', km: 60, lr: 30, wed: 'Tempo 2×15 min', sun: 'Long 30 — last 12 @ MP (Evo SL)', wedShoe: 'Evo SL', lrShoe: 'Evo SL', key: true, notes: 'Peak volume · Pro 4 fit-check Tue' },
-      { wk: 24, phase: 'build', km: 48, lr: 21, wed: null, sun: null,  key: true, noBasketball: true, notes: 'TUNE-UP half (see §9)' },
+      { wk: 24, phase: 'build', km: 35, lr: 21, wed: null, sun: null,  key: true, noBasketball: true, notes: 'TUNE-UP half (see §9)' },
       { wk: 25, phase: 'build', km: 46, lr: 22, wed: 'Easy',           sun: 'Long 22 easy',           wedShoe: 'Ghost',  lrShoe: 'Ghost', cutback: true, notes: 'Optional Pro 4 parkrun Sat (controlled)' },
       { wk: 26, phase: 'build', km: 56, lr: 26, wed: 'Tempo 20 min',   sun: 'DRESS REHEARSAL 26 km — last 14–16 @ MP (Pro 4)', wedShoe: 'Evo SL', lrShoe: 'Pro 4', key: true, offWork: true, noBasketball: true, notes: 'Off work · Christmas Fri' },
-      { wk: 27, phase: 'build', km: 58, lr: 32, wed: 'Easy + strides', sun: 'PEAK 32 km easy/steady (Evo SL)', wedShoe: 'Evo SL', lrShoe: 'Evo SL', key: true, offWork: true, noBasketball: true, notes: 'Off work · NYD Fri' },
+      { wk: 27, phase: 'build', km: 58, lr: 30, wed: 'Easy + strides', sun: 'PEAK 30 km easy/steady (Evo SL) — cap at 3h20, run by time', wedShoe: 'Evo SL', lrShoe: 'Evo SL', key: true, offWork: true, noBasketball: true, notes: 'Off work · NYD Fri' },
       { wk: 28, phase: 'taper', km: 40, lr: 18, wed: 'Easy + strides', sun: 'Long 18 — mid 6–8 @ MP (Pro 4 sharpener)', wedShoe: 'Evo SL', lrShoe: 'Pro 4', key: true, notes: 'Taper begins' },
       { wk: 29, phase: 'taper', km: 28, lr: 13, wed: '5×3 min @ MP',   sun: 'Long 13 easy',           wedShoe: 'Evo SL', lrShoe: 'Ghost', notes: 'Fresh is the goal' },
       { wk: 30, phase: 'taper', km: 15, lr: 42.2, wed: null, sun: null, race: true, key: true, noBasketball: true, notes: 'RACE WEEK (see §9)' },
@@ -242,18 +260,12 @@ const PLAN = {
         ] },
       /* Wk 4+: Lower B moves to Monday (day AFTER the long run) — Saturday
          legs stay fresh. Wks 1–3 keep the old slot so history stays true. */
+      /* Nothing on Saturday from Wk 4 onward. Core + calves used to sit
+         here from Wk 11, which put calf loading ~20 h before a 26–32 km
+         long run and contradicted the reason Lower B was moved off in the
+         first place. It now lives on Tuesday (see the Wk 11 scaffold),
+         five days clear of Sunday. */
       { fromWk: 4, none: true },
-      { fromWk: 11, mins: 25, title: 'Core + calves',
-        detail: 'Lower B retired — running owns the legs. The trunk and calves carry km 30+, so this stays through Build; optional again in taper',
-        plan: [
-          { ex: 'Straight-leg calf raises', sets: '2 × 15' },
-          { ex: 'Bent-knee calf raises',    sets: '2 × 12 — soleus, the marathon muscle' },
-          { ex: 'Plank',                sets: '3 × 45s' },
-          { ex: 'Side plank',           sets: '2 × 30s/side' },
-          { ex: 'Dead bugs',            sets: '3 × 10' },
-          { ex: 'Glute bridges',        sets: '2 × 15' },
-          { ex: 'Calves + hips stretch', sets: '~5 min' },
-        ] },
     ],
     gymMaintenanceFromWk: 23,   // both upper sessions → maintenance (reduced sets, keep the strength)
     bulkNote: 'Lean bulk pauses ~Oct–Jan: eat maintenance-plus to fuel mileage.',
@@ -461,6 +473,23 @@ const PLAN = {
          stay through the first half of Build at a cost Wednesday won't
          notice. (Wk 11 is still a work Monday; college takes over Wk 12.) */
       { fromWk: 11, days: {
+        /* Tuesday picks up Core + calves after Upper A — moved off Saturday
+           so the calves are five days clear of the Sunday long run. */
+        1: [
+          { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating', cat: 'routine', quiet: true },
+          { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
+          { t: '07:00', end: '12:00', title: 'Work', detail: 'Quiet spells = OU study — never flat out', cat: 'work', quiet: true },
+          { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+          { t: '13:00', end: '16:30', title: 'Work', detail: 'More OU in the gaps', cat: 'work', quiet: true },
+          { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
+          { t: '17:10', run: 'tue' },
+          { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
+          Object.assign({ t: '19:30', end: '20:45' }, UPPER_A),
+          Object.assign({ t: '20:45', end: '21:10' }, CORE_CALVES),
+          { t: '21:10', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
+          { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+          { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+        ],
         0: [
           { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating — non-negotiable', cat: 'routine', quiet: true },
           { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
