@@ -705,7 +705,7 @@ const PLAN = {
           3: { blocks: 'holidayThu' },
           4: { blocks: [
             { t: '08:00', end: '08:30', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
-            { t: '08:30', end: '21:30', title: 'New Year’s Day — REST', detail: 'Feet up, family. Peak 32 km is in two days.', cat: 'free', quiet: true },
+            { t: '08:30', end: '21:30', title: 'New Year’s Day — REST', detail: 'Feet up, family. The peak 30 km is in two days.', cat: 'free', quiet: true },
             { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
             { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
           ] },

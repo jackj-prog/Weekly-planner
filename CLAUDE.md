@@ -331,7 +331,7 @@ Tue: easy 6. Wed: easy 5 + strides. Thu: REST. Fri: NO basketball. Sat:
 breakfast · run of the day at ~09:30 (Mon: full rest, no run) ·
 family/free through the day · one light OU block ~90 min · family
 evening · read 22:00. Christmas Day (Fri Wk 26): full rest, family, no
-Anki guilt. New Year's Day (Fri Wk 27): rest — peak 32 km is in two days.
+Anki guilt. New Year's Day (Fri Wk 27): rest — peak 30 km is in two days.
 
 **Week 30 — race week, day by day.**
 - Mon: college — HND · easy 5 (16:15) · free evening, feet up.
