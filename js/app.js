@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.13.0';
+  const APP_VERSION = '2.14.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -753,12 +753,22 @@
     view.appendChild(el('<div class="ref"><h1>Reference</h1></div>'));
     view.appendChild(el(
       '<div class="race-card">' +
-      '<div class="rc-kicker">The race · ' + esc(fmtDate(PLAN.race.date)) + ' · gun ~' + esc(PLAN.race.gun) + '</div>' +
+      '<div class="rc-kicker">🇨🇾 ' + esc(PLAN.race.name) + '</div>' +
+      '<div class="rc-where">' + esc(fmtDate(PLAN.race.date)) + ' · gun ' + esc(PLAN.race.gun) +
+      (PLAN.race.city ? ' · ' + esc(PLAN.race.city) : '') + '</div>' +
       '<div class="rc-goal">' + esc(PLAN.race.goal) + '<small>' + esc(PLAN.race.goalPace) + '</small></div>' +
       '<div class="rc-meta"><span>Stretch bet ' + esc(PLAN.race.stretch) + ' · ' + esc(PLAN.race.stretchPace) + '</span>' +
       '<span class="rc-cd">' + esc(cdBit) + '</span></div>' +
       '</div>'
     ));
+    if (PLAN.race.course || PLAN.race.conditions) {
+      view.appendChild(el(
+        '<div class="ref"><h2>The course</h2>' +
+        (PLAN.race.course ? '<div class="ref-note">' + esc(PLAN.race.course) + '</div>' : '') +
+        (PLAN.race.conditions ? '<div class="ref-note">' + esc(PLAN.race.conditions) + '</div>' : '') +
+        '</div>'
+      ));
+    }
     view.appendChild(el(
       '<div class="ref">' +
       '<h2>Paces</h2><div class="ref-card">' +

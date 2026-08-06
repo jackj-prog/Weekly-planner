@@ -418,11 +418,15 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* the race statement card (Reference) */
 .race-card {
   position: relative; overflow: hidden;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 80%, #14100e), var(--accent));
+  /* Mediterranean sunrise — the gun goes off five minutes before dawn */
+  background:
+    radial-gradient(120% 85% at 88% 108%, color-mix(in srgb, var(--phase-taper) 62%, transparent) 0%, transparent 62%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 80%, #14100e), var(--accent));
   color: #fff; border-radius: 16px; padding: 15px 16px 13px; margin: 0 0 6px;
   box-shadow: 0 12px 30px color-mix(in srgb, var(--accent) 38%, transparent);
 }
-.rc-kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.85; }
+.rc-kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.92; }
+.rc-where { font-family: var(--mono); font-size: 11px; opacity: 0.78; margin-top: 2px; }
 .rc-goal { font-family: var(--display); font-weight: 900; font-size: 54px; line-height: 1.08; letter-spacing: -0.01em; }
 .rc-goal small { font-family: var(--mono); font-size: 13px; font-weight: 400; margin-left: 10px; opacity: 0.92; letter-spacing: 0; }
 .rc-meta {

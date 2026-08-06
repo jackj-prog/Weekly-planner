@@ -14,7 +14,9 @@ data, day structures, times, or rules below unless explicitly asked.
 
 - User: 25, engineering apprentice. Works Mon/Wed/Thu,
   college Tuesday (until ~Sep 2026), structured self-study otherwise.
-- Mission: first marathon, **Sun 24 Jan 2027, gun ~09:00**.
+- Mission: first marathon — **Bank of Cyprus Nicosia Marathon, Cyprus,
+  Sun 24 Jan 2027, gun 06:45** (pre-dawn; sunrise ≈06:50). Flat and fast:
+  ~120 m climb over 42.2 km. Requires international travel (UTC+2).
 - Block: 30 weeks, **Mon 29 Jun 2026 → Sun 24 Jan 2027**.
 - Goal: **4:00** (5:41/km). Stretch bet: **sub-3:45** (5:20/km).
   A December tune-up half recalibrates the target (see §10).
@@ -320,23 +322,35 @@ evening · read 22:00. Christmas Day (Fri Wk 26): full rest, family, no
 Anki guilt. New Year's Day (Fri Wk 27): rest — peak 32 km is in two days.
 
 **Week 30 — race week, day by day.**
-- Mon: college — HND · easy 5 (16:15, home off college) · dinner · free
-  evening, feet up.
-- Tue: work · easy 4 (17:10) · dinner · OU 1.5h (19:30, the gym slot) ·
-  NO gym.
-- Wed: work · easy 4 + strides · dinner · OU light.
-- Thu: work · shakeout 3–4 km (last run) · dinner · protected evening + reading anchor.
-- Fri: no German block (rest the brain) · kit prep + logistics (number,
-  gels, drop bag, route) 12:45 · Mum's from 15:30 · NO basketball.
-- Sat: big carb breakfast · rest (optional 2 km leg-loosener) · carb
-  lunch · feet up · early carb dinner 17:00 · final kit layout
-  (Pro 4s, race socks, gels, vaseline, alarm) · wind down early · lights
-  out 22:00.
-- Sun RACE DAY: 06:00 wake, porridge + coffee (3h before gun), sip
-  water · 07:00 travel, warm layers · 08:00 bag drop, toilet queue,
-  1 km jog + strides · **09:00 MARATHON 42.2 km — Pro 4 · 5:41/km goal ·
-  negative split · gel every 35–40 min** · finish, food, warm kit ·
-  celebrate · eat again, early night.
+- Mon: college — HND · easy 5 (16:15) · free evening, feet up.
+- Tue: work · easy 4 (17:10) · OU 1.5h (19:30, the gym slot) · NO gym.
+- Wed: work · easy 4 + strides · OU light.
+- Thu: work · shakeout 3–4 km (last run at home) · pack.
+- Fri: **TRAVEL DAY** — 05:30 wake, fly UK → Larnaca (~4.5 h) + ~45 min
+  transfer to Nicosia. **Race kit, Pro 4s, gels and number in hand
+  luggage, never the hold.** Check in, 20-min shakeout walk, familiar
+  dinner, lights out 22:00. No German block, no basketball.
+- Sat: 08:00 big carb breakfast · 09:30 number collection (then off the
+  feet — no sightseeing) · **11:00 2 km leg-loosener + strides in full
+  race kit** · carb lunch · feet up · early carb dinner 16:30 · final kit
+  layout + two alarms 17:30 · **lights out 20:15** (brutal, but the alarm
+  is 04:15; 20:15 local is 18:15 UK).
+- Sun RACE DAY: **04:15 alarm** · 04:30 porridge + coffee (~2h15 before
+  the gun — the same breakfast as every long run) · 05:00 kit, vaseline,
+  throwaway layer (6–10 °C and dark) · 05:45 walk to Solomou Square ·
+  06:00 bag drop + toilet queue · 06:20 warm-up 1 km + strides ·
+  **06:45 MARATHON 42.2 km — Pro 4 · 5:41/km goal · negative split · gel
+  every 35–40 min · sunrise 06:50, you run into it · Athalassa false
+  flats run by effort not pace · dress for the finish (low teens), not
+  the start** · finish ~10:45, free recovery massage, food, warm kit ·
+  celebrate · eat again · early night.
+
+**Course & conditions (Nicosia).** Solomou Square → Griva Digeni →
+University of Cyprus → Athalassa National Park → Venetian Walls and Old
+Town → finish Eleftheria Square. ~120 m total climb — genuinely flat.
+January: gun in twilight at 6–10 °C, finishing into the low teens.
+Cyprus is UTC+2, so 06:45 local is 04:45 UK body clock — fly out Friday
+at the latest and shift bedtime earlier in the days before.
 
 ## 10. Paces & the recalibration rule
 

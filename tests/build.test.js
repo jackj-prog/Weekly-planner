@@ -105,6 +105,16 @@ ok(hasBlock(dayOfWeek(24, 6), /TUNE-UP HALF/i), 'wk 24 Sun should hold the tune-
 ok(hasBlock(dayOfWeek(26, 4), /CHRISTMAS.*rest|full rest/i), 'wk 26 Fri should be Christmas rest');
 ok(hasBlock(dayOfWeek(27, 4), /New Year|REST/), 'wk 27 Fri should be NYD rest');
 ok(hasBlock(dayOfWeek(30, 6), /MARATHON/), 'wk 30 Sun should hold the race protocol');
+/* Nicosia race specifics (§9) */
+ok(PLAN.race.gun === '06:45' && /Nicosia/.test(PLAN.race.name), 'race is the Nicosia marathon, 06:45 gun');
+ok(dayOfWeek(30, 6).run && dayOfWeek(30, 6).run.start === '06:45', 'wk 30 Sun gun goes at 06:45');
+ok(hasBlock(dayOfWeek(30, 6), /04:15|Alarm/i), 'race morning starts with the 04:15 alarm');
+ok(hasBlock(dayOfWeek(30, 6), /sunrise/i), 'race brief mentions running into the sunrise');
+ok(hasBlock(dayOfWeek(30, 4), /Fly to Cyprus/i), 'wk 30 Fri is the travel day');
+ok(hasBlock(dayOfWeek(30, 4), /HAND LUGGAGE/), 'travel day warns to carry race kit in hand luggage');
+ok(hasBlock(dayOfWeek(30, 5), /Number collection/i), 'wk 30 Sat collects the number in Nicosia');
+ok(dayOfWeek(30, 5).blocks.some((b) => /Lights out/.test(b.title) && b.start === '20:15'),
+  'wk 30 Sat goes to bed at 20:15 for the 04:15 alarm');
 ok(hasBlock(dayOfWeek(23, 1), /Pro 4 fit-check/i), 'wk 23 Tue run should mention the Pro 4 fit-check');
 function hasDoable(day, re) {
   return day.blocks.some((b) => b.doable && re.test(b.title));
@@ -381,8 +391,8 @@ section('ics export');
   ok(events === expect && expect > 200, 'event count ' + events + ' matches training blocks ' + expect);
 
   const flat = ics.replace(/\r\n /g, '');            // unfold
-  ok(flat.includes('DTSTART:20270124T090000') && flat.includes('DTEND:20270124T130000'),
-    'race day event at 09:00–13:00');
+  ok(flat.includes('DTSTART:20270124T064500') && flat.includes('DTEND:20270124T104500'),
+    'race day event at 06:45–10:45');
   ok(/SUMMARY:MARATHON — 42\.2 km/.test(flat), 'race summary not doubled');
   ok(/SUMMARY:Easy run — \d+ km/.test(flat), 'run summaries carry distance');
   ok(flat.includes('drive over\\, no run-commute'), 'commas escaped');

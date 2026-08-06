@@ -57,13 +57,24 @@ const PLAN = {
 
   /* ---- Race & targets (§1, §10) ------------------------------------- */
   race: {
-    name: 'Marathon',
+    name: 'Bank of Cyprus Nicosia Marathon',
+    city: 'Nicosia, Cyprus',
     date: '2027-01-24',          // Sun 24 Jan 2027
-    gun: '09:00',
+    gun: '06:45',                // pre-dawn start — sunrise ≈ 06:50
+    sunrise: '06:50',
     goal: '4:00',
     goalPace: '5:41/km',
     stretch: 'sub-3:45',
     stretchPace: '5:20/km',
+    course:
+      'Solomou Square → Griva Digeni → University of Cyprus → Athalassa ' +
+      'National Park → Venetian Walls and Old Town → Eleftheria Square. ' +
+      '~120 m total climb over 42.2 km — genuinely flat and fast. Watch the ' +
+      'gentle false flats out at Athalassa: run them by effort, not pace.',
+    conditions:
+      'Gun in twilight at 6–10 °C, sunrise ≈06:50, finishing into the low ' +
+      'teens. Cool start, warming second half — dress for the finish, not ' +
+      'the start line. Cyprus is UTC+2: 06:45 local is 04:45 UK body clock.',
   },
 
   /* ---- Paces (§10) --------------------------------------------------- */
@@ -733,37 +744,41 @@ const PLAN = {
             { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
           ] },
           4: { blocks: [
-            { t: '07:00', end: '07:30', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
-            { t: '07:30', end: '12:00', title: 'Rest the brain', detail: 'No German block this week', cat: 'free', quiet: true },
-            { t: '12:00', end: '12:45', title: 'Lunch', cat: 'meal', quiet: true },
-            { t: '12:45', end: '14:30', title: 'Kit prep + logistics', detail: 'Number, gels, drop bag, route', cat: 'routine', doable: true },
-            { t: '15:30', end: '19:00', title: 'Mum’s — family', detail: 'NO basketball — race Sunday', cat: 'free', quiet: true },
-            { t: '19:00', end: '22:00', title: 'Quiet evening at Mum’s', cat: 'free', quiet: true },
-            { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
-            { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+            { t: '05:30', end: '06:30', title: 'Wake · Anki · final pack', detail: 'Pro 4s, race kit, gels and number in HAND LUGGAGE — never in the hold', cat: 'routine', doable: true },
+            { t: '06:30', end: '15:30', title: 'Fly to Cyprus ✈️', detail: 'UK → Larnaca (~4.5 h) then ~45 min transfer to Nicosia · Cyprus is UTC+2 · sip water the whole way, flying dehydrates', cat: 'routine', quiet: true },
+            { t: '15:30', end: '17:00', title: 'Check in · legs up', detail: 'Unpack, hang the kit, find breakfast for Sunday', cat: 'free', quiet: true },
+            { t: '17:00', end: '17:30', title: 'Shakeout walk', detail: '20 min easy on the legs — flush the flight out, see some daylight to shift the body clock', cat: 'free', quiet: true },
+            { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Familiar food — nothing adventurous from here', cat: 'meal', quiet: true },
+            { t: '19:30', end: '21:30', title: 'Quiet evening', cat: 'free', quiet: true },
+            { t: '21:30', end: '22:00', title: 'Read', cat: 'reading', doable: true },
+            { t: '22:00', end: '23:00', title: 'Lights out — bank this one', detail: 'Two nights out matters more than the night before', cat: 'routine', quiet: true },
           ] },
           5: { blocks: [
             { t: '07:30', end: '08:00', title: 'Wake · Anki', cat: 'routine', quiet: true },
             { t: '08:00', end: '09:00', title: 'Big carb breakfast', cat: 'meal', quiet: true },
-            { t: '09:30', end: '09:50', title: 'Optional 2 km leg-loosener', detail: 'Or full rest — nothing to gain today', cat: 'run', doable: true, runKm: 2, shoe: 'Ghost' },
+            { t: '09:30', end: '11:00', title: 'Number collection', detail: 'Expo and bib — then straight out. Do not spend the day on your feet sightseeing', cat: 'routine', doable: true },
+            { t: '11:00', end: '11:25', title: '2 km leg-loosener + strides', detail: 'In full race kit — shoes, socks, shorts, watch. Last chance to find a problem', cat: 'run', doable: true, runKm: 2, shoe: 'Pro 4' },
             { t: '12:00', end: '13:00', title: 'Carb lunch', cat: 'meal', quiet: true },
-            { t: '13:00', end: '17:00', title: 'Feet up', cat: 'free', quiet: true },
-            { t: '17:00', end: '18:00', title: 'Early carb dinner', cat: 'meal', quiet: true },
-            { t: '18:00', end: '19:00', title: 'Final kit layout', detail: 'Pro 4s, race socks, gels, vaseline, alarm', cat: 'routine', doable: true },
-            { t: '19:00', end: '21:30', title: 'Wind down early', cat: 'free', quiet: true },
-            { t: '21:30', end: '22:00', title: 'Read', cat: 'reading', doable: true },
-            { t: '22:00', end: '23:00', title: 'Lights out 22:00', cat: 'routine', quiet: true },
+            { t: '13:00', end: '16:30', title: 'Feet up', detail: 'Horizontal. Recce the start on a map, not on foot', cat: 'free', quiet: true },
+            { t: '16:30', end: '17:30', title: 'Early carb dinner', detail: 'Eat early — you are up at 04:15', cat: 'meal', quiet: true },
+            { t: '17:30', end: '18:30', title: 'Final kit layout', detail: 'Pro 4s, race socks, gels taped to the belt, vaseline, number pinned, TWO alarms (04:15) · lay it all out tonight', cat: 'routine', doable: true },
+            { t: '18:30', end: '19:45', title: 'Wind down', cat: 'free', quiet: true },
+            { t: '19:45', end: '20:15', title: 'Read', cat: 'reading', doable: true },
+            { t: '20:15', end: '23:00', title: 'Lights out 20:15', detail: 'Brutally early — 20:15 here is 18:15 at home. If sleep will not come, lying still in the dark still counts', cat: 'routine', quiet: true },
           ] },
           6: { blocks: [
-            { t: '06:00', end: '06:45', title: 'Wake — porridge + coffee', detail: '3h before the gun · keep sipping water', cat: 'meal', quiet: true },
-            { t: '07:00', end: '08:00', title: 'Travel', detail: 'Warm layers', cat: 'routine', quiet: true },
-            { t: '08:00', end: '08:50', title: 'Bag drop · toilet queue · warm-up', detail: '1 km jog + strides', cat: 'routine', quiet: true },
-            { t: '09:00', end: '13:00', title: 'MARATHON — 42.2 km', detail: 'Pro 4 · 5:41/km goal · negative split · gel every 35–40 min', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4' },
-            { t: '13:00', end: '14:00', title: 'Finish — food, warm kit', cat: 'meal', quiet: true },
-            { t: '14:00', end: '19:00', title: 'CELEBRATE', detail: 'You are a marathoner', cat: 'free', quiet: true },
-            { t: '19:00', end: '20:00', title: 'Eat again', cat: 'meal', quiet: true },
-            { t: '20:00', end: '21:30', title: 'Early night', cat: 'free', quiet: true },
-            { t: '21:30', end: '22:30', title: 'Lights out — you earned it', cat: 'routine', quiet: true },
+            { t: '04:15', end: '04:30', title: 'Alarm · first sips', detail: 'RACE DAY 🇨🇾 · water and a coffee, no rush', cat: 'routine', quiet: true },
+            { t: '04:30', end: '05:00', title: 'Porridge + coffee', detail: '~2 h 15 before the gun · exactly what you have eaten before every long run · keep sipping water', cat: 'meal', quiet: true },
+            { t: '05:00', end: '05:45', title: 'Kit on · toilet · gels', detail: 'Vaseline everywhere that rubs. Throwaway layer for the start — it is 6–10 °C and dark', cat: 'routine', quiet: true },
+            { t: '05:45', end: '06:00', title: 'To Solomou Square', detail: 'Central start — walk it, it doubles as a warm-up', cat: 'routine', quiet: true },
+            { t: '06:00', end: '06:20', title: 'Bag drop · toilet queue', detail: 'Queue early, queue twice', cat: 'routine', quiet: true },
+            { t: '06:20', end: '06:40', title: 'Warm-up', detail: '1 km jog + 3–4 strides · you do not need much for a marathon', cat: 'run', quiet: true },
+            { t: '06:45', end: '10:45', title: 'MARATHON — 42.2 km 🇨🇾', detail: 'Pro 4 · 5:41/km goal · NEGATIVE SPLIT — first half feels too easy · gel every 35–40 min · sunrise at 06:50, you run into it · flat course, but the Athalassa false flats are run by effort not pace · dress for the finish (low teens), not the start', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4' },
+            { t: '10:45', end: '11:45', title: 'Finish — food, warm kit, massage', detail: 'Free recovery massage at the finish — take it', cat: 'meal', quiet: true },
+            { t: '11:45', end: '17:00', title: 'CELEBRATE ☀️', detail: 'You are a marathoner. In Cyprus. In January.', cat: 'free', quiet: true },
+            { t: '17:00', end: '18:00', title: 'Eat again', cat: 'meal', quiet: true },
+            { t: '18:00', end: '21:00', title: 'Evening — feet up', cat: 'free', quiet: true },
+            { t: '21:00', end: '22:30', title: 'Lights out — you earned it', cat: 'routine', quiet: true },
           ] },
         },
       },
