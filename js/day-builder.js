@@ -91,7 +91,14 @@
   }
 
   /* ---- run block construction ---- */
-  const EASY_PACE_TEXT = '6:20–6:50/km · conversational';
+  /* Easy pace is phase-dependent (§10) — the band tightens and shifts as
+     the aerobic base builds. Content lives in PLAN.easyBands, never here. */
+  function easyBand(week) {
+    return fromWkPick(PLAN.easyBands, week);
+  }
+  function easyPaceText(week) {
+    return easyBand(week).band + '/km · conversational';
+  }
   const TEMPO_PACE_TEXT = 'Tempo 5:05–5:20/km';
 
   function isQuality(session) {
@@ -105,7 +112,7 @@
         km, title: row.sun || 'Long run', shoe: row.lrShoe || 'Ghost',
         paceMin: pace.long,
         detail: /MP|REHEARSAL|PEAK/i.test(row.sun || '') ?
-          'Long-run base 6:20–6:50/km · MP segments 5:41/km' : EASY_PACE_TEXT,
+          'Long-run base ' + easyBand(week).band + '/km · MP segments 5:41/km' : easyPaceText(week),
         hard: true,
       };
       const durMin = Math.ceil(km * pace.long);
@@ -120,7 +127,7 @@
         km, title: quality ? 'Quality run — ' + row.wed : (row.wed || 'Easy run'),
         shoe: row.wedShoe || 'Evo SL',
         paceMin: pace.quality,
-        detail: (quality ? TEMPO_PACE_TEXT : EASY_PACE_TEXT) + ' · warm up 10 min easy first',
+        detail: (quality ? TEMPO_PACE_TEXT : easyPaceText(week)) + ' · warm up 10 min easy first',
         hard: quality,
       };
     }
@@ -128,7 +135,7 @@
     const cue = PLAN.runCues && PLAN.runCues[slot];   // strides/pogos live in the data (§14)
     return {
       km, title: names[slot], shoe: 'Ghost', paceMin: pace.easy,
-      detail: EASY_PACE_TEXT + (cue ? ' · ' + cue : ''),
+      detail: easyPaceText(week) + (cue ? ' · ' + cue : ''),
       hard: false,
     };
   }
@@ -484,7 +491,7 @@
   return {
     buildDay, resolveBlock, weekNumber, dayIndex, distancesForWeek,
     weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
-    pro4Status, runLog,
+    pro4Status, runLog, easyBand,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

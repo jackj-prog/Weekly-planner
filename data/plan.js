@@ -97,11 +97,60 @@ const PLAN = {
 
   /* ---- Paces (§10) --------------------------------------------------- */
   paces: [
-    { type: 'Easy / long-run base',        pace: '6:20–6:50 /km' },
+    { type: 'Easy / long-run base',        pace: 'by phase — see below' },
     { type: 'Marathon pace (4:00 goal)',   pace: '5:41 /km' },
     { type: 'Tempo / threshold',           pace: '5:05–5:20 /km' },
     { type: 'Stretch MP (sub-3:45 bet)',   pace: '5:20 /km' },
   ],
+
+  /* ---- Easy pace, by phase (§10) --------------------------------------
+     A single 6:20–6:50 band for all 30 weeks was wrong: 30 weeks of
+     aerobic work on 15 → 60 km/wk moves easy pace, and a static band
+     hides the improvement. `band` is the legal range on any given day;
+     `good` is what a clear, 7/10 day on the benchmark route should
+     return. The band shifts ~15 s/km across the block — deliberately
+     conservative, because easy pace must stay well clear of MP.
+     THE BAND IS A DESCRIPTION, NOT A TARGET. If the talk test and the
+     clock disagree, the talk test wins every time (rule 1). */
+  easyBands: [
+    { fromWk: 1,  band: '6:25–6:50', good: '6:30–6:40', note: 'Settling in. Four runs a week IS the adaptation — pace is not.' },
+    { fromWk: 7,  band: '6:22–6:47', good: '6:27–6:37', note: 'First tempos land. Easy days should feel easier, not get quicker.' },
+    { fromWk: 14, band: '6:19–6:44', good: '6:24–6:34', note: 'MP work starts. The honest gain here is HR, not the clock.' },
+    { fromWk: 21, band: '6:16–6:41', good: '6:21–6:31', note: 'Peak volume. If this band costs effort you are tired, not slow — take the slow end.' },
+    { fromWk: 28, band: '6:16–6:41', good: '6:21–6:31', note: 'Taper shows up as a lower HR at the same pace. The clock barely moves; you feel dangerous.' },
+  ],
+  /* The band only shifts ~9 s/km across 30 weeks, and that is deliberate:
+     easy pace is anchored to marathon pace, and MP stays 5:41 until the
+     Week 24 half says otherwise (rule 7). Chasing easy pace down toward
+     MP is how easy runs quietly become steady runs. If the tune-up
+     upgrades MP, the band upgrades with it. */
+  easyBandUnlock:
+    'These bands assume the 4:00 target (MP 5:41). If the Week 24 half ' +
+    'says sub-3:45 is on (MP 5:20), easy re-anchors to roughly 6:05–6:30 ' +
+    '— but not one second before the tune-up says so. Easy pace getting ' +
+    'quicker at the SAME heart rate is evidence your MP has moved; easy ' +
+    'pace getting quicker because you pushed is just Sunday’s session ' +
+    'spent early.',
+
+  /* The controlled test. Same day, same route, same shoes — otherwise
+     you are measuring the weather, not your fitness. */
+  benchmark: {
+    slot: 'Thursday easy run — km 2–4, before the strides',
+    conditions: [
+      '8–15 °C, wind under ~15 km/h, dry',
+      'The same flat-ish route every time',
+      'Ghost, never the Evo SL — carbon flatters the number',
+      '7+ hours sleep, 2+ hours after a meal',
+      'Not the day after the long run (Mon/Tue read slow — that is fatigue, not fitness)',
+    ],
+    log: 'Average pace AND average HR over km 2–4, plus the temperature.',
+    expect:
+      'Pace at the same HR should improve ~5–8 s/km per 4-week block early ' +
+      'in Base, easing to ~2–4 s/km by peak Build. Pace improving while HR ' +
+      'climbs is not fitness — that is you pushing, and it gets paid for on ' +
+      'Wednesday and Sunday. Above 18 °C add 10–20 s/km before comparing; ' +
+      'above 24 °C the run is not a benchmark at all.',
+  },
   recalibration:
     'The Week 24 half sets the real target: 1:52–1:55 → sub-4:00 is on · ' +
     '~2:00 → lock 4:10–4:15 and run it smart. Race-day pacing is a negative ' +

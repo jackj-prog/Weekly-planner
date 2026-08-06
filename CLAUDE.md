@@ -368,7 +368,7 @@ at the latest and shift bedtime earlier in the days before.
 
 | Type | Pace |
 |---|---|
-| Easy / long-run base | 6:20–6:50 /km |
+| Easy / long-run base | by phase — see the band table below |
 | Marathon pace (4:00 goal) | **5:41 /km** |
 | Tempo / threshold | 5:05–5:20 /km |
 | Stretch MP (sub-3:45 bet) | 5:20 /km |
@@ -378,6 +378,39 @@ The Week 24 half sets the real target: **1:52–1:55 → sub-4:00 is on ·
 negative split — first half slightly easier than goal. Caveat: the
 half comes six days after the 60 km peak week, so the legs will be
 heavy — read a near-miss generously.
+
+**Easy pace by phase.** A single 6:20–6:50 band for all 30 weeks hid the
+one thing 30 weeks of aerobic work is supposed to move. `band` is the
+legal range on any day; `good` is what a clear, 7/10 day on the
+benchmark route should return.
+
+| Weeks | Band | Clear day, 7/10 |
+|---|---|---|
+| 1–6 | 6:25–6:50 | **6:30–6:40** |
+| 7–13 | 6:22–6:47 | **6:27–6:37** |
+| 14–20 | 6:19–6:44 | **6:24–6:34** |
+| 21–27 | 6:16–6:41 | **6:21–6:31** |
+| 28–30 | 6:16–6:41 | **6:21–6:31** (same clock, lower HR) |
+
+The band shifts only ~9 s/km across the whole block, and that is
+deliberate: easy pace is anchored to marathon pace, and **MP stays 5:41
+until the Week 24 half says otherwise** (rule 7). Chasing easy pace down
+toward MP is how easy runs quietly become steady runs. If the tune-up
+upgrades MP to 5:20, easy re-anchors to ~6:05–6:30 — not one second
+before.
+
+**The band is a description, not a target.** If the clock and the talk
+test disagree, the talk test wins (rule 1).
+
+**Benchmark run — Thursday easy, km 2–4, before the strides.** Same
+route every time, Ghost (never the Evo SL), 8–15 °C, wind under
+~15 km/h, 7+ hours sleep, 2+ hours after food, and never the day after
+the long run. Log average pace **and average HR** over km 2–4, plus the
+temperature. Expect pace at the same HR to improve ~5–8 s/km per 4-week
+block early in Base, easing to ~2–4 s/km by peak Build. Above 18 °C add
+10–20 s/km before comparing; above 24 °C it is not a benchmark.
+**Pace improving while HR climbs is not fitness** — that is Sunday's
+session being spent on a Thursday.
 
 ## 11. Shoe rotation & the Pro 4 budget
 

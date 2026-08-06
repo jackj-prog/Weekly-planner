@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.15.1';
+  const APP_VERSION = '2.16.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -776,6 +776,7 @@
       '<div class="ref-note">' + esc(PLAN.recalibration) + '</div>' +
       '</div>'
     ));
+    view.appendChild(buildEasyBandSection());
     view.appendChild(buildRecalSection());
     /* shoes wear their tier: easy / quality / race */
     const shoeTone = (job) => /race/i.test(job) ? 'var(--accent)'
@@ -865,6 +866,32 @@
   }
 
   /* ---- Pro 4 odometer (§11) ---- */
+  /* Easy pace is the block's slowest-moving progress signal — a static
+     band would hide it. Marks the live phase and names the benchmark. */
+  function buildEasyBandSection() {
+    const wk = DB.weekNumber(todayISO());
+    const live = DB.easyBand(wk);
+    const bands = PLAN.easyBands;
+    const rows = bands.map((b, i) => {
+      const to = i + 1 < bands.length ? bands[i + 1].fromWk - 1 : 30;
+      const span = b.fromWk === to ? 'Wk ' + b.fromWk : 'Wk ' + b.fromWk + '–' + to;
+      const now = b === live;
+      return '<div class="ref-row' + (now ? ' is-now' : '') + '">' +
+        '<span>' + (now ? '<i class="dot" style="background:var(--accent)"></i>' : '') +
+        esc(span) + '</span>' +
+        '<span class="v">' + esc(b.band) + ' · good day <b>' + esc(b.good) + '</b></span></div>';
+    }).join('');
+    const bm = PLAN.benchmark;
+    return el(
+      '<div class="ref"><h2>Easy pace by phase</h2><div class="ref-card">' + rows + '</div>' +
+      '<div class="ref-note"><b>Now (Wk ' + wk + '):</b> band ' + esc(live.band) +
+      '/km · a clear, 7/10 day should return <b>' + esc(live.good) + '</b>. ' + esc(live.note) + '</div>' +
+      '<div class="ref-note"><b>Benchmark:</b> ' + esc(bm.slot) + '. ' + esc(bm.log) + '<br>' +
+      bm.conditions.map((c) => '· ' + esc(c)).join('<br>') + '</div>' +
+      '<div class="ref-note">' + esc(bm.expect) + '</div></div>'
+    );
+  }
+
   function buildOdoSection() {
     const p4 = DB.pro4Status(getDone, todayISO());
     const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));

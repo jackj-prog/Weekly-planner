@@ -344,6 +344,63 @@ section('scaffold eras');
     'standing-week Tuesday is a work day, hobby run at 17:10');
 }
 
+/* ---- 7a2. Easy pace bands (§10) ----
+   The band must progress, stay narrower than the old 30 s catch-all, and
+   never creep close enough to MP that "easy" stops being easy. */
+section('easy pace bands');
+{
+  const secs = (s) => { const [m, x] = s.split(':').map(Number); return m * 60 + x; };
+  const parse = (b) => b.split('–').map(secs);
+  const bands = PLAN.easyBands;
+
+  ok(bands.length >= 3, 'easy pace is phased, not one static band');
+  ok(bands[0].fromWk === 1, 'bands start at week 1 so every week resolves');
+
+  let prevFrom = 0, prevFast = 0, prevSlow = 0;
+  for (const b of bands) {
+    const [fast, slow] = parse(b.band);
+    const [gFast, gSlow] = parse(b.good);
+    ok(b.fromWk > prevFrom, 'band fromWk ascends at wk ' + b.fromWk);
+    ok(slow - fast <= 25, 'band at wk ' + b.fromWk + ' is at most 25 s wide (was 30)');
+    ok(gSlow - gFast <= 12, 'good-day window at wk ' + b.fromWk + ' is tight enough to inspect');
+    ok(gFast >= fast && gSlow <= slow, 'good-day window sits inside the band at wk ' + b.fromWk);
+    /* MP guard: easy must stay ≥ 30 s/km slower than the 5:41 goal MP,
+       and ≥ 40 s/km slower than the 5:20 stretch MP is NOT required —
+       a quicker easy pace is evidence MP has moved, not licence to race. */
+    ok(fast - secs('5:41') >= 35, 'wk ' + b.fromWk + ' easy stays ≥35 s/km clear of goal MP');
+    if (prevFast) {
+      ok(fast <= prevFast && slow <= prevSlow, 'bands never get slower as fitness builds (wk ' + b.fromWk + ')');
+    }
+    prevFrom = b.fromWk; prevFast = fast; prevSlow = slow;
+  }
+
+  const first = parse(bands[0].band)[0];
+  const last = parse(bands[bands.length - 1].band)[0];
+  ok(first - last >= 8 && first - last <= 20,
+    'easy pace shifts 8–20 s/km across the block — anchored to MP, not chasing it (got ' +
+    (first - last) + ' s)');
+
+  /* every week resolves, and the run cards carry that week's band */
+  for (let wk = 1; wk <= 30; wk++) {
+    const band = DB.easyBand(wk);
+    ok(band && band.band && band.good, 'wk ' + wk + ' resolves an easy band');
+  }
+  const wk3Thu = dayOfWeek(3, 3).blocks.find((b) => /Easy run/.test(b.title));
+  const wk22Thu = dayOfWeek(22, 3).blocks.find((b) => /Easy run/.test(b.title));
+  ok(wk3Thu && wk3Thu.detail.includes(DB.easyBand(3).band),
+    'wk 3 easy run card carries the wk 3 band');
+  ok(wk22Thu && wk22Thu.detail.includes(DB.easyBand(22).band),
+    'wk 22 easy run card carries the quicker late-Build band');
+  ok(!wk3Thu.detail.includes(DB.easyBand(22).band),
+    'the wk 3 card does NOT show a late-Build band');
+  ok(wk3Thu.detail !== wk22Thu.detail, 'the run card actually changes across the block');
+
+  ok(PLAN.benchmark && /Thursday/i.test(PLAN.benchmark.slot),
+    'the benchmark run is named and repeatable');
+  ok(PLAN.benchmark.conditions.length >= 4, 'benchmark conditions are specified');
+  ok(/HR/.test(PLAN.benchmark.log), 'the benchmark logs HR, not just pace');
+}
+
 /* ---- 7b. Pro 4 odometer + run log ---- */
 section('pro 4 odometer');
 {
