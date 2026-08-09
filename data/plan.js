@@ -173,6 +173,16 @@ const PLAN = {
   /* The §11 outings as data — drives the odometer. km = Pro 4 kilometres
      within that run (fit-check and sharpener are partial-shoe runs). */
   pro4Cap: 50,
+  /* The block's decisive moments (§7 KEY flags as data) — drives the
+     "next key date" chip. Ordered; di is day index Mon=0. */
+  keyEvents: [
+    { wk: 8,  di: 4, label: '2-MILE TT' },
+    { wk: 17, di: 5, label: 'PARKRUN 5K PB' },
+    { wk: 24, di: 6, label: 'TUNE-UP HALF' },
+    { wk: 26, di: 6, label: 'DRESS REHEARSAL' },
+    { wk: 30, di: 6, label: 'MARATHON' },
+  ],
+
   pro4Outings: [
     { wk: 23, di: 1, km: 5,  label: 'Fit-check (first 5 km of Tue run)' },
     { wk: 25, di: 5, km: 5,  label: 'Controlled parkrun', optional: true },
@@ -186,7 +196,7 @@ const PLAN = {
     'Easy means easy — conversational, or you’re stealing from Wednesday and Sunday.',
     'Cutback weeks are training. No junk km because the number looks small.',
     'Basketball flexes first: skip whenever legs are cooked; already OFF on weeks 17, 24, 26, 27, 30.',
-    'Fuelling is a skill: gels every 35–40 min on every run over 90 min from October. Race day rehearses something practised.',
+    'Fuelling is a skill: gels every 35–40 min on every run over 90 min, from Wk 7 on. Race day rehearses something practised.',
     'Niggle protocol: anything sharp or one-sided = 2 days off running before it becomes 2 weeks. The plan survives missed days, not a stress injury.',
     'Sleep is where training sticks: 22:30 lights out is part of the plan.',
     'The December tune-up sets the race pace — ambition doesn’t.',
@@ -213,7 +223,10 @@ const PLAN = {
   split:  { wed: 0.32, tue: 0.30, thu: 0.24, minKm: 2 },
 
   /* Gels rule (§12 rule 4): every 35–40 min on runs > 90 min, from October. */
-  gels: { fromDate: '2026-10-01', minRunMin: 90, text: 'Gel every 35–40 min' },
+  /* Gut training takes weeks — the rule starts with the first ~100-min
+     long runs (Wk 7), not October, so race day rehearses something
+     practised (rule 4). */
+  gels: { fromDate: '2026-08-10', minRunMin: 90, text: 'Gel every 35–40 min' },
 
   /* Run cues (§6): micro-doses stapled onto the easy runs — pogo hops for
      tendon stiffness/running economy, Thursday strides to stay sharp.
@@ -640,7 +653,16 @@ const PLAN = {
             { t: '14:30', end: '14:45', title: 'Top-up snack', detail: 'Small and simple ~2 h out — banana or toast, or practise a gel', cat: 'meal', quiet: true },
             { t: '15:00', end: '16:00', title: 'Travel to Aberdare', detail: '~1 h — 8-lane certified track, worth the drive', cat: 'routine', quiet: true },
             { t: '16:00', end: '16:25', title: 'Warm-up', detail: '2 km easy + 3–4 build-up strides — never hit a hard effort cold', cat: 'run', quiet: true },
-            { t: '16:30', end: '16:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps, LANE 1 (add ~18 m past the line) · THE SCRIPT — laps 1–2: 1:42–1:43, feeling embarrassingly held back · laps 3–5: hold 1:42 · lap 6: the decision — still controlled? start winding up · laps 7–8: everything. Nothing before lap 6 can win this; everything before lap 6 can lose it — the classic 2-mile death is opening at mile pace and dying by lap 5. A fast day shows up in the LAST two laps, nowhere else · afterwards log the peak HR from the final lap — it recalibrates every training zone for the next 22 weeks', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL' },
+            { t: '16:30', end: '16:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps, LANE 1 (add ~18 m past the line) · THE SCRIPT — laps 1–2: 1:42–1:43, feeling embarrassingly held back · laps 3–5: hold 1:42 · lap 6: the decision — still controlled? start winding up · laps 7–8: everything. Nothing before lap 6 can win this; everything before lap 6 can lose it — the classic 2-mile death is opening at mile pace and dying by lap 5. A fast day shows up in the LAST two laps, nowhere else · afterwards log the peak HR from the final lap — it recalibrates every training zone for the next 22 weeks', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL',
+              table: { title: 'THE SCRIPT — 8 laps, lane 1', cols: ['Lap', 'Target', 'Clock'], rows: [
+                ['1', '1:42–1:43 — held back', '1:42'],
+                ['2', '1:42', '3:25'],
+                ['3', '1:42', '5:07'],
+                ['4', '1:42', '6:49'],
+                ['5', '1:42', '8:31'],
+                ['6', 'THE DECISION', '10:13'],
+                ['7–8', 'everything', 'the close decides it'],
+              ] } },
             { t: '16:45', end: '17:00', title: 'Cool-down jog', detail: 'Never just stop', cat: 'run', quiet: true },
             { t: '17:00', end: '18:00', title: 'Travel home', cat: 'routine', quiet: true },
             { t: '18:00', end: '19:00', title: 'Refuel', detail: 'Proper meal within the hour — carbs and protein', cat: 'meal', quiet: true },
@@ -858,7 +880,17 @@ const PLAN = {
             { t: '05:45', end: '06:00', title: 'To Solomou Square', detail: 'Central start — walk it, it doubles as a warm-up', cat: 'routine', quiet: true },
             { t: '06:00', end: '06:20', title: 'Bag drop · toilet queue', detail: 'Queue early, queue twice', cat: 'routine', quiet: true },
             { t: '06:20', end: '06:40', title: 'Warm-up', detail: '1 km jog + 3–4 strides · you do not need much for a marathon', cat: 'run', quiet: true },
-            { t: '06:45', end: '10:45', title: 'MARATHON — 42.2 km 🇨🇾', detail: 'Pro 4 · 5:41/km goal · NEGATIVE SPLIT — first half feels too easy · gel every 35–40 min · sunrise at 06:50, you run into it · flat course, but the Athalassa false flats are run by effort not pace · dress for the finish (low teens), not the start', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4' },
+            { t: '06:45', end: '10:45', title: 'MARATHON — 42.2 km 🇨🇾', detail: 'Pro 4 · 5:41/km goal · NEGATIVE SPLIT — first half feels too easy · gel every 35–40 min · sunrise at 06:50, you run into it · flat course, but the Athalassa false flats are run by effort not pace · dress for the finish (low teens), not the start', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4',
+              table: { title: 'THE 4:00 PLAN — 5:41/km, negative split', cols: ['At', 'Clock', 'Cue'], rows: [
+                ['5 km',  '28:25',   'settle — this MUST feel too easy'],
+                ['10 km', '56:50',   'rhythm · first gel done, keep drinking'],
+                ['Half',  '1:59:54', 'still holding back — the race has not started'],
+                ['25 km', '2:22:05', 'now it starts · stay smooth'],
+                ['30 km', '2:50:30', 'the real race · Athalassa by effort, not pace'],
+                ['35 km', '3:18:55', 'spend everything you saved'],
+                ['40 km', '3:47:20', 'count people down, one at a time'],
+                ['42.2',  '3:59:49', 'Eleftheria Square — into the sunrise'],
+              ] } },
             { t: '10:45', end: '11:45', title: 'Finish — food, warm kit, massage', detail: 'Free recovery massage at the finish — take it', cat: 'meal', quiet: true },
             { t: '11:45', end: '17:00', title: 'CELEBRATE ☀️', detail: 'You are a marathoner. In Cyprus. In January.', cat: 'free', quiet: true },
             { t: '17:00', end: '18:00', title: 'Eat again', cat: 'meal', quiet: true },

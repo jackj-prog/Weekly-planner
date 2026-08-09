@@ -140,6 +140,32 @@
     };
   }
 
+  /* ---- run-log maths (pure — the app stores, this computes) ----
+     EF = metres per minute ÷ average HR. The single cleanest submaximal
+     fitness signal: rising EF at easy effort = aerobic gain. */
+  function ef(km, sec, hr) {
+    if (!(km > 0) || !(sec > 0) || !(hr > 0)) return null;
+    return (km * 60000 / sec) / hr;
+  }
+  function paceOf(km, sec) {
+    if (!(km > 0) || !(sec > 0)) return null;
+    const s = Math.round(sec / km);
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  /* Next key date (§7 flags as data) — the block's decisive moments,
+     always one glance away. Returns { label, iso, days } or null. */
+  function nextKeyEvent(iso) {
+    if (!PLAN.keyEvents) return null;
+    const b = PLAN.blocks[0];
+    for (const ev of PLAN.keyEvents) {
+      const evIso = addDays(b.start, (ev.wk - 1) * 7 + ev.di);
+      const d = daysBetween(iso, evIso);
+      if (d >= 0) return { label: ev.label, iso: evIso, days: d };
+    }
+    return null;
+  }
+
   /* Evening runs are dark runs once the light goes (§12 rule 8). */
   function darkKitText(iso, startMin) {
     if (!PLAN.darkKit) return null;
@@ -299,6 +325,7 @@
       start: fmtHM(startMin), end: fmtHM(Math.min(endMin, 1439)),
       title: entry.title, detail: entry.detail || '',
       plan: entry.plan || null,            /* structured session (gym) */
+      table: entry.table || null,          /* structured pacing table (race/TT) */
       cat: entry.cat || 'routine',
       doable: !!entry.doable, quiet: !!entry.quiet,
     };
@@ -492,7 +519,7 @@
   return {
     buildDay, resolveBlock, weekNumber, dayIndex, distancesForWeek,
     weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
-    pro4Status, runLog, easyBand,
+    pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

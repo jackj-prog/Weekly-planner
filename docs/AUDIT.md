@@ -180,3 +180,28 @@ the athlete's call, not the tool's.
    2-mile TT and Wk 17's parkrun already supply top-end stimulus; and
    the plan is carrying elevated long-run load as it is. Intervals on
    top would be volume for its own sake.
+
+---
+
+## 6. v3.0 — the final pass (Aug 2026)
+
+The app prescribed but never learned. v3.0 closes the loop:
+
+1. **Run log + EF.** Two-tap logging (time · HR · optional km) on any
+   run hero, past or present. The app computes pace and EF (m/min ÷
+   avg HR) — the metric the 20-week Strava audit rated the strongest
+   fitness signal — and trends easy-run EF on Reference as a sparkline.
+   `runlog-ISO` keys, included in backup/restore.
+2. **Pacing tables as data.** Any block can carry `table`; the TT
+   renders its 8-lap script with cumulative clock, race morning renders
+   the full 4:00 split plan (half at 1:59:54, finish 3:59:49). The
+   renderer is generic; the content lives in plan.js per §14.
+3. **Next key date chip** on today (TT → parkrun → half → dress
+   rehearsal → race), driven by a `keyEvents` array, tested end-to-end.
+4. **Gels from Wk 7, not October.** Gut training takes weeks; the first
+   ~100-minute long run is Wk 7's 15 km. Rule 4 updated in both plan.js
+   and CLAUDE.md; race day now rehearses something genuinely practised.
+
+Deliberately not done: the fifth run (athlete's call — changes 20 weeks
+of load); auto-recalibration of easy bands from logged EF (the human
+reads the trend, the app never silently moves its own goalposts).

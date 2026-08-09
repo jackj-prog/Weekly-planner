@@ -31,7 +31,8 @@ data, day structures, times, or rules below unless explicitly asked.
   no network after first load.
 - Target device: iPhone Safari, installed to home screen (standalone).
   apple-touch-icon, safe-area insets, 390px design width.
-- Persistence: localStorage only, keyed per ISO date (e.g. done-2026-07-01).
+- Persistence: localStorage only, keyed per ISO date (e.g. done-2026-07-01;
+  run log entries as runlog-ISO = {sec, hr, km?}).
 - All asset paths RELATIVE (GitHub Pages serves under /week-os/).
 - Service worker cache name carries a version string; bump on every
   deploy; show an in-app "Updated — reload" toast on new SW.
@@ -66,7 +67,17 @@ First-principles design is welcome. These behaviours are the intent:
 5. Primary navigation: Today + Week. The 30-week plan overview and a
    reference page (paces/shoes/rules) live behind a secondary menu.
 6. A NOW indicator that tracks the clock (minute refresh, date rollover).
-7. Race countdown (weeks + days to gun) always one glance away.
+7. Race countdown (weeks + days to gun) always one glance away, plus the
+   next KEY date (TT → parkrun → half → rehearsal → race) as a chip on
+   today.
+8. **The app closes the loop (v3.0):** any run on or before today can be
+   logged in two taps — time + avg HR (+ optional km override) on the
+   run hero. The app computes pace and EF (m/min ÷ HR), stores it per
+   date (`runlog-ISO`), includes it in backups, and trends easy-run EF
+   on Reference with a sparkline. Prescription AND readback, offline.
+9. Blocks may carry a structured pacing `table` (TT lap script, race
+   splits) — rendered as a mono split table wherever the block renders.
+   Content lives in data/plan.js like everything else.
 
 ## 5. Fixed life scaffold (non-negotiable anchors)
 
@@ -450,8 +461,9 @@ from mile 22.
 2. Cutback weeks are training. No junk km because the number looks small.
 3. Basketball flexes first: skip whenever legs are cooked; already OFF
    on weeks 17, 24, 26, 27, 30.
-4. Fuelling is a skill: gels every 35–40 min on every run over 90 min
-   from October. Race day rehearses something practised.
+4. Fuelling is a skill: gels every 35–40 min on every run over 90 min,
+   from Wk 7 on (gut training takes weeks — the rule starts with the
+   first ~100-min long runs, so race day rehearses something practised).
 5. Niggle protocol: anything sharp or one-sided = 2 days off running
    before it becomes 2 weeks. The plan survives missed days, not a
    stress injury.

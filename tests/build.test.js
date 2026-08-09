@@ -147,9 +147,13 @@ ok(dayOfWeek(1, 2).run && dayOfWeek(1, 2).run.run.km > 0, 'wk 1 Wed should expos
 ok(dayOfWeek(20, 6).run && dayOfWeek(20, 6).run.run.km === 30, 'wk 20 Sun hero should be 30 km');
 ok(dayOfWeek(1, 0).run === null, 'Monday should have no run');
 
-/* Gels rule: from October on runs > 90 min */
+/* Gels rule: from Wk 7 (10 Aug) on runs > 90 min — gut training starts
+   with the first ~100-min long runs, not October (rule 4). */
 ok(/Gel every/i.test(dayOfWeek(20, 6).run.detail), 'wk 20 long run should carry the gel rule');
-ok(!/Gel every/i.test(dayOfWeek(10, 6).run.detail), 'wk 10 (Sep) long run should not carry the gel rule');
+ok(/Gel every/i.test(dayOfWeek(7, 6).run.detail), 'wk 7 long run (15 km ≈ 100 min) starts the gel practice');
+ok(/Gel every/i.test(dayOfWeek(10, 6).run.detail), 'wk 10 long run carries the gel rule');
+ok(!/Gel every/i.test(dayOfWeek(6, 6).run.detail), 'wk 6 long run predates the gel rule');
+ok(!/Gel every/i.test(dayOfWeek(9, 3).run.detail), 'short Thursday runs never carry the gel rule');
 
 /* Phase deltas */
 section('phase deltas');
@@ -412,6 +416,44 @@ section('easy pace bands');
     'the benchmark run is named and repeatable');
   ok(PLAN.benchmark.conditions.length >= 4, 'benchmark conditions are specified');
   ok(/HR/.test(PLAN.benchmark.log), 'the benchmark logs HR, not just pace');
+}
+
+/* ---- 7a3. Run-log maths + key events + pacing tables (v3.0) ---- */
+section('run-log maths · key events · pacing tables');
+{
+  /* EF: 13.07 km in 83:04 (4984 s) at 146 bpm ≈ 1.078 */
+  const v = DB.ef(13.07, 4984, 146);
+  ok(v && Math.abs(v - 1.078) < 0.005, 'EF maths: 13.07 km / 83:04 / 146 bpm ≈ 1.078, got ' + (v && v.toFixed(3)));
+  ok(DB.ef(5, 1800, null) === null && DB.ef(0, 1800, 150) === null, 'EF guards against missing inputs');
+  ok(DB.paceOf(13.07, 4984) === '6:21', 'pace formatting: 4984 s over 13.07 km = 6:21/km');
+  ok(DB.paceOf(0, 100) === null, 'pace guards against zero distance');
+
+  /* key events: ordered, well-formed, each lands on a real run day */
+  ok(PLAN.keyEvents && PLAN.keyEvents.length === 5, 'five key events defined');
+  for (const ev of PLAN.keyEvents) {
+    const d = dayOfWeek(ev.wk, ev.di);
+    ok(d.run && d.run.run.km > 0, 'key event "' + ev.label + '" lands on a day with a run');
+  }
+  const fromToday = DB.nextKeyEvent('2026-08-09');
+  ok(fromToday && /2-MILE/.test(fromToday.label) && fromToday.days === 12,
+    'from 9 Aug the next key event is the TT in 12 days, got ' + JSON.stringify(fromToday));
+  const afterTT = DB.nextKeyEvent('2026-08-22');
+  ok(afterTT && /PARKRUN/.test(afterTT.label), 'after the TT the next key event is the parkrun');
+  const raceDay = DB.nextKeyEvent('2027-01-24');
+  ok(raceDay && /MARATHON/.test(raceDay.label) && raceDay.days === 0, 'race day resolves to the marathon, 0 days out');
+  ok(DB.nextKeyEvent('2027-01-25') === null, 'the day after the race there are no key events left');
+
+  /* pacing tables ride the blocks as data */
+  const tt = dayOfWeek(8, 4).run;
+  ok(tt.table && tt.table.rows.length === 7 && /THE DECISION/.test(tt.table.rows[5][1]),
+    'the TT carries its 7-row lap script with the lap-6 decision');
+  const race = dayOfWeek(30, 6).run;
+  ok(race.table && race.table.rows.length === 8, 'race day carries the 8-point split table');
+  ok(race.table.rows.some((r) => r[0] === 'Half' && r[1] === '1:59:54'),
+    'the 4:00 plan crosses halfway at 1:59:54');
+  ok(race.table.rows.some((r) => /42\.2/.test(r[0]) && /3:59/.test(r[1])),
+    'the 4:00 plan finishes under 4:00');
+  ok(!dayOfWeek(7, 6).run.table, 'ordinary runs carry no pacing table');
 }
 
 /* ---- 7b. Pro 4 odometer + run log ---- */

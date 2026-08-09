@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.18.0';
+  const APP_VERSION = '3.0.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -26,6 +26,7 @@
     weekAnchor: null,          // Monday ISO shown in week view
     expanded: null,            // block id with actions open
     wtEdit: null,              // { block, ex } — weight input open on that row
+    runLogEdit: null,          // ISO date with the run-log form open
   };
   let nowKey = '';             // today's current|next block ids — minute tick
                                // re-renders only when this changes
@@ -254,6 +255,15 @@
     if (day.phase) chips.push('<span class="chip ' + esc(day.phase) + '">' + esc(day.phase) + '</span>');
     if (day.row && day.row.cutback) chips.push('<span class="chip mut">cutback</span>');
     if (day.row && day.row.key) chips.push('<span class="chip hot">key</span>');
+    /* next decisive moment, always one glance away (§4.7 extended) */
+    if (isToday) {
+      const ev = DB.nextKeyEvent(iso);
+      if (ev && ev.days > 0 && day.blockId === 'marathon') {
+        chips.push('<span class="chip ev">' + esc(ev.label) + ' · ' + ev.days + 'd</span>');
+      } else if (ev && ev.days === 0) {
+        chips.push('<span class="chip hot">' + esc(ev.label) + ' — TODAY</span>');
+      }
+    }
     const weekBit = day.blockId === 'marathon' ? 'WK ' + day.week + ' · DAY ' + (day.dayIndex + 1) + '/7'
       : day.blockId === 'recovery' ? 'RECOVERY · WK ' + day.week : 'STANDING WEEK';
     const head = el(
@@ -368,12 +378,68 @@
     return el(html + '</div>');
   }
 
+  /* Structured pacing table (TT lap script, race splits) — renders on any
+     block carrying `table` data. Content stays in plan.js. */
+  function paceTableHTML(t) {
+    if (!t || !t.rows) return '';
+    return '<div class="ptable">' +
+      (t.title ? '<div class="pt-title">' + esc(t.title) + '</div>' : '') +
+      '<table>' +
+      (t.cols ? '<thead><tr>' + t.cols.map((c) => '<th>' + esc(c) + '</th>').join('') + '</tr></thead>' : '') +
+      '<tbody>' + t.rows.map((row) =>
+        '<tr>' + row.map((c, i) => '<td' + (i === 0 ? ' class="pt-k"' : '') + '>' + esc(c) + '</td>').join('') + '</tr>'
+      ).join('') + '</tbody></table></div>';
+  }
+
+  /* ---- run log: time + HR in two taps; the app does the maths ---- */
+  const logKey = (iso) => 'runlog-' + iso;
+  const getRunLogEntry = (iso) => readJSON(logKey(iso), null);
+  function saveRunLogEntry(iso, entry) { writeJSON(logKey(iso), entry); }
+  function parseDuration(str) {
+    const p = String(str).trim().split(':').map((x) => parseInt(x, 10));
+    if (p.some((n) => !isFinite(n) || n < 0)) return null;
+    if (p.length === 3) return p[0] * 3600 + p[1] * 60 + p[2];
+    if (p.length === 2) return p[0] * 60 + p[1];
+    if (p.length === 1) return p[0] * 60;             // bare minutes
+    return null;
+  }
+  function fmtEf(v) { return v == null ? '—' : v.toFixed(3); }
+  function loggedLineHTML(iso, plannedKm) {
+    const e = getRunLogEntry(iso);
+    if (!e) return null;
+    const km = e.km || plannedKm;
+    const pace = DB.paceOf(km, e.sec);
+    const efv = e.hr ? DB.ef(km, e.sec, e.hr) : null;
+    return '<span class="lg-pace">' + esc(pace || '—') + '/km</span>' +
+      (e.hr ? ' · ' + e.hr + ' bpm · <b>EF ' + fmtEf(efv) + '</b>' : '') +
+      (e.km && e.km !== plannedKm ? ' · ' + e.km + ' km' : '');
+  }
+
   function buildHero(day, done, iso, just) {
     const r = day.run;
     const isRace = /marathon/i.test(r.title) || (day.row && day.row.race && day.dayIndex === 6);
     const km = r.run.km;
     const kmTxt = km === Math.round(km) ? String(km) : km.toFixed(1);
     const isDone = !!done[r.id];
+    const canLog = iso <= todayISO();
+    const logged = loggedLineHTML(iso, km);
+    const editing = state.runLogEdit === iso;
+    const e = getRunLogEntry(iso) || {};
+    let logHTML = '';
+    if (editing) {
+      logHTML = '<div class="h-log form">' +
+        '<input class="rl-in" id="rl-time" inputmode="numeric" placeholder="mm:ss" value="' +
+        (e.sec ? esc(fmtDur(e.sec)) : '') + '" aria-label="Run time">' +
+        '<input class="rl-in" id="rl-hr" inputmode="numeric" placeholder="avg HR" value="' +
+        (e.hr || '') + '" aria-label="Average heart rate">' +
+        '<input class="rl-in" id="rl-km" inputmode="decimal" placeholder="' + kmTxt + ' km" value="' +
+        (e.km || '') + '" aria-label="Distance override">' +
+        '<button class="rl-save">Save</button></div>';
+    } else if (logged) {
+      logHTML = '<button class="h-log logged" aria-label="Edit run log">' + logged + '</button>';
+    } else if (canLog) {
+      logHTML = '<button class="h-log" aria-label="Log this run">+ log time · HR</button>';
+    }
     const hero = el(
       '<section class="hero' + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (just === r.id ? ' just' : '') + '">' +
       '<div class="h-tag">' + (isRace ? 'RACE DAY' : 'The run') + ' · ' + r.start + '</div>' +
@@ -381,6 +447,8 @@
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
       '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span><span><b>TIME</b>' + r.start + '–' + r.end + '</span></div>' +
       '<div class="h-detail">' + esc(r.detail) + '</div>' +
+      paceTableHTML(r.table) +
+      logHTML +
       '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="Mark run done">✓</button></section>'
     );
     hero.querySelector('.h-tick').addEventListener('click', () => {
@@ -388,7 +456,35 @@
       toggleDone(iso, r.id);
       render();
     });
+    const logBtn = hero.querySelector('.h-log:not(.form)');
+    if (logBtn) logBtn.addEventListener('click', () => { state.runLogEdit = iso; render(); });
+    const saveBtn = hero.querySelector('.rl-save');
+    if (saveBtn) {
+      const commit = () => {
+        const sec = parseDuration(hero.querySelector('#rl-time').value);
+        const hr = parseInt(hero.querySelector('#rl-hr').value, 10);
+        const kmIn = parseFloat(String(hero.querySelector('#rl-km').value).replace(',', '.'));
+        if (sec && sec > 60) {
+          saveRunLogEntry(iso, {
+            sec,
+            hr: isFinite(hr) && hr > 60 && hr < 230 ? hr : null,
+            km: isFinite(kmIn) && kmIn > 0 && Math.abs(kmIn - km) < km ? kmIn : null,
+          });
+        }
+        state.runLogEdit = null;
+        render();
+      };
+      saveBtn.addEventListener('click', commit);
+      hero.querySelectorAll('.rl-in').forEach((inp) => inp.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter') { ev.preventDefault(); commit(); }
+        if (ev.key === 'Escape') { state.runLogEdit = null; render(); }
+      }));
+    }
     return hero;
+  }
+  function fmtDur(sec) {
+    const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    return (h ? h + ':' + String(m).padStart(2, '0') : String(m)) + ':' + String(s).padStart(2, '0');
   }
 
   function buildCard(b, done, iso, opts) {
@@ -404,6 +500,7 @@
       (opts.current ? ' <span class="nowflag">· NOW</span>' : '') + '</div>' +
       '<div class="c-title">' + esc(b.title) + '</div>' +
       (b.detail ? '<div class="c-detail">' + esc(b.detail) + '</div>' : '') +
+      (b.table ? paceTableHTML(b.table) : '') +
       (b.plan ? '<div class="c-plan">' + b.plan.map((p) => {
         let w = '';
         if (b.cat === 'gym') {
@@ -777,6 +874,7 @@
       '</div>'
     ));
     view.appendChild(buildEasyBandSection());
+    view.appendChild(buildTrainingLogSection());
     view.appendChild(buildRecalSection());
     /* shoes wear their tier: easy / quality / race */
     const shoeTone = (job) => /race/i.test(job) ? 'var(--accent)'
@@ -892,6 +990,72 @@
     );
   }
 
+  /* The app closes the loop: it prescribes the runs AND reads them back.
+     EF (m/min ÷ HR) rising at easy effort = the aerobic base building —
+     the one number the whole block is trying to move. */
+  function buildTrainingLogSection() {
+    const entries = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      const m = k && k.match(/^runlog-(\d{4}-\d{2}-\d{2})$/);
+      if (!m) continue;
+      const e = readJSON(k, null);
+      if (!e || !e.sec) continue;
+      const day = DB.buildDay(m[1]);
+      const km = e.km || (day.run ? day.run.run.km : 0);
+      if (!(km > 0)) continue;
+      entries.push({
+        iso: m[1], km,
+        pace: DB.paceOf(km, e.sec),
+        hr: e.hr || null,
+        ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
+        hard: !!(day.run && day.run.run.hard),
+      });
+    }
+    entries.sort((a, b) => (a.iso < b.iso ? -1 : 1));
+    if (!entries.length) {
+      return el(
+        '<div class="ref"><h2>Training log</h2>' +
+        '<div class="ref-note">Nothing logged yet. After a run, tap <b>+ log time · HR</b> on ' +
+        'the run card — the app computes pace and EF (metres per minute ÷ heart rate) and ' +
+        'trends it here. EF rising while easy runs stay easy is the block working.</div></div>'
+      );
+    }
+    /* sparkline over easy-run EF only — hard days read high by design */
+    const efPts = entries.filter((e) => e.ef != null && !e.hard).slice(-12);
+    let spark = '';
+    if (efPts.length >= 2) {
+      const vals = efPts.map((p) => p.ef);
+      const lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+      const span = (hi - lo) || 0.01;
+      const pts = vals.map((v, i) =>
+        (i * (100 / (vals.length - 1))).toFixed(1) + ',' + (26 - ((v - lo) / span) * 22).toFixed(1)
+      );
+      const delta = ((vals[vals.length - 1] - vals[0]) / vals[0]) * 100;
+      spark =
+        '<div class="ef-spark" role="img" aria-label="EF trend across ' + efPts.length + ' easy runs">' +
+        '<svg viewBox="0 0 100 28" preserveAspectRatio="none">' +
+        '<polyline points="' + pts.join(' ') + '"/>' +
+        '<circle cx="' + pts[pts.length - 1].split(',')[0] + '" cy="' + pts[pts.length - 1].split(',')[1] + '" r="1.8"/>' +
+        '</svg><div class="ef-cap">EF, last ' + efPts.length + ' easy runs · ' +
+        (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%</div></div>';
+    }
+    const rows = entries.slice(-10).reverse().map((e) =>
+      '<div class="ref-row"><span>' + esc(fmtShort(e.iso)) +
+      (e.hard ? ' <i class="dot" style="background:var(--accent)" title="hard session"></i>' : '') +
+      '</span><span class="v">' + e.km + ' km · ' + esc(e.pace || '—') + '/km' +
+      (e.hr ? ' · ' + e.hr + ' <b>' + fmtEf(e.ef) + '</b>' : '') + '</span></div>'
+    ).join('');
+    return el(
+      '<div class="ref"><h2>Training log</h2>' + spark +
+      '<div class="ref-card">' + rows + '</div>' +
+      '<div class="ref-note">EF = metres per minute ÷ avg HR — bold number, higher is fitter. ' +
+      'Compare like with like: easy runs against easy runs (hard days are dotted), and mind ' +
+      'heat — EF reads low above ~18 °C. Rising EF at the same easy effort is exactly what ' +
+      'the §10 bands are waiting for.</div></div>'
+    );
+  }
+
   function buildOdoSection() {
     const p4 = DB.pro4Status(getDone, todayISO());
     const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
@@ -962,7 +1126,7 @@
   }
 
   /* ---- backup / restore (ticks, skips, moves, gym weights, tune-up time) ---- */
-  const STORE_KEY = /^(?:(?:done|ovr|movein)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+|recal)$/;
+  const STORE_KEY = /^(?:(?:done|ovr|movein|runlog)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+|recal)$/;
 
   function buildDataSection() {
     let count = 0;
@@ -983,7 +1147,7 @@
     const wrap = el(
       '<div class="ref"><h2>Data</h2><div class="ref-card data-card">' +
       '<div class="ref-note">' + count + ' entr' + (count === 1 ? 'y' : 'ies') +
-      ' stored on this phone (ticks, skips, gym weights, tune-up time). Backups are a JSON blob — paste one into Notes now and again.</div>' +
+      ' stored on this phone (ticks, skips, gym weights, run log, tune-up time). Backups are a JSON blob — paste one into Notes now and again.</div>' +
       '<div class="ref-note backup-note' + (stale ? ' stale' : '') + '">' + bNote +
       (stale ? ' This phone holds the only copy.' : '') + '</div>' +
       '<div class="data-actions">' +

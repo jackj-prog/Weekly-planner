@@ -725,3 +725,60 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .stat { border-radius: 12px; }
 .wk-day.today { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent), 0 4px 12px rgba(22,36,42,0.05); }
 .plan-row.now { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent), 0 4px 12px rgba(22,36,42,0.05); }
+
+/* ==========================================================================
+   v3.0 — the app closes the loop: pacing tables, run log, EF trend
+   ========================================================================== */
+
+/* next-key-date chip: quiet accent, mono like its siblings */
+.chip.ev { background: var(--phase-build); }
+
+/* structured pacing table (TT lap script, race splits) */
+.ptable { margin-top: 10px; overflow-x: auto; }
+.ptable .pt-title {
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; margin-bottom: 4px;
+}
+.ptable table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+.ptable th {
+  text-align: left; font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase;
+  opacity: 0.6; padding: 2px 8px 4px 0; font-weight: 700;
+}
+.ptable td { padding: 4px 8px 4px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.ptable td.pt-k { font-weight: 700; white-space: nowrap; }
+.hero .ptable td { border-top-color: rgba(255, 255, 255, 0.18); }
+.hero .ptable, .hero .ptable th { color: inherit; }
+
+/* run log — the two-tap "what actually happened" affordance on the hero */
+.h-log {
+  display: block; width: 100%; margin-top: 10px; padding: 8px 10px;
+  font-family: var(--mono); font-size: 12px; font-weight: 700; text-align: left;
+  background: rgba(255, 255, 255, 0.10); color: inherit;
+  border: 1px dashed rgba(255, 255, 255, 0.35); border-radius: 8px; cursor: pointer;
+}
+.h-log.logged { border-style: solid; }
+.h-log .lg-pace { font-size: 14px; }
+.h-log.form { display: flex; gap: 6px; border-style: solid; padding: 6px; }
+.rl-in {
+  flex: 1 1 0; min-width: 0; padding: 7px 6px; font-family: var(--mono); font-size: 13px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink);
+}
+.rl-save {
+  padding: 7px 12px; font-family: var(--mono); font-size: 12px; font-weight: 700;
+  background: var(--ink); color: var(--paper); border: 0; border-radius: 6px; cursor: pointer;
+}
+.hero.done .h-log { display: none; }             /* the stamp owns that corner */
+.hero.done.just .h-log { display: none; }
+
+/* EF sparkline — one line, no axes, the trend IS the message */
+.ef-spark { margin: 2px 0 10px; }
+.ef-spark svg { display: block; width: 100%; height: 44px; }
+.ef-spark polyline {
+  fill: none; stroke: var(--cat-run); stroke-width: 1.6;
+  stroke-linejoin: round; stroke-linecap: round;
+}
+.ef-spark circle { fill: var(--accent); }
+.ef-spark .ef-cap {
+  margin-top: 3px; font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.04em; color: var(--t2);
+}
