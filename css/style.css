@@ -592,14 +592,14 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hero.done { opacity: 0.82; }
 .hero.done::after {
   content: "BANKED";
-  position: absolute; right: 14px; bottom: 14px;
+  position: absolute; right: 16px; top: 64px;
   font-family: var(--mono); font-weight: 700; font-size: 12px;
   letter-spacing: 0.18em; padding: 3px 9px 3px 11px;
   border: 2px solid rgba(255,255,255,0.75); border-radius: 5px;
   transform: rotate(-8deg); color: #fff;
+  pointer-events: none;      /* the stamp must never eat log/share taps */
 }
 .hero.race.done::after { content: "MARATHONER"; }
-.hero.done .h-detail { padding-right: 110px; }   /* clear the stamp */
 
 /* ---- open time between blocks ------------------------------------------- */
 .tl-gap {
@@ -802,4 +802,51 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .ef-spark .ef-cap {
   margin-top: 3px; font-family: var(--mono); font-size: 10.5px;
   letter-spacing: 0.04em; color: var(--t2);
+}
+
+/* ==========================================================================
+   v3.2 — wow pass: skyline, week ring, verdicts, share card
+   ========================================================================== */
+
+/* the block skyline — the whole 30 weeks as one shape */
+.skyline { margin: 4px 0 14px; }
+.skyline svg { display: block; width: 100%; height: auto; }
+.skyline .sky-cap {
+  display: flex; justify-content: space-between; gap: 8px; margin-top: 4px;
+  font-family: var(--mono); font-size: 10px; color: var(--t2); letter-spacing: 0.03em;
+}
+.skyline .sky-cap .v { font-weight: 700; color: var(--text); white-space: nowrap; }
+
+/* week-progress ring in the day header */
+.wkring { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+.wkring svg { width: 26px; height: 26px; transform: rotate(-90deg); }
+.wkring .rg-bg { fill: none; stroke: var(--line); stroke-width: 4; }
+.wkring .rg-fg { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+.wkring .rg-t { font-family: var(--mono); font-size: 11px; color: var(--t2); }
+.wkring .rg-t b { color: var(--text); font-size: 12.5px; }
+
+/* verdict line under the logged run */
+.h-verdict {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-top: 7px; font-family: var(--mono); font-size: 11.5px; font-weight: 700;
+  opacity: 0.92;
+}
+.h-verdict.best { color: #ffd9a8; }
+.h-verdict .h-share {
+  flex: 0 0 auto; width: 34px; height: 34px; font-size: 15px;
+  background: rgba(255, 255, 255, 0.14); color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px;
+}
+
+/* share-card overlay (fallback when the share sheet is unavailable) */
+.card-ov {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 22px; background: rgba(10, 16, 19, 0.9);
+}
+.card-ov img { max-width: 100%; max-height: 72vh; border-radius: 14px; box-shadow: 0 18px 50px rgba(0,0,0,0.5); }
+.card-ov .card-note { font-family: var(--mono); font-size: 12px; color: #eef0ea; opacity: 0.85; }
+.card-ov .card-x {
+  padding: 10px 26px; font-family: var(--mono); font-size: 13px; font-weight: 700;
+  background: #eef0ea; color: #16242a; border-radius: 999px;
 }

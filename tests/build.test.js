@@ -494,6 +494,46 @@ section('run classification + log estimates');
   ok(DB.parsePace('6:35') === 395 && DB.fmtPaceSec(395) === '6:35', 'pace parse/format round-trips');
 }
 
+/* ---- 7a5. Skyline shape + verdicts (v3.2) ---- */
+section('season shape + verdicts');
+{
+  const none = () => null;
+  const shape = DB.seasonShape(none);
+  ok(shape.length === 30, 'the skyline covers all 30 weeks');
+  ok(shape.every((w) => w.banked === 0), 'no ticks → nothing banked');
+  ok(shape[29].race === true && shape[29].km === 15, 'week 30 is the race week');
+  ok(PLAN.keyEvents.every((ev) => shape[ev.wk - 1].key),
+    'every key-event week is flagged on the skyline');
+  ok(shape.filter((w) => w.key).length === 10,
+    'the ten §7 KEY weeks are flagged (5 race days + the flagged build weeks)');
+  ok(shape[22].km === 60, 'peak volume week 23 tops the skyline at 60');
+  ok(shape.filter((w) => w.cutback).length >= 5, 'cutback weeks carried through');
+
+  /* banked km: tick wk 1 Wednesday, expect its km banked in wk 1 */
+  const wed1 = dayOfWeek(1, 2);
+  const fakeDone = (iso) => (iso === wed1.iso ? { [wed1.run.id]: true } : null);
+  const banked = DB.seasonShape(fakeDone);
+  ok(banked[0].banked === wed1.run.run.km, 'ticking a run banks its km in the right week');
+
+  /* verdicts */
+  const hist = [
+    { iso: '2026-07-26', cls: 'long', paceSec: 374, hr: 150, ef: 1.069 },
+    { iso: '2026-08-02', cls: 'long', paceSec: 395, hr: 147, ef: 1.033 },
+    { iso: '2026-08-05', cls: 'easy', paceSec: 373, hr: 143, ef: 1.123 },
+    { iso: '2026-08-09', cls: 'long', paceSec: 381, hr: 146, ef: 1.078 },
+  ];
+  const v = DB.logVerdict(hist, '2026-08-09');
+  ok(v && !v.first && v.dPace === 14 && v.dHr === -1,
+    '9 Aug vs 2 Aug: 14 s/km quicker at −1 bpm — got ' + JSON.stringify(v));
+  ok(v.best === true, '9 Aug is the block-best long-run EF in this history');
+  const v2 = DB.logVerdict(hist, '2026-08-02');
+  ok(v2 && v2.dPace === -21 && v2.best === false,
+    '2 Aug reads honestly slower than 26 Jul, no best flag');
+  const v3 = DB.logVerdict(hist, '2026-08-05');
+  ok(v3 && v3.first === true && v3.best === true, 'first easy log is first + best');
+  ok(DB.logVerdict(hist, '2026-01-01') === null, 'unknown date → no verdict');
+}
+
 /* ---- 7b. Pro 4 odometer + run log ---- */
 section('pro 4 odometer');
 {

@@ -217,6 +217,45 @@
     return null;
   }
 
+  /* The whole block as one shape — drives the Plan-view skyline.
+     banked = ticked run km per week (same source as the Plan stats). */
+  function seasonShape(getDone) {
+    const block = PLAN.blocks[0];
+    const keyWks = new Set((PLAN.keyEvents || []).map((e) => e.wk));
+    return block.weekTable.map((row, i) => {
+      const anchor = addDays(block.start, i * 7);
+      let banked = 0;
+      for (let d = 0; d < 7; d++) {
+        const iso = addDays(anchor, d);
+        const day = buildDay(iso);
+        if (day.run && (getDone(iso) || {})[day.run.id]) banked += day.run.run.km;
+      }
+      return {
+        wk: row.wk, km: row.km, lr: row.lr, phase: row.phase,
+        cutback: !!row.cutback, key: keyWks.has(row.wk) || !!row.key,
+        race: row.wk === block.weeks, banked: Math.round(banked * 10) / 10,
+      };
+    });
+  }
+
+  /* Verdict after a log: this run against the previous of its class, and
+     whether it set the block's best EF for that class. list = chronological
+     [{iso, cls, paceSec, hr, ef}]. */
+  function logVerdict(list, iso) {
+    const idx = list.findIndex((e) => e.iso === iso);
+    if (idx < 0) return null;
+    const cur = list[idx];
+    const prev = list.slice(0, idx).reverse().find((e) => e.cls === cur.cls);
+    const best = cur.ef != null &&
+      list.every((e) => e.iso === iso || e.cls !== cur.cls || e.ef == null || e.ef <= cur.ef);
+    if (!prev) return { first: true, best };
+    return {
+      first: false, best,
+      dPace: prev.paceSec - cur.paceSec,             // + = quicker than last time
+      dHr: cur.hr && prev.hr ? cur.hr - prev.hr : null,  // − = cheaper
+    };
+  }
+
   /* Evening runs are dark runs once the light goes (§12 rule 8). */
   function darkKitText(iso, startMin) {
     if (!PLAN.darkKit) return null;
@@ -572,7 +611,7 @@
     buildDay, resolveBlock, weekNumber, dayIndex, distancesForWeek,
     weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
-    fmtPaceSec, parsePace, runClass, logEstimate,
+    fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, logVerdict,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

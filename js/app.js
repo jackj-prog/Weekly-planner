@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '3.1.0';
+  const APP_VERSION = '3.2.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -273,7 +273,8 @@
       '<h1>' + esc(fmtDate(iso)) + '</h1>' +
       '<button class="nav" data-d="1" aria-label="Next day">›</button></div>' +
       '<div class="sub"><span>' + weekBit + '</span>' + chips.join('') +
-      (day.label ? '<span>' + esc(day.label) + '</span>' : '') + '</div></div>'
+      (day.label ? '<span>' + esc(day.label) + '</span>' : '') +
+      (day.blockId === 'marathon' ? weekRingHTML(iso) : '') + '</div></div>'
     );
     head.querySelectorAll('.nav').forEach((btn) => btn.addEventListener('click', () => {
       state.dateISO = DB.addDays(iso, Number(btn.getAttribute('data-d')));
@@ -409,7 +410,10 @@
       if (!day.run) continue;
       const km = e.km || day.run.run.km;
       if (!(km > 0)) continue;
-      out.push({ iso: m[1], cls: DB.runClass(day.run), paceSec: Math.round(e.sec / km), hr: e.hr || null });
+      out.push({
+        iso: m[1], cls: DB.runClass(day.run), paceSec: Math.round(e.sec / km),
+        hr: e.hr || null, ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
+      });
     }
     out.sort((a, b) => (a.iso < b.iso ? -1 : 1));
     return out;
@@ -454,6 +458,23 @@
         '<button class="rl-x" aria-label="Cancel">✕</button></div></div>';
     } else if (logged) {
       logHTML = '<button class="h-log logged" aria-label="Edit run log">' + logged + '</button>';
+      const v = DB.logVerdict(runLogHistory(), iso);
+      if (v) {
+        const cls = DB.runClass(r);
+        let line;
+        if (v.first) {
+          line = 'First logged ' + cls + ' run of the block';
+        } else {
+          const q = v.dPace >= 0;
+          line = (q ? '▲ ' : '▼ ') + Math.abs(v.dPace) + ' s/km ' + (q ? 'quicker' : 'slower') +
+            (v.dHr != null ? ' · ' + (v.dHr <= 0 ? '' : '+') + v.dHr + ' bpm' : '') +
+            ' vs last ' + cls;
+        }
+        if (v.best) line += ' · ★ block-best EF';
+        logHTML += '<div class="h-verdict' + (v.best ? ' best' : '') + '">' +
+          '<span>' + esc(line) + '</span>' +
+          '<button class="h-share" aria-label="Share run card">⤴</button></div>';
+      }
     } else if (canLog) {
       logHTML = '<button class="h-log" aria-label="Log this run">+ log time · HR</button>';
     }
@@ -506,11 +527,128 @@
     });
     const xBtn = hero.querySelector('.rl-x');
     if (xBtn) xBtn.addEventListener('click', () => { state.runLogEdit = null; state.runLogDraft = null; render(); });
+    const shareBtn = hero.querySelector('.h-share');
+    if (shareBtn) shareBtn.addEventListener('click', () => shareRunCard(day, iso));
     return hero;
   }
   function fmtDur(sec) {
     const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
     return (h ? h + ':' + String(m).padStart(2, '0') : String(m)) + ':' + String(s).padStart(2, '0');
+  }
+
+  /* ---- shareable run card: 1080×1350, drawn on-device, no network ----
+     Brand tokens are the LOCKED §3 identity, not the live theme, so the
+     card looks the same shared from light or dark. */
+  const CARD = {
+    ink: '#16242a', paper: '#eef0ea', accent: '#d6492e',
+    phase: { base: '#6f8c63', build: '#436883', taper: '#c5872f' },
+  };
+  function shareRunCard(day, iso) {
+    const r = day.run;
+    const e = getRunLogEntry(iso);
+    if (!r || !e) return;
+    const km = e.km || r.run.km;
+    const pace = DB.paceOf(km, e.sec);
+    const efv = e.hr ? DB.ef(km, e.sec, e.hr) : null;
+    const ready = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    ready.then(() => {
+      const c = document.createElement('canvas');
+      c.width = 1080; c.height = 1350;
+      const x = c.getContext('2d');
+      const phase = CARD.phase[day.phase] || CARD.accent;
+      x.fillStyle = CARD.ink; x.fillRect(0, 0, 1080, 1350);
+      const grad = x.createRadialGradient(540, -80, 60, 540, -80, 900);
+      grad.addColorStop(0, phase + '55'); grad.addColorStop(1, 'rgba(0,0,0,0)');
+      x.fillStyle = grad; x.fillRect(0, 0, 1080, 1350);
+      x.fillStyle = phase; x.fillRect(0, 1330, 1080, 20);
+      const mono = '"Space Mono", Menlo, monospace';
+      const disp = '"Archivo", "Arial Black", sans-serif';
+      x.textBaseline = 'alphabetic';
+      /* wordmark + week */
+      x.font = '900 64px ' + disp;
+      x.fillStyle = CARD.paper; x.fillText('WEEK', 72, 118);
+      x.fillStyle = CARD.accent; x.fillText('OS', 72 + x.measureText('WEEK').width, 118);
+      x.font = '700 34px ' + mono; x.fillStyle = CARD.paper; x.textAlign = 'right';
+      x.fillText('WK ' + day.week + '/30 · ' + String(day.phase || '').toUpperCase(), 1008, 112);
+      x.textAlign = 'left';
+      /* date + session */
+      x.font = '700 40px ' + mono; x.globalAlpha = 0.7;
+      x.fillText(fmtDate(iso).toUpperCase(), 72, 240); x.globalAlpha = 1;
+      /* the number */
+      x.font = '900 330px ' + disp;
+      const kmTxt = km === Math.round(km) ? String(km) : km.toFixed(1);
+      x.fillText(kmTxt, 60, 560);
+      const bigW = measure(x, '900 330px ' + disp, kmTxt);
+      x.font = '900 90px ' + disp; x.globalAlpha = 0.85;
+      x.fillText('km', 78 + bigW, 560);
+      x.globalAlpha = 1;
+      x.font = '800 64px ' + disp;
+      wrapText(x, r.title, 72, 680, 936, 74);
+      /* stats */
+      x.font = '700 44px ' + mono; x.fillStyle = CARD.paper;
+      const stats = [pace + '/km', e.hr ? e.hr + ' bpm' : null, efv ? 'EF ' + efv.toFixed(3) : null]
+        .filter(Boolean).join(' · ');
+      x.fillText(stats, 72, 850);
+      /* countdown footer */
+      const cd = DB.raceCountdown(iso);
+      x.font = '700 40px ' + mono; x.globalAlpha = 0.75;
+      x.fillText(('' + PLAN.race.name).toUpperCase(), 72, 1180);
+      x.globalAlpha = 1;
+      x.font = '900 84px ' + disp; x.fillStyle = CARD.accent;
+      x.fillText(cd.past ? 'MARATHONER' : cd.weeks + 'w ' + cd.rem + 'd to the gun', 72, 1280);
+      const blob2file = (blob) => new File([blob], 'week-os-run.png', { type: 'image/png' });
+      c.toBlob((blob) => {
+        if (!blob) return;
+        const file = blob2file(blob);
+        if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+          navigator.share({ files: [file] }).catch(() => showCardOverlay(c));
+        } else {
+          showCardOverlay(c);
+        }
+      }, 'image/png');
+    });
+  }
+  function measure(x, font, text) {
+    const prev = x.font; x.font = font;
+    const w = x.measureText(text).width; x.font = prev;
+    return w;
+  }
+  function wrapText(x, text, left, top, maxW, lineH) {
+    const words = String(text).split(' ');
+    let line = '', y = top;
+    for (const w of words) {
+      const probe = line ? line + ' ' + w : w;
+      if (x.measureText(probe).width > maxW && line) {
+        x.fillText(line, left, y); line = w; y += lineH;
+      } else line = probe;
+    }
+    if (line) x.fillText(line, left, y);
+  }
+  function showCardOverlay(canvas) {
+    const ov = el(
+      '<div class="card-ov" role="dialog" aria-label="Run card">' +
+      '<img alt="Run card — long-press to save">' +
+      '<div class="card-note">Long-press the card to save or share it</div>' +
+      '<button class="card-x">Close</button></div>'
+    );
+    ov.querySelector('img').src = canvas.toDataURL('image/png');
+    ov.querySelector('.card-x').addEventListener('click', () => ov.remove());
+    document.body.appendChild(ov);
+  }
+
+  /* ---- week-progress ring: banked vs planned run km this week ---- */
+  function weekRingHTML(iso) {
+    const wk = DB.weekKm(getDone, mondayOf(iso));
+    if (!wk.planned) return '';
+    const pct = Math.min(1, wk.done / wk.planned);
+    const C = 2 * Math.PI * 13;
+    const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
+    return '<span class="wkring" role="img" aria-label="' + fmt(wk.done) + ' of ' +
+      fmt(wk.planned) + ' km run this week">' +
+      '<svg viewBox="0 0 32 32"><circle class="rg-bg" cx="16" cy="16" r="13"/>' +
+      '<circle class="rg-fg" cx="16" cy="16" r="13" stroke-dasharray="' + C.toFixed(1) +
+      '" stroke-dashoffset="' + (C * (1 - pct)).toFixed(1) + '"/></svg>' +
+      '<span class="rg-t"><b>' + fmt(wk.done) + '</b>/' + fmt(wk.planned) + ' km</span></span>';
   }
 
   function buildCard(b, done, iso, opts) {
@@ -614,6 +752,62 @@
     );
     card.querySelector('.more-btn').addEventListener('click', () => { undoMove(iso, b.id); render(); });
     return card;
+  }
+
+  /* The skyline: all 30 weeks as one shape — planned km as phase-coloured
+     bars, banked km filled inside them, key days flagged, race starred. */
+  function buildSkyline(curWeek) {
+    const shape = DB.seasonShape(getDone);
+    const maxKm = Math.max.apply(null, shape.map((w) => w.km));
+    const W = 360, H = 118, base = 100, top = 14;
+    const slot = W / shape.length, barW = slot * 0.72;
+    const y = (km) => base - (km / maxKm) * (base - top);
+    let svg = '';
+    for (let i = 0; i < shape.length; i++) {
+      const wkr = shape[i];
+      const xPos = i * slot + (slot - barW) / 2;
+      const h = base - y(wkr.km);
+      const cur = wkr.wk === curWeek;
+      const past = curWeek != null && wkr.wk < curWeek;
+      const op = cur ? 1 : past ? 0.9 : wkr.cutback ? 0.32 : 0.5;
+      svg += '<rect x="' + xPos.toFixed(1) + '" y="' + y(wkr.km).toFixed(1) +
+        '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) +
+        '" rx="1.6" fill="var(--phase-' + wkr.phase + ')" opacity="' + op + '"/>';
+      if (wkr.banked > 0) {
+        svg += '<rect x="' + xPos.toFixed(1) + '" y="' + y(Math.min(wkr.banked, wkr.km)).toFixed(1) +
+          '" width="' + barW.toFixed(1) + '" height="' + (base - y(Math.min(wkr.banked, wkr.km))).toFixed(1) +
+          '" rx="1.6" fill="var(--text)" opacity="0.38"/>';
+      }
+      if (wkr.race) {
+        svg += '<text x="' + (xPos + barW / 2).toFixed(1) + '" y="' + (y(42.2) - 6).toFixed(1) +
+          '" text-anchor="middle" font-size="11" fill="var(--accent)">★</text>' +
+          '<rect x="' + xPos.toFixed(1) + '" y="' + y(42.2).toFixed(1) + '" width="' + barW.toFixed(1) +
+          '" height="' + (base - y(42.2)).toFixed(1) + '" rx="1.6" fill="var(--accent)" opacity="0.85"/>';
+      } else if (wkr.key) {
+        svg += '<circle cx="' + (xPos + barW / 2).toFixed(1) + '" cy="' + (y(wkr.km) - 5).toFixed(1) +
+          '" r="2" fill="var(--accent)"/>';
+      }
+      if (cur) {
+        svg += '<rect x="' + (xPos - 2).toFixed(1) + '" y="' + (y(wkr.km) - 2).toFixed(1) +
+          '" width="' + (barW + 4).toFixed(1) + '" height="' + (h + 4).toFixed(1) +
+          '" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.6"/>' +
+          '<text x="' + (xPos + barW / 2).toFixed(1) + '" y="' + (y(wkr.km) - 8).toFixed(1) +
+          '" text-anchor="middle" font-size="9" font-weight="700" fill="var(--accent)" ' +
+          'font-family="Space Mono, monospace">WK' + wkr.wk + '</text>';
+      }
+    }
+    svg += '<line x1="0" y1="' + (base + 0.5) + '" x2="' + W + '" y2="' + (base + 0.5) +
+      '" stroke="var(--line)" stroke-width="1"/>';
+    const banked = shape.reduce((a, w) => a + w.banked, 0);
+    const total = shape.reduce((a, w) => a + w.km, 0);
+    const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
+    return el(
+      '<div class="skyline" role="img" aria-label="30 weeks of training: bars are planned km, ' +
+      'filled portions are km already run, the star is race day">' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet">' + svg + '</svg>' +
+      '<div class="sky-cap"><span>base → build → taper · • key days · ★ the gun</span>' +
+      '<span class="v">' + fmt(banked) + ' / ' + total + ' km</span></div></div>'
+    );
   }
 
   /* ================= week view ================= */
@@ -743,6 +937,7 @@
       '<div class="plan-head"><h1>The 30-week block</h1>' +
       '<div class="wk-sub">' + fmtShort(block.start) + ' → race ' + fmtShort(PLAN.race.date) + ' · gun ' + esc(PLAN.race.gun) + '</div></div>'
     ));
+    view.appendChild(buildSkyline(cur.week));
 
     /* adherence so far — the block talks back */
     const adh = DB.adherence(getDone, (iso) => getOvr(iso).skip, today);
