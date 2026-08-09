@@ -260,13 +260,19 @@ const PLAN = {
       { wk: 4,  phase: 'base',  km: 16, lr: 8,  wed: 'Easy',           sun: 'Long 8 easy',  wedShoe: 'Ghost',  lrShoe: 'Ghost', cutback: true },
       { wk: 5,  phase: 'base',  km: 21, lr: 12, wed: 'Easy + strides', sun: 'Long 12 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost' },
       { wk: 6,  phase: 'base',  km: 24, lr: 13, wed: 'Easy',           sun: 'Long 13 easy', wedShoe: 'Ghost',  lrShoe: 'Ghost' },
-      { wk: 7,  phase: 'base',  km: 27, lr: 15, wed: 'Tempo 10 min steady', sun: 'Long 15 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost', notes: 'First tempo' },
-      { wk: 8,  phase: 'base',  km: 21, lr: 11, wed: 'Easy',           sun: 'Long 11 easy', wedShoe: 'Ghost',  lrShoe: 'Ghost', cutback: true },
-      { wk: 9,  phase: 'base',  km: 29, lr: 16, wed: 'Tempo 15 min',   sun: 'Long 16 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost' },
-      { wk: 10, phase: 'base',  km: 33, lr: 18, wed: 'Tempo 20 min',   sun: 'Long 18 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost', notes: 'Base complete' },
-      { wk: 11, phase: 'build', km: 36, lr: 19, wed: 'Tempo 2×10 min @ threshold', sun: 'Long 19 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost', notes: 'Build begins' },
-      { wk: 12, phase: 'build', km: 40, lr: 21, wed: 'Tempo 25 min continuous',    sun: 'Long 21 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost' },
-      { wk: 13, phase: 'build', km: 32, lr: 16, wed: 'Easy + strides', sun: 'Long 16 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost', cutback: true },
+      /* Wks 7–13 rebalanced (Aug 2026, Strava audit): weekly km raised with
+         the long runs UNCHANGED, pulling the long run's share of the week
+         from ~55–64% down toward ~47–50%. All growth lands midweek — the
+         Tue/Wed/Thu runs were 2–4 km against a demonstrated 13 km long run,
+         too short to build anything. Build weeks from 14 stay as planned
+         (their share is already ~50%, normal for a constrained schedule). */
+      { wk: 7,  phase: 'base',  km: 29, lr: 15, wed: 'Tempo 10 min steady', sun: 'Long 15 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost', notes: 'First tempo' },
+      { wk: 8,  phase: 'base',  km: 23, lr: 11, wed: 'Easy',           sun: 'Long 11 easy', wedShoe: 'Ghost',  lrShoe: 'Ghost', cutback: true, notes: '2-MILE TT Fri · Tue 400s rehearsal' },
+      { wk: 9,  phase: 'base',  km: 34, lr: 16, wed: 'Tempo 15 min',   sun: 'Long 16 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost' },
+      { wk: 10, phase: 'base',  km: 38, lr: 18, wed: 'Tempo 20 min',   sun: 'Long 18 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost', notes: 'Base complete' },
+      { wk: 11, phase: 'build', km: 41, lr: 19, wed: 'Tempo 2×10 min @ threshold', sun: 'Long 19 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost', notes: 'Build begins' },
+      { wk: 12, phase: 'build', km: 43, lr: 21, wed: 'Tempo 25 min continuous',    sun: 'Long 21 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost' },
+      { wk: 13, phase: 'build', km: 35, lr: 16, wed: 'Easy + strides', sun: 'Long 16 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost', cutback: true },
       { wk: 14, phase: 'build', km: 42, lr: 22, wed: '5×3 min @ threshold', sun: 'Long 22 — last 6 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL', notes: 'First MP work; OU modules start' },
       { wk: 15, phase: 'build', km: 46, lr: 24, wed: 'Tempo 25 min',   sun: 'Long 24 — last 6 @ MP',  wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
       { wk: 16, phase: 'build', km: 50, lr: 26, wed: '4×5 min @ threshold', sun: 'Long 26 — last 8 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
@@ -614,15 +620,16 @@ const PLAN = {
       /* Week 8 — the one sanctioned benchmark before October (Fri 21 Aug),
          on the Aberdare track: 8 lanes, IAAF/UKA-certified surface, so the
          number is properly comparable to October's parkrun. Friday-only
-         access sets the day; the 10:00 gun sets the shape. Breakfast lands
-         ~3 h before the effort — a free rehearsal of race-morning fuelling.
-         Wed trims to 2 km · Thu full rest · German ceded to travel this
-         week · Sat run dropped as the deliberate cost of an all-out effort
-         (Upper B stays). Week lands ~19 km against a planned 21, which is
-         why 8 joins specialDistanceWeeks. */
+         access sets the day; 16:30 sets the shape (circadian peak, German
+         block intact). Tue is a 4×400 pacing rehearsal — the only speed
+         work since June, so the legs must meet goal lap pace once before
+         race day. Wed trims to 2 km · Thu shakeout primes · Sat run
+         dropped as the deliberate cost of an all-out effort (Upper B
+         stays). Week lands ~23 km; 8 sits in specialDistanceWeeks. */
       8: {
         label: 'Cutback · 2-MILE TT',
         days: {
+          1: { run: { km: 5, title: 'TT rehearsal — 4 × 400 m', shoe: 'Evo SL', detail: 'Evo SL · 1.5 km easy warm-up · 4 × 400 m at goal lap pace — 1:42–1:43 each, watch-measured on a flat stretch — with 400 m jog recoveries · 1 km cool-down. The ONLY job is to teach the legs what 1:42 feels like so Friday’s open is automatic. Do not race these — leave the fitness in them' } },
           2: { run: { km: 2, title: 'Easy 2', detail: 'Short and genuinely easy — the time trial is Friday' } },
           3: { run: { km: 2, title: 'Shakeout + strides', detail: 'Very easy 2 km + 3–4 relaxed strides. A full rest day before a race leaves the legs flat — this primes them at no fatigue cost, the same way wks 24 and 30 open their race days' } },
           4: { blocks: [
@@ -633,7 +640,7 @@ const PLAN = {
             { t: '14:30', end: '14:45', title: 'Top-up snack', detail: 'Small and simple ~2 h out — banana or toast, or practise a gel', cat: 'meal', quiet: true },
             { t: '15:00', end: '16:00', title: 'Travel to Aberdare', detail: '~1 h — 8-lane certified track, worth the drive', cat: 'routine', quiet: true },
             { t: '16:00', end: '16:25', title: 'Warm-up', detail: '2 km easy + 3–4 build-up strides — never hit a hard effort cold', cat: 'run', quiet: true },
-            { t: '16:30', end: '16:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps of the 400 m track (≈ 2 miles — add ~18 m past the line for the exact distance) · STAY IN LANE 1 · laps 1–2 at 1:39–1:40 feeling held back, settle at 1:37–38, spend what is left on 7–8 · the one benchmark before the October parkrun', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL' },
+            { t: '16:30', end: '16:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps, LANE 1 (add ~18 m past the line) · THE SCRIPT — laps 1–2: 1:42–1:43, feeling embarrassingly held back · laps 3–5: hold 1:42 · lap 6: the decision — still controlled? start winding up · laps 7–8: everything. Nothing before lap 6 can win this; everything before lap 6 can lose it — the classic 2-mile death is opening at mile pace and dying by lap 5. A fast day shows up in the LAST two laps, nowhere else · afterwards log the peak HR from the final lap — it recalibrates every training zone for the next 22 weeks', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL' },
             { t: '16:45', end: '17:00', title: 'Cool-down jog', detail: 'Never just stop', cat: 'run', quiet: true },
             { t: '17:00', end: '18:00', title: 'Travel home', cat: 'routine', quiet: true },
             { t: '18:00', end: '19:00', title: 'Family — refuel', detail: 'Proper meal within the hour — carbs and protein', cat: 'meal', quiet: true },

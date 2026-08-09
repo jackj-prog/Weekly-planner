@@ -95,10 +95,23 @@ ok(dayOfWeek(8, 4).blocks.some((b) => /German active/.test(b.title) && b.end ===
   'wk 8 Friday keeps the full Base German block — the 16:30 gun allows it');
 ok(/heavy for the first/.test(dayOfWeek(8, 6).run.detail),
   'wk 8 Sun long run warns the legs will be heavy post-TT');
+ok(hasBlock(dayOfWeek(8, 1), /rehearsal/i) && dayOfWeek(8, 1).run && dayOfWeek(8, 1).run.run.km === 5,
+  'wk 8 Tue is the 4×400 TT pacing rehearsal, 5 km total');
+ok(/1:42/.test(dayOfWeek(8, 1).run.detail), 'the rehearsal names goal lap pace');
+ok(/lap 6/i.test(dayOfWeek(8, 4).run.detail) && /1:42/.test(dayOfWeek(8, 4).run.detail),
+  'the TT carries the lap script with the lap-6 decision point');
+ok(/peak HR/i.test(dayOfWeek(8, 4).run.detail), 'the TT prompts the max-HR capture from the final lap');
 {
   let wk8 = 0;
   for (let i = 0; i < 7; i++) { const d = dayOfWeek(8, i); if (d.run) wk8 += d.run.run.km; }
-  ok(Math.abs(wk8 - 21.2) < 0.01, 'wk 8 lands ~21.2 km with the shakeout back, got ' + wk8);
+  ok(Math.abs(wk8 - 23.2) < 0.01, 'wk 8 lands ~23.2 km with the rehearsal in, got ' + wk8);
+}
+/* Base rebalance (Aug 2026): long-run share capped in wks 7–13 —
+   growth lands midweek, the long run holds. */
+for (const wk of [7, 9, 10, 11, 12, 13]) {
+  const row = PLAN.blocks[0].weekTable[wk - 1];
+  ok(row.lr / row.km <= 0.53, 'wk ' + wk + ' long-run share ≤53% of weekly km, got ' +
+    Math.round((row.lr / row.km) * 100) + '%');
 }
 ok(hasBlock(dayOfWeek(17, 5), /PARKRUN 5K/i), 'wk 17 Sat should hold the parkrun');
 ok(hasBlock(dayOfWeek(24, 6), /TUNE-UP HALF/i), 'wk 24 Sun should hold the tune-up half');

@@ -259,13 +259,13 @@ session · Sunday session · flags/notes.
 | 4 | 20–26 Jul | Base | 16 | 8 | Easy | Long 8 easy | CUTBACK |
 | 5 | 27 Jul–2 Aug | Base | 21 | 12 | Easy + strides | Long 12 easy | |
 | 6 | 3–9 Aug | Base | 24 | 13 | Easy | Long 13 easy | |
-| 7 | 10–16 Aug | Base | 27 | 15 | Tempo 10 min steady | Long 15 easy | First tempo |
-| 8 | 17–23 Aug | Base | 21 | 11 | Easy | Long 11 easy | CUTBACK |
-| 9 | 24–30 Aug | Base | 29 | 16 | Tempo 15 min | Long 16 easy | |
-| 10 | 31 Aug–6 Sep | Base | 33 | 18 | Tempo 20 min | Long 18 easy | Base complete |
-| 11 | 7–13 Sep | Build | 36 | 19 | Tempo 2×10 min @ threshold | Long 19 easy | Build begins |
-| 12 | 14–20 Sep | Build | 40 | 21 | Tempo 25 min continuous | Long 21 easy | |
-| 13 | 21–27 Sep | Build | 32 | 16 | Easy + strides | Long 16 easy | CUTBACK |
+| 7 | 10–16 Aug | Base | 29 | 15 | Tempo 10 min steady | Long 15 easy | First tempo |
+| 8 | 17–23 Aug | Base | 23 | 11 | Easy | Long 11 easy | CUTBACK · **2-MILE TT Fri** · Tue 400s rehearsal (§9) |
+| 9 | 24–30 Aug | Base | 34 | 16 | Tempo 15 min | Long 16 easy | |
+| 10 | 31 Aug–6 Sep | Base | 38 | 18 | Tempo 20 min | Long 18 easy | Base complete |
+| 11 | 7–13 Sep | Build | 41 | 19 | Tempo 2×10 min @ threshold | Long 19 easy | Build begins |
+| 12 | 14–20 Sep | Build | 43 | 21 | Tempo 25 min continuous | Long 21 easy | |
+| 13 | 21–27 Sep | Build | 35 | 16 | Easy + strides | Long 16 easy | CUTBACK |
 | 14 | 28 Sep–4 Oct | Build | 42 | 22 | 5×3 min @ threshold | Long 22 — last 6 @ MP | First MP work; OU modules start |
 | 15 | 5–11 Oct | Build | 46 | 24 | Tempo 25 min | Long 24 — last 6 @ MP | |
 | 16 | 12–18 Oct | Build | 50 | 26 | 4×5 min @ threshold | Long 26 — last 8 @ MP | |
@@ -284,6 +284,14 @@ session · Sunday session · flags/notes.
 | 29 | 11–17 Jan | Taper | 28 | 13 | 5×3 min @ MP | Long 13 easy | Fresh is the goal |
 | 30 | 18–24 Jan | Taper | 15 | 42.2 | — | — | **RACE WEEK** (see §9) · no basketball |
 
+**Base rebalanced (Aug 2026, wks 7–13).** Weekly km raised (27→29 ·
+21→23 · 29→34 · 33→38 · 36→41 · 40→43 · 32→35) with every long run
+unchanged, pulling the long run's share of the week from ~55–64% down
+toward ~47–50%. All growth lands in the Tue/Wed/Thu runs (they were
+2–4 km against a 13 km long run — too short to build anything). Build
+weeks from 14 stay as planned: their share is already ~50%, normal for
+a schedule-constrained marathoner.
+
 ## 8. Daily distance algorithm
 
 rest = weekly km − long run.
@@ -299,17 +307,25 @@ before the long run). These four + the long run must equal weekly km
 sanctioned benchmark before October, on an 8-lane certified 400 m
 surface — Friday-only access sets the day, **16:30** sets the shape:
 late afternoon is the circadian peak for performance, and it leaves the
-German block intact. Wed easy 2 km · **Thu shakeout 2 km + strides**
-(priming, not full rest — the same way wks 24 and 30 open their race
-days) · Fri: German 07:30–12:00 as normal · carb lunch 12:00 (~3.5 h
-out) · top-up snack 14:30 · 15:00 travel · 16:00 warm-up 2 km +
-strides · **16:30 2-MILE TIME TRIAL in the Evo SL** — 8 laps, lane 1,
-laps 1–2 at 1:39–1:40, settle 1:37–38, spend the rest on 7–8 ·
-cool-down · home 18:00 family refuel · **basketball shooting only** ·
-**Sat run dropped** (Upper B stays) — the cost of an all-out effort,
-and it clears a full rest day before Sunday. Sun long run 11 km eased:
-legs heavy for 2–3 km, run by effort ~15–20 s/km slower than usual.
-Week lands ~21 km, on the cutback target.
+German block intact. **Tue: 4×400 m pacing rehearsal** (Evo SL, 1:42–1:43
+each, 400 m jog recoveries, ~5 km total) — the only speed work since
+June, so the legs meet goal lap pace once before race day; do not race
+it · Wed easy 2 km · **Thu shakeout 2 km + strides** (priming, not full
+rest — the same way wks 24 and 30 open their race days) · Fri: German
+07:30–12:00 as normal · carb lunch 12:00 (~3.5 h out) · top-up snack
+14:30 · 15:00 travel · 16:00 warm-up 2 km + strides · **16:30 2-MILE
+TIME TRIAL in the Evo SL** — 8 laps, lane 1, THE SCRIPT: laps 1–2 in
+1:42–1:43 feeling embarrassingly held back · laps 3–5 hold 1:42 ·
+lap 6 is the decision — still controlled? start winding up · laps 7–8
+everything. Nothing before lap 6 can win it; everything before lap 6
+can lose it (the classic 2-mile death is opening at mile pace and dying
+by lap 5 — a fast day shows up in the LAST two laps, nowhere else).
+Log the peak HR from the final lap — it recalibrates every training
+zone · cool-down · home 18:00 family refuel · **basketball shooting
+only** · **Sat run dropped** (Upper B stays) — the cost of an all-out
+effort, and it clears a full rest day before Sunday. Sun long run 11 km
+eased: legs heavy for 2–3 km, run by effort ~15–20 s/km slower than
+usual. Week lands ~23 km on the cutback.
 
 **Week 17 — parkrun PB (Sat 24 Oct).** Wed: easy 5 only. Thu: easy 4 +
 strides. Fri: NO basketball ("fresh legs for the race"). Sat: light
