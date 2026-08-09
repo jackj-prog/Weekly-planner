@@ -456,6 +456,44 @@ section('run-log maths · key events · pacing tables');
   ok(!dayOfWeek(7, 6).run.table, 'ordinary runs carry no pacing table');
 }
 
+/* ---- 7a4. Log steppers: classification + estimates (v3.1) ---- */
+section('run classification + log estimates');
+{
+  ok(PLAN.logModel.paceSpan === 30 && PLAN.logModel.hrSpan === 20,
+    'stepper spans are the agreed ±30 s/km and ±20 bpm');
+  ok(DB.runClass(dayOfWeek(8, 4).run) === 'race', 'the TT classifies as race');
+  ok(DB.runClass(dayOfWeek(8, 1).run) === 'quality', 'the 400s rehearsal classifies as quality');
+  ok(DB.runClass(dayOfWeek(7, 2).run) === 'quality', 'wk 7 Wed tempo classifies as quality');
+  ok(DB.runClass(dayOfWeek(7, 6).run) === 'long', 'wk 7 Sunday classifies as long');
+  ok(DB.runClass(dayOfWeek(7, 1).run) === 'easy', 'wk 7 Tuesday classifies as easy');
+
+  /* no history → phase band midpoint + fallback HR */
+  const bare = DB.logEstimate(dayOfWeek(7, 6), []);
+  ok(bare && bare.paceSec === 395 && bare.hr === PLAN.logModel.fallbackHr.long,
+    'wk 7 long-run estimate with no history: band mid 6:35, fallback HR — got ' +
+    DB.fmtPaceSec(bare.paceSec) + '/' + bare.hr);
+  ok(bare.paceMax - bare.paceMin === 60 && bare.hrMax - bare.hrMin === 40,
+    'stepper bounds span exactly ±30 s and ±20 bpm around the estimate');
+
+  /* history → median of the last three similar runs */
+  const hist = [
+    { iso: '2026-08-02', cls: 'long', paceSec: 395, hr: 147 },
+    { iso: '2026-08-09', cls: 'long', paceSec: 383, hr: 146 },
+    { iso: '2026-07-26', cls: 'long', paceSec: 374, hr: 150 },
+    { iso: '2026-08-06', cls: 'easy', paceSec: 392, hr: 139 },
+  ];
+  const withHist = DB.logEstimate(dayOfWeek(9, 6), hist);
+  ok(withHist.paceSec === 383 && withHist.hr === 147,
+    'estimate centres on the median of the last 3 long runs — got ' +
+    DB.fmtPaceSec(withHist.paceSec) + '/' + withHist.hr);
+
+  /* race days centre on their declared target pace */
+  const tt = DB.logEstimate(dayOfWeek(8, 4), hist);
+  ok(tt.paceSec === 255 && tt.hr === PLAN.logModel.fallbackHr.race,
+    'TT estimate centres on 4:15/km with the race HR fallback');
+  ok(DB.parsePace('6:35') === 395 && DB.fmtPaceSec(395) === '6:35', 'pace parse/format round-trips');
+}
+
 /* ---- 7b. Pro 4 odometer + run log ---- */
 section('pro 4 odometer');
 {

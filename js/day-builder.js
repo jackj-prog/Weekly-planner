@@ -149,8 +149,59 @@
   }
   function paceOf(km, sec) {
     if (!(km > 0) || !(sec > 0)) return null;
-    const s = Math.round(sec / km);
+    return fmtPaceSec(Math.round(sec / km));
+  }
+  function fmtPaceSec(s) {
     return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+  function parsePace(str) {                  // '6:34' → 394 s/km
+    const m = String(str).match(/^(\d+):(\d{2})$/);
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+  }
+
+  /* Run classification for the log: which runs are comparable.
+     'easy' + 'long' are the aerobic trend; 'quality' and 'race' read
+     high on EF by design and are excluded from it. */
+  function runClass(runBlock) {
+    const t = runBlock.title || '';
+    if (/TIME TRIAL|PARKRUN|MARATHON|all-out/i.test(t)) return 'race';
+    if (/tempo|threshold|×|rehearsal/i.test(t)) return 'quality';
+    if (runBlock.run.slot === 'long' || runBlock.run.km >= 14) return 'long';
+    return 'easy';
+  }
+
+  /* Pre-filled estimate for the log steppers: centred on the runner's own
+     recent history (last 3 logged runs of the same class), falling back to
+     the phase band / plan paces. Ranges and steps come from PLAN.logModel
+     so one data edit retunes the whole control. */
+  function logEstimate(day, history) {
+    if (!day.run) return null;
+    const model = PLAN.logModel;
+    const cls = runClass(day.run);
+    const like = (history || []).filter((h) => h.cls === cls && h.paceSec > 0).slice(-3);
+    const med = (arr) => {
+      if (!arr.length) return null;
+      const s = arr.slice().sort((a, b) => a - b);
+      return s[Math.floor(s.length / 2)];
+    };
+    let paceSec = day.run.run.estPace ? parsePace(day.run.run.estPace) : med(like.map((h) => h.paceSec));
+    if (!paceSec) {
+      if (cls === 'quality') {
+        const tempo = (PLAN.paces.find((p) => /tempo/i.test(p.type)) || {}).pace || '5:05–5:20';
+        const mm = tempo.match(/(\d+:\d{2})–(\d+:\d{2})/);
+        paceSec = mm ? Math.round((parsePace(mm[1]) + parsePace(mm[2])) / 2) : 315;
+      } else {
+        const band = easyBand(day.week || 1).band.split('–');
+        paceSec = Math.round((parsePace(band[0]) + parsePace(band[1])) / 2);
+      }
+    }
+    const hr = med(like.filter((h) => h.hr).map((h) => h.hr)) || model.fallbackHr[cls];
+    return {
+      cls, km: day.run.run.km, paceSec, hr,
+      paceMin: paceSec - model.paceSpan, paceMax: paceSec + model.paceSpan,
+      hrMin: hr - model.hrSpan, hrMax: hr + model.hrSpan,
+      paceStep: model.paceStep, hrStep: model.hrStep,
+    };
   }
 
   /* Next key date (§7 flags as data) — the block's decisive moments,
@@ -295,7 +346,8 @@
       if (entry.runKm) {
         b.run = {
           km: entry.runKm, shoe: entry.shoe || 'Ghost', slot: 'fixed',
-          hard: entry.runKm > 20 || /parkrun|marathon|all-out/i.test(b.title),
+          hard: entry.runKm > 20 || /parkrun|marathon|all-out|time trial/i.test(b.title),
+          estPace: entry.estPace || null,
         };
       }
       out.push(b);
@@ -520,6 +572,7 @@
     buildDay, resolveBlock, weekNumber, dayIndex, distancesForWeek,
     weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
+    fmtPaceSec, parsePace, runClass, logEstimate,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

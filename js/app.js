@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '3.0.0';
+  const APP_VERSION = '3.1.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -27,6 +27,7 @@
     expanded: null,            // block id with actions open
     wtEdit: null,              // { block, ex } — weight input open on that row
     runLogEdit: null,          // ISO date with the run-log form open
+    runLogDraft: null,         // { paceSec, hr, bounds } while the steppers are open
   };
   let nowKey = '';             // today's current|next block ids — minute tick
                                // re-renders only when this changes
@@ -395,13 +396,23 @@
   const logKey = (iso) => 'runlog-' + iso;
   const getRunLogEntry = (iso) => readJSON(logKey(iso), null);
   function saveRunLogEntry(iso, entry) { writeJSON(logKey(iso), entry); }
-  function parseDuration(str) {
-    const p = String(str).trim().split(':').map((x) => parseInt(x, 10));
-    if (p.some((n) => !isFinite(n) || n < 0)) return null;
-    if (p.length === 3) return p[0] * 3600 + p[1] * 60 + p[2];
-    if (p.length === 2) return p[0] * 60 + p[1];
-    if (p.length === 1) return p[0] * 60;             // bare minutes
-    return null;
+  /* History feed for the estimate model: every logged run, classified. */
+  function runLogHistory() {
+    const out = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      const m = k && k.match(/^runlog-(\d{4}-\d{2}-\d{2})$/);
+      if (!m) continue;
+      const e = readJSON(k, null);
+      if (!e || !e.sec) continue;
+      const day = DB.buildDay(m[1]);
+      if (!day.run) continue;
+      const km = e.km || day.run.run.km;
+      if (!(km > 0)) continue;
+      out.push({ iso: m[1], cls: DB.runClass(day.run), paceSec: Math.round(e.sec / km), hr: e.hr || null });
+    }
+    out.sort((a, b) => (a.iso < b.iso ? -1 : 1));
+    return out;
   }
   function fmtEf(v) { return v == null ? '—' : v.toFixed(3); }
   function loggedLineHTML(iso, plannedKm) {
@@ -426,15 +437,21 @@
     const editing = state.runLogEdit === iso;
     const e = getRunLogEntry(iso) || {};
     let logHTML = '';
-    if (editing) {
-      logHTML = '<div class="h-log form">' +
-        '<input class="rl-in" id="rl-time" inputmode="numeric" placeholder="mm:ss" value="' +
-        (e.sec ? esc(fmtDur(e.sec)) : '') + '" aria-label="Run time">' +
-        '<input class="rl-in" id="rl-hr" inputmode="numeric" placeholder="avg HR" value="' +
-        (e.hr || '') + '" aria-label="Average heart rate">' +
-        '<input class="rl-in" id="rl-km" inputmode="decimal" placeholder="' + kmTxt + ' km" value="' +
-        (e.km || '') + '" aria-label="Distance override">' +
-        '<button class="rl-save">Save</button></div>';
+    if (editing && state.runLogDraft) {
+      const d = state.runLogDraft;
+      const totalSec = Math.round(d.paceSec * km);
+      const st = (kind, val, canDown, canUp) =>
+        '<div class="st"><button class="st-b" data-st="' + kind + '" data-d="-1"' + (canDown ? '' : ' disabled') +
+        ' aria-label="Decrease ' + kind + '">−</button>' +
+        '<span class="st-v">' + val + '</span>' +
+        '<button class="st-b" data-st="' + kind + '" data-d="1"' + (canUp ? '' : ' disabled') +
+        ' aria-label="Increase ' + kind + '">+</button></div>';
+      logHTML = '<div class="h-log form" role="group" aria-label="Log this run">' +
+        st('pace', DB.fmtPaceSec(d.paceSec) + '<small>/km</small>', d.paceSec > d.paceMin, d.paceSec < d.paceMax) +
+        st('hr', d.hr + '<small>bpm</small>', d.hr > d.hrMin, d.hr < d.hrMax) +
+        '<div class="st-total">= ' + fmtDur(totalSec) + ' for ' + kmTxt + ' km</div>' +
+        '<div class="st-act"><button class="rl-save">Save</button>' +
+        '<button class="rl-x" aria-label="Cancel">✕</button></div></div>';
     } else if (logged) {
       logHTML = '<button class="h-log logged" aria-label="Edit run log">' + logged + '</button>';
     } else if (canLog) {
@@ -457,29 +474,38 @@
       render();
     });
     const logBtn = hero.querySelector('.h-log:not(.form)');
-    if (logBtn) logBtn.addEventListener('click', () => { state.runLogEdit = iso; render(); });
-    const saveBtn = hero.querySelector('.rl-save');
-    if (saveBtn) {
-      const commit = () => {
-        const sec = parseDuration(hero.querySelector('#rl-time').value);
-        const hr = parseInt(hero.querySelector('#rl-hr').value, 10);
-        const kmIn = parseFloat(String(hero.querySelector('#rl-km').value).replace(',', '.'));
-        if (sec && sec > 60) {
-          saveRunLogEntry(iso, {
-            sec,
-            hr: isFinite(hr) && hr > 60 && hr < 230 ? hr : null,
-            km: isFinite(kmIn) && kmIn > 0 && Math.abs(kmIn - km) < km ? kmIn : null,
-          });
-        }
-        state.runLogEdit = null;
-        render();
+    if (logBtn) logBtn.addEventListener('click', () => {
+      /* centre the steppers on what was logged, else the estimate */
+      const est = DB.logEstimate(day, runLogHistory());
+      const centrePace = e.sec ? Math.round(e.sec / (e.km || km)) : est.paceSec;
+      const centreHr = e.hr || est.hr;
+      state.runLogEdit = iso;
+      state.runLogDraft = {
+        paceSec: centrePace, hr: centreHr,
+        paceMin: centrePace - PLAN.logModel.paceSpan, paceMax: centrePace + PLAN.logModel.paceSpan,
+        hrMin: centreHr - PLAN.logModel.hrSpan, hrMax: centreHr + PLAN.logModel.hrSpan,
       };
-      saveBtn.addEventListener('click', commit);
-      hero.querySelectorAll('.rl-in').forEach((inp) => inp.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Enter') { ev.preventDefault(); commit(); }
-        if (ev.key === 'Escape') { state.runLogEdit = null; render(); }
-      }));
-    }
+      render();
+    });
+    hero.querySelectorAll('.st-b').forEach((btn) => btn.addEventListener('click', () => {
+      const d = state.runLogDraft;
+      const dir = Number(btn.getAttribute('data-d'));
+      if (btn.getAttribute('data-st') === 'pace') {
+        d.paceSec = Math.min(d.paceMax, Math.max(d.paceMin, d.paceSec + dir * PLAN.logModel.paceStep));
+      } else {
+        d.hr = Math.min(d.hrMax, Math.max(d.hrMin, d.hr + dir * PLAN.logModel.hrStep));
+      }
+      render();
+    }));
+    const saveBtn = hero.querySelector('.rl-save');
+    if (saveBtn) saveBtn.addEventListener('click', () => {
+      const d = state.runLogDraft;
+      saveRunLogEntry(iso, { sec: Math.round(d.paceSec * km), hr: d.hr, km: null });
+      state.runLogEdit = null; state.runLogDraft = null;
+      render();
+    });
+    const xBtn = hero.querySelector('.rl-x');
+    if (xBtn) xBtn.addEventListener('click', () => { state.runLogEdit = null; state.runLogDraft = null; render(); });
     return hero;
   }
   function fmtDur(sec) {
@@ -1004,12 +1030,13 @@
       const day = DB.buildDay(m[1]);
       const km = e.km || (day.run ? day.run.run.km : 0);
       if (!(km > 0)) continue;
+      const cls = day.run ? DB.runClass(day.run) : 'easy';
       entries.push({
         iso: m[1], km,
         pace: DB.paceOf(km, e.sec),
         hr: e.hr || null,
         ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
-        hard: !!(day.run && day.run.run.hard),
+        hard: cls === 'quality' || cls === 'race',
       });
     }
     entries.sort((a, b) => (a.iso < b.iso ? -1 : 1));

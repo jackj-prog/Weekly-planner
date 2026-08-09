@@ -228,6 +228,15 @@ const PLAN = {
      practised (rule 4). */
   gels: { fromDate: '2026-08-10', minRunMin: 90, text: 'Gel every 35–40 min' },
 
+  /* Run-log stepper model (§4.8): estimates centre on the runner's own
+     last 3 similar runs; these are the bounds and steps of the ± controls
+     and the neutral fallbacks before any history exists. */
+  logModel: {
+    paceStep: 5,  paceSpan: 30,     // ± seconds/km around the estimate
+    hrStep: 2,    hrSpan: 20,       // ± bpm around the estimate
+    fallbackHr: { easy: 150, long: 152, quality: 170, race: 182 },
+  },
+
   /* Run cues (§6): micro-doses stapled onto the easy runs — pogo hops for
      tendon stiffness/running economy, Thursday strides to stay sharp.
      Keyed by run slot; special-week fixed runs carry their own details. */
@@ -653,7 +662,7 @@ const PLAN = {
             { t: '14:30', end: '14:45', title: 'Top-up snack', detail: 'Small and simple ~2 h out — banana or toast, or practise a gel', cat: 'meal', quiet: true },
             { t: '15:00', end: '16:00', title: 'Travel to Aberdare', detail: '~1 h — 8-lane certified track, worth the drive', cat: 'routine', quiet: true },
             { t: '16:00', end: '16:25', title: 'Warm-up', detail: '2 km easy + 3–4 build-up strides — never hit a hard effort cold', cat: 'run', quiet: true },
-            { t: '16:30', end: '16:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps, LANE 1 (add ~18 m past the line) · THE SCRIPT — laps 1–2: 1:42–1:43, feeling embarrassingly held back · laps 3–5: hold 1:42 · lap 6: the decision — still controlled? start winding up · laps 7–8: everything. Nothing before lap 6 can win this; everything before lap 6 can lose it — the classic 2-mile death is opening at mile pace and dying by lap 5. A fast day shows up in the LAST two laps, nowhere else · afterwards log the peak HR from the final lap — it recalibrates every training zone for the next 22 weeks', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL',
+            { t: '16:30', end: '16:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps, LANE 1 (add ~18 m past the line) · THE SCRIPT — laps 1–2: 1:42–1:43, feeling embarrassingly held back · laps 3–5: hold 1:42 · lap 6: the decision — still controlled? start winding up · laps 7–8: everything. Nothing before lap 6 can win this; everything before lap 6 can lose it — the classic 2-mile death is opening at mile pace and dying by lap 5. A fast day shows up in the LAST two laps, nowhere else · afterwards log the peak HR from the final lap — it recalibrates every training zone for the next 22 weeks', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL', estPace: '4:15',
               table: { title: 'THE SCRIPT — 8 laps, lane 1', cols: ['Lap', 'Target', 'Clock'], rows: [
                 ['1', '1:42–1:43 — held back', '1:42'],
                 ['2', '1:42', '3:25'],
@@ -688,7 +697,7 @@ const PLAN = {
           5: { blocks: [
             { t: '07:30', end: '08:00', title: 'Wake · Anki · light breakfast', detail: '90 min before the race', cat: 'routine', quiet: true },
             { t: '08:15', end: '08:50', title: 'Travel + warm-up', detail: '2 km easy jog + 3–4 strides', cat: 'run', quiet: true },
-            { t: '09:00', end: '09:25', title: 'PARKRUN 5K — all-out PB', detail: 'Evo SL · even splits, don’t sprint km 1', cat: 'run', doable: true, runKm: 5, shoe: 'Evo SL' },
+            { t: '09:00', end: '09:25', title: 'PARKRUN 5K — all-out PB', detail: 'Evo SL · even splits, don’t sprint km 1', cat: 'run', doable: true, runKm: 5, shoe: 'Evo SL', estPace: '4:10' },
             { t: '09:25', end: '09:45', title: 'Cool-down jog', cat: 'run', quiet: true },
             { t: '10:00', end: '10:30', title: 'Shower + refuel', cat: 'routine', quiet: true },
             Object.assign({ t: '10:30', end: '12:00' }, UPPER_B),
@@ -880,7 +889,7 @@ const PLAN = {
             { t: '05:45', end: '06:00', title: 'To Solomou Square', detail: 'Central start — walk it, it doubles as a warm-up', cat: 'routine', quiet: true },
             { t: '06:00', end: '06:20', title: 'Bag drop · toilet queue', detail: 'Queue early, queue twice', cat: 'routine', quiet: true },
             { t: '06:20', end: '06:40', title: 'Warm-up', detail: '1 km jog + 3–4 strides · you do not need much for a marathon', cat: 'run', quiet: true },
-            { t: '06:45', end: '10:45', title: 'MARATHON — 42.2 km 🇨🇾', detail: 'Pro 4 · 5:41/km goal · NEGATIVE SPLIT — first half feels too easy · gel every 35–40 min · sunrise at 06:50, you run into it · flat course, but the Athalassa false flats are run by effort not pace · dress for the finish (low teens), not the start', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4',
+            { t: '06:45', end: '10:45', title: 'MARATHON — 42.2 km 🇨🇾', detail: 'Pro 4 · 5:41/km goal · NEGATIVE SPLIT — first half feels too easy · gel every 35–40 min · sunrise at 06:50, you run into it · flat course, but the Athalassa false flats are run by effort not pace · dress for the finish (low teens), not the start', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4', estPace: '5:41',
               table: { title: 'THE 4:00 PLAN — 5:41/km, negative split', cols: ['At', 'Clock', 'Cue'], rows: [
                 ['5 km',  '28:25',   'settle — this MUST feel too easy'],
                 ['10 km', '56:50',   'rhythm · first gel done, keep drinking'],
