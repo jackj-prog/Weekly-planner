@@ -107,7 +107,7 @@ sanctioned mitigation: phase identity is always carried by order
    En route, v2.1–2.3 shipped the visual-delight arc (phase aura, Week
    strip with load bars, Plan season board incl. the recovery
    fortnight, Reference race card) and realigned race week, recovery
-   and the standing week onto the HND era (§16 Q1).
+   and the standing week onto the current college era (§16 Q1).
 10. **Adaptive recalibration** — feed tune-up + parkrun results into
     pace-table updates as data edits (still no runtime AI: the app stays
     deterministic; intelligence lives in the editing loop).

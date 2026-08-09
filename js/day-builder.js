@@ -168,7 +168,8 @@
     const dayOverride = special && special.days ? special.days[di] : null;
 
     /* Scaffold era (§16): the day's base template swaps once life changes
-       (HNC→work, HND→Mondays). Latest matching era wins; special weeks
+       (college→work Tuesdays, college→Mondays). Latest matching era
+       wins; special weeks
        still override on top of whichever scaffold is live. */
     let template = block.templates[di];
     if (block.scaffolds) {

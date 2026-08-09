@@ -70,7 +70,7 @@ Tune-up recalibrator first (advisory, no deploy). To lock a new target:
 **Author the next block:**
 > Write block three: a ___ (e.g. spring half) block, ___ weeks,
 > starting ___ (a Monday). Append a new object to PLAN.blocks with a
-> weekTable, day templates reusing the current scaffold era (HND
+> weekTable, day templates reusing the current scaffold era (current-era
 > Mondays, work Tuesdays), and any special weeks. The UI needs zero
 > changes. Tests, versions, commit, push.
 

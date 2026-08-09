@@ -1,7 +1,7 @@
 # CLAUDE.md — Week OS
 
-Personal routine app for one user. It runs his life through a
-30-week marathon training block and is the single thing he opens to
+Personal routine app for one user. It runs their life through a
+30-week marathon training block and is the single thing they open to
 answer "what am I doing right now, today, and this week."
 
 This file is the **complete source of truth** for the routine content.
@@ -12,15 +12,16 @@ data, day structures, times, or rules below unless explicitly asked.
 
 ## 1. Context
 
-- User: 25, engineering apprentice. Works Mon/Wed/Thu,
-  college Tuesday (until ~Sep 2026), structured self-study otherwise.
+- User: works Mon/Wed/Thu, college day per the scaffold eras (§5),
+  structured self-study otherwise. Personal detail is kept generic by
+  design — the repo describes a schedule, not a person.
 - Mission: first marathon — **Bank of Cyprus Nicosia Marathon, Cyprus,
   Sun 24 Jan 2027, gun 06:45** (pre-dawn; sunrise ≈06:50). Flat and fast:
   ~120 m climb over 42.2 km. Requires international travel (UTC+2).
 - Block: 30 weeks, **Mon 29 Jun 2026 → Sun 24 Jan 2027**.
 - Goal: **4:00** (5:41/km). Stretch bet: **sub-3:45** (5:20/km).
   A December tune-up half recalibrates the target (see §10).
-- He is disciplined and data-driven; the app should be dense with real
+- The user is disciplined and data-driven; the app should be dense with real
   information, zero filler, and honest about hard days.
 
 ## 2. Hard technical constraints
@@ -71,28 +72,28 @@ First-principles design is welcome. These behaviours are the intent:
 
 | Anchor | When | Detail |
 |---|---|---|
-| Work | See scaffold eras below | Lunch 12:00–13:00. ~2h passive German listening. Quiet spells absorb OU study — never flat out. |
+| Work | See scaffold eras below | Lunch 12:00–13:00. ~2h passive German listening. Quiet spells absorb study — never flat out. |
 | Commute | Work days 06:45 & 16:30, ~15–30 min | German podcasts. |
-| College | HNC Tue → HND Mon (see eras) | Includes flexible OU study in free periods (08:00–15:00). |
-| Dinner | Mon–Thu 18:30–19:30 | Family anchor. Never scheduled over. |
-| Mum's | Fri from ~15:30 through the evening | Family time; basketball happens from here. |
+| College | Tue → Mon (see eras) | Includes flexible study in free periods (08:00–15:00). |
+| Dinner | Mon–Thu 18:30–19:30 | Fixed anchor. Never scheduled over. |
+| Friday evening | Fri from ~15:30 through the evening | Standing plans, out; basketball happens from here. |
 | Anki (German) | Daily, 15 min with breakfast | Non-negotiable. |
 | Reading | Nightly 22:00–22:30 · Thu anchor 21:00–22:00 · Sun catch-up 19:30–21:00 | ~200 pages/week target. |
 | Sleep | Lights out 22:30 every night | Wake 06:00 work days, 06:45 on the college day (Tue then Mon), 07:00 Fri, 07:30 weekend. |
-| Basketball | Fri ~19:00–20:00 (from Mum's) | Cross-training; flexes first (§12). |
+| Basketball | Fri ~19:00–20:00 | Cross-training; flexes first (§12). |
 
-Weekly load budget for sanity: work 25.5h · college 7.5h · OU ~12h ·
+Weekly load budget for sanity: work 25.5h · college 7.5h · study ~12h ·
 German total ~16–17h (only ~4–5.5h active; rest is passive/media/Anki) ·
 gym 2–2.5h · running per plan · reading 6h.
 
 **Scaffold eras (§16 Q1 answered, Jul 2026).** Life changes twice mid-block:
-- **Wks 1–2** (until 12 Jul): HNC as originally planned — **Tuesday is a
+- **Wks 1–2** (until 12 Jul): as originally planned — **Tuesday is a
   college day** (08:00–15:00), easy run 16:15, Upper A 19:30.
-- **Wks 3–11** (from 13 Jul): HNC finished. **Tuesday becomes a work
+- **Wks 3–11** (from 13 Jul): the Tuesday course finished. **Tuesday becomes a work
   day** (07:00–16:30) — the easy run slides to **17:10** (home off the
-  16:30 commute), Upper A unchanged at 19:30. OU no longer needs its own
+  16:30 commute), Upper A unchanged at 19:30. Study no longer needs its own
   Tuesday evening slot; it rides the quiet spells at work.
-- **Wks 12–30** (from Mon 14 Sep, the second Monday): **HND starts on
+- **Wks 12–30** (from Mon 14 Sep, the second Monday): **College moves to
   Mondays.** Monday becomes the college day (08:00–15:00, wake 06:45) while
   keeping its evening intact — German active 19:30, still no run, no
   gym. Tuesday stays a work day. Holiday/race weeks still override.
@@ -103,7 +104,7 @@ gym 2–2.5h · running per plan · reading 6h.
   week's true zero day (no run, no gym) through the 50–60 km weeks and
   taper. Wks 1–3 keep the original layout as lived.
 - **Upper B moves Fri 13:00 → Sat 10:00 (Jul 2026, from Wk 4):**
-  Fridays proved the fragile day (German + family + basketball), and
+  Fridays proved the fragile day (German + evening plans + basketball), and
   Base Saturdays are clear (Sat km is mostly 0 until ~Wk 11). Friday
   becomes gym-free; Wk 17 keeps Upper B after the parkrun; Wk 24
   Saturday has no gym (half taper).
@@ -120,7 +121,7 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
 - **Wks 4–10 (work):** 06:00 Wake + Anki · 06:45 commute · 07:00–16:30
   Work · 16:30 commute · **17:10 Gym — Lower B** (moved off Saturday —
   day-after-long-run legs, RPE ≤ 7, never grind) · 18:05 shower + snack.
-- **Wks 11–16 (work Wk 11; HND college from Wk 12, wake 06:45):**
+- **Wks 11–16 (work Wk 11; college on Monday from Wk 12, wake 06:45):**
   **Lower B (maintenance)** ~35 min after work/college — deadlift 2×5 @
   RPE 6–7 · RDL 2×8 light · calf raises 3×15 · plank 2×45s.
 - **Wks 17+ :** evening completely OFF — Monday is the week's true zero
@@ -130,10 +131,10 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
   carries a run.
 
 ### Tuesday — easy run + Upper A (scaffold varies by era — see §5)
-- **Wks 1–2 (HNC):** 06:45 wake + Anki · 08:00–15:00 College (incl OU
-  periods) · home ~16:00 · **16:15 Easy run** · OU until 18:30 · 18:30
+- **Wks 1–2 (college era):** 06:45 wake + Anki · 08:00–15:00 College (incl
+  study periods) · home ~16:00 · **16:15 Easy run** · study until 18:30 · 18:30
   dinner · **19:30 Upper A** · wind down · read · sleep.
-- **Wks 3+ (work day):** 06:00 wake + Anki · 07:00–16:30 Work (OU in the
+- **Wks 3+ (work day):** 06:00 wake + Anki · 07:00–16:30 Work (study in the
   quiet spells) · 16:30 commute · **17:10 Easy run (Tue km)** · shower ·
   18:30 dinner · **19:30 Gym — Upper A** (bench/row/OHP/dips/curls;
   drive over, no run-commute — legs are for running) · 20:45 wind down ·
@@ -152,7 +153,7 @@ Week 23 special: the Tue run's first 5 km are the **Pro 4 fit-check**
 ### Wednesday — quality run (the week's hard session)
 Work day scaffold as Monday until 16:30 · **17:10 Quality run** (session
 from §7, ~Wed km, Evo SL, warm up 10 min easy first) · quick shower ·
-18:30 dinner · **19:30–21:00 OU study** (moved into the old gym slot) ·
+18:30 dinner · **19:30–21:00 Study** (moved into the old gym slot — any subject) ·
 21:00 wind down · 22:00 read · 22:30 sleep.
 
 ### Thursday — easy run + protected evening
@@ -160,15 +161,15 @@ Work day scaffold · **17:10 Easy run (Thu km) + 4×20 s strides** ·
 Tue/Thu easy runs start with **2×15 pogo hops** (tendon stiffness —
 running economy for free) · shower + snack ·
 18:30 dinner · **19:00–21:00 protected free evening** (the release
-valve; flex ≤1h to OU only on deadline weeks) · 21:00 deep reading
+valve; flex ≤1h to study only on deadline weeks) · 21:00 deep reading
 anchor · 22:00 read · 22:30 sleep.
 
-### Friday — German + Mum's + basketball. No run; no gym from Wk 4.
+### Friday — German + evening out + basketball. No run; no gym from Wk 4.
 07:00 wake + Anki · **07:30 German active study** (end time by phase:
 Base 12:00 · Build 11:30 · from Wk 23 and Taper 10:30) · lunch ·
 13:00 free/errands (Upper B lived here 13:00–14:30 in Wks 1–3) ·
-15:30 Mum's — family · **19:00 Basketball 1 hr** (unless the week says
-skip — §7/§9) · evening free at Mum's · 22:00 read · sleep.
+15:30 out — standing plans · **19:00 Basketball 1 hr** (unless the week
+says skip — §7/§9) · evening free, out · 22:00 read · sleep.
 
 ### Saturday — buffer run + study
 07:30 wake + Anki · 08:00 breakfast · **08:30 Easy buffer run (Sat km)**
@@ -178,13 +179,13 @@ or calf work on any Saturday from Wk 4 onward**. The day before the long
 run stays fresh; that is the whole reason Lower B left Saturday, and
 Core + calves lives on Tuesday for the same reason ·
 **10:00 Gym — Upper B** (from Wk 4; Fri 13:00 in Wks 1–3) · shower ·
-12:00 lunch · 13:00–16:30 OU/HNC study · 16:30 free (social/hobbies) ·
+12:00 lunch · 13:00–16:30 Study (any subject) · 16:30 free (social/hobbies) ·
 19:00 dinner (carb-forward from Wk 14 whenever tomorrow’s long run
 ≥ 22 km) · free evening · 22:00 read · 22:30 sleep.
 
 ### Sunday — long run + reading
 07:30 wake + Anki · 08:15 porridge + coffee (fuel) · **08:30 LONG RUN**
-(session from §7) · shower + big refuel · OU study from ~13:30 (start
+(session from §7) · shower + big refuel · study from ~13:30 (start
 shifts later after the biggest runs; end 16:30) · 17:00 German media
 (film/series in German) · 18:00 dinner · 18:30 free · 19:30–21:00
 Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
@@ -240,7 +241,7 @@ the 3D look).
   optional again in Taper. **It sits on Tuesday, not Saturday:** loaded
   calves ~20 h before a 26–32 km long run is the exact mistake moving
   Lower B off Saturday was meant to prevent. Tuesday is five days clear
-  of Sunday and he is already at the gym.
+  of Sunday, in a slot already at the gym after Upper A.
 - **Maintenance from Wk 23 (both upper days):** 2 hard sets per lift,
   3 reps in reserve (pull-aparts and rear delts stay — they cost
   nothing). Strength holds on far less than it was built on.
@@ -266,7 +267,7 @@ session · Sunday session · flags/notes.
 | 11 | 7–13 Sep | Build | 41 | 19 | Tempo 2×10 min @ threshold | Long 19 easy | Build begins |
 | 12 | 14–20 Sep | Build | 43 | 21 | Tempo 25 min continuous | Long 21 easy | |
 | 13 | 21–27 Sep | Build | 35 | 16 | Easy + strides | Long 16 easy | CUTBACK |
-| 14 | 28 Sep–4 Oct | Build | 42 | 22 | 5×3 min @ threshold | Long 22 — last 6 @ MP | First MP work; OU modules start |
+| 14 | 28 Sep–4 Oct | Build | 42 | 22 | 5×3 min @ threshold | Long 22 — last 6 @ MP | First MP work; study modules start |
 | 15 | 5–11 Oct | Build | 46 | 24 | Tempo 25 min | Long 24 — last 6 @ MP | |
 | 16 | 12–18 Oct | Build | 50 | 26 | 4×5 min @ threshold | Long 26 — last 8 @ MP | |
 | 17 | 19–25 Oct | Build | 36 | 16 | Easy 5 (race week) | Long 16 easy — recovery | CUTBACK · KEY · **PARKRUN 5K PB Sat** · no basketball |
@@ -321,7 +322,7 @@ everything. Nothing before lap 6 can win it; everything before lap 6
 can lose it (the classic 2-mile death is opening at mile pace and dying
 by lap 5 — a fast day shows up in the LAST two laps, nowhere else).
 Log the peak HR from the final lap — it recalibrates every training
-zone · cool-down · home 18:00 family refuel · **basketball shooting
+zone · cool-down · home 18:00 refuel · **basketball shooting
 only** · **Sat run dropped** (Upper B stays) — the cost of an all-out
 effort, and it clears a full rest day before Sunday. Sun long run 11 km
 eased: legs heavy for 2–3 km, run by effort ~15–20 s/km slower than
@@ -334,7 +335,7 @@ PARKRUN 5K all-out PB in the Evo SL** · even splits, don't sprint km 1 ·
 cool-down jog · Upper B 10:30 (legs are done — ride the PB high) ·
 normal study afternoon. Sun: easy 16 recovery.
 
-**Week 24 — tune-up (Sun 13 Dec).** Mon: zero day as normal, OU eased.
+**Week 24 — tune-up (Sun 13 Dec).** Mon: zero day as normal, study eased.
 Tue: easy 6. Wed: easy 5 + strides. Thu: REST. Fri: NO basketball. Sat:
 3 km shakeout · race prep (kit, pacing plan, early carb dinner). Sun:
 **TUNE-UP HALF ~21 km, raced honest** — this sets the marathon target
@@ -345,14 +346,14 @@ Tue: easy 6. Wed: easy 5 + strides. Thu: REST. Fri: NO basketball. Sat:
 
 **Holiday template (Wks 26–27, off work Mon–Fri).** Wake 08:00 · Anki ·
 breakfast · run of the day at ~09:30 (Mon: full rest, no run) ·
-family/free through the day · one light OU block ~90 min · family
-evening · read 22:00. Christmas Day (Fri Wk 26): full rest, family, no
+free time through the day · one light study block ~90 min · free
+evening · read 22:00. Christmas Day (Fri Wk 26): full rest, no
 Anki guilt. New Year's Day (Fri Wk 27): rest — peak 30 km is in two days.
 
 **Week 30 — race week, day by day.**
-- Mon: college — HND · easy 5 (16:15) · free evening, feet up.
-- Tue: work · easy 4 (17:10) · OU 1.5h (19:30, the gym slot) · NO gym.
-- Wed: work · easy 4 + strides · OU light.
+- Mon: college · easy 5 (16:15) · free evening, feet up.
+- Tue: work · easy 4 (17:10) · study 1.5h (19:30, the gym slot) · NO gym.
+- Wed: work · easy 4 + strides · study light.
 - Thu: work · shakeout 3–4 km (last run at home) · pack.
 - Fri: **TRAVEL DAY** — 05:30 wake, fly UK → Larnaca (~4.5 h) + ~45 min
   transfer to Nicosia. **Race kit, Pro 4s, gels and number in hand
@@ -487,10 +488,10 @@ from mile 22.
 - **German active trims by phase** (Fri block 4.5h → 4h → 2.5–3h from
   Wk 23). All passive German untouched (~11.75h: Anki, commute pods,
   work listening, media).
-- **OU moves rather than shrinks**: Wed evening study takes the old gym
+- **Study moves rather than shrinks**: Wed evening study takes the old gym
   slot (19:30–21:00). ~12h/wk in Build vs 13.5 planned; Thu free
   evening is the named flex on deadline weeks only.
-- **Protected and untouched**: Mon–Thu dinners · Mum Fridays · Thu
+- **Protected and untouched**: Mon–Thu dinners · Friday evenings out · Thu
   free evening · all reading targets · daily Anki · 22:30 sleep.
 
 ## 14. Amendability & life after the race
@@ -514,7 +515,7 @@ amendment from day one.
 data/plan.js only → run tests → bump SW version → commit + push.
 These must all be data-only edits: moving a session between days,
 converting a week to cutback after illness, changing a distance,
-retiming a day's scaffold (e.g. Tuesday becoming a work day post-HNC),
+retiming a day's scaffold (e.g. Tuesday becoming a work day mid-block),
 adding or removing a life anchor.
 
 **In-app day-level flexibility (v1):** "Skip" and "Move to tomorrow"
@@ -530,7 +531,7 @@ the plan file stays canonical.
   (v6.4 scaffold restored: 5-day gym split returns including Lower B
   and Sunday full body, German active back to ~6h, lean bulk resumes,
   running defaults to 3 easy runs/week as a hobby until a new goal).
-  The §5 era carries through: Monday stays the HND college day and
+  The §5 era carries through: Monday stays the college day and
   Tuesday the work day in the recovery block and standing week too.
 - Ship block two pre-defined — **"Recovery & return", 2 weeks
   post-race**: days 1–3 no running (walk, eat, sleep, celebrate);
@@ -561,9 +562,9 @@ the plan file stays canonical.
 ## 16. Open questions (ask the user, don't guess)
 
 1. ~~**Tuesdays after ~September 2026**~~ — ANSWERED (Jul 2026, see §5
-   scaffold eras): HNC finished early. Tuesday → work day from Wk 3
-   (run to 17:10); from Wk 12 (Mon 14 Sep) HND moves to Mondays. OU
-   study rides work's quiet spells rather than a fixed slot.
-2. **Basketball**: confirm Friday ~19:00 from Mum's is right (time/place).
+   scaffold eras): the Tuesday course finished early. Tuesday → work
+   day from Wk 3 (run to 17:10); from Wk 12 (Mon 14 Sep) college moves
+   to Mondays. Study rides work's quiet spells rather than a fixed slot.
+2. **Basketball**: confirm the Friday ~19:00 slot is right (time/place).
 3. ~~Ticked-history export (JSON)~~ — SHIPPED v1.2: copy-paste backup /
    restore lives on the Reference page.

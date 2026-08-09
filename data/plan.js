@@ -195,13 +195,13 @@ const PLAN = {
 
   /* ---- Weekly load budget (§5) ---------------------------------------- */
   loadBudget:
-    'Work 25.5h · college 7.5h · OU ~12h · German ~16–17h total (only ' +
+    'Work 25.5h · college 7.5h · study ~12h · German ~16–17h total (only ' +
     '~4–5.5h active; rest is passive/media/Anki) · gym 2–2.5h · running ' +
     'per plan · reading 6h (~200 pages/week).',
 
   /* ---- Open questions (§16 — surfaced in Reference, never guessed) ---- */
   openQuestions: [
-    'Basketball: confirm Friday ~19:00 from Mum’s is right (time/place).',
+    'Basketball: confirm the Friday ~19:00 slot is right (time/place).',
   ],
 
   /* ---- Scheduling constants (§6, §8) ----------------------------------
@@ -273,7 +273,7 @@ const PLAN = {
       { wk: 11, phase: 'build', km: 41, lr: 19, wed: 'Tempo 2×10 min @ threshold', sun: 'Long 19 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost', notes: 'Build begins' },
       { wk: 12, phase: 'build', km: 43, lr: 21, wed: 'Tempo 25 min continuous',    sun: 'Long 21 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost' },
       { wk: 13, phase: 'build', km: 35, lr: 16, wed: 'Easy + strides', sun: 'Long 16 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost', cutback: true },
-      { wk: 14, phase: 'build', km: 42, lr: 22, wed: '5×3 min @ threshold', sun: 'Long 22 — last 6 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL', notes: 'First MP work; OU modules start' },
+      { wk: 14, phase: 'build', km: 42, lr: 22, wed: '5×3 min @ threshold', sun: 'Long 22 — last 6 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL', notes: 'First MP work; study modules start' },
       { wk: 15, phase: 'build', km: 46, lr: 24, wed: 'Tempo 25 min',   sun: 'Long 24 — last 6 @ MP',  wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
       { wk: 16, phase: 'build', km: 50, lr: 26, wed: '4×5 min @ threshold', sun: 'Long 26 — last 8 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
       { wk: 17, phase: 'build', km: 36, lr: 16, wed: 'Easy 5 (race week)', sun: 'Long 16 easy — recovery', wedShoe: 'Ghost', lrShoe: 'Ghost', cutback: true, key: true, noBasketball: true, notes: 'PARKRUN 5K PB Sat' },
@@ -348,7 +348,7 @@ const PLAN = {
         { t: '16:30', end: '17:00', title: 'Commute home', detail: 'German podcasts', cat: 'work', quiet: true },
         { t: '17:00', end: '17:30', title: 'Punchbag', detail: '6 × 3 min rounds, 1 min rest — Monday has no run', cat: 'xt', doable: true },
         { t: '17:30', end: '18:30', title: 'Shower + snack', cat: 'routine', quiet: true },
-        { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
+        { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Fixed anchor — never scheduled over', cat: 'meal', quiet: true },
         { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
         { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
@@ -359,10 +359,10 @@ const PLAN = {
       1: [
         { t: '06:45', end: '07:45', title: 'Wake · Anki · breakfast', detail: 'Lie-in vs work days · 15 min Anki', cat: 'routine', quiet: true },
         { t: '07:45', end: '08:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
-        { t: '08:00', end: '15:00', title: 'College', detail: 'Incl ~3h flexible OU/HNC study periods', cat: 'study', quiet: true },
+        { t: '08:00', end: '15:00', title: 'College', detail: 'Incl ~3h flexible study periods', cat: 'study', quiet: true },
         { t: '15:00', end: '16:00', title: 'Commute + snack', detail: 'Home ~16:00', cat: 'work', quiet: true },
         { t: '16:15', run: 'tue' },
-        { after: true, end: '18:30', title: 'OU study', detail: 'Until dinner', cat: 'study', doable: true },
+        { after: true, end: '18:30', title: 'Study', detail: 'Until dinner — any subject, interchangeable', cat: 'study', doable: true },
         { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
         Object.assign({ t: '19:30', end: '20:45' }, UPPER_A),
         { t: '20:45', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
@@ -380,7 +380,7 @@ const PLAN = {
         { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
         { t: '17:10', run: 'wed' },
         { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
-        { t: '19:30', end: '21:00', title: 'OU study', detail: 'Moved into the old gym slot', cat: 'study', doable: true },
+        { t: '19:30', end: '21:00', title: 'Study', detail: 'Moved into the old gym slot — any subject, interchangeable', cat: 'study', doable: true },
         { t: '21:00', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
@@ -396,21 +396,21 @@ const PLAN = {
         { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
         { t: '17:10', run: 'thu' },
         { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
-        { t: '19:30', end: '21:00', title: 'Protected free evening', detail: 'The release valve — flex ≤1h to OU only on deadline weeks', cat: 'free', quiet: true },
+        { t: '19:30', end: '21:00', title: 'Protected free evening', detail: 'The release valve — flex ≤1h to study only on deadline weeks', cat: 'free', quiet: true },
         { t: '21:00', end: '22:00', title: 'Deep reading anchor', cat: 'reading', doable: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
       ],
 
-      /* Friday — German + Upper B + Mum's + basketball. No run. */
+      /* Friday — German + Upper B + evening out + basketball. No run. */
       4: [
         { t: '07:00', end: '07:30', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
         { t: '07:30', end: '12:00', title: 'German active study', detail: 'The deep German block — end time set by phase', cat: 'german', doable: true, friGerman: true },
         { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
         Object.assign({ t: '13:00', end: '14:30' }, UPPER_B),
-        { t: '15:30', end: '19:00', title: 'Mum’s — family', detail: 'Family time through the evening', cat: 'free', quiet: true },
+        { t: '15:30', end: '19:00', title: 'Afternoon — out', detail: 'Standing Friday plans through the evening', cat: 'free', quiet: true },
         { t: '19:00', end: '20:00', title: 'Basketball', detail: 'Cross-training — flexes first: skip whenever legs are cooked', cat: 'xt', doable: true, basketball: true },
-        { t: '20:00', end: '22:00', title: 'Evening at Mum’s', cat: 'free', quiet: true },
+        { t: '20:00', end: '22:00', title: 'Evening — out', cat: 'free', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
       ],
@@ -422,7 +422,7 @@ const PLAN = {
         { t: '08:30', run: 'sat' },
         { after: true, satGym: true, cat: 'gym', doable: true, gym: 'lower' },
         { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
-        { t: '13:00', end: '16:30', title: 'OU / HNC study', cat: 'study', doable: true },
+        { t: '13:00', end: '16:30', title: 'Study', cat: 'study', doable: true },
         { t: '16:30', end: '19:00', title: 'Free — social / hobbies', cat: 'free', quiet: true },
         { t: '19:00', end: '20:00', title: 'Dinner', cat: 'meal', quiet: true, carbEve: true },
         { t: '20:00', end: '22:00', title: 'Free evening', cat: 'free', quiet: true },
@@ -436,7 +436,7 @@ const PLAN = {
         { t: '08:15', end: '08:30', title: 'Porridge + coffee', detail: 'Fuel the long run', cat: 'meal', quiet: true },
         { t: '08:30', run: 'long' },
         { after: true, mins: 30, title: 'Big refuel', cat: 'meal', quiet: true },
-        { t: '13:30', end: '16:30', title: 'OU study', detail: 'Start shifts later after the biggest runs · end 16:30', cat: 'study', doable: true },
+        { t: '13:30', end: '16:30', title: 'Study', detail: 'Start shifts later after the biggest runs · end 16:30', cat: 'study', doable: true },
         { t: '17:00', end: '18:00', title: 'German media', detail: 'Film / series in German (passive)', cat: 'german', quiet: true },
         { t: '18:00', end: '18:30', title: 'Dinner', cat: 'meal', quiet: true },
         { t: '18:30', end: '19:30', title: 'Free', cat: 'free', quiet: true },
@@ -448,9 +448,9 @@ const PLAN = {
     },
 
     /* ---- Scaffold eras (§16 answered, Jul 2026) ----
-       HNC finished early: from Wk 3 Tuesday is a work day (run
-       moves 16:15 → 17:10; OU rides the quiet spells at work — never
-       flat out). From Wk 12 (Mon 14 Sep, second Monday) the HND lands
+       The Tuesday course finished early: from Wk 3 Tuesday is a work day (run
+       moves 16:15 → 17:10; study rides the quiet spells at work — never
+       flat out). From Wk 12 (Mon 14 Sep, second Monday) college lands
        on Mondays: Monday becomes the college day, evening unchanged.
        Weeks 1–2 keep the original templates so history stays true. */
     scaffolds: [
@@ -458,9 +458,9 @@ const PLAN = {
         1: [
           { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating', cat: 'routine', quiet: true },
           { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
-          { t: '07:00', end: '12:00', title: 'Work', detail: 'Quiet spells = OU study — never flat out', cat: 'work', quiet: true },
+          { t: '07:00', end: '12:00', title: 'Work', detail: 'Quiet spells = study — never flat out', cat: 'work', quiet: true },
           { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
-          { t: '13:00', end: '16:30', title: 'Work', detail: 'More OU in the gaps', cat: 'work', quiet: true },
+          { t: '13:00', end: '16:30', title: 'Work', detail: 'More study in the gaps', cat: 'work', quiet: true },
           { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
           { t: '17:10', run: 'tue' },
           { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
@@ -490,7 +490,7 @@ const PLAN = {
               { ex: 'Plank finisher',    sets: '3 × 45s' },
             ] },
           { t: '18:05', end: '18:30', title: 'Shower + snack', cat: 'routine', quiet: true },
-          { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
+          { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Fixed anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
           { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
@@ -503,9 +503,9 @@ const PLAN = {
           { t: '07:30', end: '12:00', title: 'German active study', detail: 'The deep German block — end time set by phase', cat: 'german', doable: true, friGerman: true },
           { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
           { t: '13:00', end: '15:30', title: 'Free / errands', detail: 'Upper B lives on Saturday now — Friday breathes', cat: 'free', quiet: true },
-          { t: '15:30', end: '19:00', title: 'Mum’s — family', detail: 'Family time through the evening', cat: 'free', quiet: true },
+          { t: '15:30', end: '19:00', title: 'Afternoon — out', detail: 'Standing Friday plans through the evening', cat: 'free', quiet: true },
           { t: '19:00', end: '20:00', title: 'Basketball', detail: 'Cross-training — flexes first: skip whenever legs are cooked', cat: 'xt', doable: true, basketball: true },
-          { t: '20:00', end: '22:00', title: 'Evening at Mum’s', cat: 'free', quiet: true },
+          { t: '20:00', end: '22:00', title: 'Evening — out', cat: 'free', quiet: true },
           { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
           { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
         ],
@@ -516,7 +516,7 @@ const PLAN = {
           { after: true, satGym: true, cat: 'gym', doable: true, gym: 'lower' },
           Object.assign({ t: '10:00', end: '11:30' }, UPPER_B),
           { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
-          { t: '13:00', end: '16:30', title: 'OU / HNC study', cat: 'study', doable: true },
+          { t: '13:00', end: '16:30', title: 'Study', cat: 'study', doable: true },
           { t: '16:30', end: '19:00', title: 'Free — social / hobbies', cat: 'free', quiet: true },
           { t: '19:00', end: '20:00', title: 'Dinner', cat: 'meal', quiet: true, carbEve: true },
           { t: '20:00', end: '22:00', title: 'Free evening', cat: 'free', quiet: true },
@@ -533,9 +533,9 @@ const PLAN = {
         1: [
           { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating', cat: 'routine', quiet: true },
           { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
-          { t: '07:00', end: '12:00', title: 'Work', detail: 'Quiet spells = OU study — never flat out', cat: 'work', quiet: true },
+          { t: '07:00', end: '12:00', title: 'Work', detail: 'Quiet spells = study — never flat out', cat: 'work', quiet: true },
           { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
-          { t: '13:00', end: '16:30', title: 'Work', detail: 'More OU in the gaps', cat: 'work', quiet: true },
+          { t: '13:00', end: '16:30', title: 'Work', detail: 'More study in the gaps', cat: 'work', quiet: true },
           { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
           { t: '17:10', run: 'tue' },
           { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
@@ -561,7 +561,7 @@ const PLAN = {
               { ex: 'Plank',             sets: '2 × 45s' },
             ] },
           { t: '17:45', end: '18:30', title: 'Shower + snack', cat: 'routine', quiet: true },
-          { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
+          { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Fixed anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
           { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
@@ -572,7 +572,7 @@ const PLAN = {
         0: [
           { t: '06:45', end: '07:45', title: 'Wake · Anki · breakfast', detail: 'College lie-in vs work days · 15 min Anki', cat: 'routine', quiet: true },
           { t: '07:45', end: '08:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
-          { t: '08:00', end: '15:00', title: 'College — HND', detail: 'HND day (Mondays from 14 Sep) · use any free periods for OU', cat: 'study', quiet: true },
+          { t: '08:00', end: '15:00', title: 'College', detail: 'College day (Mondays from 14 Sep) · free periods = study', cat: 'study', quiet: true },
           { t: '15:00', end: '16:00', title: 'Commute + snack', detail: 'Home ~16:00', cat: 'work', quiet: true },
           { t: '16:30', end: '17:05', title: 'Gym — Lower B (maintenance)', cat: 'gym', doable: true,
             detail: 'Keep the hinge, lose the fatigue · RPE ≤ 7, in and out',
@@ -583,7 +583,7 @@ const PLAN = {
               { ex: 'Plank',             sets: '2 × 45s' },
             ] },
           { t: '17:05', end: '18:30', title: 'Shower · feet up', cat: 'routine', quiet: true },
-          { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
+          { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Fixed anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
           { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
@@ -597,10 +597,10 @@ const PLAN = {
         0: [
           { t: '06:45', end: '07:45', title: 'Wake · Anki · breakfast', detail: 'College lie-in vs work days · 15 min Anki', cat: 'routine', quiet: true },
           { t: '07:45', end: '08:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
-          { t: '08:00', end: '15:00', title: 'College — HND', detail: 'HND day (Mondays from 14 Sep) · use any free periods for OU', cat: 'study', quiet: true },
+          { t: '08:00', end: '15:00', title: 'College', detail: 'College day (Mondays from 14 Sep) · free periods = study', cat: 'study', quiet: true },
           { t: '15:00', end: '16:00', title: 'Commute + snack', detail: 'Home ~16:00', cat: 'work', quiet: true },
           { t: '16:00', end: '18:30', title: 'Full rest — the week’s zero day', detail: 'No run, no gym — Build volume is carried by this evening', cat: 'free', quiet: true },
-          { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Family anchor — never scheduled over', cat: 'meal', quiet: true },
+          { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Fixed anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
           { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
@@ -643,7 +643,7 @@ const PLAN = {
             { t: '16:30', end: '16:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps, LANE 1 (add ~18 m past the line) · THE SCRIPT — laps 1–2: 1:42–1:43, feeling embarrassingly held back · laps 3–5: hold 1:42 · lap 6: the decision — still controlled? start winding up · laps 7–8: everything. Nothing before lap 6 can win this; everything before lap 6 can lose it — the classic 2-mile death is opening at mile pace and dying by lap 5. A fast day shows up in the LAST two laps, nowhere else · afterwards log the peak HR from the final lap — it recalibrates every training zone for the next 22 weeks', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL' },
             { t: '16:45', end: '17:00', title: 'Cool-down jog', detail: 'Never just stop', cat: 'run', quiet: true },
             { t: '17:00', end: '18:00', title: 'Travel home', cat: 'routine', quiet: true },
-            { t: '18:00', end: '19:00', title: 'Family — refuel', detail: 'Proper meal within the hour — carbs and protein', cat: 'meal', quiet: true },
+            { t: '18:00', end: '19:00', title: 'Refuel', detail: 'Proper meal within the hour — carbs and protein', cat: 'meal', quiet: true },
             { t: '19:00', end: '20:00', title: 'Basketball — shooting only', detail: 'Shots and light movement only — no full-court games two hours after a maximal effort', cat: 'xt', doable: true, basketball: true },
             { t: '20:00', end: '22:00', title: 'Evening — feet up', cat: 'free', quiet: true },
             { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
@@ -671,7 +671,7 @@ const PLAN = {
             { t: '10:00', end: '10:30', title: 'Shower + refuel', cat: 'routine', quiet: true },
             Object.assign({ t: '10:30', end: '12:00' }, UPPER_B),
             { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
-            { t: '13:00', end: '16:30', title: 'OU / HNC study', detail: 'Normal study afternoon', cat: 'study', doable: true },
+            { t: '13:00', end: '16:30', title: 'Study', detail: 'Normal study afternoon — any subject, the slot is the commitment', cat: 'study', doable: true },
             { t: '16:30', end: '19:00', title: 'Free — social / hobbies', cat: 'free', quiet: true },
             { t: '19:00', end: '20:00', title: 'Dinner', cat: 'meal', quiet: true },
             { t: '20:00', end: '22:00', title: 'Free evening', cat: 'free', quiet: true },
@@ -714,7 +714,7 @@ const PLAN = {
             { t: '08:00', end: '08:50', title: 'Travel + warm-up', detail: '2 km easy + strides', cat: 'run', quiet: true },
             { t: '09:00', end: '11:00', title: 'TUNE-UP HALF — ~21 km, raced honest', detail: 'Evo SL · this sets the marathon target: 1:52–1:55 → sub-4:00 on · ~2:00 → lock 4:10–4:15', cat: 'run', doable: true, runKm: 21.1, shoe: 'Evo SL' },
             { t: '11:00', end: '11:45', title: 'Refuel + shower', cat: 'routine', quiet: true },
-            { t: '12:00', end: '17:00', title: 'Easy family afternoon', detail: 'Recover — the number is in the bank', cat: 'free', quiet: true },
+            { t: '12:00', end: '17:00', title: 'Easy afternoon', detail: 'Recover — the number is in the bank', cat: 'free', quiet: true },
             { t: '17:00', end: '18:00', title: 'Dinner', cat: 'meal', quiet: true },
             { t: '19:30', end: '21:00', title: 'Sunday reading catch-up', cat: 'reading', doable: true },
             { t: '21:00', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
@@ -733,8 +733,8 @@ const PLAN = {
       },
 
       /* Weeks 26–27 — holiday template (off work Mon–Fri). Wake 08:00 ·
-         run of the day ~09:30 (Mon: full rest, no run) · one light OU
-         block ~90 min · family evenings. The 18:30 dinner anchor stays.
+         run of the day ~09:30 (Mon: full rest, no run) · one light study
+         block ~90 min · free evenings. The 18:30 dinner anchor stays.
          Upper A slides
          to late morning; Upper B falls on the rest-day Fridays. */
       26: {
@@ -746,7 +746,7 @@ const PLAN = {
           3: { blocks: 'holidayThu' },
           4: { blocks: [
             { t: '08:30', end: '09:30', title: 'Christmas Day — wake easy', detail: 'No Anki guilt', cat: 'routine', quiet: true },
-            { t: '09:30', end: '21:30', title: 'CHRISTMAS — full rest, family', detail: 'No run, no gym, no study. Eat well — the dress rehearsal is Sunday.', cat: 'free', quiet: true },
+            { t: '09:30', end: '21:30', title: 'CHRISTMAS — full rest', detail: 'No run, no gym, no study. Eat well — the dress rehearsal is Sunday.', cat: 'free', quiet: true },
             { t: '22:00', end: '22:30', title: 'Read (if you fancy it)', cat: 'reading', quiet: true },
             { t: '22:30', end: '23:00', title: 'Lights out', cat: 'routine', quiet: true },
           ] },
@@ -761,7 +761,7 @@ const PLAN = {
           3: { blocks: 'holidayThu' },
           4: { blocks: [
             { t: '08:00', end: '08:30', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
-            { t: '08:30', end: '21:30', title: 'New Year’s Day — REST', detail: 'Feet up, family. The peak 30 km is in two days.', cat: 'free', quiet: true },
+            { t: '08:30', end: '21:30', title: 'New Year’s Day — REST', detail: 'Feet up. The peak 30 km is in two days.', cat: 'free', quiet: true },
             { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
             { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
           ] },
@@ -774,7 +774,7 @@ const PLAN = {
         days: {
           0: { blocks: [
             { t: '06:45', end: '07:45', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
-            { t: '08:00', end: '15:00', title: 'College — HND', cat: 'study', quiet: true },
+            { t: '08:00', end: '15:00', title: 'College', cat: 'study', quiet: true },
             { t: '15:00', end: '16:00', title: 'Home + snack', cat: 'work', quiet: true },
             { t: '16:15', end: '16:50', title: 'Easy 5', detail: 'Ghost · 6:20–6:50/km · race week — float', cat: 'run', doable: true, runKm: 5, shoe: 'Ghost' },
             { t: '16:50', end: '17:05', title: 'Shower', cat: 'routine', quiet: true },
@@ -786,14 +786,14 @@ const PLAN = {
           1: { blocks: [
             { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
             { t: '06:45', end: '07:00', title: 'Commute', cat: 'work', quiet: true },
-            { t: '07:00', end: '12:00', title: 'Work', detail: 'OU rides the quiet spells', cat: 'work', quiet: true },
+            { t: '07:00', end: '12:00', title: 'Work', detail: 'Study rides the quiet spells', cat: 'work', quiet: true },
             { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
             { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
             { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
             { t: '17:10', end: '17:40', title: 'Easy 4', detail: 'Ghost · easy — NO gym tonight', cat: 'run', doable: true, runKm: 4, shoe: 'Ghost' },
             { t: '17:40', end: '17:55', title: 'Shower', cat: 'routine', quiet: true },
             { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
-            { t: '19:30', end: '21:00', title: 'OU study — 1.5h', detail: 'The gym slot goes to OU this week — NO gym', cat: 'study', doable: true },
+            { t: '19:30', end: '21:00', title: 'Study — 1.5h', detail: 'The gym slot goes to study this week — NO gym', cat: 'study', doable: true },
             { t: '21:00', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
             { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
             { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
@@ -808,7 +808,7 @@ const PLAN = {
             { t: '17:10', end: '17:40', title: 'Easy 4 + strides', detail: 'Ghost · a few relaxed strides', cat: 'run', doable: true, runKm: 4, shoe: 'Ghost' },
             { t: '17:40', end: '17:55', title: 'Shower', cat: 'routine', quiet: true },
             { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
-            { t: '19:30', end: '20:30', title: 'OU — light', cat: 'study', doable: true },
+            { t: '19:30', end: '20:30', title: 'Study — light', cat: 'study', doable: true },
             { t: '20:30', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
             { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
             { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
@@ -873,12 +873,12 @@ const PLAN = {
     namedTemplates: {
       holidayMon: [
         { t: '08:00', end: '08:45', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
-        { t: '09:00', end: '13:00', title: 'Family / free', detail: 'No run, no gym — holiday Monday is a full rest day', cat: 'free', quiet: true },
+        { t: '09:00', end: '13:00', title: 'Free', detail: 'No run, no gym — holiday Monday is a full rest day', cat: 'free', quiet: true },
         { t: '13:00', end: '14:00', title: 'Lunch', cat: 'meal', quiet: true },
-        { t: '14:00', end: '15:30', title: 'OU — one light block', detail: '~90 min, that’s the lot', cat: 'study', doable: true },
-        { t: '15:30', end: '18:30', title: 'Family / free', cat: 'free', quiet: true },
+        { t: '14:00', end: '15:30', title: 'Study — one light block', detail: '~90 min, that’s the lot', cat: 'study', doable: true },
+        { t: '15:30', end: '18:30', title: 'Free', cat: 'free', quiet: true },
         { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
-        { t: '19:30', end: '22:00', title: 'Family evening', cat: 'free', quiet: true },
+        { t: '19:30', end: '22:00', title: 'Free evening', cat: 'free', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
       ],
@@ -887,7 +887,7 @@ const PLAN = {
         { t: '09:30', run: 'tue' },
         { after: true, end: '11:00', title: 'Free', cat: 'free', quiet: true },
         { t: '11:00', end: '12:00', title: 'Gym — Upper A (maintenance)', cat: 'gym', doable: true, gym: 'upper',
-          detail: '3 reps in reserve — save the evening for family',
+          detail: '3 reps in reserve — save the evening',
           plan: [
             { ex: 'Bench press',   sets: '2 × 6–8' },
             { ex: 'Barbell row',   sets: '2 × 8' },
@@ -895,32 +895,32 @@ const PLAN = {
             { ex: 'EZ bar curls',  sets: '2 × 10' },
           ] },
         { t: '13:00', end: '14:00', title: 'Lunch', cat: 'meal', quiet: true },
-        { t: '14:00', end: '15:30', title: 'OU — one light block', cat: 'study', doable: true },
-        { t: '15:30', end: '18:30', title: 'Family / free', cat: 'free', quiet: true },
+        { t: '14:00', end: '15:30', title: 'Study — one light block', cat: 'study', doable: true },
+        { t: '15:30', end: '18:30', title: 'Free', cat: 'free', quiet: true },
         { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
-        { t: '19:30', end: '22:00', title: 'Family evening', cat: 'free', quiet: true },
+        { t: '19:30', end: '22:00', title: 'Free evening', cat: 'free', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
       ],
       holidayWed: [
         { t: '08:00', end: '08:45', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
         { t: '09:30', run: 'wed' },
-        { after: true, end: '13:00', title: 'Family / free', cat: 'free', quiet: true },
+        { after: true, end: '13:00', title: 'Free', cat: 'free', quiet: true },
         { t: '13:00', end: '14:00', title: 'Lunch', cat: 'meal', quiet: true },
-        { t: '14:00', end: '15:30', title: 'OU — one light block', cat: 'study', doable: true },
-        { t: '15:30', end: '18:30', title: 'Family / free', cat: 'free', quiet: true },
+        { t: '14:00', end: '15:30', title: 'Study — one light block', cat: 'study', doable: true },
+        { t: '15:30', end: '18:30', title: 'Free', cat: 'free', quiet: true },
         { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
-        { t: '19:30', end: '22:00', title: 'Family evening', cat: 'free', quiet: true },
+        { t: '19:30', end: '22:00', title: 'Free evening', cat: 'free', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
       ],
       holidayThu: [
         { t: '08:00', end: '08:45', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
         { t: '09:30', run: 'thu' },
-        { after: true, end: '13:00', title: 'Family / free', cat: 'free', quiet: true },
+        { after: true, end: '13:00', title: 'Free', cat: 'free', quiet: true },
         { t: '13:00', end: '14:00', title: 'Lunch', cat: 'meal', quiet: true },
-        { t: '14:00', end: '15:30', title: 'OU — one light block', cat: 'study', doable: true },
-        { t: '15:30', end: '18:30', title: 'Family / free', cat: 'free', quiet: true },
+        { t: '14:00', end: '15:30', title: 'Study — one light block', cat: 'study', doable: true },
+        { t: '15:30', end: '18:30', title: 'Free', cat: 'free', quiet: true },
         { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
         { t: '19:30', end: '21:00', title: 'Protected free evening', cat: 'free', quiet: true },
         { t: '21:00', end: '22:00', title: 'Deep reading anchor', cat: 'reading', doable: true },
@@ -949,7 +949,7 @@ const PLAN = {
     templates: {
       0: [
         { t: '06:45', end: '07:45', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
-        { t: '08:00', end: '15:00', title: 'College — HND', detail: 'Yes, the day after. Walk gently, tell everyone.', cat: 'study', quiet: true },
+        { t: '08:00', end: '15:00', title: 'College', detail: 'Yes, the day after. Walk gently, tell everyone.', cat: 'study', quiet: true },
         { t: '15:00', end: '16:00', title: 'Home + snack', cat: 'work', quiet: true },
         { t: '16:00', end: '18:30', title: 'Walk · eat · rest', detail: 'No running. No guilt.', cat: 'free', quiet: true },
         { t: '18:30', end: '19:30', title: 'Dinner — eat big', cat: 'meal', quiet: true },
@@ -960,7 +960,7 @@ const PLAN = {
       1: [
         { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
         { t: '06:45', end: '07:00', title: 'Commute', cat: 'work', quiet: true },
-        { t: '07:00', end: '12:00', title: 'Work', detail: 'OU / life admin rides the quiet spells — gently', cat: 'work', quiet: true },
+        { t: '07:00', end: '12:00', title: 'Work', detail: 'Study / life admin rides the quiet spells — gently', cat: 'work', quiet: true },
         { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
         { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
         { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
@@ -1016,8 +1016,8 @@ const PLAN = {
             { ex: 'Easy pull-ups',  sets: '2 sets' },
             { ex: 'Arms',           sets: '2 × 12' },
           ] },
-        { t: '15:30', end: '19:00', title: 'Mum’s — family', cat: 'free', quiet: true },
-        { t: '19:00', end: '22:00', title: 'Evening at Mum’s', detail: 'Basketball only if legs genuinely feel normal', cat: 'free', quiet: true },
+        { t: '15:30', end: '19:00', title: 'Afternoon — out', cat: 'free', quiet: true },
+        { t: '19:00', end: '22:00', title: 'Evening — out', detail: 'Basketball only if legs genuinely feel normal', cat: 'free', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
       ],
@@ -1034,9 +1034,9 @@ const PLAN = {
       ],
       6: [
         { t: '08:00', end: '08:45', title: 'Wake · Anki · breakfast', detail: 'Proper lie-in — no long run to fuel', cat: 'routine', quiet: true },
-        { t: '09:00', end: '12:00', title: 'Long walk / family', detail: 'The Sunday slot, reclaimed', cat: 'free', quiet: true },
+        { t: '09:00', end: '12:00', title: 'Long walk', detail: 'The Sunday slot, reclaimed', cat: 'free', quiet: true },
         { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
-        { t: '13:30', end: '15:30', title: 'OU study — light', cat: 'study', doable: true },
+        { t: '13:30', end: '15:30', title: 'Study — light', cat: 'study', doable: true },
         { t: '17:00', end: '18:00', title: 'German media', cat: 'german', quiet: true },
         { t: '18:00', end: '18:30', title: 'Dinner', cat: 'meal', quiet: true },
         { t: '19:30', end: '21:00', title: 'Sunday reading catch-up', cat: 'reading', doable: true },
@@ -1064,7 +1064,7 @@ const PLAN = {
     templates: {
       0: [
         { t: '06:45', end: '07:45', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
-        { t: '08:00', end: '15:00', title: 'College — HND', detail: 'Mondays while the HND runs — OU rides the free periods', cat: 'study', quiet: true },
+        { t: '08:00', end: '15:00', title: 'College', detail: 'Mondays — free periods = study', cat: 'study', quiet: true },
         { t: '15:00', end: '16:00', title: 'Home + snack', cat: 'work', quiet: true },
         { t: '17:00', end: '18:00', title: 'Gym — Lower A', cat: 'gym', doable: true,
           detail: 'The split is back',
@@ -1083,7 +1083,7 @@ const PLAN = {
       1: [
         { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
         { t: '06:45', end: '07:00', title: 'Commute', cat: 'work', quiet: true },
-        { t: '07:00', end: '12:00', title: 'Work', detail: 'OU rides the quiet spells', cat: 'work', quiet: true },
+        { t: '07:00', end: '12:00', title: 'Work', detail: 'Study rides the quiet spells', cat: 'work', quiet: true },
         { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
         { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
         { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
@@ -1114,7 +1114,7 @@ const PLAN = {
         { t: '17:10', end: '17:50', title: 'Easy run — 6 km (hobby)', detail: 'Ghost · conversational', cat: 'run', doable: true, runKm: 6, shoe: 'Ghost' },
         { t: '17:50', end: '18:05', title: 'Shower', cat: 'routine', quiet: true },
         { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
-        { t: '19:30', end: '21:00', title: 'OU study', cat: 'study', doable: true },
+        { t: '19:30', end: '21:00', title: 'Study', cat: 'study', doable: true },
         { t: '21:00', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
@@ -1145,9 +1145,9 @@ const PLAN = {
             { ex: 'Rope pushdowns',     sets: '3 × 10–12' },
             { ex: 'Hanging leg raises', sets: '3 × 10–15' },
           ] },
-        { t: '15:30', end: '19:00', title: 'Mum’s — family', cat: 'free', quiet: true },
+        { t: '15:30', end: '19:00', title: 'Afternoon — out', cat: 'free', quiet: true },
         { t: '19:00', end: '20:00', title: 'Basketball', cat: 'xt', doable: true },
-        { t: '20:00', end: '22:00', title: 'Evening at Mum’s', cat: 'free', quiet: true },
+        { t: '20:00', end: '22:00', title: 'Evening — out', cat: 'free', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
       ],

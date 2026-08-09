@@ -299,7 +299,7 @@ ok(/2×15 pogo hops/.test(dayOfWeek(5, 1).run.detail), 'Tue easy runs start with
 ok(!/relaxed strides/.test(dayOfWeek(5, 1).run.detail), 'Tue easy runs carry no strides');
 ok(!/pogo|strides/.test(dayOfWeek(12, 5).run.detail), 'Sat buffer run stays plain — nothing before the long run');
 ok(/headtorch/i.test(dayOfWeek(15, 2).run.detail), 'Oct Wed 17:10 carries the dark-kit note');
-ok(/headtorch/i.test(dayOfWeek(15, 1).run.detail), 'Oct Tue 17:10 (post-HNC) is dark');
+ok(/headtorch/i.test(dayOfWeek(15, 1).run.detail), 'Oct Tue 17:10 (work-day era) is dark');
 ok(/headtorch/i.test(dayOfWeek(20, 1).run.detail), 'Nov Tue is dark');
 ok(!/headtorch/i.test(dayOfWeek(8, 2).run.detail), 'Aug Wed is daylight');
 ok(!/headtorch/i.test(dayOfWeek(26, 2).run.detail), 'holiday-week 09:30 runs are daylight');
@@ -324,14 +324,14 @@ section('scaffold eras');
   ok(hasBlock(dayOfWeek(1, 1), /College/), 'wk1 Tue is still a college day');
   ok(hasRunAt(dayOfWeek(1, 1), '16:15'), 'wk1 Tue run stays at 16:15');
   // Wk 3–11: Tuesday becomes a work day, run slides to 17:10
-  ok(hasBlock(dayOfWeek(5, 1), /Work/), 'wk5 Tue is a work day (HNC done)');
+  ok(hasBlock(dayOfWeek(5, 1), /Work/), 'wk5 Tue is a work day (college era over)');
   ok(!hasBlock(dayOfWeek(5, 1), /College/), 'wk5 Tue no longer college');
   ok(hasRunAt(dayOfWeek(5, 1), '17:10'), 'wk5 Tue run moved to 17:10');
   ok(hasBlock(dayOfWeek(5, 1), /Upper A/), 'wk5 Tue keeps Upper A at 19:30');
   ok(hasBlock(dayOfWeek(5, 0), /Lower B/i), 'wk5 Mon carries Lower B (punchbag retired from Wk 4)');
-  // Wk 12+: Monday becomes the HND college day
-  ok(hasBlock(dayOfWeek(12, 0), /College — HND/), 'wk12 Mon is the HND college day');
-  ok(hasBlock(dayOfWeek(12, 0), /College — HND/) && hasBlock(dayOfWeek(12, 0), /Lower B \(maintenance\)/),
+  // Wk 12+: Monday becomes the college day
+  ok(hasBlock(dayOfWeek(12, 0), /^College$/m ? /College/ : /College/), 'wk12 Mon is the college day');
+  ok(hasBlock(dayOfWeek(12, 0), /College/) && hasBlock(dayOfWeek(12, 0), /Lower B \(maintenance\)/),
     'wk12 Mon is a college day with maintenance legs after');
   ok(hasBlock(dayOfWeek(18, 0), /zero day/i) && !dayOfWeek(18, 0).blocks.some((b) => b.cat === 'gym' || b.cat === 'xt'),
     'wk18 Mon is the zero day — no gym, no punchbag');
@@ -340,19 +340,19 @@ section('scaffold eras');
   ok(hasRunAt(dayOfWeek(12, 1), '17:10'), 'wk12 Tue run still 17:10');
   // Special weeks still win over the scaffold
   ok(hasBlock(dayOfWeek(26, 0), /CHRISTMAS|full rest|holiday|Family/i) || dayOfWeek(26, 0).blocks.some((b) => /Punchbag/.test(b.title)),
-    'wk26 Mon holiday template overrides the HND scaffold');
+    'wk26 Mon holiday template overrides the college scaffold');
   ok(hasBlock(dayOfWeek(24, 3), /REST/), 'wk24 Thu rest still applies over the scaffold');
   // Race week, recovery and the standing week live on the same era
-  ok(hasBlock(dayOfWeek(30, 0), /College — HND/) && dayOfWeek(30, 0).blocks.some((b) => /Easy 5/.test(b.title)),
-    'wk30 race-week Monday is an HND college day with the easy 5');
+  ok(hasBlock(dayOfWeek(30, 0), /College/) && dayOfWeek(30, 0).blocks.some((b) => /Easy 5/.test(b.title)),
+    'wk30 race-week Monday is an college day with the easy 5');
   ok(hasBlock(dayOfWeek(30, 1), /Work/) && hasRunAt(dayOfWeek(30, 1), '17:10'),
     'wk30 race-week Tuesday is a work day, easy 4 at 17:10');
-  ok(hasBlock(DB.buildDay('2027-01-25'), /College — HND/),
-    'recovery Monday (day after the race) is an HND college day');
+  ok(hasBlock(DB.buildDay('2027-01-25'), /College/),
+    'recovery Monday (day after the race) is an college day');
   ok(hasBlock(DB.buildDay('2027-01-26'), /Work/),
     'recovery Tuesday is a work day');
-  ok(hasBlock(DB.buildDay('2027-03-01'), /College — HND/),
-    'standing-week Monday stays the HND college day');
+  ok(hasBlock(DB.buildDay('2027-03-01'), /College/),
+    'standing-week Monday stays the college day');
   ok(hasBlock(DB.buildDay('2027-03-02'), /Work/) && hasRunAt(DB.buildDay('2027-03-02'), '17:10'),
     'standing-week Tuesday is a work day, hobby run at 17:10');
 }
