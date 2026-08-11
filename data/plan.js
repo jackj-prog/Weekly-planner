@@ -147,6 +147,13 @@ const PLAN = {
     /* Thresholds the app enforces on the EF trend, not just prose. */
     tempWarn: 18,      // above this, add 10–20 s/km before comparing
     tempInvalid: 24,   // above this it is not a benchmark at all
+    /* Heat correction so two runs in different weather are comparable.
+       ~0.55%/°C above 15 °C (≈2.75% per 5 °C) — the standard endurance
+       rule of thumb. Log the FEELS-LIKE number, not the air temperature:
+       sun, humidity and wind are what your thermoregulation actually
+       fights. Shown as an estimate beside the raw pace, never instead
+       of it — the logged data stays exactly what happened. */
+    tempBaseline: 15, tempPenaltyPerC: 0.0055,
     expect:
       'Pace at the same HR should improve ~5–8 s/km per 4-week block early ' +
       'in Base, easing to ~2–4 s/km by peak Build. Pace improving while HR ' +

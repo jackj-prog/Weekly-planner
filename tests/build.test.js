@@ -467,6 +467,13 @@ section('run classification + log estimates');
   ok(PLAN.benchmark.tempWarn === 18 && PLAN.benchmark.tempInvalid === 24,
     'the §10 heat thresholds are data the app can enforce, not just prose');
   ok(PLAN.benchmark.tempWarn < PLAN.benchmark.tempInvalid, 'warn threshold sits below the invalid one');
+  /* heat correction, checked against the two real runs it was built for */
+  ok(DB.adjustPace(392, 21) === 379 && DB.adjustPace(408, 28) === 379,
+    '6 Aug (6:32 @21°) and 11 Aug (6:48 @28°) both correct to 6:19 — the gap was weather, not fitness');
+  ok(DB.adjustPace(400, 15) === null && DB.adjustPace(400, 10) === null,
+    'at or below the baseline there is no correction to make');
+  ok(DB.adjustPace(400, null) === null && DB.adjustPace(0, 25) === null, 'guards on missing inputs');
+  ok(DB.adjustPace(400, 30) < 400, 'heat correction always makes a hot run look quicker, never slower');
   ok(DB.runClass(dayOfWeek(8, 4).run) === 'race', 'the TT classifies as race');
   ok(DB.runClass(dayOfWeek(8, 1).run) === 'quality', 'the 400s rehearsal classifies as quality');
   ok(DB.runClass(dayOfWeek(7, 2).run) === 'quality', 'wk 7 Wed tempo classifies as quality');

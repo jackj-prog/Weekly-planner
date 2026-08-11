@@ -151,6 +151,13 @@
     if (!(km > 0) || !(sec > 0)) return null;
     return fmtPaceSec(Math.round(sec / km));
   }
+  /* Heat-corrected pace: what this run would have been at the benchmark
+     temperature. An estimate for comparison only — never stored. */
+  function adjustPace(paceSec, temp) {
+    const b = PLAN.benchmark;
+    if (!b || !(paceSec > 0) || temp == null || temp <= b.tempBaseline) return null;
+    return Math.round(paceSec * (1 - (temp - b.tempBaseline) * b.tempPenaltyPerC));
+  }
   function fmtPaceSec(s) {
     return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
   }
@@ -646,7 +653,7 @@
     buildDay, resolveBlock, weekNumber, dayIndex, distancesForWeek,
     weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
-    fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, logVerdict,
+    fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, logVerdict, adjustPace,
     hrZones, zoneOf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };

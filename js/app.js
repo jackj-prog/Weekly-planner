@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '3.6.0';
+  const APP_VERSION = '3.6.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -470,7 +470,7 @@
       logHTML = '<div class="h-log form" role="group" aria-label="Log this run">' +
         st('pace', DB.fmtPaceSec(d.paceSec) + '<small>/km</small>', d.paceSec > d.paceMin, d.paceSec < d.paceMax) +
         st('hr', d.hr + '<small>bpm</small>', d.hr > d.hrMin, d.hr < d.hrMax) +
-        '<div class="st-wide">' + st('temp', d.temp + '°<small>air temp</small>',
+        '<div class="st-wide">' + st('temp', d.temp + '°<small>feels like</small>',
           d.temp > PLAN.logModel.tempMin, d.temp < PLAN.logModel.tempMax) + '</div>' +
         '<div class="st-total">= ' + fmtDur(totalSec) + ' for ' + kmTxt + ' km' +
         (d.temp >= PLAN.benchmark.tempInvalid
@@ -1264,6 +1264,10 @@
         hard: cls === 'quality' || cls === 'race',
         temp: e.temp == null ? null : e.temp,
         tooHot: e.temp != null && e.temp >= PLAN.benchmark.tempInvalid,
+        adj: (function () {
+          const a = DB.adjustPace(Math.round(e.sec / km), e.temp);
+          return a ? DB.fmtPaceSec(a) : null;
+        }()),
       });
     }
     entries.sort((a, b) => (a.iso < b.iso ? -1 : 1));
@@ -1298,6 +1302,7 @@
       '<div class="ref-row"><span>' + esc(fmtShort(e.iso)) +
       (e.hard ? ' <i class="dot" style="background:var(--accent)" title="hard session"></i>' : '') +
       '</span><span class="v">' + e.km + ' km · ' + esc(e.pace || '—') + '/km' +
+      (e.adj ? ' <i class="adj">→ ' + esc(e.adj) + '</i>' : '') +
       (e.hr ? ' · ' + e.hr + ' <b>' + fmtEf(e.ef) + '</b>' : '') +
       (e.temp != null ? ' <i class="tmp' + (e.tooHot ? ' hot' : '') + '">' + e.temp + '°</i>' : '') +
       '</span></div>'
@@ -1308,7 +1313,10 @@
       '<div class="ref-note">EF = metres per minute ÷ avg HR — bold number, higher is fitter. ' +
       'Compare like with like: easy runs against easy runs (hard days are dotted), and mind ' +
       'heat — EF reads low above ~18 °C. Rising EF at the same easy effort is exactly what ' +
-      'the §10 bands are waiting for.</div></div>'
+      'the §10 bands are waiting for.</div>' +
+      '<div class="ref-note">The <b>→ pace</b> beside a warm run is what it would have been at ' +
+      PLAN.benchmark.tempBaseline + ' °C (~0.55%/°C). An estimate for comparing like with like — ' +
+      'the logged number is always what you actually ran.</div></div>'
     );
   }
 
