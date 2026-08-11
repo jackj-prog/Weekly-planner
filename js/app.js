@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '3.5.0';
+  const APP_VERSION = '3.6.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -429,6 +429,7 @@
       out.push({
         iso: m[1], cls: DB.runClass(day.run), paceSec: Math.round(e.sec / km),
         hr: e.hr || null, ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
+        temp: e.temp == null ? null : e.temp,
       });
     }
     out.sort((a, b) => (a.iso < b.iso ? -1 : 1));
@@ -469,7 +470,12 @@
       logHTML = '<div class="h-log form" role="group" aria-label="Log this run">' +
         st('pace', DB.fmtPaceSec(d.paceSec) + '<small>/km</small>', d.paceSec > d.paceMin, d.paceSec < d.paceMax) +
         st('hr', d.hr + '<small>bpm</small>', d.hr > d.hrMin, d.hr < d.hrMax) +
-        '<div class="st-total">= ' + fmtDur(totalSec) + ' for ' + kmTxt + ' km</div>' +
+        '<div class="st-wide">' + st('temp', d.temp + '°<small>air temp</small>',
+          d.temp > PLAN.logModel.tempMin, d.temp < PLAN.logModel.tempMax) + '</div>' +
+        '<div class="st-total">= ' + fmtDur(totalSec) + ' for ' + kmTxt + ' km' +
+        (d.temp >= PLAN.benchmark.tempInvalid
+          ? ' · <b>too hot to benchmark</b>'
+          : d.temp >= PLAN.benchmark.tempWarn ? ' · warm — read pace generously' : '') + '</div>' +
         '<div class="st-act"><button class="rl-save">Save</button>' +
         '<button class="rl-x" aria-label="Cancel">✕</button></div></div>';
     } else if (logged) {
@@ -513,12 +519,15 @@
     const logBtn = hero.querySelector('.h-log:not(.form)');
     if (logBtn) logBtn.addEventListener('click', () => {
       /* centre the steppers on what was logged, else the estimate */
-      const est = DB.logEstimate(day, runLogHistory());
+      const hist = runLogHistory();
+      const est = DB.logEstimate(day, hist);
       const centrePace = e.sec ? Math.round(e.sec / (e.km || km)) : est.paceSec;
       const centreHr = e.hr || est.hr;
+      const lastTemp = hist.filter((x) => x.temp != null).pop();
       state.runLogEdit = iso;
       state.runLogDraft = {
         paceSec: centrePace, hr: centreHr,
+        temp: e.temp != null ? e.temp : (lastTemp ? lastTemp.temp : PLAN.logModel.tempDefault),
         paceMin: centrePace - PLAN.logModel.paceSpan, paceMax: centrePace + PLAN.logModel.paceSpan,
         hrMin: centreHr - PLAN.logModel.hrSpan, hrMax: centreHr + PLAN.logModel.hrSpan,
       };
@@ -527,8 +536,12 @@
     hero.querySelectorAll('.st-b').forEach((btn) => btn.addEventListener('click', () => {
       const d = state.runLogDraft;
       const dir = Number(btn.getAttribute('data-d'));
-      if (btn.getAttribute('data-st') === 'pace') {
+      const kind = btn.getAttribute('data-st');
+      if (kind === 'pace') {
         d.paceSec = Math.min(d.paceMax, Math.max(d.paceMin, d.paceSec + dir * PLAN.logModel.paceStep));
+      } else if (kind === 'temp') {
+        d.temp = Math.min(PLAN.logModel.tempMax,
+          Math.max(PLAN.logModel.tempMin, d.temp + dir * PLAN.logModel.tempStep));
       } else {
         d.hr = Math.min(d.hrMax, Math.max(d.hrMin, d.hr + dir * PLAN.logModel.hrStep));
       }
@@ -537,7 +550,7 @@
     const saveBtn = hero.querySelector('.rl-save');
     if (saveBtn) saveBtn.addEventListener('click', () => {
       const d = state.runLogDraft;
-      saveRunLogEntry(iso, { sec: Math.round(d.paceSec * km), hr: d.hr, km: null });
+      saveRunLogEntry(iso, { sec: Math.round(d.paceSec * km), hr: d.hr, km: null, temp: d.temp });
       state.runLogEdit = null; state.runLogDraft = null;
       render();
     });
@@ -1249,6 +1262,8 @@
         hr: e.hr || null,
         ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
         hard: cls === 'quality' || cls === 'race',
+        temp: e.temp == null ? null : e.temp,
+        tooHot: e.temp != null && e.temp >= PLAN.benchmark.tempInvalid,
       });
     }
     entries.sort((a, b) => (a.iso < b.iso ? -1 : 1));
@@ -1261,7 +1276,7 @@
       );
     }
     /* sparkline over easy-run EF only — hard days read high by design */
-    const efPts = entries.filter((e) => e.ef != null && !e.hard).slice(-12);
+    const efPts = entries.filter((e) => e.ef != null && !e.hard && !e.tooHot).slice(-12);
     let spark = '';
     if (efPts.length >= 2) {
       const vals = efPts.map((p) => p.ef);
@@ -1283,7 +1298,9 @@
       '<div class="ref-row"><span>' + esc(fmtShort(e.iso)) +
       (e.hard ? ' <i class="dot" style="background:var(--accent)" title="hard session"></i>' : '') +
       '</span><span class="v">' + e.km + ' km · ' + esc(e.pace || '—') + '/km' +
-      (e.hr ? ' · ' + e.hr + ' <b>' + fmtEf(e.ef) + '</b>' : '') + '</span></div>'
+      (e.hr ? ' · ' + e.hr + ' <b>' + fmtEf(e.ef) + '</b>' : '') +
+      (e.temp != null ? ' <i class="tmp' + (e.tooHot ? ' hot' : '') + '">' + e.temp + '°</i>' : '') +
+      '</span></div>'
     ).join('');
     return el(
       '<div class="ref"><h2>Training log</h2>' + spark +

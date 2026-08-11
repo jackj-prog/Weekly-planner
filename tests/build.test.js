@@ -461,6 +461,12 @@ section('run classification + log estimates');
 {
   ok(PLAN.logModel.paceSpan === 30 && PLAN.logModel.hrSpan === 20,
     'stepper spans are the agreed ±30 s/km and ±20 bpm');
+  /* temperature: without it, every pace-at-HR comparison is a weather comparison */
+  ok(PLAN.logModel.tempStep === 1 && PLAN.logModel.tempMin < 0 && PLAN.logModel.tempMax >= 35,
+    'the log carries an air-temperature stepper across a usable range');
+  ok(PLAN.benchmark.tempWarn === 18 && PLAN.benchmark.tempInvalid === 24,
+    'the §10 heat thresholds are data the app can enforce, not just prose');
+  ok(PLAN.benchmark.tempWarn < PLAN.benchmark.tempInvalid, 'warn threshold sits below the invalid one');
   ok(DB.runClass(dayOfWeek(8, 4).run) === 'race', 'the TT classifies as race');
   ok(DB.runClass(dayOfWeek(8, 1).run) === 'quality', 'the 400s rehearsal classifies as quality');
   ok(DB.runClass(dayOfWeek(7, 2).run) === 'quality', 'wk 7 Wed tempo classifies as quality');

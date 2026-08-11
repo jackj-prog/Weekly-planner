@@ -450,9 +450,13 @@ test disagree, the talk test wins (rule 1).
 route every time, Ghost (never the Evo SL), 8–15 °C, wind under
 ~15 km/h, 7+ hours sleep, 2+ hours after food, and never the day after
 the long run. Log average pace **and average HR** over km 2–4, plus the
-temperature. Expect pace at the same HR to improve ~5–8 s/km per 4-week
-block early in Base, easing to ~2–4 s/km by peak Build. Above 18 °C add
-10–20 s/km before comparing; above 24 °C it is not a benchmark.
+temperature — **the run log takes air temperature as a third stepper
+(v3.6), because without it every pace-at-HR comparison is really a
+weather comparison.** Expect pace at the same HR to improve ~5–8 s/km
+per 4-week block early in Base, easing to ~2–4 s/km by peak Build.
+Above 18 °C add 10–20 s/km before comparing; above 24 °C it is not a
+benchmark at all, and the app excludes such runs from the EF trend
+rather than letting them drag it down.
 **Pace improving while HR climbs is not fitness** — that is Sunday's
 session being spent on a Thursday.
 

@@ -144,6 +144,9 @@ const PLAN = {
       'Not the day after the long run (Mon/Tue read slow — that is fatigue, not fitness)',
     ],
     log: 'Average pace AND average HR over km 2–4, plus the temperature.',
+    /* Thresholds the app enforces on the EF trend, not just prose. */
+    tempWarn: 18,      // above this, add 10–20 s/km before comparing
+    tempInvalid: 24,   // above this it is not a benchmark at all
     expect:
       'Pace at the same HR should improve ~5–8 s/km per 4-week block early ' +
       'in Base, easing to ~2–4 s/km by peak Build. Pace improving while HR ' +
@@ -254,6 +257,9 @@ const PLAN = {
     paceStep: 5,  paceSpan: 30,     // ± seconds/km around the estimate
     hrStep: 2,    hrSpan: 20,       // ± bpm around the estimate
     fallbackHr: { easy: 150, long: 152, quality: 170, race: 182 },
+    /* Temperature is logged because without it every pace-at-HR
+       comparison is really a weather comparison (§10 benchmark). */
+    tempStep: 1, tempMin: -5, tempMax: 40, tempDefault: 16,
   },
 
   /* Run cues (§6): micro-doses stapled onto the easy runs — pogo hops for

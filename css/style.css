@@ -879,3 +879,12 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 }
 .hz-form .st-b { background: var(--paper); border-color: var(--line); color: var(--text); }
 .hz-form .st-v small { color: var(--t2); }
+
+/* temperature: third stepper spans the form, and rides each log row */
+.h-log.form .st-wide { grid-column: 1 / -1; }
+.h-log.form .st-wide .st { justify-content: center; gap: 14px; }
+.ref-row .v .tmp {
+  font-style: normal; margin-left: 6px; padding: 1px 5px; border-radius: 4px;
+  font-size: 11px; background: var(--line); color: var(--t2);
+}
+.ref-row .v .tmp.hot { background: var(--accent); color: #fff; }
