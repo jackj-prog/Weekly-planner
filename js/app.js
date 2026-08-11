@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '3.4.1';
+  const APP_VERSION = '3.5.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -35,6 +35,7 @@
     wtEdit: null,              // { block, ex } — weight input open on that row
     runLogEdit: null,          // ISO date with the run-log form open
     runLogDraft: null,         // { paceSec, hr, bounds } while the steppers are open
+    hrEdit: false, hrDraft: null,  // resting/max HR steppers on Reference
   };
   let nowKey = '';             // today's current|next block ids — minute tick
                                // re-renders only when this changes
@@ -1110,6 +1111,7 @@
       '</div>'
     ));
     view.appendChild(buildEasyBandSection());
+    view.appendChild(buildZoneSection());
     view.appendChild(buildTrainingLogSection());
     view.appendChild(buildRecalSection());
     /* shoes wear their tier: easy / quality / race */
@@ -1293,6 +1295,85 @@
     );
   }
 
+  /* ---- HR zones: personal numbers stay on the phone, never in the repo.
+     Two steppers (rest, max) recompute the whole table live. ---- */
+  const getHR = () => readJSON('hr', null);
+  function buildZoneSection() {
+    const hr = getHR();
+    const editing = state.hrEdit;
+    const rest = editing ? state.hrDraft.rest : (hr && hr.rest);
+    const max = editing ? state.hrDraft.max : (hr && hr.max);
+    const zones = DB.hrZones(rest, max);
+
+    if (!zones && !editing) {
+      const wrap = el(
+        '<div class="ref"><h2>Heart-rate zones</h2>' +
+        '<div class="ref-note">Not set. Zones need two numbers: your resting HR ' +
+        'and your true max. They stay on this phone — health data never goes in the repo.</div>' +
+        '<div class="data-actions"><button data-hr="edit">Set zones</button></div></div>'
+      );
+      wrap.querySelector('[data-hr="edit"]').addEventListener('click', () => {
+        state.hrEdit = true; state.hrDraft = { rest: 50, max: 195 }; render();
+      });
+      return wrap;
+    }
+
+    const st = (kind, val, unit) =>
+      '<div class="st"><button class="st-b" data-hz="' + kind + '" data-d="-1" aria-label="Decrease ' + kind + '">−</button>' +
+      '<span class="st-v">' + val + '<small>' + unit + '</small></span>' +
+      '<button class="st-b" data-hz="' + kind + '" data-d="1" aria-label="Increase ' + kind + '">+</button></div>';
+
+    const rows = (zones || []).map((z) =>
+      '<div class="zrow"><span class="zk">Z' + z.z + '</span>' +
+      '<span class="zn">' + esc(z.name) + '</span>' +
+      '<span class="zb">' + z.lo + '–' + z.hi + '</span></div>' +
+      '<div class="zuse">' + esc(z.use) + '</div>').join('');
+
+    /* the most recent logged run, placed in its zone — the loop, closed */
+    let recent = '';
+    const hist = runLogHistory().filter((e) => e.hr);
+    if (zones && hist.length) {
+      const last = hist[hist.length - 1];
+      const z = DB.zoneOf(last.hr, rest, max);
+      if (z) {
+        recent = '<div class="ref-note"><b>Last logged run:</b> ' + esc(fmtShort(last.iso)) +
+          ' at ' + last.hr + ' bpm → <b>' + esc(z.name) + '</b> (' +
+          Math.round(((last.hr - rest) / (max - rest)) * 100) + '% HRR).</div>';
+      }
+    }
+
+    const wrap = el(
+      '<div class="ref"><h2>Heart-rate zones</h2>' +
+      (editing
+        ? '<div class="hz-form">' + st('rest', rest, 'rest') + st('max', max, 'max') +
+          '<div class="st-act"><button class="rl-save" data-hz="save">Save</button>' +
+          '<button class="rl-x" data-hz="cancel">✕</button></div></div>'
+        : '<div class="ref-row"><span>Resting ' + rest + ' · Max ' + max +
+          ' · HRR ' + (max - rest) + '</span>' +
+          '<span class="v"><button class="zedit" data-hz="edit">Edit</button></span></div>') +
+      '<div class="ref-card ztable">' + rows + '</div>' +
+      recent +
+      '<div class="ref-note">' + esc(PLAN.zoneModel.method) + '. ' +
+      esc(PLAN.zoneModel.note) + (hr && hr.at ? ' Set ' + esc(fmtShort(hr.at)) + '.' : '') +
+      '</div></div>'
+    );
+    wrap.querySelectorAll('[data-hz]').forEach((btn) => btn.addEventListener('click', () => {
+      const k = btn.getAttribute('data-hz');
+      if (k === 'edit') { state.hrEdit = true; state.hrDraft = { rest: rest || 50, max: max || 195 }; }
+      else if (k === 'cancel') { state.hrEdit = false; state.hrDraft = null; }
+      else if (k === 'save') {
+        writeJSON('hr', { rest: state.hrDraft.rest, max: state.hrDraft.max, at: todayISO() });
+        state.hrEdit = false; state.hrDraft = null;
+      } else {
+        const d = Number(btn.getAttribute('data-d'));
+        if (k === 'rest') state.hrDraft.rest = Math.min(90, Math.max(30, state.hrDraft.rest + d));
+        if (k === 'max') state.hrDraft.max = Math.min(230, Math.max(150, state.hrDraft.max + d));
+      }
+      render();
+    }));
+    return wrap;
+  }
+
   function buildOdoSection() {
     const p4 = DB.pro4Status(getDone, todayISO());
     const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
@@ -1363,7 +1444,7 @@
   }
 
   /* ---- backup / restore (ticks, skips, moves, gym weights, tune-up time) ---- */
-  const STORE_KEY = /^(?:(?:done|ovr|movein|runlog)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+|recal)$/;
+  const STORE_KEY = /^(?:(?:done|ovr|movein|runlog)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+|recal|hr)$/;
 
   function buildDataSection() {
     let count = 0;
@@ -1384,7 +1465,7 @@
     const wrap = el(
       '<div class="ref"><h2>Data</h2><div class="ref-card data-card">' +
       '<div class="ref-note">' + count + ' entr' + (count === 1 ? 'y' : 'ies') +
-      ' stored on this phone (ticks, skips, gym weights, run log, tune-up time). Backups are a JSON blob — paste one into Notes now and again.</div>' +
+      ' stored on this phone (ticks, skips, gym weights, run log, HR zones, tune-up time). Backups are a JSON blob — paste one into Notes now and again.</div>' +
       '<div class="ref-note backup-note' + (stale ? ' stale' : '') + '">' + bNote +
       (stale ? ' This phone holds the only copy.' : '') + '</div>' +
       '<div class="data-actions">' +

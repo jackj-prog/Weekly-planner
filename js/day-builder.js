@@ -217,6 +217,28 @@
     return null;
   }
 
+  /* ---- heart-rate zones (§4.10) ----
+     Karvonen: bpm = rest + (max − rest) × %HRR. The model lives in
+     PLAN.zoneModel; rest/max are the athlete's own and come from
+     storage, never from the repo. */
+  function hrZones(rest, max) {
+    if (!PLAN.zoneModel || !(rest > 20) || !(max > rest + 60)) return null;
+    const r = max - rest;
+    return PLAN.zoneModel.zones.map((z) => ({
+      z: z.z, name: z.name, use: z.use,
+      lo: Math.round(rest + r * z.lo),
+      hi: Math.round(rest + r * z.hi),
+    }));
+  }
+  /* Which zone a given average HR fell in — null if zones aren't set. */
+  function zoneOf(hr, rest, max) {
+    const zs = hrZones(rest, max);
+    if (!zs || !(hr > 0)) return null;
+    if (hr < zs[0].lo) return { z: 0, name: 'Below Z1' };
+    for (const z of zs) if (hr < z.hi) return z;
+    return zs[zs.length - 1];
+  }
+
   /* The whole block as one shape — drives the Plan-view skyline.
      banked = ticked run km per week (same source as the Plan stats). */
   function seasonShape(getDone) {
@@ -625,6 +647,7 @@
     weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, logVerdict,
+    hrZones, zoneOf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

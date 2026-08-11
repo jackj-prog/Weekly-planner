@@ -230,6 +230,23 @@ const PLAN = {
      practised (rule 4). */
   gels: { fromDate: '2026-08-10', minRunMin: 90, text: 'Gel every 35–40 min' },
 
+  /* Heart-rate zone MODEL only — generic training science, safe in the
+     repo. The athlete's own resting/max HR are personal health data and
+     live in localStorage (`hr` key), never here (§1 privacy). Karvonen
+     %HRR rather than %max: with a resting HR in the 40s, %max badly
+     overstates true intensity at the easy end. */
+  zoneModel: {
+    method: '% of heart-rate reserve (Karvonen) — max minus rest, not % of max',
+    note: 'A low resting HR makes %max flatter the easy end. HRR is the honest one.',
+    zones: [
+      { z: 1, name: 'Recovery',  lo: 0.50, hi: 0.60, use: 'Shakeouts and the day after something hard. Genuinely gentle.' },
+      { z: 2, name: 'Easy',      lo: 0.60, hi: 0.70, use: 'Where 80%+ of this block lives. The §10 pace bands should land here — if they do not, the band is wrong, not you.' },
+      { z: 3, name: 'Steady',    lo: 0.70, hi: 0.80, use: 'Marathon-pace work. Useful on purpose; corrosive by accident — this is the grey zone easy runs drift into.' },
+      { z: 4, name: 'Threshold', lo: 0.80, hi: 0.90, use: 'Wednesday tempos. The most trainable quality between here and January.' },
+      { z: 5, name: 'VO2max',    lo: 0.90, hi: 1.00, use: 'The 2-mile TT, the parkrun, the last two laps of anything. Rarely, and never by accident.' },
+    ],
+  },
+
   /* Run-log stepper model (§4.8): estimates centre on the runner's own
      last 3 similar runs; these are the bounds and steps of the ± controls
      and the neutral fallbacks before any history exists. */

@@ -78,6 +78,13 @@ First-principles design is welcome. These behaviours are the intent:
 9. Blocks may carry a structured pacing `table` (TT lap script, race
    splits) — rendered as a mono split table wherever the block renders.
    Content lives in data/plan.js like everything else.
+10. **HR zones (v3.5)** are computed Karvonen-style from the athlete's
+   own resting and max HR, edited in-app with steppers and stored in
+   localStorage under `hr` — **never in the repo**: physiology is
+   personal data (§1). Only the generic zone MODEL (%HRR bands, names,
+   purposes) lives in data/plan.js. Reference shows the ladder plus the
+   last logged run placed in its zone. Re-measure and update after any
+   maximal effort.
 
 ## 5. Fixed life scaffold (non-negotiable anchors)
 

@@ -603,6 +603,33 @@ section('basketball as training');
   ok(!PLAN.openQuestions.some((q) => /confirm the Friday/i.test(q)), 'the §16 basketball question is closed');
 }
 
+/* ---- 7a9. HR zones (v3.5) ---- */
+section('hr zones');
+{
+  ok(PLAN.zoneModel && PLAN.zoneModel.zones.length === 5, 'five zones defined in the model');
+  ok(/reserve|Karvonen/i.test(PLAN.zoneModel.method), 'the model is %HRR, not %max');
+  /* the repo must never carry the athlete's own physiology */
+  const planSrc = require('fs').readFileSync(path.join(__dirname, '../data/plan.js'), 'utf8');
+  ok(!/restHr|restingHr|maxHr\s*:/.test(planSrc),
+    'no personal resting/max HR value is committed to the repo');
+
+  const z = DB.hrZones(48, 199);
+  ok(z && z.length === 5, 'zones compute from rest 48 / max 199');
+  ok(z[0].lo === 124 && z[1].lo === 139 && z[1].hi === 154,
+    'Karvonen maths: Z1 opens 124, Z2 runs 139–154, got ' + z[0].lo + '/' + z[1].lo + '–' + z[1].hi);
+  ok(z[4].hi === 199, 'Z5 tops out at max HR');
+  ok(z.every((x, i) => i === 0 || x.lo === z[i - 1].hi), 'zones are contiguous, no gaps or overlaps');
+
+  /* validated against the athlete's own recorded efforts */
+  ok(DB.zoneOf(146, 48, 199).name === 'Easy', 'a 146 bpm easy run reads Z2 Easy');
+  ok(DB.zoneOf(177, 48, 199).name === 'Threshold', 'a 177 bpm hard km reads Z4 Threshold');
+  ok(DB.zoneOf(189, 48, 199).name === 'VO2max', 'a 189 bpm 5k average reads Z5');
+  ok(DB.zoneOf(110, 48, 199).z === 0, 'below Z1 is reported as below Z1, not clamped up');
+
+  ok(DB.hrZones(48, 100) === null && DB.hrZones(0, 199) === null,
+    'implausible inputs return null rather than nonsense zones');
+}
+
 /* ---- 7b. Pro 4 odometer + run log ---- */
 section('pro 4 odometer');
 {
