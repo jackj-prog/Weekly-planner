@@ -211,6 +211,14 @@ Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
   long run's rest day.
 - Tue gym: Upper A every era → **+ Core + calves from Wk 11** (stays
   through Build, optional in Taper).
+- **Gym deload on cutback weeks from Wk 13** (wks 13, 21 — 17 and 25
+  sit inside other rules): both upper sessions halve their SETS, floor
+  of 2, **load unchanged**. Strength holds on ~a third of the volume
+  that built it, so cutting sets costs almost nothing while the fatigue
+  and connective-tissue load come off — and a cutback week is for
+  adapting, not merely for running less. Cutting weight is what loses
+  strength; cutting sets is what sheds fatigue. Before Wk 13 the running
+  is small enough that the gym should just keep building.
 - Gym intensity from Wk 23: both upper sessions labelled **maintenance**
   (reduced sets, keep the strength). Race week (30): no gym at all.
 - Lean bulk pauses ~Oct–Jan: eat maintenance-plus to fuel mileage.

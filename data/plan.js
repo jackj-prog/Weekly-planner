@@ -345,6 +345,17 @@ const PLAN = {
       { fromWk: 4, none: true },
     ],
     gymMaintenanceFromWk: 23,   // both upper sessions → maintenance (reduced sets, keep the strength)
+    /* Gym deload on running cutback weeks, from Wk 13 (§6). Strength is
+       maintained on roughly a third of the volume that built it, so
+       halving sets costs almost nothing — while the fatigue, and the
+       connective-tissue load that stacks on top of 40–60 km weeks, does
+       come off. LOAD NEVER DROPS: cutting weight is what loses strength;
+       cutting sets is what sheds fatigue. Before Wk 13 the running is
+       small enough that the gym should just keep building. */
+    gymDeload: {
+      fromWk: 13, setFactor: 0.5, minSets: 2,
+      note: 'Deload — SAME weights, half the sets. The cutback is for adapting, not just for running less',
+    },
     bulkNote: 'Lean bulk pauses ~Oct–Jan: eat maintenance-plus to fuel mileage.',
 
     /* ---- Standard week templates with times (§5–6) ----

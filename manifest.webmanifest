@@ -11,5 +11,21 @@
   "icons": [
     { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "shortcuts": [
+    {
+      "name": "This week",
+      "short_name": "Week",
+      "description": "The seven days at a glance",
+      "url": "./?view=week",
+      "icons": [{ "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" }]
+    },
+    {
+      "name": "The 30-week block",
+      "short_name": "Plan",
+      "description": "The season board and skyline",
+      "url": "./?view=plan",
+      "icons": [{ "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" }]
+    }
   ]
 }

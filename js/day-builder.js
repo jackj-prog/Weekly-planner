@@ -381,6 +381,19 @@
           ((b.detail ? b.detail + ' · ' : '') + 'Reduced sets — keep the strength');
         if (entry.maintPlan) b.plan = entry.maintPlan;
       }
+      /* gym deload on running cutback weeks (§6): halve the SETS, never
+         the load. Skipped once the Wk 23 maintenance block already applies. */
+      const dl = block.gymDeload;
+      if (entry.gym === 'upper' && dl && row && row.cutback && week >= dl.fromWk
+          && !/maintenance|deload/i.test(b.title)) {
+        b.title += ' (deload)';
+        b.detail = (b.detail ? b.detail + ' · ' : '') + dl.note;
+        if (b.plan) b.plan = b.plan.map((p) => ({
+          ex: p.ex,
+          sets: String(p.sets).replace(/^(\d+)/, (m0, n) =>
+            String(Math.max(dl.minSets, Math.round(Number(n) * dl.setFactor)))),
+        }));
+      }
       /* fixed-time run blocks defined directly in data (specials, default week) */
       if (entry.runKm) {
         b.run = {

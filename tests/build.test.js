@@ -534,6 +534,44 @@ section('season shape + verdicts');
   ok(DB.logVerdict(hist, '2026-01-01') === null, 'unknown date → no verdict');
 }
 
+/* ---- 7a6. Gym deload on cutback weeks (v3.3) ---- */
+section('gym deload');
+{
+  const upperA = (wk) => dayOfWeek(wk, 1).blocks.find((b) => /Upper A/.test(b.title));
+  const setsOf = (b, ex) => (b.plan.find((p) => new RegExp(ex, 'i').test(p.ex)) || {}).sets;
+
+  ok(!/deload/i.test(upperA(12).title) && setsOf(upperA(12), 'Bench') === '4 × 6–8',
+    'wk 12 (not a cutback) keeps full sets');
+  ok(/deload/i.test(upperA(13).title) && setsOf(upperA(13), 'Bench') === '2 × 6–8',
+    'wk 13 cutback halves the sets, same rep range');
+  ok(/deload/i.test(upperA(21).title), 'wk 21 cutback deloads');
+  ok(!/deload/i.test(upperA(4).title),
+    'wk 4 cutback does NOT deload — running is too small to warrant it before Wk 13');
+  ok(!/deload/i.test(upperA(8).title), 'wk 8 cutback predates the deload rule');
+  ok(/maintenance/i.test(upperA(23).title) && !/deload/i.test(upperA(23).title),
+    'from wk 23 maintenance already applies — never both labels');
+
+  /* the load must never be cut — only the set count changes */
+  const full = upperA(12).plan, del = upperA(13).plan;
+  ok(full.length === del.length, 'deload keeps every exercise');
+  ok(del.every((p, i) => p.sets.split('×')[1] === full[i].sets.split('×')[1]),
+    'deload changes set count only — rep ranges (and therefore load) are untouched');
+  ok(del.every((p) => Number(p.sets.split('×')[0]) >= PLAN.blocks[0].gymDeload.minSets),
+    'no exercise drops below the 2-set floor');
+  ok(/SAME weights/i.test(upperA(13).detail), 'the card says the weight does not drop');
+}
+
+/* ---- 7a7. Start-view shortcuts + today-at-a-glance ---- */
+section('shortcut targets');
+{
+  const fs = require('fs');
+  const mf = JSON.parse(fs.readFileSync(path.join(__dirname, '../manifest.webmanifest'), 'utf8'));
+  ok(Array.isArray(mf.shortcuts) && mf.shortcuts.length === 2, 'manifest declares two home-screen shortcuts');
+  ok(mf.shortcuts.every((sc) => /^\.\/\?view=(week|plan)$/.test(sc.url)),
+    'shortcut urls target views the app can actually open');
+  ok(mf.shortcuts.every((sc) => sc.icons && sc.icons.length), 'each shortcut carries an icon');
+}
+
 /* ---- 7b. Pro 4 odometer + run log ---- */
 section('pro 4 odometer');
 {

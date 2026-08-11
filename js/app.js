@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '3.2.0';
+  const APP_VERSION = '3.3.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -19,9 +19,16 @@
   const DAY_SHORT = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+  /* Home-screen shortcuts land on a view directly (manifest `shortcuts`,
+     ?view=week|plan|ref). Anything else falls through to today. */
+  function startView() {
+    const m = /[?&]view=(week|plan|ref)\b/.exec(location.search || '');
+    return m ? m[1] : 'today';
+  }
+
   /* ---- state ---- */
   const state = {
-    view: 'today',
+    view: startView(),
     dateISO: todayISO(),
     weekAnchor: null,          // Monday ISO shown in week view
     expanded: null,            // block id with actions open
@@ -366,6 +373,14 @@
       html += next.map((b) => '<div class="nn-next"><span class="t">' + b.start + '</span><span>' + esc(b.title) + '</span></div>').join('');
     } else {
       html += '<div class="nn-next"><span class="t">—</span><span>Nothing left today. Lights out 22:30.</span></div>';
+    }
+    /* today at a glance: while the run is still ahead, keep it in view even
+       when it's hours down the timeline — the day's headline, not a surprise */
+    if (day.run && day.run.startMin > nMin) {
+      const km = day.run.run.km;
+      html += '<div class="nn-tmrw run"><span class="t">RUN</span><span>' +
+        esc(day.run.start + ' · ' + (km === Math.round(km) ? km : km.toFixed(1)) +
+          ' km · ' + day.run.run.shoe) + '</span></div>';
     }
     /* evening onwards, look ahead — lay the kit out tonight */
     if (!next.length || nMin >= 21 * 60) {
