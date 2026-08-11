@@ -572,6 +572,28 @@ section('shortcut targets');
   ok(mf.shortcuts.every((sc) => sc.icons && sc.icons.length), 'each shortcut carries an icon');
 }
 
+/* ---- 7a8. Basketball is training (v3.4) ---- */
+section('basketball as training');
+{
+  const bb = (wk) => dayOfWeek(wk, 4).blocks.find((b) => /^Basketball/.test(b.title));
+  const b15 = bb(15);
+  ok(b15 && b15.start === '19:00' && b15.end === '21:00', 'basketball is a full 2 hours, 19:00–21:00');
+  ok(b15.doable && b15.cat === 'xt', 'it stays tickable cross-training');
+  ok(/kcal|equivalent/i.test(b15.detail), 'the card states its actual energy cost');
+  ok(/lateral|top-end/i.test(b15.detail), 'the card names what it uniquely delivers');
+  /* the evening block must not collide with the longer session */
+  const eve = dayOfWeek(15, 4).blocks.find((b) => /Evening — out/.test(b.title));
+  ok(eve && eve.start === '21:00', 'the Friday evening block starts after basketball, not during it');
+  /* still off on the five protected weeks — injury risk, not low value */
+  for (const wk of [17, 24, 26, 27, 30]) {
+    ok(!dayOfWeek(wk, 4).blocks.some((b) => b.doable && /^Basketball$/.test(b.title)),
+      'wk ' + wk + ' keeps basketball off before its key day');
+  }
+  ok(/2 hr|2h/i.test(PLAN.loadBudget), 'the weekly load budget counts basketball');
+  ok(PLAN.rules.some((r) => /training, not a hobby/i.test(r)), 'rule 3 credits it properly');
+  ok(!PLAN.openQuestions.some((q) => /confirm the Friday/i.test(q)), 'the §16 basketball question is closed');
+}
+
 /* ---- 7b. Pro 4 odometer + run log ---- */
 section('pro 4 odometer');
 {
