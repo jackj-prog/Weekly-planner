@@ -91,12 +91,12 @@ First-principles design is welcome. These behaviours are the intent:
 | Anki (German) | Daily, 15 min with breakfast | Non-negotiable. |
 | Reading | Nightly 22:00–22:30 · Thu anchor 21:00–22:00 · Sun catch-up 19:30–21:00 | ~200 pages/week target. |
 | Sleep | Lights out 22:30 every night | Wake 06:00 work days, 06:45 on the college day (Tue then Mon), 07:00 Fri, 07:30 weekend. |
-| Basketball | Fri 19:00–21:00 (2 hr) | **Real training** — ~1,000–1,400 kcal, ≈15 km-equivalent. The block's main source of top-end and lateral/multi-planar work. Flexes first (§12) on injury-risk grounds, not because it is low value. |
+| Basketball | Fri 19:00–21:00 | **Two sessions, not one.** 19:00 **1v1** (~500 kcal, ~6.5 METs) is real training — the block's only top-end and lateral work. 20:00 **shooting** (~350 kcal, ~4.5 METs) is active recovery. ≈10 km-equivalent combined. Flex the 1v1 half first (§12). |
 
 Weekly load budget for sanity: work 25.5h · college 7.5h · study ~12h ·
 German total ~16–17h (only ~4–5.5h active; rest is passive/media/Anki) ·
-gym 2–2.5h · running per plan · basketball 2h (counts as training) ·
-reading 6h.
+gym 2–2.5h · running per plan · basketball 2h (~850 kcal ≈ 10 km-equiv:
+1 hr training + 1 hr active recovery) · reading 6h.
 
 **Scaffold eras (§16 Q1 answered, Jul 2026).** Life changes twice mid-block:
 - **Wks 1–2** (until 12 Jul): as originally planned — **Tuesday is a
@@ -180,8 +180,8 @@ anchor · 22:00 read · 22:30 sleep.
 07:00 wake + Anki · **07:30 German active study** (end time by phase:
 Base 12:00 · Build 11:30 · from Wk 23 and Taper 10:30) · lunch ·
 13:00 free/errands (Upper B lived here 13:00–14:30 in Wks 1–3) ·
-15:30 out — standing plans · **19:00–21:00 Basketball, 2 hr** (unless the
-week says skip — §7/§9) · evening free, out · 22:00 read · sleep.
+15:30 out — standing plans · **19:00 Basketball 1v1** then **20:00 shooting**
+(unless the week says skip — §7/§9) · evening free, out · 22:00 read · sleep.
 
 ### Saturday — buffer run + study
 07:30 wake + Anki · 08:00 breakfast · **08:30 Easy buffer run (Sat km)**
@@ -468,11 +468,12 @@ from mile 22.
 1. Easy means easy — conversational, or you're stealing from Wednesday
    and Sunday.
 2. Cutback weeks are training. No junk km because the number looks small.
-3. **Basketball is training, not a hobby** — 2 hr, ≈15 km-equivalent of
-   energy, and the block's main source of top-end and lateral work. It
-   flexes first only because it is the least marathon-SPECIFIC session
-   and carries the highest acute injury risk (ankles): OFF on weeks 17,
-   24, 26, 27, 30, and skipped whenever legs are genuinely cooked.
+3. **Basketball is two sessions, not one.** The **1v1 hour** is real
+   training (~500 kcal — the block's only top-end work, since running is
+   98% Z2, and its only lateral loading, since running is purely
+   sagittal). The **shooting hour** is active recovery (~350 kcal, about
+   a brisk walk). Flex the 1v1 half first: least marathon-specific,
+   highest ankle risk. Both OFF on weeks 17, 24, 26, 27, 30.
 4. Fuelling is a skill: gels every 35–40 min on every run over 90 min,
    from Wk 7 on (gut training takes weeks — the rule starts with the
    first ~100-min long runs, so race day rehearses something practised).
@@ -589,7 +590,7 @@ the plan file stays canonical.
    scaffold eras): the Tuesday course finished early. Tuesday → work
    day from Wk 3 (run to 17:10); from Wk 12 (Mon 14 Sep) college moves
    to Mondays. Study rides work's quiet spells rather than a fixed slot.
-2. ~~**Basketball**~~ — ANSWERED (Aug 2026): Friday **19:00–21:00, a
-   full 2 hours**, and it counts as training in the load budget (§5).
+2. ~~**Basketball**~~ — ANSWERED (Aug 2026): Friday **19:00–21:00** —
+   1 hr 1v1 (training) then 1 hr shooting (active recovery).
 3. ~~Ticked-history export (JSON)~~ — SHIPPED v1.2: copy-paste backup /
    restore lives on the Reference page.

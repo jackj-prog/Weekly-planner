@@ -195,7 +195,7 @@ const PLAN = {
   rules: [
     'Easy means easy — conversational, or you’re stealing from Wednesday and Sunday.',
     'Cutback weeks are training. No junk km because the number looks small.',
-    'Basketball is training, not a hobby — 2 hr, ~15 km-equivalent of energy, and the block’s main source of top-end and lateral work. It flexes first only because it is the least marathon-SPECIFIC session and carries the highest acute injury risk: OFF on weeks 17, 24, 26, 27, 30, and skipped whenever legs are genuinely cooked.',
+    'Basketball is two sessions, not one: the 1v1 hour is real training (~500 kcal — the block’s only top-end and lateral work), the shooting hour is active recovery (~350 kcal, about a brisk walk). Flex the 1v1 half first: least marathon-specific, highest ankle risk. OFF entirely on weeks 17, 24, 26, 27, 30.',
     'Fuelling is a skill: gels every 35–40 min on every run over 90 min, from Wk 7 on. Race day rehearses something practised.',
     'Niggle protocol: anything sharp or one-sided = 2 days off running before it becomes 2 weeks. The plan survives missed days, not a stress injury.',
     'Sleep is where training sticks: 22:30 lights out is part of the plan.',
@@ -207,12 +207,13 @@ const PLAN = {
   loadBudget:
     'Work 25.5h · college 7.5h · study ~12h · German ~16–17h total (only ' +
     '~4–5.5h active; rest is passive/media/Anki) · gym 2–2.5h · running ' +
-    'per plan · basketball 2h (~15 km-equivalent — counts as training) · ' +
+    'per plan · basketball 2h (~850 kcal ≈ 10 km-equivalent: 1 hr training ' +
+    '+ 1 hr active recovery) · ' +
     'reading 6h (~200 pages/week).',
 
   /* ---- Open questions (§16 — surfaced in Reference, never guessed) ---- */
   openQuestions: [
-    'Basketball: ANSWERED (Aug 2026) — Friday 19:00–21:00, a full 2 hours. Counted as training in the load budget.',
+    'Basketball: ANSWERED (Aug 2026) — Friday 19:00–21:00: 1 hr 1v1 (training) then 1 hr shooting (active recovery).',
   ],
 
   /* ---- Scheduling constants (§6, §8) ----------------------------------
@@ -443,7 +444,8 @@ const PLAN = {
         { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
         Object.assign({ t: '13:00', end: '14:30' }, UPPER_B),
         { t: '15:30', end: '19:00', title: 'Afternoon — out', detail: 'Standing Friday plans through the evening', cat: 'free', quiet: true },
-        { t: '19:00', end: '21:00', title: 'Basketball — 2 hr', detail: 'Real training, not a hobby: ~1,000–1,400 kcal, the week’s only genuine top-end and lateral work. Jumping and cutting build the reactive strength and hip/adductor durability running never touches. Cost: ankle risk, and heavy legs into Saturday — keep the buffer run truly easy. Flexes only when legs are cooked or a key day is close', cat: 'xt', doable: true, basketball: true },
+        { t: '19:00', end: '20:00', title: 'Basketball — 1v1', detail: 'THE TRAINING HALF. ~500 kcal at ~6.5 METs: continuous, no subs, repeated accelerations, cuts and jumps. This is the block’s only genuine top-end work (running is 98% Z2) and its only lateral loading (running is purely sagittal) — hips, adductors, reactive strength. Also its highest acute injury risk: ankles. Flex THIS half first when legs are cooked', cat: 'xt', doable: true, basketball: true },
+        { t: '20:00', end: '21:00', title: 'Basketball — shooting', detail: '~350 kcal at ~4.5 METs — jogging for rebounds, about a brisk walk. Active recovery, not training. Keep this half on tired legs; drop it first when time is short', cat: 'xt', doable: true, basketball: true },
         { t: '21:00', end: '22:00', title: 'Evening — out', cat: 'free', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
@@ -538,7 +540,8 @@ const PLAN = {
           { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
           { t: '13:00', end: '15:30', title: 'Free / errands', detail: 'Upper B lives on Saturday now — Friday breathes', cat: 'free', quiet: true },
           { t: '15:30', end: '19:00', title: 'Afternoon — out', detail: 'Standing Friday plans through the evening', cat: 'free', quiet: true },
-          { t: '19:00', end: '21:00', title: 'Basketball — 2 hr', detail: 'Real training, not a hobby: ~1,000–1,400 kcal, the week’s only genuine top-end and lateral work. Jumping and cutting build the reactive strength and hip/adductor durability running never touches. Cost: ankle risk, and heavy legs into Saturday — keep the buffer run truly easy. Flexes only when legs are cooked or a key day is close', cat: 'xt', doable: true, basketball: true },
+          { t: '19:00', end: '20:00', title: 'Basketball — 1v1', detail: 'THE TRAINING HALF. ~500 kcal at ~6.5 METs: continuous, no subs, repeated accelerations, cuts and jumps. This is the block’s only genuine top-end work (running is 98% Z2) and its only lateral loading (running is purely sagittal) — hips, adductors, reactive strength. Also its highest acute injury risk: ankles. Flex THIS half first when legs are cooked', cat: 'xt', doable: true, basketball: true },
+        { t: '20:00', end: '21:00', title: 'Basketball — shooting', detail: '~350 kcal at ~4.5 METs — jogging for rebounds, about a brisk walk. Active recovery, not training. Keep this half on tired legs; drop it first when time is short', cat: 'xt', doable: true, basketball: true },
           { t: '21:00', end: '22:00', title: 'Evening — out', cat: 'free', quiet: true },
           { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
           { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
