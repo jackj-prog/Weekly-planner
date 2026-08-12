@@ -474,6 +474,12 @@ section('run classification + log estimates');
     'at or below the baseline there is no correction to make');
   ok(DB.adjustPace(400, null) === null && DB.adjustPace(0, 25) === null, 'guards on missing inputs');
   ok(DB.adjustPace(400, 30) < 400, 'heat correction always makes a hot run look quicker, never slower');
+  /* quality runs are prescribed by effort — the 12 Aug tempo showed the
+     4:00-derived pace band returns Z3, not Z4 */
+  const tempo = dayOfWeek(7, 2).run;
+  ok(/HEART RATE/.test(tempo.detail), 'the tempo card leads with heart rate, not pace');
+  ok(/sanity check not a target/.test(tempo.detail), 'the pace band is demoted to a sanity check');
+  ok(!/Easy run/.test(tempo.title) && /Tempo/.test(tempo.title), 'wk 7 Wed is still the tempo session');
   ok(DB.runClass(dayOfWeek(8, 4).run) === 'race', 'the TT classifies as race');
   ok(DB.runClass(dayOfWeek(8, 1).run) === 'quality', 'the 400s rehearsal classifies as quality');
   ok(DB.runClass(dayOfWeek(7, 2).run) === 'quality', 'wk 7 Wed tempo classifies as quality');

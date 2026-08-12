@@ -99,7 +99,13 @@
   function easyPaceText(week) {
     return easyBand(week).band + '/km · conversational';
   }
-  const TEMPO_PACE_TEXT = 'Tempo 5:05–5:20/km';
+  /* Quality runs are prescribed by EFFORT, not the clock. The 5:05–5:20
+     band is derived from the 4:00 goal and can sit a full zone below
+     true threshold; heat moves it further still. HR self-calibrates for
+     both. Personal bpm values live in storage, so the text points at
+     Reference rather than naming numbers (§4.10). */
+  const TEMPO_PACE_TEXT = 'Run this by HEART RATE — Z4 threshold (Reference), not the clock. ' +
+    'The 5:05–5:20/km band is a 4:00-goal estimate, a sanity check not a target';
 
   function isQuality(session) {
     return /tempo|threshold|mp|×/i.test(session || '');

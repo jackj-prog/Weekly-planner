@@ -414,7 +414,7 @@ at the latest and shift bedtime earlier in the days before.
 |---|---|
 | Easy / long-run base | by phase — see the band table below |
 | Marathon pace (4:00 goal) | **5:41 /km** |
-| Tempo / threshold | 5:05–5:20 /km |
+| Tempo / threshold | **by HR — Z4** (pace band 5:05–5:20 is a 4:00-goal estimate only) |
 | Stretch MP (sub-3:45 bet) | 5:20 /km |
 
 The Week 24 half sets the real target: **1:52–1:55 → sub-4:00 is on ·
@@ -445,6 +445,15 @@ before.
 
 **The band is a description, not a target.** If the clock and the talk
 test disagree, the talk test wins (rule 1).
+
+**Quality runs are prescribed by heart rate, not pace (Aug 2026).** The
+5:05–5:20 threshold band is derived from the 4:00 goal, and the first
+tempo (12 Aug) showed it sits a full zone low: 4:56/km returned HR 164
+(77% HRR — Z3 steady), so the prescribed band would have delivered no
+threshold stimulus at all. Heat moves it further still. **Run tempos at
+Z4 and let the pace be whatever it is** — HR self-calibrates for
+fitness and weather together, and it does not require guessing a
+threshold pace before the December tune-up has spoken (rule 7).
 
 **Benchmark run — Thursday easy, km 2–4, before the strides.** Same
 route every time, Ghost (never the Evo SL), 8–15 °C, wind under
