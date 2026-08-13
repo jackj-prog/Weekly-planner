@@ -96,8 +96,13 @@
   function easyBand(week) {
     return fromWkPick(PLAN.easyBands, week);
   }
+  /* Easy runs are prescribed by EFFORT too (§10 rule 1). The band
+     describes what Z2 usually produces; the HR and the talk test decide
+     it. Running under the band at genuine Z2 is fine — running over it
+     to hit a number is not. */
   function easyPaceText(week) {
-    return easyBand(week).band + '/km · conversational';
+    return 'Z2 · conversational — ' + easyBand(week).band +
+      '/km describes it, HR and the talk test decide it';
   }
   /* Quality runs are prescribed by EFFORT, not the clock. The 5:05–5:20
      band is derived from the 4:00 goal and can sit a full zone below

@@ -444,7 +444,13 @@ upgrades MP to 5:20, easy re-anchors to ~6:05–6:30 — not one second
 before.
 
 **The band is a description, not a target.** If the clock and the talk
-test disagree, the talk test wins (rule 1).
+test disagree, the talk test wins (rule 1). Measured against real runs
+(Aug 2026, heat-corrected), genuine Z2 returns ~6:13-6:23/km - at or
+just under the band's fast end. That needs no change: **running under
+the band at correct Z2 HR is fine; running over it to hit a number is
+not.** The band cannot be dropped to match without breaching the
+>=35 s/km guard against MP 5:41 - which is a statement about MP, not
+about easy pace, and rule 7 owns that.
 
 **Quality runs are prescribed by heart rate, not pace (Aug 2026).** The
 5:05–5:20 threshold band is derived from the 4:00 goal, and the first
