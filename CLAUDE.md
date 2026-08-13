@@ -19,8 +19,9 @@ data, day structures, times, or rules below unless explicitly asked.
   Sun 24 Jan 2027, gun 06:45** (pre-dawn; sunrise ≈06:50). Flat and fast:
   ~120 m climb over 42.2 km. Requires international travel (UTC+2).
 - Block: 30 weeks, **Mon 29 Jun 2026 → Sun 24 Jan 2027**.
-- Goal: **4:00** (5:41/km). Stretch bet: **sub-3:45** (5:20/km).
-  A December tune-up half recalibrates the target (see §10).
+- Goal: **3:45** (5:20/km). Stretch bet: **sub-3:35** (5:06/km).
+  Raised from 4:00 in Aug 2026 on evidence (§10). A December tune-up
+  half still confirms or corrects it (rule 7).
 - The user is disciplined and data-driven; the app should be dense with real
   information, zero filler, and honest about hard days.
 
@@ -395,7 +396,7 @@ Anki guilt. New Year's Day (Fri Wk 27): rest — peak 30 km is in two days.
   the gun — the same breakfast as every long run) · 05:00 kit, vaseline,
   throwaway layer (6–10 °C and dark) · 05:45 walk to Solomou Square ·
   06:00 bag drop + toilet queue · 06:20 warm-up 1 km + strides ·
-  **06:45 MARATHON 42.2 km — Pro 4 · 5:41/km goal · negative split · gel
+  **06:45 MARATHON 42.2 km — Pro 4 · 5:20/km goal · negative split · gel
   every 35–40 min · sunrise 06:50, you run into it · Athalassa false
   flats run by effort not pace · dress for the finish (low teens), not
   the start** · finish ~10:45, free recovery massage, food, warm kit ·
@@ -413,12 +414,12 @@ at the latest and shift bedtime earlier in the days before.
 | Type | Pace |
 |---|---|
 | Easy / long-run base | by phase — see the band table below |
-| Marathon pace (4:00 goal) | **5:41 /km** — trains in Z3; raced by the clock |
+| Marathon pace (3:45 goal) | **5:20 /km** — trains in Z3; raced by the clock |
 | Tempo / threshold | **by HR — Z4** (pace band 5:05–5:20 is a 4:00-goal estimate only) |
-| Stretch MP (sub-3:45 bet) | 5:20 /km |
+| Stretch MP (sub-3:35 bet) | 5:06 /km |
 
-The Week 24 half sets the real target: **1:52–1:55 → sub-4:00 is on ·
-~2:00 → lock 4:10–4:15 and run it smart.** Race-day pacing is a
+The Week 24 half settles the target: **1:43–1:46 → 3:45 is on ·
+~1:50 → lock 3:55–4:00 · ~1:55 → 4:05–4:10.** Race-day pacing is a
 negative split — first half slightly easier than goal. Caveat: the
 half comes six days after the 60 km peak week, so the legs will be
 heavy — read a near-miss generously.
@@ -430,18 +431,17 @@ benchmark route should return.
 
 | Weeks | Band | Clear day, 7/10 |
 |---|---|---|
-| 1–6 | 6:25–6:50 | **6:30–6:40** |
-| 7–13 | 6:22–6:47 | **6:27–6:37** |
-| 14–20 | 6:19–6:44 | **6:24–6:34** |
-| 21–27 | 6:16–6:41 | **6:21–6:31** |
-| 28–30 | 6:16–6:41 | **6:21–6:31** (same clock, lower HR) |
+| 1–6 | 6:13–6:38 | **6:18–6:28** |
+| 7–13 | 6:10–6:35 | **6:15–6:25** |
+| 14–20 | 6:07–6:32 | **6:12–6:22** |
+| 21–27 | 6:04–6:29 | **6:09–6:19** |
+| 28–30 | 6:04–6:29 | **6:09–6:19** (same clock, lower HR) |
 
 The band shifts only ~9 s/km across the whole block, and that is
-deliberate: easy pace is anchored to marathon pace, and **MP stays 5:41
-until the Week 24 half says otherwise** (rule 7). Chasing easy pace down
-toward MP is how easy runs quietly become steady runs. If the tune-up
-upgrades MP to 5:20, easy re-anchors to ~6:05–6:30 — not one second
-before.
+deliberate: easy pace is anchored to marathon pace, and re-anchored to
+**MP 5:20** when the target moved in Aug 2026. It is also validated
+against his own measured Z2 (~6:13–6:23 heat-corrected), so it now
+describes what he actually runs rather than what a goal implied.
 
 **The band is a description, not a target.** If the clock and the talk
 test disagree, the talk test wins (rule 1). Measured against real runs
@@ -449,8 +449,9 @@ test disagree, the talk test wins (rule 1). Measured against real runs
 just under the band's fast end. That needs no change: **running under
 the band at correct Z2 HR is fine; running over it to hit a number is
 not.** The band cannot be dropped to match without breaching the
->=35 s/km guard against MP 5:41 - which is a statement about MP, not
-about easy pace, and rule 7 owns that.
+>=35 s/km guard against MP - which was a statement about MP, not about
+easy pace. Resolved Aug 2026: MP moved to 5:20 and the bands re-anchored
+with it.
 
 **Marathon pace is the one exception to HR-led prescription.** Easy (Z2)
 and threshold (Z4) are physiological states, so HR defines them. MP is a
@@ -463,12 +464,13 @@ the negative split (§9).
 **But MP has an HR correlate, and it is a live recalibration signal.**
 Marathon effort sits ~72–80% HRR = **154–169 = Z3**, which is precisely
 what the zone model calls Z3. So from Wk 14, when MP segments start:
-if 5:41/km comes back **below Z3**, the prescribed pace is too slow and
-that is hard evidence months before the tune-up. Rule 7 still owns the
+if 5:20/km comes back **below Z3**, the prescribed pace is still too slow;
+if it comes back in **Z4**, it is too fast for this stage and wants easing
+back. Either way that is hard evidence months before the tune-up. Rule 7 still owns the
 final call; this just means December is not the first time we look.
 
 **Quality runs are prescribed by heart rate, not pace (Aug 2026).** The
-5:05–5:20 threshold band is derived from the 4:00 goal, and the first
+5:05–5:20 threshold band was derived from the old 4:00 goal, and the first
 tempo (12 Aug) showed it sits a full zone low: 4:56/km returned HR 164
 (77% HRR — Z3 steady), so the prescribed band would have delivered no
 threshold stimulus at all. Heat moves it further still. **Run tempos at
@@ -522,7 +524,9 @@ from mile 22.
    before it becomes 2 weeks. The plan survives missed days, not a
    stress injury.
 6. Sleep is where training sticks: 22:30 lights out is part of the plan.
-7. The December tune-up sets the race pace — ambition doesn't.
+7. The December tune-up **settles** the race pace. The target moved
+   4:00 → 3:45 in Aug 2026 on evidence, not ambition (§10) — the half
+   is still what confirms or corrects it.
 8. From October, evening runs are dark runs: headtorch, hi-vis, lit
    routes.
 9. **Long runs are capped by time, not distance: ~3h20 maximum.** Past

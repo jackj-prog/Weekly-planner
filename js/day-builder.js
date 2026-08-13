@@ -110,7 +110,7 @@
      both. Personal bpm values live in storage, so the text points at
      Reference rather than naming numbers (§4.10). */
   const TEMPO_PACE_TEXT = 'Run this by HEART RATE — Z4 threshold (Reference), not the clock. ' +
-    'The 5:05–5:20/km band is a 4:00-goal estimate, a sanity check not a target';
+    'Pace will land somewhere near 4:30–4:50/km on a clear day, but that is a readout, not a target';
 
   function isQuality(session) {
     return /tempo|threshold|mp|×/i.test(session || '');
@@ -123,7 +123,7 @@
         km, title: row.sun || 'Long run', shoe: row.lrShoe || 'Ghost',
         paceMin: pace.long,
         detail: /MP|REHEARSAL|PEAK/i.test(row.sun || '') ?
-          'Long-run base ' + easyBand(week).band + '/km · MP segments 5:41/km — ' +
+          'Long-run base ' + easyBand(week).band + '/km · MP segments 5:20/km — ' +
             'these should sit in Z3 (Reference). If MP reads below Z3 the pace is too ' +
             'slow and that is evidence, months before December' : easyPaceText(week),
         hard: true,

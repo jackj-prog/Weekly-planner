@@ -80,10 +80,10 @@ const PLAN = {
     date: '2027-01-24',          // Sun 24 Jan 2027
     gun: '06:45',                // pre-dawn start — sunrise ≈ 06:50
     sunrise: '06:50',
-    goal: '4:00',
-    goalPace: '5:41/km',
-    stretch: 'sub-3:45',
-    stretchPace: '5:20/km',
+    goal: '3:45',
+    goalPace: '5:20/km',
+    stretch: 'sub-3:35',
+    stretchPace: '5:06/km',
     course:
       'Solomou Square → Griva Digeni → University of Cyprus → Athalassa ' +
       'National Park → Venetian Walls and Old Town → Eleftheria Square. ' +
@@ -98,9 +98,9 @@ const PLAN = {
   /* ---- Paces (§10) --------------------------------------------------- */
   paces: [
     { type: 'Easy / long-run base',        pace: 'by phase — see below' },
-    { type: 'Marathon pace (4:00 goal)',   pace: '5:41 /km' },
+    { type: 'Marathon pace (3:45 goal)',   pace: '5:20 /km' },
     { type: 'Tempo / threshold',           pace: '5:05–5:20 /km' },
-    { type: 'Stretch MP (sub-3:45 bet)',   pace: '5:20 /km' },
+    { type: 'Stretch MP (sub-3:35 bet)',   pace: '5:06 /km' },
   ],
 
   /* ---- Easy pace, by phase (§10) --------------------------------------
@@ -113,21 +113,21 @@ const PLAN = {
      THE BAND IS A DESCRIPTION, NOT A TARGET. If the talk test and the
      clock disagree, the talk test wins every time (rule 1). */
   easyBands: [
-    { fromWk: 1,  band: '6:25–6:50', good: '6:30–6:40', note: 'Settling in. Four runs a week IS the adaptation — pace is not.' },
-    { fromWk: 7,  band: '6:22–6:47', good: '6:27–6:37', note: 'First tempos land. Easy days should feel easier, not get quicker.' },
-    { fromWk: 14, band: '6:19–6:44', good: '6:24–6:34', note: 'MP work starts. The honest gain here is HR, not the clock.' },
-    { fromWk: 21, band: '6:16–6:41', good: '6:21–6:31', note: 'Peak volume. If this band costs effort you are tired, not slow — take the slow end.' },
-    { fromWk: 28, band: '6:16–6:41', good: '6:21–6:31', note: 'Taper shows up as a lower HR at the same pace. The clock barely moves; you feel dangerous.' },
+    { fromWk: 1,  band: '6:13–6:38', good: '6:18–6:28', note: 'Settling in. Four runs a week IS the adaptation — pace is not.' },
+    { fromWk: 7,  band: '6:10–6:35', good: '6:15–6:25', note: 'First tempos land. Easy days should feel easier, not get quicker.' },
+    { fromWk: 14, band: '6:07–6:32', good: '6:12–6:22', note: 'MP work starts. The honest gain here is HR, not the clock.' },
+    { fromWk: 21, band: '6:04–6:29', good: '6:09–6:19', note: 'Peak volume. If this band costs effort you are tired, not slow — take the slow end.' },
+    { fromWk: 28, band: '6:04–6:29', good: '6:09–6:19', note: 'Taper shows up as a lower HR at the same pace. The clock barely moves; you feel dangerous.' },
   ],
   /* The band only shifts ~9 s/km across 30 weeks, and that is deliberate:
-     easy pace is anchored to marathon pace, and MP stays 5:41 until the
-     Week 24 half says otherwise (rule 7). Chasing easy pace down toward
+     easy pace is anchored to marathon pace. MP moved to 5:20 in Aug 2026
+     on evidence (§10); the Week 24 half still settles it (rule 7). Chasing easy pace down toward
      MP is how easy runs quietly become steady runs. If the tune-up
      upgrades MP, the band upgrades with it. */
   easyBandUnlock:
-    'These bands assume the 4:00 target (MP 5:41). If the Week 24 half ' +
-    'says sub-3:45 is on (MP 5:20), easy re-anchors to roughly 6:05–6:30 ' +
-    '— but not one second before the tune-up says so. Easy pace getting ' +
+    'These bands are anchored to MP 5:20 (the 3:45 target) and to his own ' +
+    'measured Z2, which returns ~6:13–6:23 heat-corrected. If the Week 24 ' +
+    'half moves MP again, they re-anchor with it. Easy pace getting ' +
     'quicker at the SAME heart rate is evidence your MP has moved; easy ' +
     'pace getting quicker because you pushed is just Sunday’s session ' +
     'spent early.',
@@ -162,8 +162,8 @@ const PLAN = {
       'above 24 °C the run is not a benchmark at all.',
   },
   recalibration:
-    'The Week 24 half sets the real target: 1:52–1:55 → sub-4:00 is on · ' +
-    '~2:00 → lock 4:10–4:15 and run it smart. Race-day pacing is a negative ' +
+    'The Week 24 half settles the target: 1:43–1:46 → 3:45 is on · ' +
+    '~1:50 → lock 3:55–4:00 · ~1:55 → 4:05–4:10. Race-day pacing is a negative ' +
     'split — first half slightly easier than goal. Caveat: the half comes ' +
     'six days after the 60 km peak week, so the legs will be heavy — read ' +
     'a near-miss generously.',
@@ -209,7 +209,7 @@ const PLAN = {
     'Fuelling is a skill: gels every 35–40 min on every run over 90 min, from Wk 7 on. Race day rehearses something practised.',
     'Niggle protocol: anything sharp or one-sided = 2 days off running before it becomes 2 weeks. The plan survives missed days, not a stress injury.',
     'Sleep is where training sticks: 22:30 lights out is part of the plan.',
-    'The December tune-up sets the race pace — ambition doesn’t.',
+    'The December tune-up settles the race pace. The target moved 4:00 → 3:45 in Aug 2026 on evidence, not ambition (§10) — the half is still what confirms or corrects it.',
     'From October, evening runs are dark runs: headtorch, hi-vis, lit routes.',
   ],
 
@@ -788,7 +788,7 @@ const PLAN = {
           6: { blocks: [
             { t: '07:00', end: '07:30', title: 'Wake · Anki · light breakfast', detail: '~90 min before the gun', cat: 'routine', quiet: true },
             { t: '08:00', end: '08:50', title: 'Travel + warm-up', detail: '2 km easy + strides', cat: 'run', quiet: true },
-            { t: '09:00', end: '11:00', title: 'TUNE-UP HALF — ~21 km, raced honest', detail: 'Evo SL · this sets the marathon target: 1:52–1:55 → sub-4:00 on · ~2:00 → lock 4:10–4:15', cat: 'run', doable: true, runKm: 21.1, shoe: 'Evo SL' },
+            { t: '09:00', end: '11:00', title: 'TUNE-UP HALF — ~21 km, raced honest', detail: 'Evo SL · this settles the marathon target: 1:43–1:46 → 3:45 on · ~1:50 → lock 3:55–4:00 · ~1:55 → 4:05–4:10', cat: 'run', doable: true, runKm: 21.1, shoe: 'Evo SL' },
             { t: '11:00', end: '11:45', title: 'Refuel + shower', cat: 'routine', quiet: true },
             { t: '12:00', end: '17:00', title: 'Easy afternoon', detail: 'Recover — the number is in the bank', cat: 'free', quiet: true },
             { t: '17:00', end: '18:00', title: 'Dinner', cat: 'meal', quiet: true },
@@ -934,16 +934,16 @@ const PLAN = {
             { t: '05:45', end: '06:00', title: 'To Solomou Square', detail: 'Central start — walk it, it doubles as a warm-up', cat: 'routine', quiet: true },
             { t: '06:00', end: '06:20', title: 'Bag drop · toilet queue', detail: 'Queue early, queue twice', cat: 'routine', quiet: true },
             { t: '06:20', end: '06:40', title: 'Warm-up', detail: '1 km jog + 3–4 strides · you do not need much for a marathon', cat: 'run', quiet: true },
-            { t: '06:45', end: '10:45', title: 'MARATHON — 42.2 km 🇨🇾', detail: 'Pro 4 · 5:41/km goal · NEGATIVE SPLIT — first half feels too easy · gel every 35–40 min · sunrise at 06:50, you run into it · flat course, but the Athalassa false flats are run by effort not pace · dress for the finish (low teens), not the start', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4', estPace: '5:41',
-              table: { title: 'THE 4:00 PLAN — 5:41/km, negative split', cols: ['At', 'Clock', 'Cue'], rows: [
-                ['5 km',  '28:25',   'settle — this MUST feel too easy'],
-                ['10 km', '56:50',   'rhythm · first gel done, keep drinking'],
-                ['Half',  '1:59:54', 'still holding back — the race has not started'],
-                ['25 km', '2:22:05', 'now it starts · stay smooth'],
-                ['30 km', '2:50:30', 'the real race · Athalassa by effort, not pace'],
-                ['35 km', '3:18:55', 'spend everything you saved'],
-                ['40 km', '3:47:20', 'count people down, one at a time'],
-                ['42.2',  '3:59:49', 'Eleftheria Square — into the sunrise'],
+            { t: '06:45', end: '10:45', title: 'MARATHON — 42.2 km 🇨🇾', detail: 'Pro 4 · 5:20/km goal · NEGATIVE SPLIT — first half feels too easy · gel every 35–40 min · sunrise at 06:50, you run into it · flat course, but the Athalassa false flats are run by effort not pace · dress for the finish (low teens), not the start', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4', estPace: '5:20',
+              table: { title: 'THE 3:45 PLAN — 5:20/km, negative split', cols: ['At', 'Clock', 'Cue'], rows: [
+                ['5 km',  '26:40',   'settle — this MUST feel too easy'],
+                ['10 km', '53:20',   'rhythm · first gel done, keep drinking'],
+                ['Half',  '1:52:31', 'still holding back — the race has not started'],
+                ['25 km', '2:13:20', 'now it starts · stay smooth'],
+                ['30 km', '2:40:00', 'the real race · Athalassa by effort, not pace'],
+                ['35 km', '3:06:40', 'spend everything you saved'],
+                ['40 km', '3:33:20', 'count people down, one at a time'],
+                ['42.2',  '3:45:02', 'Eleftheria Square — into the sunrise'],
               ] } },
             { t: '10:45', end: '11:45', title: 'Finish — food, warm kit, massage', detail: 'Free recovery massage at the finish — take it', cat: 'meal', quiet: true },
             { t: '11:45', end: '17:00', title: 'CELEBRATE ☀️', detail: 'You are a marathoner. In Cyprus. In January.', cat: 'free', quiet: true },

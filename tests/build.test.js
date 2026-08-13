@@ -388,7 +388,7 @@ section('easy pace bands');
     /* MP guard: easy must stay ≥ 30 s/km slower than the 5:41 goal MP,
        and ≥ 40 s/km slower than the 5:20 stretch MP is NOT required —
        a quicker easy pace is evidence MP has moved, not licence to race. */
-    ok(fast - secs('5:41') >= 35, 'wk ' + b.fromWk + ' easy stays ≥35 s/km clear of goal MP');
+    ok(fast - secs('5:20') >= 35, 'wk ' + b.fromWk + ' easy stays ≥35 s/km clear of goal MP 5:20');
     if (prevFast) {
       ok(fast <= prevFast && slow <= prevSlow, 'bands never get slower as fitness builds (wk ' + b.fromWk + ')');
     }
@@ -453,10 +453,13 @@ section('run-log maths · key events · pacing tables');
     'the TT carries its 7-row lap script with the lap-6 decision');
   const race = dayOfWeek(30, 6).run;
   ok(race.table && race.table.rows.length === 8, 'race day carries the 8-point split table');
-  ok(race.table.rows.some((r) => r[0] === 'Half' && r[1] === '1:59:54'),
-    'the 4:00 plan crosses halfway at 1:59:54');
-  ok(race.table.rows.some((r) => /42\.2/.test(r[0]) && /3:59/.test(r[1])),
-    'the 4:00 plan finishes under 4:00');
+  ok(race.table.rows.some((r) => r[0] === 'Half' && r[1] === '1:52:31'),
+    'the 3:45 plan crosses halfway at 1:52:31');
+  ok(race.table.rows.some((r) => /42\.2/.test(r[0]) && /3:45/.test(r[1])),
+    'the 3:45 plan finishes on 3:45');
+  ok(PLAN.race.goal === '3:45' && PLAN.race.goalPace === '5:20/km',
+    'the race object carries the 3:45 target');
+  ok(DB.parsePace('5:20') * 42.195 < 13510, 'MP 5:20 over 42.195 km does land inside 3:45');
   ok(!dayOfWeek(7, 6).run.table, 'ordinary runs carry no pacing table');
 }
 
@@ -482,11 +485,11 @@ section('run classification + log estimates');
      4:00-derived pace band returns Z3, not Z4 */
   const tempo = dayOfWeek(7, 2).run;
   ok(/HEART RATE/.test(tempo.detail), 'the tempo card leads with heart rate, not pace');
-  ok(/sanity check not a target/.test(tempo.detail), 'the pace band is demoted to a sanity check');
+  ok(/readout, not a target/.test(tempo.detail), 'the pace band is demoted to a readout');
   ok(!/Easy run/.test(tempo.title) && /Tempo/.test(tempo.title), 'wk 7 Wed is still the tempo session');
   /* MP is the exception: trained in Z3, raced by the clock */
   const mpLong = dayOfWeek(14, 6).run;
-  ok(/MP segments 5:41/.test(mpLong.detail), 'MP segments still name the target pace');
+  ok(/MP segments 5:20/.test(mpLong.detail), 'MP segments name the 3:45 target pace');
   ok(/Z3/.test(mpLong.detail), 'MP segments carry the Z3 sanity check');
   ok(/too\s+slow/.test(mpLong.detail), 'the card says what a below-Z3 reading would mean');
   ok(!/HEART RATE/.test(mpLong.detail),
@@ -499,8 +502,8 @@ section('run classification + log estimates');
 
   /* no history → phase band midpoint + fallback HR */
   const bare = DB.logEstimate(dayOfWeek(7, 6), []);
-  ok(bare && bare.paceSec === 395 && bare.hr === PLAN.logModel.fallbackHr.long,
-    'wk 7 long-run estimate with no history: band mid 6:35, fallback HR — got ' +
+  ok(bare && bare.paceSec === 383 && bare.hr === PLAN.logModel.fallbackHr.long,
+    'wk 7 long-run estimate with no history: band mid 6:23, fallback HR — got ' +
     DB.fmtPaceSec(bare.paceSec) + '/' + bare.hr);
   ok(bare.paceMax - bare.paceMin === 60 && bare.hrMax - bare.hrMin === 40,
     'stepper bounds span exactly ±30 s and ±20 bpm around the estimate');
