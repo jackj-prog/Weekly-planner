@@ -335,7 +335,7 @@ before the long run). These four + the long run must equal weekly km
 sanctioned benchmark before October, on an 8-lane certified 400 m
 surface — Friday-only access sets the day, **16:30** sets the shape:
 late afternoon is the circadian peak for performance, and it leaves the
-German block intact. **Tue: 4×400 m pacing rehearsal** (Evo SL, 1:42–1:43
+German block intact. **Tue: 4×400 m pacing rehearsal** (Evo SL, 1:39–1:40
 each, 400 m jog recoveries, ~5 km total) — the only speed work since
 June, so the legs meet goal lap pace once before race day; do not race
 it · Wed easy 2 km · **Thu shakeout 2 km + strides** (priming, not full
@@ -343,7 +343,7 @@ rest — the same way wks 24 and 30 open their race days) · Fri: German
 07:30–12:00 as normal · carb lunch 12:00 (~3.5 h out) · top-up snack
 14:30 · 15:00 travel · 16:00 warm-up 2 km + strides · **16:30 2-MILE
 TIME TRIAL in the Evo SL** — 8 laps, lane 1, THE SCRIPT: laps 1–2 in
-1:42–1:43 feeling embarrassingly held back · laps 3–5 hold 1:42 ·
+1:39–1:40, controlled but not crawling · laps 3–5 hold 1:39 ·
 lap 6 is the decision — still controlled? start winding up · laps 7–8
 everything. Nothing before lap 6 can win it; everything before lap 6
 can lose it (the classic 2-mile death is opening at mile pace and dying

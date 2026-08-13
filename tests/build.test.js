@@ -97,9 +97,13 @@ ok(/heavy for the first/.test(dayOfWeek(8, 6).run.detail),
   'wk 8 Sun long run warns the legs will be heavy post-TT');
 ok(hasBlock(dayOfWeek(8, 1), /rehearsal/i) && dayOfWeek(8, 1).run && dayOfWeek(8, 1).run.run.km === 5,
   'wk 8 Tue is the 4×400 TT pacing rehearsal, 5 km total');
-ok(/1:42/.test(dayOfWeek(8, 1).run.detail), 'the rehearsal names goal lap pace');
-ok(/lap 6/i.test(dayOfWeek(8, 4).run.detail) && /1:42/.test(dayOfWeek(8, 4).run.detail),
+ok(/1:39/.test(dayOfWeek(8, 1).run.detail), 'the rehearsal names goal lap pace');
+ok(/lap 6/i.test(dayOfWeek(8, 4).run.detail) && /1:39/.test(dayOfWeek(8, 4).run.detail),
   'the TT carries the lap script with the lap-6 decision point');
+ok(dayOfWeek(8, 4).run.table.rows[5][2] === '9:54',
+  'the lap table clock is arithmetically right at the lap-6 decision (5×1:39 + 1:39)');
+ok(DB.parsePace(dayOfWeek(8, 4).run.run.estPace) * 3.2187 < 790,
+  'the TT log estimate is centred on the new target, not the old one');
 ok(/peak HR/i.test(dayOfWeek(8, 4).run.detail), 'the TT prompts the max-HR capture from the final lap');
 {
   let wk8 = 0;
@@ -508,8 +512,8 @@ section('run classification + log estimates');
 
   /* race days centre on their declared target pace */
   const tt = DB.logEstimate(dayOfWeek(8, 4), hist);
-  ok(tt.paceSec === 255 && tt.hr === PLAN.logModel.fallbackHr.race,
-    'TT estimate centres on 4:15/km with the race HR fallback');
+  ok(tt.paceSec === 242 && tt.hr === PLAN.logModel.fallbackHr.race,
+    'TT estimate centres on 4:02/km with the race HR fallback');
   ok(DB.parsePace('6:35') === 395 && DB.fmtPaceSec(395) === '6:35', 'pace parse/format round-trips');
 }
 

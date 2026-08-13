@@ -696,7 +696,7 @@ const PLAN = {
       8: {
         label: 'Cutback · 2-MILE TT',
         days: {
-          1: { run: { km: 5, title: 'TT rehearsal — 4 × 400 m', shoe: 'Evo SL', detail: 'Evo SL · 1.5 km easy warm-up · 4 × 400 m at goal lap pace — 1:42–1:43 each, watch-measured on a flat stretch — with 400 m jog recoveries · 1 km cool-down. The ONLY job is to teach the legs what 1:42 feels like so Friday’s open is automatic. Do not race these — leave the fitness in them' } },
+          1: { run: { km: 5, title: 'TT rehearsal — 4 × 400 m', shoe: 'Evo SL', detail: 'Evo SL · 1.5 km easy warm-up · 4 × 400 m at goal lap pace — 1:39–1:40 each, watch-measured on a flat stretch — with 400 m jog recoveries · 1 km cool-down. The ONLY job is to teach the legs what 1:39 feels like so Friday’s open is automatic. Do not race these — leave the fitness in them' } },
           2: { run: { km: 2, title: 'Easy 2', detail: 'Short and genuinely easy — the time trial is Friday' } },
           3: { run: { km: 2, title: 'Shakeout + strides', detail: 'Very easy 2 km + 3–4 relaxed strides. A full rest day before a race leaves the legs flat — this primes them at no fatigue cost, the same way wks 24 and 30 open their race days' } },
           4: { blocks: [
@@ -707,15 +707,15 @@ const PLAN = {
             { t: '14:30', end: '14:45', title: 'Top-up snack', detail: 'Small and simple ~2 h out — banana or toast, or practise a gel', cat: 'meal', quiet: true },
             { t: '15:00', end: '16:00', title: 'Travel to Aberdare', detail: '~1 h — 8-lane certified track, worth the drive', cat: 'routine', quiet: true },
             { t: '16:00', end: '16:25', title: 'Warm-up', detail: '2 km easy + 3–4 build-up strides — never hit a hard effort cold', cat: 'run', quiet: true },
-            { t: '16:30', end: '16:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps, LANE 1 (add ~18 m past the line) · THE SCRIPT — laps 1–2: 1:42–1:43, feeling embarrassingly held back · laps 3–5: hold 1:42 · lap 6: the decision — still controlled? start winding up · laps 7–8: everything. Nothing before lap 6 can win this; everything before lap 6 can lose it — the classic 2-mile death is opening at mile pace and dying by lap 5. A fast day shows up in the LAST two laps, nowhere else · afterwards log the peak HR from the final lap — it recalibrates every training zone for the next 22 weeks', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL', estPace: '4:15',
+            { t: '16:30', end: '16:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps, LANE 1 (add ~18 m past the line) · THE SCRIPT — laps 1–2: 1:39–1:40, controlled but not crawling · laps 3–5: hold 1:39 · lap 6: the decision — still controlled? start winding up · laps 7–8: everything. Nothing before lap 6 can win this; everything before lap 6 can lose it — the classic 2-mile death is opening at mile pace and dying by lap 5. A fast day shows up in the LAST two laps, nowhere else · afterwards log the peak HR from the final lap — it recalibrates every training zone for the next 22 weeks', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL', estPace: '4:02',
               table: { title: 'THE SCRIPT — 8 laps, lane 1', cols: ['Lap', 'Target', 'Clock'], rows: [
-                ['1', '1:42–1:43 — held back', '1:42'],
-                ['2', '1:42', '3:25'],
-                ['3', '1:42', '5:07'],
-                ['4', '1:42', '6:49'],
-                ['5', '1:42', '8:31'],
-                ['6', 'THE DECISION', '10:13'],
-                ['7–8', 'everything', 'the close decides it'],
+                ['1', '1:39–1:40 — controlled', '1:39'],
+                ['2', '1:39', '3:18'],
+                ['3', '1:39', '4:57'],
+                ['4', '1:39', '6:36'],
+                ['5', '1:39', '8:15'],
+                ['6', 'THE DECISION', '9:54'],
+                ['7–8', 'everything', '1:33s → 12:54 · 1:36s → 13:03'],
               ] } },
             { t: '16:45', end: '17:00', title: 'Cool-down jog', detail: 'Never just stop', cat: 'run', quiet: true },
             { t: '17:00', end: '18:00', title: 'Travel home', cat: 'routine', quiet: true },
