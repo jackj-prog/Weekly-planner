@@ -484,6 +484,13 @@ section('run classification + log estimates');
   ok(/HEART RATE/.test(tempo.detail), 'the tempo card leads with heart rate, not pace');
   ok(/sanity check not a target/.test(tempo.detail), 'the pace band is demoted to a sanity check');
   ok(!/Easy run/.test(tempo.title) && /Tempo/.test(tempo.title), 'wk 7 Wed is still the tempo session');
+  /* MP is the exception: trained in Z3, raced by the clock */
+  const mpLong = dayOfWeek(14, 6).run;
+  ok(/MP segments 5:41/.test(mpLong.detail), 'MP segments still name the target pace');
+  ok(/Z3/.test(mpLong.detail), 'MP segments carry the Z3 sanity check');
+  ok(/too\s+slow/.test(mpLong.detail), 'the card says what a below-Z3 reading would mean');
+  ok(!/HEART RATE/.test(mpLong.detail),
+    'MP is NOT prescribed by HR — cardiac drift makes that wrong over marathon duration');
   ok(DB.runClass(dayOfWeek(8, 4).run) === 'race', 'the TT classifies as race');
   ok(DB.runClass(dayOfWeek(8, 1).run) === 'quality', 'the 400s rehearsal classifies as quality');
   ok(DB.runClass(dayOfWeek(7, 2).run) === 'quality', 'wk 7 Wed tempo classifies as quality');

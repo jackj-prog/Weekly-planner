@@ -413,7 +413,7 @@ at the latest and shift bedtime earlier in the days before.
 | Type | Pace |
 |---|---|
 | Easy / long-run base | by phase — see the band table below |
-| Marathon pace (4:00 goal) | **5:41 /km** |
+| Marathon pace (4:00 goal) | **5:41 /km** — trains in Z3; raced by the clock |
 | Tempo / threshold | **by HR — Z4** (pace band 5:05–5:20 is a 4:00-goal estimate only) |
 | Stretch MP (sub-3:45 bet) | 5:20 /km |
 
@@ -451,6 +451,21 @@ the band at correct Z2 HR is fine; running over it to hit a number is
 not.** The band cannot be dropped to match without breaching the
 >=35 s/km guard against MP 5:41 - which is a statement about MP, not
 about easy pace, and rule 7 owns that.
+
+**Marathon pace is the one exception to HR-led prescription.** Easy (Z2)
+and threshold (Z4) are physiological states, so HR defines them. MP is a
+*performance* target — the pace endurance and fuelling let you hold for
+42.2 km — so it is trained toward, not found. On race day it is run by
+the CLOCK: cardiac drift adds 10–20 bpm over 3–4 hours, so racing to an
+HR number would mean starting too fast and fading, the exact opposite of
+the negative split (§9).
+
+**But MP has an HR correlate, and it is a live recalibration signal.**
+Marathon effort sits ~72–80% HRR = **154–169 = Z3**, which is precisely
+what the zone model calls Z3. So from Wk 14, when MP segments start:
+if 5:41/km comes back **below Z3**, the prescribed pace is too slow and
+that is hard evidence months before the tune-up. Rule 7 still owns the
+final call; this just means December is not the first time we look.
 
 **Quality runs are prescribed by heart rate, not pace (Aug 2026).** The
 5:05–5:20 threshold band is derived from the 4:00 goal, and the first
