@@ -403,7 +403,8 @@ Anki guilt. New Year's Day (Fri Wk 27): rest — peak 30 km is in two days.
   throwaway layer (6–10 °C and dark) · 05:45 walk to Solomou Square ·
   06:00 bag drop + toilet queue · 06:20 warm-up 1 km + strides ·
   **06:45 MARATHON 42.2 km — Pro 4 · 5:20/km goal · negative split · gel
-  every 35–40 min · sunrise 06:50, you run into it · Athalassa false
+  every 25 min, 9 of them (~55 g carbs/h), carried not scavenged from the
+  course · sunrise 06:50, you run into it · Athalassa false
   flats run by effort not pace · dress for the finish (low teens), not
   the start** · finish ~10:45, free recovery massage, food, warm kit ·
   celebrate · eat again · early night.
@@ -526,9 +527,17 @@ from mile 22.
    sub-21 5k / sub-45 10k targets. The **shooting hour** is active recovery (~350 kcal, about
    a brisk walk). Flex the 1v1 half first: least marathon-specific,
    highest ankle risk. Both OFF on weeks 17, 24, 26, 27, 30.
-4. Fuelling is a skill: gels every 35–40 min on every run over 90 min,
-   from Wk 7 on (gut training takes weeks — the rule starts with the
-   first ~100-min long runs, so race day rehearses something practised).
+4. **Fuelling is a skill, and the interval IS the carb rate.** A 40 g gel
+   is ~23 g carbs, so "every 35 min" literally means 39 g/h, every 30
+   means 46, every 25 means 55. Guidance for efforts over 2.5 h is
+   60–90 g/h, so one flat interval under-fuels the long end. Tiered:
+   runs over 90 min → every 35–40 min (the learning dose, from Wk 7 —
+   gut training takes weeks); runs over 2.5 h → every 30 min; **race day
+   → every 25 min, 9 gels, ~55 g/h**, carried, never scavenged from the
+   course. Single-transporter gels saturate near 60 g/h, so 55 is the
+   honest ceiling on them. **Salt is the gap**: 9 gels carry ~170 mg
+   sodium against 1000–2500 mg of losses — electrolyte tabs or salt caps
+   cover it, rehearsed on the Wk 26 dress rehearsal.
 5. Niggle protocol: anything sharp or one-sided = 2 days off running
    before it becomes 2 weeks. The plan survives missed days, not a
    stress injury.

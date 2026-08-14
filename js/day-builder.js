@@ -129,8 +129,9 @@
         hard: true,
       };
       const durMin = Math.ceil(km * pace.long);
-      if (iso >= PLAN.gels.fromDate && durMin > PLAN.gels.minRunMin) {
-        spec.detail += ' · ' + PLAN.gels.text;
+      const g = PLAN.gels;
+      if (iso >= g.fromDate && durMin > g.minRunMin) {
+        spec.detail += ' · ' + (g.longRunMin && durMin > g.longRunMin ? g.longText : g.text);
       }
       return spec;
     }

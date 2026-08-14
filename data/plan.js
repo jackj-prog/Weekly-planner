@@ -206,7 +206,7 @@ const PLAN = {
     'Easy means easy — conversational, or you’re stealing from Wednesday and Sunday.',
     'Cutback weeks are training. No junk km because the number looks small.',
     'Basketball is two sessions, not one: the 1v1 hour is real training (~500 kcal — the block’s only top-end and lateral work), the shooting hour is active recovery (~350 kcal, about a brisk walk). Flex the 1v1 half first: least marathon-specific, highest ankle risk. OFF entirely on weeks 17, 24, 26, 27, 30.',
-    'Fuelling is a skill: gels every 35–40 min on every run over 90 min, from Wk 7 on. Race day rehearses something practised.',
+    'Fuelling is a skill, and the interval IS the carb rate. Runs over 90 min: a gel every 35–40 min (~39 g/h — learning the gut). Over 2.5 h: every 30 min (~46 g/h). Race day: every 25 min, 9 gels, ~55 g/h. Carry your own salt — gels barely have any.',
     'Niggle protocol: anything sharp or one-sided = 2 days off running before it becomes 2 weeks. The plan survives missed days, not a stress injury.',
     'Sleep is where training sticks: 22:30 lights out is part of the plan.',
     'The December tune-up settles the race pace. The target moved 4:00 → 3:45 in Aug 2026 on evidence, not ambition (§10) — the half is still what confirms or corrects it.',
@@ -234,11 +234,42 @@ const PLAN = {
   pacing: { easy: 6.6, quality: 6.1, long: 6.75, showerMin: 15 },
   split:  { wed: 0.32, tue: 0.30, thu: 0.24, minKm: 2 },
 
-  /* Gels rule (§12 rule 4): every 35–40 min on runs > 90 min, from October. */
-  /* Gut training takes weeks — the rule starts with the first ~100-min
-     long runs (Wk 7), not October, so race day rehearses something
-     practised (rule 4). */
-  gels: { fromDate: '2026-08-10', minRunMin: 90, text: 'Gel every 35–40 min' },
+  /* Gels rule (§12 rule 4). Gut training takes weeks, so the rule starts
+     with the first ~100-min long runs (Wk 7) — race day then rehearses
+     something practised.
+
+     Tiered by run duration, because a 40 g gel is ~23 g carbs and so the
+     INTERVAL IS THE CARB RATE: every 35 min = 39 g/h, every 30 = 46,
+     every 25 = 55. Endurance guidance for efforts over 2.5 h is
+     60–90 g/h, so one flat "every 35–40 min" rule under-fuels anything
+     long — right for learning the skill on a 100-min run, wrong for a
+     3h45 race. */
+  gels: {
+    fromDate: '2026-08-10',
+    minRunMin: 90,  text: 'Gel every 35–40 min (~39 g carbs/h) — learning the skill',
+    longRunMin: 150, longText: 'Gel every 30 min (~46 g carbs/h) — practise the race rate',
+    raceText: 'Gel every 25 min · 9 gels · ~55 g carbs/h',
+    /* Reference-page maths. Figures are per 40 g gel at 57 g carbs /
+       100 g — re-derive these if the brand changes. */
+    gelG: 40, carbG: 23, kcal: 91, sodiumMg: 19,
+    ladder: [
+      { every: 40, rate: 34, note: 'below the useful range on anything long' },
+      { every: 35, rate: 39, note: 'the learning dose — gut training, Wk 7+' },
+      { every: 30, rate: 46, note: 'long runs over 2.5 h — practise this' },
+      { every: 25, rate: 55, note: 'RACE DAY — 9 gels for 3h45' },
+      { every: 20, rate: 68, note: 'needs a 2:1 glucose:fructose gel to absorb' },
+    ],
+    targetNote:
+      'Evidence-based intake for efforts over 2.5 h is 60–90 g carbs/h. ' +
+      'A single-transporter (glucose/maltodextrin) gel saturates around ' +
+      '60 g/h no matter how many you take, so ~55 g/h is the honest ceiling ' +
+      'on these — the top of that band needs a 2:1 glucose:fructose product.',
+    sodiumNote:
+      'Nine gels carry only ~170 mg sodium. A 3h45 marathon at 6–12 °C ' +
+      'still costs roughly 1000–2500 mg. Sodium comes from somewhere else: ' +
+      'electrolyte tabs in the bottles, or salt capsules. Rehearse it on the ' +
+      'Wk 26 dress rehearsal, never first on race day.',
+  },
 
   /* Heart-rate zone MODEL only — generic training science, safe in the
      repo. The athlete's own resting/max HR are personal health data and
@@ -943,7 +974,7 @@ const PLAN = {
             { t: '05:45', end: '06:00', title: 'To Solomou Square', detail: 'Central start — walk it, it doubles as a warm-up', cat: 'routine', quiet: true },
             { t: '06:00', end: '06:20', title: 'Bag drop · toilet queue', detail: 'Queue early, queue twice', cat: 'routine', quiet: true },
             { t: '06:20', end: '06:40', title: 'Warm-up', detail: '1 km jog + 3–4 strides · you do not need much for a marathon', cat: 'run', quiet: true },
-            { t: '06:45', end: '10:45', title: 'MARATHON — 42.2 km 🇨🇾', detail: 'Pro 4 · 5:20/km goal · NEGATIVE SPLIT — first half feels too easy · gel every 35–40 min · sunrise at 06:50, you run into it · flat course, but the Athalassa false flats are run by effort not pace · dress for the finish (low teens), not the start', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4', estPace: '5:20',
+            { t: '06:45', end: '10:45', title: 'MARATHON — 42.2 km 🇨🇾', detail: 'Pro 4 · 5:20/km goal · NEGATIVE SPLIT — first half feels too easy · GEL EVERY 25 MIN, 9 of them (~55 g carbs/h) — carry them all, do not rely on the course · sunrise at 06:50, you run into it · flat course, but the Athalassa false flats are run by effort not pace · dress for the finish (low teens), not the start', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4', estPace: '5:20',
               table: { title: 'THE 3:45 PLAN — 5:20/km, negative split', cols: ['At', 'Clock', 'Cue'], rows: [
                 ['5 km',  '26:40',   'settle — this MUST feel too easy'],
                 ['10 km', '53:20',   'rhythm · first gel done, keep drinking'],

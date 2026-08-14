@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.1.0';
+  const APP_VERSION = '4.2.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1140,6 +1140,7 @@
       '</div>'
     ));
     view.appendChild(buildOdoSection());
+    view.appendChild(buildFuelSection());
     view.appendChild(el(
       '<div class="ref">' +
       '<h2>Rules of the block</h2><ol class="ref-list">' +
@@ -1238,6 +1239,46 @@
       '<div class="ref-note"><b>Benchmark:</b> ' + esc(bm.slot) + '. ' + esc(bm.log) + '<br>' +
       bm.conditions.map((c) => '· ' + esc(c)).join('<br>') + '</div>' +
       '<div class="ref-note">' + esc(bm.expect) + '</div></div>'
+    );
+  }
+
+  /* Fuelling maths (§12 rule 4). The gel interval IS the carb rate, and
+     that arithmetic is the whole point — "every 35–40 min" sounds like a
+     rule but is really a number, and that number is too small for a
+     3h45 race. Shown as a ladder with this week's long run placed on it. */
+  function buildFuelSection() {
+    const g = PLAN.gels;
+    const wk = DB.weekNumber(todayISO());
+    const row = DB.weekRow(PLAN.blocks[0], wk);
+    const lrMin = row && row.lr ? Math.round(row.lr * PLAN.pacing.long) : 0;
+    /* which tier this week's long run falls in — the one to rehearse */
+    const liveEvery = lrMin > g.longRunMin ? 30 : lrMin > g.minRunMin ? 35 : 0;
+    /* Widest rate in the ladder sets the bar scale, so the rows read as a
+       ladder at a glance rather than as five numbers. */
+    const maxRate = Math.max.apply(null, g.ladder.map((l) => l.rate));
+    const rows = g.ladder.map((l) => {
+      const now = l.every === liveEvery;
+      const race = /RACE/.test(l.note);
+      return '<div class="frow' + (now ? ' is-now' : '') + (race ? ' is-race' : '') + '">' +
+        '<span class="fi">every ' + l.every + ' min</span>' +
+        '<span class="fr">' + l.rate + ' g/h</span>' +
+        '<span class="fbar"><i style="width:' + Math.round((l.rate / maxRate) * 100) + '%"></i></span>' +
+        '<span class="fn">' + esc(l.note) + '</span></div>';
+    }).join('');
+    const live = lrMin
+      ? '<b>Wk ' + wk + ':</b> the long run is ~' + lrMin + ' min, so ' +
+        (liveEvery ? 'take a gel every ' + (liveEvery === 35 ? '35–40' : '30') + ' min.'
+                   : 'it is under 90 min — no gels needed, but drink.')
+      : '<b>Wk ' + wk + ':</b> no long run this week.';
+    return el(
+      '<div class="ref"><h2>Fuelling</h2>' +
+      '<div class="ref-note">One ' + g.gelG + ' g gel = <b>' + g.carbG + ' g carbs</b> · ' +
+      g.kcal + ' kcal · ' + g.sodiumMg + ' mg sodium. So the interval you choose ' +
+      '<i>is</i> the carb rate:</div>' +
+      '<div class="ref-card fuel">' + rows + '</div>' +
+      '<div class="ref-note">' + live + '</div>' +
+      '<div class="ref-note">' + esc(g.targetNote) + '</div>' +
+      '<div class="ref-note"><b>Salt is the gap.</b> ' + esc(g.sodiumNote) + '</div></div>'
     );
   }
 

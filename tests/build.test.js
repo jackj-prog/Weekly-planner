@@ -159,6 +159,22 @@ ok(/Gel every/i.test(dayOfWeek(10, 6).run.detail), 'wk 10 long run carries the g
 ok(!/Gel every/i.test(dayOfWeek(6, 6).run.detail), 'wk 6 long run predates the gel rule');
 ok(!/Gel every/i.test(dayOfWeek(9, 3).run.detail), 'short Thursday runs never carry the gel rule');
 
+/* The interval IS the carb rate, so the rule has to tier with duration:
+   ~39 g/h is the learning dose, not a race rate (rule 4). Wk 14's 22 km
+   is ~148 min (learning tier); wk 16's 26 km is ~176 min (race-rate
+   practice tier). */
+ok(/35–40 min/.test(dayOfWeek(14, 6).run.detail), 'wk 14 long run (~148 min) takes the 35–40 min learning dose');
+ok(/every 30 min/i.test(dayOfWeek(16, 6).run.detail), 'wk 16 long run (~176 min) steps up to a gel every 30 min');
+ok(/every 30 min/i.test(dayOfWeek(23, 6).run.detail), 'wk 23 peak long run practises the race carb rate');
+ok(!/every 30 min/i.test(dayOfWeek(7, 6).run.detail), 'wk 7 long run stays on the learning dose');
+PLAN.gels.ladder.forEach((l) => {
+  ok(Math.abs(Math.round((60 / l.every) * PLAN.gels.carbG) - l.rate) <= 1,
+    'gel ladder arithmetic: every ' + l.every + ' min ≈ ' + l.rate + ' g/h');
+});
+ok(Math.abs(Math.round(225 / 25) - 9) === 0, 'a 3h45 race at a gel every 25 min is 9 gels');
+ok(!/\b(mum|dad|nan|family)\b/i.test(PLAN.gels.sodiumNote + PLAN.gels.targetNote),
+  'fuelling notes stay generic');
+
 /* Phase deltas */
 section('phase deltas');
 function friGerman(wk) {
