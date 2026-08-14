@@ -595,8 +595,10 @@ const PLAN = {
          stay through the first half of Build at a cost Wednesday won't
          notice. (Wk 11 is still a work Monday; college takes over Wk 12.) */
       { fromWk: 11, days: {
-        /* Tuesday picks up Core + calves after Upper A — moved off Saturday
-           so the calves are five days clear of the Sunday long run. */
+        /* Tuesday is the plain work-day shape. Core + calves used to sit
+           here after Upper A, which put calf loading ~20 h before the
+           Wednesday tempo — the same mistake that moved it off Saturday,
+           aimed at a different session. It lives on Monday now. */
         1: [
           { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating', cat: 'routine', quiet: true },
           { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
@@ -607,8 +609,7 @@ const PLAN = {
           { t: '17:10', run: 'tue' },
           { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
           Object.assign({ t: '19:30', end: '20:45' }, UPPER_A),
-          Object.assign({ t: '20:45', end: '21:10' }, CORE_CALVES),
-          { t: '21:10', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
+          { t: '20:45', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
           { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
           { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
         ],
@@ -619,15 +620,19 @@ const PLAN = {
           { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
           { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
           { t: '16:30', end: '17:00', title: 'Commute home', detail: 'German podcasts', cat: 'work', quiet: true },
-          { t: '17:10', end: '17:45', title: 'Gym — Lower B (maintenance)', cat: 'gym', doable: true,
-            detail: 'Keep the hinge, lose the fatigue · RPE ≤ 7, in and out',
+          { t: '17:10', end: '17:55', title: 'Gym — Lower B + core/calves (maintenance)', cat: 'gym', doable: true,
+            detail: 'Keep the hinge, lose the fatigue · RPE ≤ 7, in and out · absorbs the trunk and calf work: day-after-long-run legs, two days clear of Wednesday, six clear of Sunday',
             plan: [
-              { ex: 'Deadlift',          sets: '2 × 5 @ RPE 6–7' },
-              { ex: 'Romanian deadlift', sets: '2 × 8 light' },
-              { ex: 'Calf raises',       sets: '3 × 15' },
-              { ex: 'Plank',             sets: '2 × 45s' },
+              { ex: 'Deadlift',              sets: '2 × 5 @ RPE 6–7' },
+              { ex: 'Romanian deadlift',     sets: '2 × 8 light' },
+              { ex: 'Straight-leg calf raises', sets: '2 × 15' },
+              { ex: 'Bent-knee calf raises', sets: '2 × 12 — soleus, the marathon muscle' },
+              { ex: 'Plank',                 sets: '3 × 45s' },
+              { ex: 'Side plank',            sets: '2 × 30s/side' },
+              { ex: 'Dead bugs',             sets: '3 × 10' },
+              { ex: 'Glute bridges',         sets: '2 × 15' },
             ] },
-          { t: '17:45', end: '18:30', title: 'Shower + snack', cat: 'routine', quiet: true },
+          { t: '17:55', end: '18:30', title: 'Shower + snack', cat: 'routine', quiet: true },
           { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Fixed anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
@@ -641,15 +646,19 @@ const PLAN = {
           { t: '07:45', end: '08:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
           { t: '08:00', end: '15:00', title: 'College', detail: 'College day (Mondays from 14 Sep) · free periods = study', cat: 'study', quiet: true },
           { t: '15:00', end: '16:00', title: 'Commute + snack', detail: 'Home ~16:00', cat: 'work', quiet: true },
-          { t: '16:30', end: '17:05', title: 'Gym — Lower B (maintenance)', cat: 'gym', doable: true,
-            detail: 'Keep the hinge, lose the fatigue · RPE ≤ 7, in and out',
+          { t: '16:30', end: '17:15', title: 'Gym — Lower B + core/calves (maintenance)', cat: 'gym', doable: true,
+            detail: 'Keep the hinge, lose the fatigue · RPE ≤ 7, in and out · absorbs the trunk and calf work: day-after-long-run legs, two days clear of Wednesday, six clear of Sunday',
             plan: [
-              { ex: 'Deadlift',          sets: '2 × 5 @ RPE 6–7' },
-              { ex: 'Romanian deadlift', sets: '2 × 8 light' },
-              { ex: 'Calf raises',       sets: '3 × 15' },
-              { ex: 'Plank',             sets: '2 × 45s' },
+              { ex: 'Deadlift',              sets: '2 × 5 @ RPE 6–7' },
+              { ex: 'Romanian deadlift',     sets: '2 × 8 light' },
+              { ex: 'Straight-leg calf raises', sets: '2 × 15' },
+              { ex: 'Bent-knee calf raises', sets: '2 × 12 — soleus, the marathon muscle' },
+              { ex: 'Plank',                 sets: '3 × 45s' },
+              { ex: 'Side plank',            sets: '2 × 30s/side' },
+              { ex: 'Dead bugs',             sets: '3 × 10' },
+              { ex: 'Glute bridges',         sets: '2 × 15' },
             ] },
-          { t: '17:05', end: '18:30', title: 'Shower · feet up', cat: 'routine', quiet: true },
+          { t: '17:15', end: '18:30', title: 'Shower · feet up', cat: 'routine', quiet: true },
           { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Fixed anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },

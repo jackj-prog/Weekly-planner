@@ -159,10 +159,10 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
   18:30 dinner · **19:30 Gym — Upper A** (bench/row/OHP/dips/curls;
   drive over, no run-commute — legs are for running) · 20:45 wind down ·
   22:00 read · 22:30 sleep.
-- **Wks 11+ :** Upper A 19:30–20:45 is followed by **Core + calves
-  20:45–21:10** (~25 min, already at the gym), then wind down 21:10.
-  Tuesday is five days clear of the Sunday long run — the only slot in
-  the week where calf loading costs nothing.
+- **Wks 11+ :** unchanged — Upper A 19:30–20:45, then wind down.
+  Core + calves briefly sat here and was moved to Monday: it put calf
+  loading ~20 h before the Wednesday tempo, the same mistake that had
+  moved it off Saturday, aimed at a different session.
 
 Upper A every era: **bench 4×6–8 (pull-aparts 4×15–20 in the rests) ·
 row 4×6–8 · OHP 3×8 · weighted dips 3×8–10 · EZ bar curls 3×10–12 ·
@@ -218,8 +218,9 @@ Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
 - Sat gym: Lower B (Wks 1–3 as lived) → Upper B only from Wk 4. No
   lower-body or calf work on a Saturday ever again — Saturday is the
   long run's rest day.
-- Tue gym: Upper A every era → **+ Core + calves from Wk 11** (stays
-  through Build, optional in Taper).
+- Tue gym: Upper A every era, and nothing else. Tuesday is a work day
+  that already carries a run and 75 min of upper body; it does not also
+  get leg work the evening before the tempo.
 - **Gym deload on cutback weeks from Wk 13** (wks 13, 21 — 17 and 25
   sit inside other rules): both upper sessions halve their SETS, floor
   of 2, **load unchanged**. Strength holds on ~a third of the volume
@@ -261,15 +262,20 @@ the 3D look).
   rep range on every set → +2.5 kg next week (upper days only; Lower B
   holds at RPE ≤ 7, it is insurance not progression) · rest 2–3 min on
   compounds, 60–90 s on accessories.
-- **Core + calves — Tue 20:45, from Wk 11 (~25 min, after Upper A):**
-  straight-leg calf raises 2×15 · bent-knee calf raises 2×12 (soleus —
-  the marathon muscle) · plank 3×45s · side plank 2×30s/side · dead
-  bugs 3×10 · glute bridges 2×15 · calves + hips stretch.
-  Non-negotiable through Build — the trunk and calves carry km 30+;
-  optional again in Taper. **It sits on Tuesday, not Saturday:** loaded
-  calves ~20 h before a 26–32 km long run is the exact mistake moving
-  Lower B off Saturday was meant to prevent. Tuesday is five days clear
-  of Sunday, in a slot already at the gym after Upper A.
+- **Core + calves — folded into Monday's Lower B (maintenance), Wks
+  11–16:** straight-leg calf raises 2×15 · bent-knee calf raises 2×12
+  (soleus — the marathon muscle) · plank 3×45s · side plank 2×30s/side ·
+  dead bugs 3×10 · glute bridges 2×15, on top of the deadlift/RDL hinge.
+  **Monday is the right day and the only one:** day-after-long-run legs
+  (the plan's own principle for stacking leg stress), two days clear of
+  the Wednesday tempo, six clear of the Sunday long run. It also removes
+  a duplication — Lower B maintenance already carried calf raises and a
+  plank, so Wks 11–16 had been loading calves on Monday *and* Tuesday.
+  **It retires with Lower B at Wk 17**, deliberately: by then the running
+  is 50–60 km/week and the calves are getting far more loading from that
+  than from 2×15 raises. Calf-specific work earns its place while volume
+  is LOW, building tolerance ahead of the load; once the load arrives it
+  is redundant and costs recovery. Monday stays the true zero day.
 - **Maintenance from Wk 23 (both upper days):** 2 hard sets per lift,
   3 reps in reserve (pull-aparts and rear delts stay — they cost
   nothing). Strength holds on far less than it was built on.

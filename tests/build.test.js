@@ -171,12 +171,17 @@ ok(friGerman(23).end === '10:30', 'Wk 23 Fri German ends 10:30');
 ok(hasBlock(dayOfWeek(3, 5), /Lower B/i), 'Wks 1–3 Sat holds Lower B (as lived)');
 ok(hasBlock(dayOfWeek(5, 0), /Lower B/i), 'Wks 4–10 Mon holds Lower B (day after the long run)');
 ok(!dayOfWeek(5, 5).blocks.some((b) => /Lower B|Deadlift/i.test(b.title)), 'Wks 4–10 Sat has no leg work — legs fresh for Sunday');
-ok(hasBlock(dayOfWeek(11, 0), /Lower B \(maintenance\)/) && hasBlock(dayOfWeek(11, 0), /Deadlift 2 × 5/),
-  'Wks 11–16 Mon drops Lower B to maintenance');
-ok(hasBlock(dayOfWeek(14, 0), /Lower B \(maintenance\)/), 'Wk 14 Mon still holds maintenance legs');
+ok(hasBlock(dayOfWeek(11, 0), /Lower B \+ core\/calves \(maintenance\)/) && hasBlock(dayOfWeek(11, 0), /Deadlift 2 × 5/),
+  'Wks 11–16 Mon drops Lower B to maintenance and absorbs the core/calf work');
+ok(hasBlock(dayOfWeek(14, 0), /Lower B \+ core\/calves \(maintenance\)/), 'Wk 14 Mon still holds the maintenance leg session');
 ok(!dayOfWeek(18, 0).blocks.some((b) => b.cat === 'gym' || b.cat === 'xt'), 'Wk 17+ Mon is the true zero day');
 ok(!hasBlock(dayOfWeek(12, 5), /Core \+ calves/i), 'Core + calves is OFF Saturday — calves must not load the day before the long run');
-ok(hasBlock(dayOfWeek(12, 1), /Core \+ calves/i), 'Wk 11+ Tue carries Core + calves after Upper A');
+ok(!hasBlock(dayOfWeek(12, 1), /Core \+ calves|calf/i),
+  'Wk 11+ Tue carries NO calf work — it sat ~20 h before the Wednesday tempo');
+ok(dayOfWeek(12, 0).blocks.some((b) => (b.plan || []).some((p) => /Bent-knee calf/.test(p.ex))),
+  'the soleus work lives on Monday now, on day-after-long-run legs');
+ok(dayOfWeek(12, 1).blocks.some((b) => /Wind down/.test(b.title) && b.start === '20:45'),
+  'Tuesday now ends at 20:45, not 21:10');
 ok(!hasBlock(dayOfWeek(10, 1), /Core \+ calves/i), 'Core + calves does not start before Wk 11');
 ok(!dayOfWeek(20, 5).blocks.some((b) => /calf|calves/i.test(b.title) || (b.plan || []).some((p) => /calf/i.test(p.ex))),
   'no calf work anywhere on Saturday in peak Build');
@@ -202,14 +207,19 @@ ok(hasBlock(dayOfWeek(5, 0), /Deadlift 3 × 5/), 'Base Lower B should carry the 
 ok(hasBlock(dayOfWeek(5, 0), /Plank finisher/), 'Base Lower B should carry the core finisher');
 ok(hasBlock(dayOfWeek(5, 1), /\+2\.5 kg/), 'Upper A should carry the progression rule');
 ok(hasBlock(dayOfWeek(3, 0), /6 × 3 min rounds/), 'Wks 1–3 Mondays keep punchbag (as lived)');
-ok(hasBlock(dayOfWeek(12, 1), /Plank 3 × 45s/), 'Wk 11+ core session should carry the prescription');
+ok(hasBlock(dayOfWeek(12, 0), /Plank 3 × 45s/), 'Wk 11+ Monday carries the trunk prescription');
 /* push:pull rebalance + calves-all-block (assessed from first principles) */
 ok(hasBlock(dayOfWeek(5, 1), /Band pull-aparts 4 × 15–20/), 'Upper A should carry pull-aparts in the bench rests');
 ok(hasBlock(dayOfWeek(5, 5), /Rear-delt flyes 3 × 12–15/), 'Upper B should carry rear-delt flyes');
 ok(hasBlock(dayOfWeek(23, 1), /Band pull-aparts 2 × 15/), 'Wk 23 maintenance keeps pull-aparts');
 ok(hasBlock(dayOfWeek(23, 5), /Rear-delt flyes 2 × 12/), 'Wk 23 Upper B maintenance keeps rear delts');
-ok(hasBlock(dayOfWeek(12, 1), /Straight-leg calf raises 2 × 15/), 'Wk 11+ Tue keeps straight-leg calf work');
-ok(hasBlock(dayOfWeek(12, 1), /Bent-knee calf raises/), 'Wk 11+ Tue keeps soleus work');
+ok(hasBlock(dayOfWeek(12, 0), /Straight-leg calf raises 2 × 15/), 'Wk 11+ Monday carries straight-leg calf work');
+ok(hasBlock(dayOfWeek(12, 0), /Bent-knee calf raises/), 'Wk 11+ Monday carries the soleus work');
+/* the whole point: nothing loads the calves the day before the tempo */
+for (const wk of [12, 14, 16]) {
+  ok(!dayOfWeek(wk, 1).blocks.some((b) => (b.plan || []).some((p) => /calf/i.test(p.ex))),
+    'wk ' + wk + ' Tuesday carries no calf work — Wednesday is the tempo');
+}
 ok(hasBlock(dayOfWeek(5, 0), /Calf raises 3 × 15/), 'Base Lower B still carries its calf raises');
 ok(hasBlock(dayOfWeek(23, 1), /3 reps in reserve/), 'Wk 23 Upper A should swap to the maintenance session');
 ok(hasBlock(dayOfWeek(23, 1), /Bench press 2 × 6–8/), 'Wk 23 Upper A plan should be the reduced sets');
@@ -339,7 +349,7 @@ section('scaffold eras');
   ok(hasBlock(dayOfWeek(5, 0), /Lower B/i), 'wk5 Mon carries Lower B (punchbag retired from Wk 4)');
   // Wk 12+: Monday becomes the college day
   ok(hasBlock(dayOfWeek(12, 0), /^College$/m ? /College/ : /College/), 'wk12 Mon is the college day');
-  ok(hasBlock(dayOfWeek(12, 0), /College/) && hasBlock(dayOfWeek(12, 0), /Lower B \(maintenance\)/),
+  ok(hasBlock(dayOfWeek(12, 0), /College/) && hasBlock(dayOfWeek(12, 0), /Lower B \+ core\/calves/),
     'wk12 Mon is a college day with maintenance legs after');
   ok(hasBlock(dayOfWeek(18, 0), /zero day/i) && !dayOfWeek(18, 0).blocks.some((b) => b.cat === 'gym' || b.cat === 'xt'),
     'wk18 Mon is the zero day — no gym, no punchbag');
