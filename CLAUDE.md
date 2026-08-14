@@ -514,7 +514,10 @@ from mile 22.
 3. **Basketball is two sessions, not one.** The **1v1 hour** is real
    training (~500 kcal — the block's only top-end work, since running is
    98% Z2, and its only lateral loading, since running is purely
-   sagittal). The **shooting hour** is active recovery (~350 kcal, about
+   sagittal). It repeatedly reaches Z4/Z5, so it is also a genuine
+   VO2max stimulus, and after the block — on ~3 easy runs a week — it
+   becomes the *keystone* session that holds VO2max and therefore the
+   sub-21 5k / sub-45 10k targets. The **shooting hour** is active recovery (~350 kcal, about
    a brisk walk). Flex the 1v1 half first: least marathon-specific,
    highest ankle risk. Both OFF on weeks 17, 24, 26, 27, 30.
 4. Fuelling is a skill: gels every 35–40 min on every run over 90 min,
