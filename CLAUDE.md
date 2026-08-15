@@ -74,8 +74,12 @@ First-principles design is welcome. These behaviours are the intent:
 8. **The app closes the loop (v3.0):** any run on or before today can be
    logged in two taps — time + avg HR (+ optional km override) on the
    run hero. The app computes pace and EF (m/min ÷ HR), stores it per
-   date (`runlog-ISO`), includes it in backups, and trends easy-run EF
-   on Reference with a sparkline. Prescription AND readback, offline.
+   date (`runlog-ISO`), includes it in backups, and trends EF on
+   Reference with a sparkline. Prescription AND readback, offline.
+   **EF is only ever compared within an effort class** (recovery / easy /
+   long / quality / race), because a Z1 buffer run, a 30 km long run and
+   a 4 km easy run return three different numbers for reasons that have
+   nothing to do with fitness. One sparkline per class, never pooled.
 9. Blocks may carry a structured pacing `table` (TT lap script, race
    splits) — rendered as a mono split table wherever the block renders.
    Content lives in data/plan.js like everything else.

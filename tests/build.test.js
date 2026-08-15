@@ -526,6 +526,20 @@ section('run classification + log estimates');
   ok(DB.runClass(dayOfWeek(7, 6).run) === 'long', 'wk 7 Sunday classifies as long');
   ok(DB.runClass(dayOfWeek(7, 1).run) === 'easy', 'wk 7 Tuesday classifies as easy');
 
+  /* Buffer/shakeout runs are their own class — pooled with easy runs
+     their Z1 efficiency reads as a fitness collapse that never happened. */
+  ok(DB.runClass(dayOfWeek(7, 5).run) === 'recovery', 'the Saturday buffer run classifies as recovery');
+  ok(DB.runClass(dayOfWeek(30, 3).run) === 'recovery', 'the race-week shakeout classifies as recovery');
+  ok(DB.runClass(dayOfWeek(17, 6).run) === 'long', 'wk 17 "Long 16 — recovery" is still a long run, not a shakeout');
+  {
+    const est = DB.logEstimate(dayOfWeek(7, 5), []);
+    const easyEst = DB.logEstimate(dayOfWeek(7, 1), []);
+    ok(est.cls === 'recovery' && est.paceSec === easyEst.paceSec + PLAN.logModel.recoveryPaceAdd,
+      'a recovery run opens its stepper slower than easy, not at easy pace');
+    ok(est.hr === PLAN.logModel.fallbackHr.recovery,
+      'a recovery run falls back to the recovery HR, not the easy one');
+  }
+
   /* no history → phase band midpoint + fallback HR */
   const bare = DB.logEstimate(dayOfWeek(7, 6), []);
   ok(bare && bare.paceSec === 383 && bare.hr === PLAN.logModel.fallbackHr.long,
@@ -672,21 +686,44 @@ section('hr zones');
   ok(!/restHr|restingHr|maxHr\s*:/.test(planSrc),
     'no personal resting/max HR value is committed to the repo');
 
-  const z = DB.hrZones(48, 199);
-  ok(z && z.length === 5, 'zones compute from rest 48 / max 199');
-  ok(z[0].lo === 124 && z[1].lo === 139 && z[1].hi === 154,
-    'Karvonen maths: Z1 opens 124, Z2 runs 139–154, got ' + z[0].lo + '/' + z[1].lo + '–' + z[1].hi);
-  ok(z[4].hi === 199, 'Z5 tops out at max HR');
+  /* Round, textbook numbers — deliberately NOT the athlete's own. His
+     resting and max HR are personal health data and live only in
+     localStorage under `hr` (§4.10); the earlier version of this test
+     had his real pair hardcoded, which put physiology in the repo by
+     the back door. HRR here is a clean 140, so the maths is checkable
+     by eye. */
+  const z = DB.hrZones(50, 190);
+  ok(z && z.length === 5, 'zones compute from a rest 50 / max 190 fixture');
+  ok(z[0].lo === 120 && z[1].lo === 134 && z[1].hi === 148,
+    'Karvonen maths: Z1 opens 120, Z2 runs 134–148, got ' + z[0].lo + '/' + z[1].lo + '–' + z[1].hi);
+  ok(z[4].hi === 190, 'Z5 tops out at max HR');
   ok(z.every((x, i) => i === 0 || x.lo === z[i - 1].hi), 'zones are contiguous, no gaps or overlaps');
 
-  /* validated against the athlete's own recorded efforts */
-  ok(DB.zoneOf(146, 48, 199).name === 'Easy', 'a 146 bpm easy run reads Z2 Easy');
-  ok(DB.zoneOf(177, 48, 199).name === 'Threshold', 'a 177 bpm hard km reads Z4 Threshold');
-  ok(DB.zoneOf(189, 48, 199).name === 'VO2max', 'a 189 bpm 5k average reads Z5');
-  ok(DB.zoneOf(110, 48, 199).z === 0, 'below Z1 is reported as below Z1, not clamped up');
+  ok(DB.zoneOf(140, 50, 190).name === 'Easy', '140 bpm on the fixture reads Z2 Easy');
+  ok(DB.zoneOf(170, 50, 190).name === 'Threshold', '170 bpm on the fixture reads Z4 Threshold');
+  ok(DB.zoneOf(180, 50, 190).name === 'VO2max', '180 bpm on the fixture reads Z5');
+  ok(DB.zoneOf(110, 50, 190).z === 0, 'below Z1 is reported as below Z1, not clamped up');
 
-  ok(DB.hrZones(48, 100) === null && DB.hrZones(0, 199) === null,
+  ok(DB.hrZones(50, 100) === null && DB.hrZones(0, 190) === null,
     'implausible inputs return null rather than nonsense zones');
+
+  /* And the guard that keeps it that way: every rest/max pair written
+     into committed source must come from this allowlist, so a real
+     measurement cannot be pasted in unnoticed by anyone — me included. */
+  const ALLOWED = ['50/190', '50/100', '0/190'];
+  const files = ['../data/plan.js', '../js/day-builder.js', '../js/app.js', '../tests/build.test.js'];
+  files.forEach((f) => {
+    const src = require('fs').readFileSync(path.join(__dirname, f), 'utf8');
+    const re = /(?:hrZones|zoneOf)\s*\(([^)]*)\)/g;
+    let m;
+    while ((m = re.exec(src)) !== null) {
+      const nums = m[1].split(',').map((s) => s.trim()).filter((s) => /^\d+$/.test(s));
+      if (nums.length < 2) continue;               // variables, not literals — fine
+      const pair = nums.slice(-2).join('/');
+      ok(ALLOWED.indexOf(pair) >= 0,
+        'no real physiology in ' + f.replace('../', '') + ': rest/max ' + pair + ' is not an allowed fixture');
+    }
+  });
 }
 
 /* ---- 7b. Pro 4 odometer + run log ---- */

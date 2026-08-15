@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.2.0';
+  const APP_VERSION = '4.3.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1298,7 +1298,7 @@
       if (!(km > 0)) continue;
       const cls = day.run ? DB.runClass(day.run) : 'easy';
       entries.push({
-        iso: m[1], km,
+        iso: m[1], km, cls,
         pace: DB.paceOf(km, e.sec),
         hr: e.hr || null,
         ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
@@ -1320,25 +1320,30 @@
         'trends it here. EF rising while easy runs stay easy is the block working.</div></div>'
       );
     }
-    /* sparkline over easy-run EF only — hard days read high by design */
-    const efPts = entries.filter((e) => e.ef != null && !e.hard && !e.tooHot).slice(-12);
-    let spark = '';
-    if (efPts.length >= 2) {
-      const vals = efPts.map((p) => p.ef);
+    /* EF is only comparable WITHIN an effort class. A Z1 buffer run and a
+       30 km long run and a 4 km easy run produce three different numbers
+       for reasons that have nothing to do with fitness, so one pooled
+       line would read as noise — or worse, as a collapse on any week
+       that happened to end with a shakeout. One trend per class. */
+    function sparkFor(cls, label) {
+      const pts0 = entries.filter((e) => e.ef != null && e.cls === cls && !e.tooHot).slice(-12);
+      if (pts0.length < 2) return '';
+      const vals = pts0.map((p) => p.ef);
       const lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
       const span = (hi - lo) || 0.01;
       const pts = vals.map((v, i) =>
         (i * (100 / (vals.length - 1))).toFixed(1) + ',' + (26 - ((v - lo) / span) * 22).toFixed(1)
       );
       const delta = ((vals[vals.length - 1] - vals[0]) / vals[0]) * 100;
-      spark =
-        '<div class="ef-spark" role="img" aria-label="EF trend across ' + efPts.length + ' easy runs">' +
+      return '<div class="ef-spark" role="img" aria-label="EF trend across ' +
+        pts0.length + ' ' + label + ' runs">' +
         '<svg viewBox="0 0 100 28" preserveAspectRatio="none">' +
         '<polyline points="' + pts.join(' ') + '"/>' +
         '<circle cx="' + pts[pts.length - 1].split(',')[0] + '" cy="' + pts[pts.length - 1].split(',')[1] + '" r="1.8"/>' +
-        '</svg><div class="ef-cap">EF, last ' + efPts.length + ' easy runs · ' +
+        '</svg><div class="ef-cap">EF, last ' + pts0.length + ' ' + label + ' runs · ' +
         (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%</div></div>';
     }
+    const spark = sparkFor('easy', 'easy') + sparkFor('long', 'long');
     const rows = entries.slice(-10).reverse().map((e) =>
       '<div class="ref-row"><span>' + esc(fmtShort(e.iso)) +
       (e.hard ? ' <i class="dot" style="background:var(--accent)" title="hard session"></i>' : '') +

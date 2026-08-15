@@ -188,6 +188,13 @@
     if (/TIME TRIAL|PARKRUN|MARATHON|all-out/i.test(t)) return 'race';
     if (/tempo|threshold|×|rehearsal/i.test(t)) return 'quality';
     if (runBlock.run.slot === 'long' || runBlock.run.km >= 14) return 'long';
+    /* Buffer and shakeout runs are their own effort class, not short easy
+       runs. They are meant to be Z1, and EF at Z1 always reads low — the
+       fixed cost of being upright is a bigger share of a small heart rate.
+       Pooled with easy runs they look like a fitness collapse that never
+       happened. Tested AFTER `long`, so wk 17's "Long 16 — recovery"
+       stays a long run. */
+    if (/buffer|shakeout|loosener/i.test(t)) return 'recovery';
     return 'easy';
   }
 
@@ -214,6 +221,10 @@
       } else {
         const band = easyBand(day.week || 1).band.split('–');
         paceSec = Math.round((parsePace(band[0]) + parsePace(band[1])) / 2);
+        /* A recovery run is not a slow easy run by accident — it is
+           slower on purpose, and the stepper should open somewhere
+           plausible rather than 90 s/km fast. */
+        if (cls === 'recovery') paceSec += model.recoveryPaceAdd || 0;
       }
     }
     const hr = med(like.filter((h) => h.hr).map((h) => h.hr)) || model.fallbackHr[cls];

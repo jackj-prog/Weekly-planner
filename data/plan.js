@@ -294,7 +294,10 @@ const PLAN = {
   logModel: {
     paceStep: 5,  paceSpan: 30,     // ± seconds/km around the estimate
     hrStep: 2,    hrSpan: 20,       // ± bpm around the estimate
-    fallbackHr: { easy: 150, long: 152, quality: 170, race: 182 },
+    fallbackHr: { recovery: 140, easy: 150, long: 152, quality: 170, race: 182 },
+    /* Recovery runs sit ~60–90 s/km slower than easy — a deliberate gap,
+       not a bad day, so the stepper opens there rather than at easy pace. */
+    recoveryPaceAdd: 75,
     /* Temperature is logged because without it every pace-at-HR
        comparison is really a weather comparison (§10 benchmark). */
     tempStep: 1, tempMin: -5, tempMax: 40, tempDefault: 16,
