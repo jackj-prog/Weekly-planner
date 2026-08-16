@@ -359,19 +359,26 @@ before the long run). These four + the long run must equal weekly km
 sanctioned benchmark before October, on an 8-lane certified 400 m
 surface — Friday-only access sets the day, **16:30** sets the shape:
 late afternoon is the circadian peak for performance, and it leaves the
-German block intact. **Tue: 4×400 m pacing rehearsal** (Evo SL, 1:39–1:40
-each, 400 m jog recoveries, ~5 km total) — the only speed work since
+German block intact. **Tue: 4×400 m pacing rehearsal** (Evo SL, 1:36–1:37
+each — 4:00/km, 400 m jog recoveries, ~5 km total) — the only speed work since
 June, so the legs meet goal lap pace once before race day; do not race
 it · Wed easy 2 km · **Thu shakeout 2 km + strides** (priming, not full
 rest — the same way wks 24 and 30 open their race days) · Fri: German
 07:30–12:00 as normal · carb lunch 12:00 (~3.5 h out) · top-up snack
 14:30 · 15:00 travel · 16:00 warm-up 2 km + strides · **16:30 2-MILE
-TIME TRIAL in the Evo SL** — 8 laps, lane 1, THE SCRIPT: laps 1–2 in
-1:39–1:40, controlled but not crawling · laps 3–5 hold 1:39 ·
-lap 6 is the decision — still controlled? start winding up · laps 7–8
-everything. Nothing before lap 6 can win it; everything before lap 6
-can lose it (the classic 2-mile death is opening at mile pace and dying
-by lap 5 — a fast day shows up in the LAST two laps, nowhere else).
+TIME TRIAL in the Evo SL** — 8 laps, lane 1, **target 12:48** (4:00/km,
+re-anchored Aug 2026 from ~13:00 on the athlete's call). THE SCRIPT:
+laps 1–2 in 1:37, controlled but not crawling · laps 3–5 hold 1:36 ·
+lap 6 is the decision at 1:35 — still controlled? start winding up ·
+lap 7 1:34, lap 8 everything. First half 6:26, second half 6:18 — a
+negative split by design. The 8-lap board reads 12:44; the 2-mile
+finish is ~18 m further on in lane 1, about 4 s. Nothing before lap 6
+can win it; everything before lap 6 can lose it (the classic 2-mile
+death is opening at mile pace and dying by lap 5 — a fast day shows up
+in the LAST two laps, nowhere else). **Bail-out:** if 1:36 already feels
+like work by lap 3, settle to 1:38 and race the back half — a
+controlled 13:00 beats a blown 13:40, and the number still recalibrates
+the zones.
 Log the peak HR from the final lap — it recalibrates every training
 zone · cool-down · home 18:00 refuel · **basketball shooting
 only** · **Sat run dropped** (Upper B stays) — the cost of an all-out

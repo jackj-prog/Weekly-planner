@@ -809,7 +809,7 @@ const PLAN = {
             { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
             { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
           ] },
-          1: { run: { km: 5, title: 'TT rehearsal — 4 × 400 m', shoe: 'Evo SL', detail: 'Evo SL · 1.5 km easy warm-up · 4 × 400 m at goal lap pace — 1:39–1:40 each, watch-measured on a flat stretch — with 400 m jog recoveries · 1 km cool-down. The ONLY job is to teach the legs what 1:39 feels like so Friday’s open is automatic. Do not race these — leave the fitness in them' } },
+          1: { run: { km: 5, title: 'TT rehearsal — 4 × 400 m', shoe: 'Evo SL', detail: 'Evo SL · 1.5 km easy warm-up · 4 × 400 m at goal lap pace — 1:36–1:37 each (4:00/km), watch-measured on a flat stretch — with 400 m jog recoveries · 1 km cool-down. The ONLY job is to teach the legs what 1:36 feels like so Friday’s open is automatic. Do not race these — leave the fitness in them' } },
           2: { run: { km: 2, title: 'Easy 2', detail: 'Short and genuinely easy — the time trial is Friday' } },
           3: { run: { km: 2, title: 'Shakeout + strides', detail: 'Very easy 2 km + 3–4 relaxed strides. A full rest day before a race leaves the legs flat — this primes them at no fatigue cost, the same way wks 24 and 30 open their race days' } },
           4: { blocks: [
@@ -820,15 +820,24 @@ const PLAN = {
             { t: '14:30', end: '14:45', title: 'Top-up snack', detail: 'Small and simple ~2 h out — banana or toast, or practise a gel', cat: 'meal', quiet: true },
             { t: '15:00', end: '16:00', title: 'Travel to Aberdare', detail: '~1 h — 8-lane certified track, worth the drive', cat: 'routine', quiet: true },
             { t: '16:00', end: '16:25', title: 'Warm-up', detail: '2 km easy + 3–4 build-up strides — never hit a hard effort cold', cat: 'run', quiet: true },
-            { t: '16:30', end: '16:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps, LANE 1 (add ~18 m past the line) · THE SCRIPT — laps 1–2: 1:39–1:40, controlled but not crawling · laps 3–5: hold 1:39 · lap 6: the decision — still controlled? start winding up · laps 7–8: everything. Nothing before lap 6 can win this; everything before lap 6 can lose it — the classic 2-mile death is opening at mile pace and dying by lap 5. A fast day shows up in the LAST two laps, nowhere else · afterwards log the peak HR from the final lap — it recalibrates every training zone for the next 22 weeks', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL', estPace: '4:02',
-              table: { title: 'THE SCRIPT — 8 laps, lane 1', cols: ['Lap', 'Target', 'Clock'], rows: [
-                ['1', '1:39–1:40 — controlled', '1:39'],
-                ['2', '1:39', '3:18'],
-                ['3', '1:39', '4:57'],
-                ['4', '1:39', '6:36'],
-                ['5', '1:39', '8:15'],
-                ['6', 'THE DECISION', '9:54'],
-                ['7–8', 'everything', '1:33s → 12:54 · 1:36s → 13:03'],
+            { t: '16:30', end: '16:45', title: '2-MILE TIME TRIAL', detail: 'Evo SL · 8 laps, LANE 1 — the 2-mile finish is ~18 m PAST the 8-lap mark, about 4 s, so the table clock is the lap board not the result · THE SCRIPT — laps 1–2: 1:37, controlled but not crawling · laps 3–5: 1:36 · lap 6: THE DECISION — still controlled? start winding up · laps 7–8: 1:34 then everything. Nothing before lap 6 can win this; everything before lap 6 can lose it — the classic 2-mile death is opening at mile pace and dying by lap 5. A fast day shows up in the LAST two laps, nowhere else · THE BAIL-OUT: if 1:36 already feels like work by lap 3, settle to 1:38 and race the back half — a controlled 13:00 beats a blown 13:40, and the number still recalibrates the zones · afterwards log the peak HR from the final lap — it recalibrates every training zone for the next 22 weeks', cat: 'run', doable: true, runKm: 3.2, shoe: 'Evo SL', estPace: '3:59',
+              /* Re-anchored Aug 2026 to a 12:48 target (4:00/km) at the
+                 athlete's own call — the previous script opened at 1:39,
+                 which was built for ~13:00 and would have left the whole
+                 job to laps 7–8. Negative split by design: first half
+                 6:26, second half 6:18. The old table's final row was also
+                 arithmetically wrong (9:54 + 2×1:33 is 13:00, not 12:54);
+                 every row now carries its own cumulative and the test
+                 walks all of them. */
+              table: { title: 'THE SCRIPT — 8 laps, lane 1 · target 12:48', cols: ['Lap', 'Target', 'Clock'], rows: [
+                ['1', '1:37 — controlled, not crawling', '1:37'],
+                ['2', '1:37', '3:14'],
+                ['3', '1:36', '4:50'],
+                ['4', '1:36', '6:26'],
+                ['5', '1:36', '8:02'],
+                ['6', '1:35 — THE DECISION', '9:37'],
+                ['7', '1:34', '11:11'],
+                ['8', '1:33 — everything', '12:44'],
               ] } },
             { t: '16:45', end: '17:00', title: 'Cool-down jog', detail: 'Never just stop', cat: 'run', quiet: true },
             { t: '17:00', end: '18:00', title: 'Travel home', cat: 'routine', quiet: true },

@@ -97,11 +97,40 @@ ok(/heavy for the first/.test(dayOfWeek(8, 6).run.detail),
   'wk 8 Sun long run warns the legs will be heavy post-TT');
 ok(hasBlock(dayOfWeek(8, 1), /rehearsal/i) && dayOfWeek(8, 1).run && dayOfWeek(8, 1).run.run.km === 5,
   'wk 8 Tue is the 4×400 TT pacing rehearsal, 5 km total');
-ok(/1:39/.test(dayOfWeek(8, 1).run.detail), 'the rehearsal names goal lap pace');
-ok(/lap 6/i.test(dayOfWeek(8, 4).run.detail) && /1:39/.test(dayOfWeek(8, 4).run.detail),
+ok(/1:36/.test(dayOfWeek(8, 1).run.detail), 'the rehearsal names goal lap pace');
+ok(/lap 6/i.test(dayOfWeek(8, 4).run.detail) && /1:36/.test(dayOfWeek(8, 4).run.detail),
   'the TT carries the lap script with the lap-6 decision point');
-ok(dayOfWeek(8, 4).run.table.rows[5][2] === '9:54',
-  'the lap table clock is arithmetically right at the lap-6 decision (5×1:39 + 1:39)');
+ok(/bail-out/i.test(dayOfWeek(8, 4).run.detail),
+  'an ambitious script carries its own bail-out — a controlled 13:00 beats a blown 13:40');
+/* The rehearsal must teach the pace the script actually opens at. These
+   drifting apart is worse than either number being wrong on its own. */
+{
+  const lap = (s) => { const m = String(s).match(/(\d+):(\d{2})/); return m ? +m[1] * 60 + +m[2] : null; };
+  const t = dayOfWeek(8, 4).run.table;
+  const reh = (dayOfWeek(8, 1).run.detail.match(/(\d+:\d{2})/g) || []).map(lap);
+  ok(reh.length >= 2 && lap(t.rows[0][1]) >= Math.min.apply(null, reh) &&
+     lap(t.rows[0][1]) <= Math.max.apply(null, reh),
+    'the pace lap 1 opens at sits inside the range Tuesday rehearses, got ' +
+    lap(t.rows[0][1]) + ' vs ' + reh.join('-'));
+
+  /* Walk EVERY cumulative, not just the decision row — the previous table
+     had a wrong final row precisely because only row 6 was checked. */
+  let acc = 0;
+  t.rows.forEach((r, i) => {
+    acc += lap(r[1]);
+    ok(lap(r[2]) === acc, 'lap ' + (i + 1) + ' clock is cumulative: expected ' +
+      Math.floor(acc / 60) + ':' + String(acc % 60).padStart(2, '0') + ', got ' + r[2]);
+  });
+  ok(t.rows.length === 8, 'the script covers all eight laps individually');
+  /* Negative split is the whole point of the script, not a nicety. */
+  const half = (from, to) => t.rows.slice(from, to).reduce((s, r) => s + lap(r[1]), 0);
+  ok(half(4, 8) < half(0, 4), 'the script is a genuine negative split, got ' +
+    half(0, 4) + 's then ' + half(4, 8) + 's');
+  /* 8 laps is 3200 m; the 2-mile finish is ~18.7 m further on. */
+  const twoMile = acc + 18.7 * (lap(t.rows[7][1]) / 400);
+  ok(Math.abs(twoMile - 768) < 6, 'the script lands on the 12:48 target once lane 1’s extra 18 m is paid, got ' +
+    twoMile.toFixed(1) + 's');
+}
 ok(DB.parsePace(dayOfWeek(8, 4).run.run.estPace) * 3.2187 < 790,
   'the TT log estimate is centred on the new target, not the old one');
 ok(/peak HR/i.test(dayOfWeek(8, 4).run.detail), 'the TT prompts the max-HR capture from the final lap');
@@ -475,8 +504,8 @@ section('run-log maths · key events · pacing tables');
 
   /* pacing tables ride the blocks as data */
   const tt = dayOfWeek(8, 4).run;
-  ok(tt.table && tt.table.rows.length === 7 && /THE DECISION/.test(tt.table.rows[5][1]),
-    'the TT carries its 7-row lap script with the lap-6 decision');
+  ok(tt.table && tt.table.rows.length === 8 && /THE DECISION/.test(tt.table.rows[5][1]),
+    'the TT carries its 8-row lap script with the lap-6 decision');
   const race = dayOfWeek(30, 6).run;
   ok(race.table && race.table.rows.length === 8, 'race day carries the 8-point split table');
   ok(race.table.rows.some((r) => r[0] === 'Half' && r[1] === '1:52:31'),
@@ -562,8 +591,8 @@ section('run classification + log estimates');
 
   /* race days centre on their declared target pace */
   const tt = DB.logEstimate(dayOfWeek(8, 4), hist);
-  ok(tt.paceSec === 242 && tt.hr === PLAN.logModel.fallbackHr.race,
-    'TT estimate centres on 4:02/km with the race HR fallback');
+  ok(tt.paceSec === 239 && tt.hr === PLAN.logModel.fallbackHr.race,
+    'TT estimate centres on 3:59/km — the 12:48 target — with the race HR fallback');
   ok(DB.parsePace('6:35') === 395 && DB.fmtPaceSec(395) === '6:35', 'pace parse/format round-trips');
 }
 
