@@ -467,7 +467,8 @@
       /* gym deload on running cutback weeks (§6): halve the SETS, never
          the load. Skipped once the Wk 23 maintenance block already applies. */
       const dl = block.gymDeload;
-      if (entry.gym === 'upper' && dl && row && row.cutback && week >= dl.fromWk
+      const dlWeek = dl && (week >= dl.fromWk || (dl.alsoWeeks || []).indexOf(week) >= 0);
+      if (entry.gym === 'upper' && dl && row && row.cutback && dlWeek
           && !/maintenance|deload/i.test(b.title)) {
         b.title += ' (deload)';
         b.detail = (b.detail ? b.detail + ' · ' : '') + dl.note;

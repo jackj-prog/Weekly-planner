@@ -460,6 +460,11 @@ const PLAN = {
        small enough that the gym should just keep building. */
     gymDeload: {
       fromWk: 13, setFactor: 0.5, minSets: 2,
+      /* alsoWeeks overrides fromWk. The "before Wk 13 the gym just keeps
+         building" rule is about RUNNING volume being small — it says
+         nothing about a week that contains a maximal effort. Wk 8 has the
+         2-mile TT in it, so freshness outranks the build. */
+      alsoWeeks: [8],
       note: 'Deload — SAME weights, half the sets. The cutback is for adapting, not just for running less',
     },
     bulkNote: 'Lean bulk pauses ~Oct–Jan: eat maintenance-plus to fuel mileage.',
@@ -779,6 +784,31 @@ const PLAN = {
       8: {
         label: 'Cutback · 2-MILE TT',
         days: {
+          /* Monday: Lower B dropped for the week. Every OTHER race week in
+             the block already carries no leg work — but by accident, not
+             decision: 17, 24 and 30 all sit in the Wk 17+ era where Monday
+             is already the zero day. Wk 8 is the only race week that still
+             had a Lower B, purely because it falls in the Wks 4–10 era.
+             The clash is with TUESDAY, not Friday: deadlifts, step-ups and
+             calf raises land ~20 h before the 4 × 400 rehearsal, which is
+             the only speed work since June and the session that actually
+             decides whether the TT opens at 1:39. Lower B is explicitly
+             insurance rather than progression (RPE ≤ 7, §6), so a week off
+             costs nothing it was ever buying. */
+          0: { blocks: [
+            { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating — non-negotiable', cat: 'routine', quiet: true },
+            { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
+            { t: '07:00', end: '12:00', title: 'Work', detail: '~2h passive German listening across the day', cat: 'work', quiet: true },
+            { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+            { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
+            { t: '16:30', end: '17:00', title: 'Commute home', detail: 'German podcasts', cat: 'work', quiet: true },
+            { t: '17:00', end: '18:30', title: 'Full rest — no legs this week', detail: 'Lower B is OFF for TT week. It is insurance, not progression — one week off costs nothing it was buying, and deadlifts, step-ups and calf raises 20 h before tomorrow’s 4 × 400 would cost the session that matters most', cat: 'free', quiet: true },
+            { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Fixed anchor — never scheduled over', cat: 'meal', quiet: true },
+            { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
+            { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
+            { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+            { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+          ] },
           1: { run: { km: 5, title: 'TT rehearsal — 4 × 400 m', shoe: 'Evo SL', detail: 'Evo SL · 1.5 km easy warm-up · 4 × 400 m at goal lap pace — 1:39–1:40 each, watch-measured on a flat stretch — with 400 m jog recoveries · 1 km cool-down. The ONLY job is to teach the legs what 1:39 feels like so Friday’s open is automatic. Do not race these — leave the fitness in them' } },
           2: { run: { km: 2, title: 'Easy 2', detail: 'Short and genuinely easy — the time trial is Friday' } },
           3: { run: { km: 2, title: 'Shakeout + strides', detail: 'Very easy 2 km + 3–4 relaxed strides. A full rest day before a race leaves the legs flat — this primes them at no fatigue cost, the same way wks 24 and 30 open their race days' } },

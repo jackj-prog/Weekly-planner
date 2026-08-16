@@ -620,7 +620,29 @@ section('gym deload');
   ok(/deload/i.test(upperA(21).title), 'wk 21 cutback deloads');
   ok(!/deload/i.test(upperA(4).title),
     'wk 4 cutback does NOT deload — running is too small to warrant it before Wk 13');
-  ok(!/deload/i.test(upperA(8).title), 'wk 8 cutback predates the deload rule');
+  /* Wk 8 is the exception to "no deload before Wk 13": that rule is about
+     running volume being small, and says nothing about a week holding the
+     block's only maximal effort. Freshness for the TT outranks the build. */
+  ok(/deload/i.test(upperA(8).title), 'wk 8 deloads despite predating the rule — it holds the 2-mile TT');
+  ok(/deload/i.test(dayOfWeek(8, 5).blocks.find((b) => /Upper B/.test(b.title)).title),
+    'wk 8 Saturday Upper B deloads too');
+  ok(!/deload/i.test(upperA(4).title) && !/deload/i.test(upperA(9).title),
+    'the wk 8 exception is one week only — wks 4 and 9 are unaffected');
+
+  /* TT week carries no leg work at all. The clash is with TUESDAY's 4×400
+     rehearsal ~20 h later, not with Friday. */
+  const wk8Mon = dayOfWeek(8, 0);
+  ok(!wk8Mon.blocks.some((b) => b.cat === 'gym'), 'wk 8 Monday has no gym at all');
+  ok(!wk8Mon.blocks.some((b) => /calf|deadlift|step-up|squat/i.test(b.title + ' ' +
+    (b.plan || []).map((p) => p.ex).join(' '))), 'wk 8 Monday carries no leg or calf loading');
+  ok(wk8Mon.blocks.some((b) => /rest/i.test(b.title)), 'wk 8 Monday says plainly that it is a rest evening');
+  ok(wk8Mon.blocks.some((b) => /Dinner/.test(b.title)) &&
+     wk8Mon.blocks.some((b) => /German active/.test(b.title)) &&
+     wk8Mon.blocks.some((b) => /Read/.test(b.title)),
+    'dropping the gym leaves the rest of Monday intact — dinner, German, reading');
+  ok(dayOfWeek(7, 0).blocks.some((b) => /Lower B/.test(b.title)) &&
+     dayOfWeek(9, 0).blocks.some((b) => /Lower B/.test(b.title)),
+    'Lower B returns either side of TT week — it is dropped, not retired early');
   ok(/maintenance/i.test(upperA(23).title) && !/deload/i.test(upperA(23).title),
     'from wk 23 maintenance already applies — never both labels');
 

@@ -232,6 +232,12 @@ Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
 - Tue gym: Upper A every era, and nothing else. Tuesday is a work day
   that already carries a run and 75 min of upper body; it does not also
   get leg work the evening before the tempo.
+- **Wk 8 (TT week) carries no leg work and deloads both upper days.**
+  The only race week in the block that still had a Monday Lower B, and
+  only by accident of the era boundaries — 17, 24 and 30 all sit in the
+  Wk 17+ era where Monday is already the zero day. The clash is with
+  Tuesday's 4×400 rehearsal ~20 h later, not with Friday. Lower B is
+  insurance rather than progression, so a week off costs nothing.
 - **Gym deload on cutback weeks from Wk 13** (wks 13, 21 — 17 and 25
   sit inside other rules): both upper sessions halve their SETS, floor
   of 2, **load unchanged**. Strength holds on ~a third of the volume
