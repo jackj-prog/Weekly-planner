@@ -232,6 +232,16 @@ const PLAN = {
      Sat takes the remainder; Sat < 2 → folded into Tue, Sat = 0 (full
      rest before the long run). */
   pacing: { easy: 6.6, quality: 6.1, long: 6.75, showerMin: 15 },
+
+  /* The §10 bands are EASY-run bands — measured on a 4 km Thursday, on
+     the benchmark route. Shown unqualified on a long run they read as a
+     target the long run is failing, when holding the same Z2 for 90+
+     minutes legitimately costs pace. Stated, not silently re-based: the
+     band values are unchanged, HR is still the arbiter. */
+  longRunNote:
+    'Expect the slow end of that band or a touch past it — the band is ' +
+    'measured on a 4 km Thursday, and holding Z2 for 90+ min costs ' +
+    '10–20 s/km. HR decides, not the clock',
   split:  { wed: 0.32, tue: 0.30, thu: 0.24, minKm: 2 },
 
   /* Gels rule (§12 rule 4). Gut training takes weeks, so the rule starts
@@ -271,6 +281,29 @@ const PLAN = {
       'Wk 26 dress rehearsal, never first on race day.',
   },
 
+  /* Aerobic decoupling — efficiency over the second half of a long run
+     against the first. The metric this block actually cares about, and
+     the one EF cannot be: because it compares a run to ITSELF, heat,
+     route, sleep and week-to-week noise largely cancel out. A hot day
+     makes both halves slow, so the ratio survives what the raw number
+     cannot. Only meaningful on long runs held at even effort. */
+  decoupleModel: {
+    good: 5, ok: 10,
+    verdicts: {
+      good: 'aerobically sound — the base held the pace',
+      ok: 'at the edge of current fitness — normal on a step-up long run',
+      poor: 'too fast, too long, too hot, or under-fuelled — read the day, not the fitness',
+    },
+    note:
+      'Second-half EF against first-half EF. Under 5% the aerobic base is ' +
+      'carrying the run; 5–10% is a long run at the edge of what fitness ' +
+      'currently supports; over 10% something was wrong with the day. ' +
+      'Because it measures a run against itself, it is the one long-run ' +
+      'number that survives bad weather. Read it to about ±1% — the ' +
+      'steppers are coarser than a stopwatch, so 4.8 and 5.2 are the ' +
+      'same reading.',
+  },
+
   /* Heart-rate zone MODEL only — generic training science, safe in the
      repo. The athlete's own resting/max HR are personal health data and
      live in localStorage (`hr` key), never here (§1 privacy). Karvonen
@@ -295,6 +328,13 @@ const PLAN = {
     paceStep: 5,  paceSpan: 30,     // ± seconds/km around the estimate
     hrStep: 2,    hrSpan: 20,       // ± bpm around the estimate
     fallbackHr: { recovery: 140, easy: 150, long: 152, quality: 170, race: 182 },
+    /* Long runs can optionally carry two more numbers — first-half pace
+       and second-half average HR — which is everything needed to compute
+       aerobic decoupling (see decoupleModel). Same steps and spans as the
+       headline pair — but a finer pace step, because 5 s/km of the first
+       half moves the decoupling reading by over a point, and the
+       thresholds sit at 5 and 10. */
+    halfPaceStep: 2, halfPaceSpan: 20, halfHrSpan: 20,
     /* Recovery runs sit ~60–90 s/km slower than easy — a deliberate gap,
        not a bad day, so the stepper opens there rather than at easy pace. */
     recoveryPaceAdd: 75,

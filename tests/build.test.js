@@ -707,6 +707,36 @@ section('hr zones');
   ok(DB.hrZones(50, 100) === null && DB.hrZones(0, 190) === null,
     'implausible inputs return null rather than nonsense zones');
 
+  /* Aerobic decoupling. The first-half HR is derived, not asked for:
+     average HR is time-weighted, so hr×sec = hr1×t1 + hr2×t2 pins it. */
+  {
+    /* An evenly-run 15 km: 6:38/km (398 s) flat, HR flat — nothing decouples. */
+    const flat = DB.decoupling(15, 398 * 15, 150, 398, 150);
+    ok(flat && Math.abs(flat.pct) < 0.01,
+      'a run with identical halves decouples by 0%, got ' + (flat && flat.pct.toFixed(2)));
+    ok(flat && Math.abs(flat.hr1 - 150) < 0.05, 'derived first-half HR matches when both halves are equal');
+
+    /* Second half slower AND higher HR — both costs, compounding. */
+    const drift = DB.decoupling(15, 5970, 150, 390, 153);
+    ok(drift && drift.pct > 0, 'a fading second half decouples positively');
+    ok(drift && Math.abs(drift.hr1 + 0 - ((150 * 5970 - 153 * (5970 - 390 * 7.5)) / (390 * 7.5))) < 0.06,
+      'first-half HR is recovered exactly from the time-weighted average');
+
+    /* Negative split in both pace and HR reads negative — the good kind. */
+    const neg = DB.decoupling(15, 5970, 150, 405, 148);
+    ok(neg && neg.pct < 0, 'a genuine negative split reads as negative decoupling');
+
+    ok(DB.decoupling(15, 5970, 150, null, 152) === null, 'missing half data returns null, not a guess');
+    ok(DB.decoupling(15, 5970, 150, 900, 152) === null,
+      'a first half longer than the whole run returns null rather than a negative second half');
+
+    const m = PLAN.decoupleModel;
+    ok(DB.decoupleVerdict(m.good - 1).band === 'good', 'under the good threshold reads good');
+    ok(DB.decoupleVerdict(m.good + 1).band === 'ok', 'between thresholds reads ok');
+    ok(DB.decoupleVerdict(m.ok + 1).band === 'poor', 'over the upper threshold reads poor');
+    ok(m.good < m.ok, 'decoupling thresholds are ordered');
+  }
+
   /* And the guard that keeps it that way: every rest/max pair written
      into committed source must come from this allowlist, so a real
      measurement cannot be pasted in unnoticed by anyone — me included. */

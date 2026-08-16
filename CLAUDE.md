@@ -80,6 +80,13 @@ First-principles design is welcome. These behaviours are the intent:
    long / quality / race), because a Z1 buffer run, a 30 km long run and
    a 4 km easy run return three different numbers for reasons that have
    nothing to do with fitness. One sparkline per class, never pooled.
+   **Long runs also carry aerobic decoupling (v4.4)** — second-half EF
+   against first-half EF, from two optional extra steppers (first-half
+   pace, second-half average HR; the first-half HR is derived, since
+   average HR is time-weighted). Under 5% sound · to 10% at the edge ·
+   over that, read the day. It is the better long-run number precisely
+   because it compares a run to ITSELF, so heat and route cancel where
+   raw EF cannot.
 9. Blocks may carry a structured pacing `table` (TT lap script, race
    splits) — rendered as a mono split table wherever the block renders.
    Content lives in data/plan.js like everything else.

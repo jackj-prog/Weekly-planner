@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.3.0';
+  const APP_VERSION = '4.4.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -461,25 +461,47 @@
     if (editing && state.runLogDraft) {
       const d = state.runLogDraft;
       const totalSec = Math.round(d.paceSec * km);
-      const st = (kind, val, canDown, canUp) =>
+      const st = (kind, label, val, canDown, canUp) =>
+        '<div class="st-f"><i class="st-l">' + label + '</i>' +
         '<div class="st"><button class="st-b" data-st="' + kind + '" data-d="-1"' + (canDown ? '' : ' disabled') +
-        ' aria-label="Decrease ' + kind + '">−</button>' +
+        ' aria-label="Decrease ' + label + '">−</button>' +
         '<span class="st-v">' + val + '</span>' +
         '<button class="st-b" data-st="' + kind + '" data-d="1"' + (canUp ? '' : ' disabled') +
-        ' aria-label="Increase ' + kind + '">+</button></div>';
+        ' aria-label="Increase ' + label + '">+</button></div></div>';
+      /* Long runs get the two extra numbers that turn a logged run into a
+         decoupling reading. Optional everywhere else — a 4 km Thursday has
+         no meaningful halves. */
+      const dec = d.halfPaceSec
+        ? DB.decoupling(km, totalSec, d.hr, d.halfPaceSec, d.hr2) : null;
+      const dv = dec ? DB.decoupleVerdict(dec.pct) : null;
       logHTML = '<div class="h-log form" role="group" aria-label="Log this run">' +
-        st('pace', DB.fmtPaceSec(d.paceSec) + '<small>/km</small>', d.paceSec > d.paceMin, d.paceSec < d.paceMax) +
-        st('hr', d.hr + '<small>bpm</small>', d.hr > d.hrMin, d.hr < d.hrMax) +
-        '<div class="st-wide">' + st('temp', d.temp + '°<small>feels like</small>',
+        st('pace', 'PACE', DB.fmtPaceSec(d.paceSec) + '<small>/km</small>', d.paceSec > d.paceMin, d.paceSec < d.paceMax) +
+        st('hr', 'AVG HR', d.hr + '<small>bpm</small>', d.hr > d.hrMin, d.hr < d.hrMax) +
+        (d.halfPaceSec
+          ? st('half', '1ST-HALF PACE', DB.fmtPaceSec(d.halfPaceSec) + '<small>/km</small>',
+              d.halfPaceSec > d.halfMin, d.halfPaceSec < d.halfMax) +
+            st('hr2', '2ND-HALF HR', d.hr2 + '<small>bpm</small>', d.hr2 > d.hr2Min, d.hr2 < d.hr2Max)
+          : '') +
+        '<div class="st-wide">' + st('temp', 'FEELS LIKE', d.temp + '°',
           d.temp > PLAN.logModel.tempMin, d.temp < PLAN.logModel.tempMax) + '</div>' +
         '<div class="st-total">= ' + fmtDur(totalSec) + ' for ' + kmTxt + ' km' +
         (d.temp >= PLAN.benchmark.tempInvalid
           ? ' · <b>too hot to benchmark</b>'
-          : d.temp >= PLAN.benchmark.tempWarn ? ' · warm — read pace generously' : '') + '</div>' +
+          : d.temp >= PLAN.benchmark.tempWarn ? ' · warm — read pace generously' : '') +
+        (dv ? '<br><b class="dc ' + dv.band + '">decoupling ' + dec.pct.toFixed(1) + '%</b> · ' +
+          esc(dv.text) : '') + '</div>' +
         '<div class="st-act"><button class="rl-save">Save</button>' +
         '<button class="rl-x" aria-label="Cancel">✕</button></div></div>';
     } else if (logged) {
       logHTML = '<button class="h-log logged" aria-label="Edit run log">' + logged + '</button>';
+      /* Decoupling is the long run's headline, not EF — it is the number
+         that says whether the base carried the distance. */
+      const dec = DB.decoupling(e.km || km, e.sec, e.hr, e.halfPaceSec, e.hr2);
+      const dv = dec ? DB.decoupleVerdict(dec.pct) : null;
+      if (dv) {
+        logHTML += '<div class="h-dc ' + dv.band + '"><b>' + dec.pct.toFixed(1) +
+          '%</b> decoupling · ' + esc(dv.text) + '</div>';
+      }
       const v = DB.logVerdict(runLogHistory(), iso);
       if (v) {
         const cls = DB.runClass(r);
@@ -531,26 +553,43 @@
         paceMin: centrePace - PLAN.logModel.paceSpan, paceMax: centrePace + PLAN.logModel.paceSpan,
         hrMin: centreHr - PLAN.logModel.hrSpan, hrMax: centreHr + PLAN.logModel.hrSpan,
       };
+      /* Long runs open the decoupling pair, centred on the run's own
+         averages — an evenly-run long run needs no adjustment at all. */
+      if (DB.runClass(r) === 'long') {
+        const d0 = state.runLogDraft;
+        const h = e.halfPaceSec || centrePace;
+        const h2 = e.hr2 || centreHr;
+        d0.halfPaceSec = h; d0.hr2 = h2;
+        d0.halfMin = h - PLAN.logModel.halfPaceSpan; d0.halfMax = h + PLAN.logModel.halfPaceSpan;
+        d0.hr2Min = h2 - PLAN.logModel.halfHrSpan; d0.hr2Max = h2 + PLAN.logModel.halfHrSpan;
+      }
       render();
     });
     hero.querySelectorAll('.st-b').forEach((btn) => btn.addEventListener('click', () => {
       const d = state.runLogDraft;
       const dir = Number(btn.getAttribute('data-d'));
       const kind = btn.getAttribute('data-st');
+      const m = PLAN.logModel;
       if (kind === 'pace') {
-        d.paceSec = Math.min(d.paceMax, Math.max(d.paceMin, d.paceSec + dir * PLAN.logModel.paceStep));
+        d.paceSec = Math.min(d.paceMax, Math.max(d.paceMin, d.paceSec + dir * m.paceStep));
       } else if (kind === 'temp') {
-        d.temp = Math.min(PLAN.logModel.tempMax,
-          Math.max(PLAN.logModel.tempMin, d.temp + dir * PLAN.logModel.tempStep));
+        d.temp = Math.min(m.tempMax, Math.max(m.tempMin, d.temp + dir * m.tempStep));
+      } else if (kind === 'half') {
+        d.halfPaceSec = Math.min(d.halfMax, Math.max(d.halfMin, d.halfPaceSec + dir * m.halfPaceStep));
+      } else if (kind === 'hr2') {
+        d.hr2 = Math.min(d.hr2Max, Math.max(d.hr2Min, d.hr2 + dir * m.hrStep));
       } else {
-        d.hr = Math.min(d.hrMax, Math.max(d.hrMin, d.hr + dir * PLAN.logModel.hrStep));
+        d.hr = Math.min(d.hrMax, Math.max(d.hrMin, d.hr + dir * m.hrStep));
       }
       render();
     }));
     const saveBtn = hero.querySelector('.rl-save');
     if (saveBtn) saveBtn.addEventListener('click', () => {
       const d = state.runLogDraft;
-      saveRunLogEntry(iso, { sec: Math.round(d.paceSec * km), hr: d.hr, km: null, temp: d.temp });
+      saveRunLogEntry(iso, {
+        sec: Math.round(d.paceSec * km), hr: d.hr, km: null, temp: d.temp,
+        halfPaceSec: d.halfPaceSec || null, hr2: d.hr2 || null,
+      });
       state.runLogEdit = null; state.runLogDraft = null;
       render();
     });
@@ -1297,8 +1336,9 @@
       const km = e.km || (day.run ? day.run.run.km : 0);
       if (!(km > 0)) continue;
       const cls = day.run ? DB.runClass(day.run) : 'easy';
+      const dec = DB.decoupling(km, e.sec, e.hr, e.halfPaceSec, e.hr2);
       entries.push({
-        iso: m[1], km, cls,
+        iso: m[1], km, cls, dec: dec ? dec.pct : null,
         pace: DB.paceOf(km, e.sec),
         hr: e.hr || null,
         ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
@@ -1343,7 +1383,20 @@
         '</svg><div class="ef-cap">EF, last ' + pts0.length + ' ' + label + ' runs · ' +
         (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%</div></div>';
     }
-    const spark = sparkFor('easy', 'easy') + sparkFor('long', 'long');
+    let spark = sparkFor('easy', 'easy') + sparkFor('long', 'long');
+    /* Decoupling gets a ladder rather than a sparkline: the threshold is
+       the point, not the shape. Falling numbers are the base arriving. */
+    const decPts = entries.filter((e) => e.dec != null).slice(-6);
+    if (decPts.length) {
+      const m = PLAN.decoupleModel;
+      spark += '<div class="dc-list"><div class="dc-h">Aerobic decoupling · long runs</div>' +
+        decPts.reverse().map((p) => {
+          const v = DB.decoupleVerdict(p.dec);
+          return '<div class="dc-r"><span>' + fmtShort(p.iso) + ' · ' + p.km + ' km</span>' +
+            '<b class="dc ' + v.band + '">' + p.dec.toFixed(1) + '%</b></div>';
+        }).join('') +
+        '<div class="dc-k">under ' + m.good + '% sound · to ' + m.ok + '% at the edge · over that, read the day</div></div>';
+    }
     const rows = entries.slice(-10).reverse().map((e) =>
       '<div class="ref-row"><span>' + esc(fmtShort(e.iso)) +
       (e.hard ? ' <i class="dot" style="background:var(--accent)" title="hard session"></i>' : '') +
@@ -1362,7 +1415,10 @@
       'the §10 bands are waiting for.</div>' +
       '<div class="ref-note">The <b>→ pace</b> beside a warm run is what it would have been at ' +
       PLAN.benchmark.tempBaseline + ' °C (~0.55%/°C). An estimate for comparing like with like — ' +
-      'the logged number is always what you actually ran.</div></div>'
+      'the logged number is always what you actually ran.</div>' +
+      '<div class="ref-note"><b>Decoupling</b> is the better long-run number, and the reason ' +
+      'the log asks for a first-half pace and a second-half HR. ' + esc(PLAN.decoupleModel.note) +
+      '</div></div>'
     );
   }
 

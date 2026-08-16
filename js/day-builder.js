@@ -128,6 +128,7 @@
             'slow and that is evidence, months before December' : easyPaceText(week),
         hard: true,
       };
+      if (PLAN.longRunNote) spec.detail += ' · ' + PLAN.longRunNote;
       const durMin = Math.ceil(km * pace.long);
       const g = PLAN.gels;
       if (iso >= g.fromDate && durMin > g.minRunMin) {
@@ -234,6 +235,34 @@
       hrMin: hr - model.hrSpan, hrMax: hr + model.hrSpan,
       paceStep: model.paceStep, hrStep: model.hrStep,
     };
+  }
+
+  /* Aerobic decoupling from four numbers the log already has or can ask
+     for: total distance, total time, total average HR, the first half's
+     pace and the second half's average HR.
+
+     The first-half HR is not asked for because it is not free to choose —
+     average HR is time-weighted, so hr×sec = hr1×t1 + hr2×t2 pins it
+     exactly. One fewer stepper for the same answer. */
+  function decoupling(km, sec, hr, halfPaceSec, hr2) {
+    if (!(km > 0) || !(sec > 0) || !(hr > 0) || !(halfPaceSec > 0) || !(hr2 > 0)) return null;
+    const halfKm = km / 2;
+    const t1 = halfPaceSec * halfKm;
+    const t2 = sec - t1;
+    if (!(t1 > 0) || !(t2 > 0)) return null;             // first half longer than the run
+    const hr1 = (hr * sec - hr2 * t2) / t1;
+    if (!(hr1 > 0)) return null;
+    const ef1 = (halfKm * 1000 / (t1 / 60)) / hr1;
+    const ef2 = (halfKm * 1000 / (t2 / 60)) / hr2;
+    return { hr1: Math.round(hr1 * 10) / 10, ef1, ef2, pct: ((ef1 - ef2) / ef1) * 100 };
+  }
+
+  /* Where a decoupling figure sits against the model's thresholds. */
+  function decoupleVerdict(pct) {
+    const m = PLAN.decoupleModel;
+    if (pct == null || !m) return null;
+    const band = pct <= m.good ? 'good' : pct <= m.ok ? 'ok' : 'poor';
+    return { band, text: m.verdicts[band] };
   }
 
   /* Next key date (§7 flags as data) — the block's decisive moments,
@@ -679,7 +708,7 @@
     weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, logVerdict, adjustPace,
-    hrZones, zoneOf,
+    hrZones, zoneOf, decoupling, decoupleVerdict,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });
