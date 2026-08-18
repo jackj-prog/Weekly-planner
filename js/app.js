@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.9.0';
+  const APP_VERSION = '4.10.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1338,7 +1338,7 @@
       const cls = day.run ? DB.runClass(day.run) : 'easy';
       const dec = DB.decoupling(km, e.sec, e.hr, e.halfPaceSec, e.hr2);
       entries.push({
-        iso: m[1], km, cls, dec: dec ? dec.pct : null,
+        iso: m[1], km, cls, sec: e.sec, dec: dec ? dec.pct : null,
         pace: DB.paceOf(km, e.sec),
         hr: e.hr || null,
         ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
@@ -1384,6 +1384,43 @@
         (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%</div></div>';
     }
     let spark = sparkFor('easy', 'easy') + sparkFor('long', 'long');
+    /* The only real audit of rule 1: where the running actually sits. One
+       stacked bar, weighted by TIME rather than by run count, because four
+       easy kilometres and a 30 km long run are not one vote each. */
+    spark += (function () {
+      const hr = readJSON('hr', null);
+      if (!hr || !hr.rest || !hr.max) return '';
+      const zs = DB.hrZones(hr.rest, hr.max);
+      if (!zs) return '';
+      const secs = [0, 0, 0, 0, 0];
+      let total = 0;
+      entries.forEach((e) => {
+        if (!e.hr || !e.sec) return;
+        const z = DB.zoneOf(e.hr, hr.rest, hr.max);
+        secs[z && z.z ? z.z - 1 : 0] += e.sec;   /* below Z1 counts as Z1 */
+        total += e.sec;
+      });
+      if (!total) return '';
+      const t = PLAN.intensityTarget;
+      const easy = ((secs[0] + secs[1]) / total) * 100;
+      const tone = ['var(--phase-base)', 'var(--phase-base)', 'var(--phase-taper)',
+        'var(--accent)', 'var(--accent)'];
+      const segs = secs.map((s, i) => s
+        ? '<i style="width:' + ((s / total) * 100).toFixed(2) + '%;background:' + tone[i] +
+          (i === 1 || i === 4 ? ';opacity:.72' : '') + '" title="Z' + (i + 1) + '"></i>'
+        : '').join('');
+      const key = secs.map((s, i) => s
+        ? '<span><i style="background:' + tone[i] + (i === 1 || i === 4 ? ';opacity:.72' : '') +
+          '"></i>Z' + (i + 1) + ' ' + Math.round((s / total) * 100) + '%</span>'
+        : '').join('');
+      const ok = easy >= t.easyPct;
+      return '<div class="dist"><div class="dc-h">Where the running sits · by time</div>' +
+        '<div class="dist-bar">' + segs + '</div>' +
+        '<div class="dist-key">' + key + '</div>' +
+        '<div class="dist-v ' + (ok ? 'good' : 'warn') + '"><b>' + Math.round(easy) +
+        '%</b> at Z2 or easier · target ' + t.easyPct + '%+ — ' + esc(ok ? t.good : t.warn) +
+        '</div></div>';
+    }());
     /* Decoupling gets a ladder rather than a sparkline: the threshold is
        the point, not the shape. Falling numbers are the base arriving. */
     const decPts = entries.filter((e) => e.dec != null).slice(-6);
@@ -1416,6 +1453,8 @@
       '<div class="ref-note">The <b>→ pace</b> beside a warm run is what it would have been at ' +
       PLAN.benchmark.tempBaseline + ' °C (~0.55%/°C). An estimate for comparing like with like — ' +
       'the logged number is always what you actually ran.</div>' +
+      '<div class="ref-note"><b>Where the running sits</b> is the audit of rule 1. ' +
+      esc(PLAN.intensityTarget.note) + '</div>' +
       '<div class="ref-note"><b>Decoupling</b> is the better long-run number, and the reason ' +
       'the log asks for a first-half pace and a second-half HR. ' + esc(PLAN.decoupleModel.note) +
       '</div></div>'

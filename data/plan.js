@@ -281,6 +281,22 @@ const PLAN = {
       'Wk 26 dress rehearsal, never first on race day.',
   },
 
+  /* Where the running actually SITS, which is the only real audit of rule
+     1. The failure mode it exists to catch is the classic one: every run
+     drifting into the Z3 grey zone, hard enough to cost recovery, easy
+     enough to build nothing. Benchmark is ~80% of running TIME at Z2 or
+     easier — a floor, not an aim; Base should be well past it. */
+  intensityTarget: {
+    easyPct: 80,
+    note:
+      'Computed from each run’s AVERAGE heart rate, so it reads steady runs ' +
+      'fairly and understates the hard end on interval days — a tempo’s ten ' +
+      'hard minutes average in with its warm-up. Directionally honest, not a ' +
+      'substitute for true time-in-zone.',
+    good: 'Rule 1 is holding — the easy days are genuinely easy.',
+    warn: 'Too much of this is landing in the grey zone. Easy means easy, or you are stealing from Wednesday and Sunday.',
+  },
+
   /* Aerobic decoupling — efficiency over the second half of a long run
      against the first. The metric this block actually cares about, and
      the one EF cannot be: because it compares a run to ITSELF, heat,

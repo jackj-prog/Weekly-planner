@@ -811,6 +811,17 @@ section('hr zones');
     ok(m.good < m.ok, 'decoupling thresholds are ordered');
   }
 
+  /* The intensity target is the audit of rule 1, so it has to be honest
+     about what it can and cannot see. */
+  {
+    const t = PLAN.intensityTarget;
+    ok(t && t.easyPct >= 70 && t.easyPct <= 90, 'the easy-share target is a plausible polarised benchmark');
+    ok(/average/i.test(t.note) && /understate/i.test(t.note),
+      'the note admits average HR understates interval days rather than pretending to time-in-zone');
+    ok(t.good && t.warn && t.good !== t.warn, 'both verdicts exist and differ');
+    ok(/grey zone|easy means easy/i.test(t.warn), 'the warning names the actual failure mode');
+  }
+
   /* Max HR scales every zone, and the two failure modes point opposite
      ways: age formulas read low, optical watches cadence-lock high. The
      guidance has to name both or it is only half a warning. */
