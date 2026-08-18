@@ -102,6 +102,16 @@ ok(/lap 6/i.test(dayOfWeek(8, 4).run.detail) && /1:36/.test(dayOfWeek(8, 4).run.
   'the TT carries the lap script with the lap-6 decision point');
 ok(/bail-out/i.test(dayOfWeek(8, 4).run.detail),
   'an ambitious script carries its own bail-out — a controlled 13:00 beats a blown 13:40');
+/* The lap-6 decision has to name both branches and their numbers, or it is
+   just an instruction to feel something. The 8:02 it keys off must stay the
+   table's own lap-5 cumulative. */
+{
+  const d = dayOfWeek(8, 4).run.detail;
+  const lap5 = dayOfWeek(8, 4).run.table.rows[4][2];
+  ok(d.indexOf(lap5) >= 0, 'the branch point quotes the table’s lap-5 clock (' + lap5 + ')');
+  ok(/CONTROLLED/.test(d) && /HANGING ON/.test(d), 'both branches are named, not just the good one');
+  ok(/12:36/.test(d) && /12:54/.test(d), 'each branch carries the finish time it actually produces');
+}
 /* Thursday's 200s are the calibration backstop: reps with full recoveries
    drift quicker than goal pace, and a body calibrated to the wrong number
    opens too fast. 48 s per 200 must stay half the opening lap. */
