@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.7.0';
+  const APP_VERSION = '4.8.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1482,7 +1482,8 @@
       recent +
       '<div class="ref-note">' + esc(PLAN.zoneModel.method) + '. ' +
       esc(PLAN.zoneModel.note) + (hr && hr.at ? ' Set ' + esc(fmtShort(hr.at)) + '.' : '') +
-      '</div></div>'
+      '</div>' +
+      '<div class="ref-note"><b>Setting max HR.</b> ' + esc(PLAN.zoneModel.measure) + '</div></div>'
     );
     wrap.querySelectorAll('[data-hz]').forEach((btn) => btn.addEventListener('click', () => {
       const k = btn.getAttribute('data-hz');

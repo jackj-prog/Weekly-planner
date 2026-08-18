@@ -312,6 +312,19 @@ const PLAN = {
   zoneModel: {
     method: '% of heart-rate reserve (Karvonen) — max minus rest, not % of max',
     note: 'A low resting HR makes %max flatter the easy end. HRR is the honest one.',
+    /* How to know a max reading is real. This number scales every zone in
+       the app, so a bad one poisons months of prescription — and the two
+       ways it goes wrong are opposite: age formulas read LOW, optical
+       watches read HIGH. Worth more caution than any other input here. */
+    measure:
+      'Measure it, never estimate it — age formulas carry ±10–12 bpm, which is most of a zone. ' +
+      'The honest test is the last minute of an all-out effort over 5 minutes: short reps stop ' +
+      'before HR catches up, so they always read low. ' +
+      'TRUST A PEAK ONLY IF the trace climbs smoothly into it and holds a few seconds. A spike ' +
+      'that jumps 15 bpm and falls straight back is an artefact — and optical wrist sensors ' +
+      'cadence-lock at high turnover, so a "max" within a few beats of DOUBLE your cadence is the ' +
+      'watch counting footsteps, not heartbeats. Wear a chest strap for anything that sets a zone. ' +
+      'A max that comes in ABOVE the stored one is normal and usually real; the zones simply widen.',
     zones: [
       { z: 1, name: 'Recovery',  lo: 0.50, hi: 0.60, use: 'Shakeouts and the day after something hard. Genuinely gentle.' },
       { z: 2, name: 'Easy',      lo: 0.60, hi: 0.70, use: 'Where 80%+ of this block lives. The §10 pace bands should land here — if they do not, the band is wrong, not you.' },

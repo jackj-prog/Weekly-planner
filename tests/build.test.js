@@ -801,6 +801,16 @@ section('hr zones');
     ok(m.good < m.ok, 'decoupling thresholds are ordered');
   }
 
+  /* Max HR scales every zone, and the two failure modes point opposite
+     ways: age formulas read low, optical watches cadence-lock high. The
+     guidance has to name both or it is only half a warning. */
+  {
+    const m = PLAN.zoneModel.measure || '';
+    ok(/cadence/i.test(m) && /chest strap/i.test(m), 'max-HR guidance warns about cadence lock');
+    ok(/estimate|formula/i.test(m), 'max-HR guidance warns against age estimates');
+    ok(/above/i.test(m), 'max-HR guidance says a higher-than-stored max is normal, not an error');
+  }
+
   /* And the guard that keeps it that way: every rest/max pair written
      into committed source must come from this allowlist, so a real
      measurement cannot be pasted in unnoticed by anyone — me included. */
