@@ -811,7 +811,13 @@ const PLAN = {
           ] },
           1: { run: { km: 5, title: 'TT rehearsal — 4 × 400 m', shoe: 'Evo SL', detail: 'Evo SL · 1.5 km easy warm-up · 4 × 400 m at goal lap pace — 1:36–1:37 each (4:00/km), watch-measured on a flat stretch — with 400 m jog recoveries · 1 km cool-down. The ONLY job is to teach the legs what 1:36 feels like so Friday’s open is automatic. Do not race these — leave the fitness in them' } },
           2: { run: { km: 2, title: 'Easy 2', detail: 'Short and genuinely easy — the time trial is Friday' } },
-          3: { run: { km: 2, title: 'Shakeout + strides', detail: 'Very easy 2 km + 3–4 relaxed strides. A full rest day before a race leaves the legs flat — this primes them at no fatigue cost, the same way wks 24 and 30 open their race days' } },
+          /* The 200s are a pace CALIBRATION, not a workout. Tuesday's job
+             was to teach the legs 1:36, and reps with full recoveries
+             almost always drift quicker than that — which leaves the body
+             calibrated to a pace that would blow the TT up by lap 5. Two
+             controlled 200s at 48 s cost nothing and reset the number.
+             Reset it here or open on Friday guessing. */
+          3: { run: { km: 2, title: 'Shakeout + goal-pace 200s', detail: 'Very easy 2 km, then 2 × 200 m in EXACTLY 48 s — that is 1:36 per 400, Friday’s opening lap. If Tuesday’s reps came out quicker than 1:36 (they usually do — full recoveries flatter you), the legs are calibrated to the wrong number and this is the last chance to reset it. CONTROLLED, not hard: 96 seconds of work total, walk back between. A full rest day before a race leaves the legs flat — this primes them at no fatigue cost, the same way wks 24 and 30 open their race days' } },
           4: { blocks: [
             { t: '07:00', end: '07:30', title: 'Wake · Anki · breakfast', cat: 'routine', quiet: true },
             { t: '07:30', end: '12:00', title: 'German active study', detail: 'The deep German block — the 16:30 gun means today keeps it in full', cat: 'german', doable: true, friGerman: true },

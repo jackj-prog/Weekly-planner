@@ -102,6 +102,19 @@ ok(/lap 6/i.test(dayOfWeek(8, 4).run.detail) && /1:36/.test(dayOfWeek(8, 4).run.
   'the TT carries the lap script with the lap-6 decision point');
 ok(/bail-out/i.test(dayOfWeek(8, 4).run.detail),
   'an ambitious script carries its own bail-out — a controlled 13:00 beats a blown 13:40');
+/* Thursday's 200s are the calibration backstop: reps with full recoveries
+   drift quicker than goal pace, and a body calibrated to the wrong number
+   opens too fast. 48 s per 200 must stay half the opening lap. */
+{
+  const thu = dayOfWeek(8, 3).run.detail;
+  ok(/48\s*s/i.test(thu) && /200/.test(thu), 'wk 8 Thursday carries the goal-pace 200s');
+  const lapSec = (String(dayOfWeek(8, 4).run.table.rows[0][1]).match(/(\d+):(\d{2})/) || [])
+    .slice(1).reduce((a, b, i) => i === 0 ? +b * 60 : a + +b, 0);
+  ok(lapSec === 97 && /1:36/.test(thu),
+    'the 200s name the lap pace they are calibrating (48 s = 1:36 per 400)');
+  ok(!/hard|all-out|race/i.test(thu.split('CONTROLLED')[0]),
+    'Thursday is never framed as a hard session — it is a calibration');
+}
 /* The rehearsal must teach the pace the script actually opens at. These
    drifting apart is worse than either number being wrong on its own. */
 {
