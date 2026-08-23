@@ -233,6 +233,22 @@ const PLAN = {
      rest before the long run). */
   pacing: { easy: 6.6, quality: 6.1, long: 6.75, showerMin: 15 },
 
+  /* Quality runs are prescribed by HR, but the readout matters: an
+     expectation set 20 s/km too slow invites another Z3 tempo.
+
+     Re-anchored Aug 2026 to the measured 2-mile (13:00 = 4:02/km, VDOT
+     ~47.6). Threshold for that VDOT is ~4:21–4:25/km, so the old
+     "4:30–4:50" guess — written before there was any hard anchor — sat a
+     zone low and matched almost exactly the 4:31 heat-corrected pace that
+     produced the too-easy 12 Aug tempo. Widened slightly at the slow end
+     for heat and for the fact that VDOT tables assume more mileage than
+     this block carries. */
+  tempoPaceNote:
+    'Run this by HEART RATE — Z4 threshold (Reference), not the clock. ' +
+    'On a clear day that should land near 4:20–4:30/km off the 13:00 ' +
+    'two-mile, but that is a readout, not a target — if the pace is there ' +
+    'and the HR is not, it was not a tempo',
+
   /* The §10 bands are EASY-run bands — measured on a 4 km Thursday, on
      the benchmark route. Shown unqualified on a long run they read as a
      target the long run is failing, when holding the same Z2 for 90+

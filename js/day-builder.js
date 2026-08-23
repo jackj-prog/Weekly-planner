@@ -109,8 +109,7 @@
      true threshold; heat moves it further still. HR self-calibrates for
      both. Personal bpm values live in storage, so the text points at
      Reference rather than naming numbers (§4.10). */
-  const TEMPO_PACE_TEXT = 'Run this by HEART RATE — Z4 threshold (Reference), not the clock. ' +
-    'Pace will land somewhere near 4:30–4:50/km on a clear day, but that is a readout, not a target';
+  const TEMPO_PACE_TEXT = PLAN.tempoPaceNote;
 
   function isQuality(session) {
     return /tempo|threshold|mp|×/i.test(session || '');

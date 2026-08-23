@@ -504,7 +504,9 @@ final call; this just means December is not the first time we look.
 5:05–5:20 threshold band was derived from the old 4:00 goal, and the first
 tempo (12 Aug) showed it sits a full zone low: 4:56/km returned HR 164
 (77% HRR — Z3 steady), so the prescribed band would have delivered no
-threshold stimulus at all. Heat moves it further still. **Run tempos at
+threshold stimulus at all. **The readout was re-anchored to the measured
+2-mile (23 Aug, 13:00 = 4:02/km, VDOT ~47.6): threshold is ~4:20–4:30/km,
+not the 4:30–4:50 first guessed.** Heat moves it further still. **Run tempos at
 Z4 and let the pace be whatever it is** — HR self-calibrates for
 fitness and weather together, and it does not require guessing a
 threshold pace before the December tune-up has spoken (rule 7).

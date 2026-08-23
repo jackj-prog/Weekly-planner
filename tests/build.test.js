@@ -814,7 +814,21 @@ section('hr zones');
   /* The intensity target is the audit of rule 1, so it has to be honest
      about what it can and cannot see. */
   {
-    const t = PLAN.intensityTarget;
+    /* The tempo readout must sit FASTER than the pace that produced the
+     too-easy first tempo (4:31/km heat-corrected at Z3), or it invites the
+     same mistake it exists to prevent. */
+  {
+    const n = PLAN.tempoPaceNote || '';
+    const band = (n.match(/(\d):(\d{2})–(\d):(\d{2})\/km/) || []);
+    ok(band.length === 5, 'the tempo note carries a pace band');
+    const slow = +band[3] * 60 + +band[4];
+    ok(slow < 271, 'the tempo band’s slow end is quicker than the 4:31/km that read Z3, got ' +
+      Math.floor(slow / 60) + ':' + String(slow % 60).padStart(2, '0'));
+    ok(/HEART RATE/.test(n) && /readout, not a target/.test(n),
+      'the tempo note still leads with HR and refuses to make the pace a target');
+  }
+
+  const t = PLAN.intensityTarget;
     ok(t && t.easyPct >= 70 && t.easyPct <= 90, 'the easy-share target is a plausible polarised benchmark');
     ok(/average/i.test(t.note) && /understate/i.test(t.note),
       'the note admits average HR understates interval days rather than pretending to time-in-zone');
