@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.12.0';
+  const APP_VERSION = '4.13.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -895,6 +895,42 @@
   }
 
   /* ================= week view ================= */
+  /* Kilometres actually logged in the seven days from `from`. */
+  function loggedKm(from) {
+    let km = 0;
+    for (let i = 0; i < 7; i++) {
+      const iso = DB.addDays(from, i);
+      const e = getRunLogEntry(iso);
+      if (!e || !e.sec) continue;
+      const day = DB.buildDay(iso);
+      km += e.km || (day.run ? day.run.run.km : 0);
+    }
+    return km;
+  }
+
+  /* Advisory: this week's plan against last week's REALITY, not last
+     week's plan. Fires only inside the marathon block, only once there is
+     a previous week to compare, and never mutates anything. */
+  function loadJumpNote(anchor, day0) {
+    const r = PLAN.returnRule;
+    if (!r || day0.blockId !== 'marathon' || day0.week < 2) return null;
+    const prev = DB.addDays(anchor, -7);
+    const prevRow = DB.weekRow(PLAN.blocks[0], day0.week - 1);
+    if (!prevRow) return null;
+    const ran = loggedKm(prev);
+    if (!(ran > 0)) return null;                 // nothing logged ≠ nothing run
+    if (ran >= prevRow.km * r.shortfall) return null;
+    if (day0.row.km < ran * r.jumpRatio) return null;
+    const pct = Math.round((ran / prevRow.km) * 100);
+    return el(
+      '<div class="wk-jump"><b>Coming off a short week.</b> Week ' + (day0.week - 1) +
+      ' logged <b>' + (Math.round(ran * 10) / 10) + ' of ' + prevRow.km + ' km</b> (' + pct +
+      '%). This week plans ' + day0.row.km + ' — about ' +
+      (Math.round((day0.row.km / ran) * 10) / 10) + '× what you actually ran.<br>' +
+      esc(r.note) + '</div>'
+    );
+  }
+
   function renderWeek() {
     const anchor = state.weekAnchor || mondayOf(todayISO());
     state.weekAnchor = anchor;
@@ -936,6 +972,8 @@
     view.appendChild(head);
     view.appendChild(el('<div class="wk-sub">' + sub + '</div>'));
     if (note) view.appendChild(el('<div class="wk-note">' + esc(note) + '</div>'));
+    const jump = loadJumpNote(anchor, day0);
+    if (jump) view.appendChild(jump);
 
     /* banked km — only once the week has started */
     if (anchor <= todayISO()) {

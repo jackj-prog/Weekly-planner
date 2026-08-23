@@ -316,6 +316,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .wk-head .nav { width: 38px; height: 38px; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; font-size: 17px; }
 .wk-sub { margin: -6px 2px 12px; font-family: var(--mono); font-size: 12px; color: var(--t2); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .wk-note { margin: -4px 2px 12px; font-size: 12.5px; color: var(--t2); }
+/* load-jump advisory — loud enough to read, quiet enough not to nag */
+.wk-jump {
+  margin: 0 0 14px; padding: 10px 12px; font-size: 12.5px; line-height: 1.45;
+  color: var(--text); background: var(--surface);
+  border: 1px solid var(--line); border-left: 3px solid var(--phase-taper);
+  border-radius: 8px;
+}
+.wk-jump b { font-weight: 700; }
 .wk-days { display: flex; flex-direction: column; gap: 7px; }
 .wk-day {
   position: relative; overflow: hidden;

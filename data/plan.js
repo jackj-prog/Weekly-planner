@@ -297,6 +297,23 @@ const PLAN = {
       'Wk 26 dress rehearsal, never first on race day.',
   },
 
+  /* One lost week is not the problem. The week AFTER is: the plan's number
+     is unchanged while the body's recent history is not, so a 23 km week
+     run as 9 km is followed by a 34 km week the legs have no basis for.
+     Advisory only — the plan file stays canonical (§14) and the long run
+     is always the session to protect, because it is the one the marathon
+     is actually made of. */
+  returnRule: {
+    shortfall: 0.7,        // last week under 70% of plan counts as lost
+    jumpRatio: 1.5,        // and this week plans more than 1.5× what was run
+    note:
+      'The long run is the session to protect — it is what the marathon is ' +
+      'made of. Take the easy days at the slow end of the band, and drop the ' +
+      'Saturday buffer before you touch anything else. Do not make up the ' +
+      'missing kilometres; they are gone and chasing them is how a lost week ' +
+      'becomes a lost month (rule 5).',
+  },
+
   /* Where the running actually SITS, which is the only real audit of rule
      1. The failure mode it exists to catch is the classic one: every run
      drifting into the Z3 grey zone, hard enough to cost recovery, easy

@@ -811,6 +811,25 @@ section('hr zones');
     ok(m.good < m.ok, 'decoupling thresholds are ordered');
   }
 
+  /* The return rule advises after a lost week. It must never tell him to
+     make the kilometres up, and must name the long run as the protected
+     session — those are the two ways this advice goes wrong. */
+  {
+    const r = PLAN.returnRule;
+    ok(r && r.shortfall > 0 && r.shortfall < 1, 'shortfall is a fraction of the planned week');
+    ok(r.jumpRatio > 1, 'the jump ratio is a genuine increase');
+    ok(/long run/i.test(r.note), 'the note protects the long run by name');
+    ok(/not make up|do not make up/i.test(r.note), 'the note forbids chasing the missing kilometres');
+    /* the guard itself: wk 8 planned 23, wk 9 plans 34 */
+    const wk8 = DB.weekRow(PLAN.blocks[0], 8).km;
+    const wk9 = DB.weekRow(PLAN.blocks[0], 9).km;
+    const ran = 9.5;
+    ok(ran < wk8 * r.shortfall && wk9 >= ran * r.jumpRatio,
+      'a 9.5 km week 8 followed by the planned week 9 does trip the guard');
+    ok(!(wk8 * 0.9 < wk8 * r.shortfall),
+      'a week run at 90% of plan does NOT trip it — this fires on lost weeks, not imperfect ones');
+  }
+
   /* The intensity target is the audit of rule 1, so it has to be honest
      about what it can and cannot see. */
   {
