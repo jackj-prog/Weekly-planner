@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.11.0';
+  const APP_VERSION = '4.12.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -205,6 +205,22 @@
     const d = DB.parseLocalDate(iso);
     return DAY_NAMES[DB.dayIndex(iso)] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
   }
+  /* Zone NAMES are prescription and live in the plan file; the bpm behind
+     them are personal health data and live only on this phone (§4.10). So
+     the data says "Z4" and the renderer fills in "Z4 169–184" at paint
+     time — the numbers are everywhere in the app and nowhere in the repo.
+     Any future plan text mentioning a zone gets this for free. */
+  function withZones(text) {
+    const hr = readJSON('hr', null);
+    if (!hr || !hr.rest || !hr.max) return String(text);
+    const zs = DB.hrZones(hr.rest, hr.max);
+    if (!zs) return String(text);
+    return String(text).replace(/\bZ([1-5])\b/g, (m0, n) => {
+      const z = zs[Number(n) - 1];
+      return z ? 'Z' + n + ' (' + z.lo + '–' + z.hi + ')' : m0;
+    });
+  }
+
   function fmtShort(iso) {
     const d = DB.parseLocalDate(iso);
     return d.getDate() + ' ' + MONTHS[d.getMonth()];
@@ -336,7 +352,7 @@
         const q = el(
           '<div class="tl-quiet' + (isCurrent ? ' current' : '') + '">' +
           '<span class="t">' + b.start + '–' + b.end + '</span>' +
-          '<span>' + esc(b.title) + (b.detail ? ' <span class="d">· ' + esc(b.detail) + '</span>' : '') + '</span></div>'
+          '<span>' + esc(b.title) + (b.detail ? ' <span class="d">· ' + esc(withZones(b.detail)) + '</span>' : '') + '</span></div>'
         );
         tl.appendChild(q);
       } else {
@@ -364,7 +380,7 @@
       html += '<div class="nn-tag">NOW</div><div class="nn-title">' + esc(cur.title) + '</div>' +
         '<div class="nn-time">' + cur.start + '–' + cur.end +
         ' · <span class="nn-left">' + fmtLeft(cur.endMin - nMin) + '</span>' +
-        (cur.detail ? ' · ' + esc(cur.detail) : '') + '</div>' +
+        (cur.detail ? ' · ' + esc(withZones(cur.detail)) : '') + '</div>' +
         '<div class="nn-bar"><i style="width:' + pct + '%"></i></div>';
     } else {
       html += '<div class="nn-tag">NOW</div><div class="nn-title">Off the clock</div>' +
@@ -528,7 +544,7 @@
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
       '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span><span><b>TIME</b>' + r.start + '–' + r.end + '</span></div>' +
-      '<div class="h-detail">' + esc(r.detail) + '</div>' +
+      '<div class="h-detail">' + esc(withZones(r.detail)) + '</div>' +
       paceTableHTML(r.table) +
       logHTML +
       '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="Mark run done">✓</button></section>'
@@ -731,7 +747,7 @@
       '<div class="c-time">' + b.start + (b.end && b.end !== b.start ? '–' + b.end : '') +
       (opts.current ? ' <span class="nowflag">· NOW</span>' : '') + '</div>' +
       '<div class="c-title">' + esc(b.title) + '</div>' +
-      (b.detail ? '<div class="c-detail">' + esc(b.detail) + '</div>' : '') +
+      (b.detail ? '<div class="c-detail">' + esc(withZones(b.detail)) + '</div>' : '') +
       (b.table ? paceTableHTML(b.table) : '') +
       (b.plan ? '<div class="c-plan">' + b.plan.map((p) => {
         let w = '';
@@ -1158,7 +1174,7 @@
     view.appendChild(el(
       '<div class="ref">' +
       '<h2>Paces</h2><div class="ref-card">' +
-      PLAN.paces.map((p) => refRow(p.type, p.pace)).join('') + '</div>' +
+      PLAN.paces.map((p) => refRow(p.type, withZones(p.pace))).join('') + '</div>' +
       '<div class="ref-note">' + esc(PLAN.recalibration) + '</div>' +
       '</div>'
     ));

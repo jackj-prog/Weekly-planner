@@ -99,7 +99,7 @@ const PLAN = {
   paces: [
     { type: 'Easy / long-run base',        pace: 'by phase — see below' },
     { type: 'Marathon pace (3:45 goal)',   pace: '5:20 /km' },
-    { type: 'Tempo / threshold',           pace: '5:05–5:20 /km' },
+    { type: 'Tempo / threshold',           pace: 'by HR — Z4' },
     { type: 'Stretch MP (sub-3:35 bet)',   pace: '5:06 /km' },
   ],
 
@@ -244,7 +244,7 @@ const PLAN = {
      for heat and for the fact that VDOT tables assume more mileage than
      this block carries. */
   tempoPaceNote:
-    'Run this by HEART RATE — Z4 threshold (Reference), not the clock. ' +
+    'Run this by HEART RATE — Z4 threshold, not the clock. ' +
     'On a clear day that should land near 4:20–4:30/km off the 13:00 ' +
     'two-mile, but that is a readout, not a target — if the pace is there ' +
     'and the HR is not, it was not a tempo',

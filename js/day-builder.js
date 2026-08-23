@@ -107,8 +107,8 @@
   /* Quality runs are prescribed by EFFORT, not the clock. The 5:05–5:20
      band is derived from the 4:00 goal and can sit a full zone below
      true threshold; heat moves it further still. HR self-calibrates for
-     both. Personal bpm values live in storage, so the text points at
-     Reference rather than naming numbers (§4.10). */
+     both. Personal bpm values live in storage and are substituted into
+     this text by the renderer, never written into the plan file (§4.10). */
   const TEMPO_PACE_TEXT = PLAN.tempoPaceNote;
 
   function isQuality(session) {
@@ -123,7 +123,7 @@
         paceMin: pace.long,
         detail: /MP|REHEARSAL|PEAK/i.test(row.sun || '') ?
           'Long-run base ' + easyBand(week).band + '/km · MP segments 5:20/km — ' +
-            'these should sit in Z3 (Reference). If MP reads below Z3 the pace is too ' +
+            'these should sit in Z3. If MP reads below Z3 the pace is too ' +
             'slow and that is evidence, months before December' : easyPaceText(week),
         hard: true,
       };

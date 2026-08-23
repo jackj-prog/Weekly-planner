@@ -814,7 +814,33 @@ section('hr zones');
   /* The intensity target is the audit of rule 1, so it has to be honest
      about what it can and cannot see. */
   {
-    /* The tempo readout must sit FASTER than the pace that produced the
+    /* The renderer substitutes bpm into bare "Z1".."Z5" tokens at paint time
+     (§4.10 — numbers on the phone, never in the repo). That only works if
+     the plan text keeps the tokens intact and standalone. */
+  {
+    const zoneToken = /\bZ[1-5]\b/;
+    ok(zoneToken.test(PLAN.tempoPaceNote), 'the tempo note carries a bare zone token to expand');
+    ok(zoneToken.test(DB.buildDay('2026-08-25').run.detail),
+      'an easy run names its zone, so the renderer can fill in the bpm');
+    const tempo = PLAN.paces.find((p) => /tempo|threshold/i.test(p.type));
+    ok(zoneToken.test(tempo.pace),
+      'the Paces card prescribes threshold by zone, not by the stale 4:00-goal band');
+    ok(!/5:05|5:20 \/km/.test(tempo.pace),
+      'the 5:05–5:20 band is gone — it was a minute per km off the measured threshold');
+    /* And the substitution itself, mirrored here since app.js has no harness */
+    const expand = (s, rest, max) => {
+      const zs = DB.hrZones(rest, max);
+      return String(s).replace(/\bZ([1-5])\b/g, (m0, n) =>
+        zs[+n - 1] ? 'Z' + n + ' (' + zs[+n - 1].lo + '–' + zs[+n - 1].hi + ')' : m0);
+    };
+    ok(expand('Run at Z4 threshold', 50, 190) === 'Run at Z4 (162–176) threshold',
+      'zone tokens expand to the fixture’s own bpm, got ' + expand('Run at Z4 threshold', 50, 190));
+    ok(expand('the Z2 band', 50, 190).indexOf('(134–148)') > 0, 'Z2 expands to the right band');
+    ok(expand('Zone 4 and AZ4B', 50, 190) === 'Zone 4 and AZ4B',
+      'only standalone tokens expand — never a fragment inside another word');
+  }
+
+  /* The tempo readout must sit FASTER than the pace that produced the
      too-easy first tempo (4:31/km heat-corrected at Z3), or it invites the
      same mistake it exists to prevent. */
   {
