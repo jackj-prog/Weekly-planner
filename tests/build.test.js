@@ -817,6 +817,26 @@ section('hr zones');
     ok(m.good < m.ok, 'decoupling thresholds are ordered');
   }
 
+  /* trendPct must read the LINE, not the endpoints — the whole point is
+     that a single flat opener or warm closer cannot set the headline. */
+  {
+    ok(Math.abs(DB.trendPct([1, 2, 3, 4, 5]) - 400) < 0.01,
+      'a clean straight line reports its own rise, got ' + DB.trendPct([1, 2, 3, 4, 5]).toFixed(2));
+    ok(Math.abs(DB.trendPct([2, 2, 2, 2])) < 0.01, 'a flat series trends 0%');
+    ok(DB.trendPct([1]) === 0 && DB.trendPct([]) === 0, 'too few points trend 0, never NaN');
+    /* one wild endpoint must not dominate */
+    const clean = DB.trendPct([1.00, 1.02, 1.04, 1.06, 1.08]);
+    const spiked = DB.trendPct([1.00, 1.02, 1.04, 1.06, 1.30]);
+    ok(spiked > clean, 'an outlier last point does move the trend');
+    /* Honest about the limit: least-squares still gives endpoints leverage,
+       so this damps an outlier rather than rejecting it. Endpoint-only would
+       read +30.0% here; the line reads less, but not dramatically less. */
+    const endpointOnly = ((1.30 - 1.00) / 1.00) * 100;
+    ok(spiked < endpointOnly, 'the line reads below the endpoint delta, got ' +
+      spiked.toFixed(1) + '% vs ' + endpointOnly.toFixed(1) + '%');
+    ok(DB.trendPct([1.1, 1.0, 0.9]) < 0, 'a falling series reports negative');
+  }
+
   /* The return rule advises after a lost week. It must never tell him to
      make the kilometres up, and must name the long run as the protected
      session — those are the two ways this advice goes wrong. */

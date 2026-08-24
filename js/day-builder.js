@@ -236,6 +236,28 @@
     };
   }
 
+  /* Percentage change across a series, taken from the least-squares line
+     rather than from its two endpoints. First-to-last is the least robust
+     estimator available: it throws away every point in between and lets a
+     single flat opener or warm closer set the headline. Returns the fitted
+     rise from the first x to the last, as a percentage of the fitted start.
+     Not outlier-proof — least squares still gives the ends leverage — but
+     it reads every point instead of two. */
+  function trendPct(vals) {
+    const n = vals.length;
+    if (!n || n < 2) return 0;
+    const xbar = (n - 1) / 2;
+    const ybar = vals.reduce((a, b) => a + b, 0) / n;
+    let num = 0, den = 0;
+    vals.forEach((y, x) => { num += (x - xbar) * (y - ybar); den += (x - xbar) * (x - xbar); });
+    if (!den) return 0;
+    const slope = num / den;
+    const first = ybar - xbar * slope;
+    const last = ybar + xbar * slope;
+    if (!(first > 0)) return 0;
+    return ((last - first) / first) * 100;
+  }
+
   /* Aerobic decoupling from four numbers the log already has or can ask
      for: total distance, total time, total average HR, the first half's
      pace and the second half's average HR.
@@ -708,7 +730,7 @@
     weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, logVerdict, adjustPace,
-    hrZones, zoneOf, decoupling, decoupleVerdict,
+    hrZones, zoneOf, decoupling, decoupleVerdict, trendPct,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

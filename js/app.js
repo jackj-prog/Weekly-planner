@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.14.0';
+  const APP_VERSION = '4.15.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1428,7 +1428,11 @@
       const pts = vals.map((v, i) =>
         (i * (100 / (vals.length - 1))).toFixed(1) + ',' + (26 - ((v - lo) / span) * 22).toFixed(1)
       );
-      const delta = ((vals[vals.length - 1] - vals[0]) / vals[0]) * 100;
+      /* Least-squares slope, not first-to-last. Two endpoints on noisy
+         data is the least robust estimator there is — one flat first run
+         inflates the trend, one warm last run erases it. The line uses
+         every point; the sparkline still draws the raw ones. */
+      const delta = DB.trendPct(vals);
       return '<div class="ef-spark" role="img" aria-label="EF trend across ' +
         pts0.length + ' ' + label + ' runs">' +
         '<svg viewBox="0 0 100 28" preserveAspectRatio="none">' +
