@@ -564,7 +564,11 @@ from mile 22.
    course. Single-transporter gels saturate near 60 g/h, so 55 is the
    honest ceiling on them. **Salt is the gap**: 9 gels carry ~170 mg
    sodium against 1000–2500 mg of losses — electrolyte tabs or salt caps
-   cover it, rehearsed on the Wk 26 dress rehearsal.
+   cover it, rehearsed on the Wk 26 dress rehearsal. **Caffeine** is the
+   best-evidenced legal aid in the sport and was previously left as just
+   "coffee": dose it at **3 mg/kg (~200 mg) about 60 min before the gun**,
+   worth 1–3% (2–7 min over 3h45); one mug is half a dose, above ~6 mg/kg
+   the returns stop. Rehearsed in Wk 26 like everything else.
 5. Niggle protocol: anything sharp or one-sided = 2 days off running
    before it becomes 2 weeks. The plan survives missed days, not a
    stress injury.

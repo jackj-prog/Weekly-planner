@@ -219,6 +219,25 @@ ok(/35–40 min/.test(dayOfWeek(14, 6).run.detail), 'wk 14 long run (~148 min) t
 ok(/every 30 min/i.test(dayOfWeek(16, 6).run.detail), 'wk 16 long run (~176 min) steps up to a gel every 30 min');
 ok(/every 30 min/i.test(dayOfWeek(23, 6).run.detail), 'wk 23 peak long run practises the race carb rate');
 ok(!/every 30 min/i.test(dayOfWeek(7, 6).run.detail), 'wk 7 long run stays on the learning dose');
+/* Caffeine is the best-evidenced legal aid in the sport and the plan used
+   to say only "coffee". It must carry a dose, a ceiling, and an
+   instruction to rehearse — a dose met first on race morning is a gamble,
+   not a marginal gain. */
+{
+  const c = PLAN.gels.caffeine || '';
+  ok(/mg\/kg/.test(c), 'caffeine is prescribed per kilogram, not per mug');
+  ok(/rehears/i.test(c) && /26/.test(c), 'it points at the Wk 26 dress rehearsal');
+  ok(/6 mg\/kg/.test(c), 'the upper bound is stated — more is not better');
+  ok(/CAFFEINE/.test(dayOfWeek(30, 6).blocks.find((b) => /Porridge/.test(b.title)).detail),
+    'race morning names the dose rather than just "coffee"');
+  const dr = dayOfWeek(26, 6).run.detail;
+  ok(/REHEARSE THE WHOLE RACE MORNING/.test(dr), 'the dress rehearsal rehearses more than the legs');
+  ok(/caffeine/i.test(dr) && /gel/i.test(dr) && /electrolyte/i.test(dr),
+    'and names all three untested variables');
+  ok(!/REHEARSE THE WHOLE RACE MORNING/.test(dayOfWeek(20, 6).run.detail),
+    'an ordinary long run does not carry the dress-rehearsal note');
+}
+
 PLAN.gels.ladder.forEach((l) => {
   ok(Math.abs(Math.round((60 / l.every) * PLAN.gels.carbG) - l.rate) <= 1,
     'gel ladder arithmetic: every ' + l.every + ' min ≈ ' + l.rate + ' g/h');

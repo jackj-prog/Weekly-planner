@@ -128,6 +128,9 @@
         hard: true,
       };
       if (PLAN.longRunNote) spec.detail += ' · ' + PLAN.longRunNote;
+      if (PLAN.dressRehearsalNote && /REHEARSAL/i.test(row.sun || '')) {
+        spec.detail += ' · ' + PLAN.dressRehearsalNote;
+      }
       const durMin = Math.ceil(km * pace.long);
       const g = PLAN.gels;
       if (iso >= g.fromDate && durMin > g.minRunMin) {

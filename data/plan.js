@@ -249,6 +249,15 @@ const PLAN = {
     'two-mile, but that is a readout, not a target — if the pace is there ' +
     'and the HR is not, it was not a tempo',
 
+  /* The dress rehearsal is the only run in the block that rehearses the
+     things that are not running: the shoes, the gel interval, the salt,
+     and the caffeine dose. Anything untested by the end of Wk 26 is
+     something you will be meeting for the first time at 06:45 in Nicosia. */
+  dressRehearsalNote:
+    'REHEARSE THE WHOLE RACE MORNING, not just the legs: Pro 4s, the exact ' +
+    'breakfast, the caffeine dose and its timing, a gel every 25 min, and the ' +
+    'electrolyte plan. Whatever is untested today is untested on race day',
+
   /* The §10 bands are EASY-run bands — measured on a 4 km Thursday, on
      the benchmark route. Shown unqualified on a long run they read as a
      target the long run is failing, when holding the same Z2 for 90+
@@ -290,6 +299,19 @@ const PLAN = {
       'A single-transporter (glucose/maltodextrin) gel saturates around ' +
       '60 g/h no matter how many you take, so ~55 g/h is the honest ceiling ' +
       'on these — the top of that band needs a 2:1 glucose:fructose product.',
+    /* Caffeine is the best-evidenced legal ergogenic aid there is —
+       1–3% on endurance performance, which over 3h45 is 2–7 minutes for
+       nothing. The plan said "coffee" and left it there: a single mug is
+       ~1.3 mg/kg, well under the effective band. Dose it, and REHEARSE it
+       on the Wk 26 dress rehearsal, because it is also the intervention
+       most likely to hand you a GI problem you have never met before. */
+    caffeine:
+      'Caffeine: 3 mg/kg about 60 min before the gun — roughly 200 mg, or ' +
+      'two strong coffees, or one coffee plus a caffeinated gel. Worth 1–3% ' +
+      '(2–7 min over 3h45). One mug is half a dose. Above ~6 mg/kg the ' +
+      'returns stop and the jitters and gut trouble start. Rehearse the exact ' +
+      'dose and timing on the Wk 26 dress rehearsal — never meet it first on ' +
+      'race morning.',
     sodiumNote:
       'Nine gels carry only ~170 mg sodium. A 3h45 marathon at 6–12 °C ' +
       'still costs roughly 1000–2500 mg. Sodium comes from somewhere else: ' +
@@ -1128,7 +1150,7 @@ const PLAN = {
           ] },
           6: { blocks: [
             { t: '04:15', end: '04:30', title: 'Alarm · first sips', detail: 'RACE DAY 🇨🇾 · water and a coffee, no rush', cat: 'routine', quiet: true },
-            { t: '04:30', end: '05:00', title: 'Porridge + coffee', detail: '~2 h 15 before the gun · exactly what you have eaten before every long run · keep sipping water', cat: 'meal', quiet: true },
+            { t: '04:30', end: '05:00', title: 'Porridge + coffee', detail: '~2 h 15 before the gun · exactly what you have eaten before every long run · keep sipping water · CAFFEINE ~3 mg/kg (about 200 mg — two strong coffees, or one plus a caffeinated gel), the same dose you rehearsed in Wk 26', cat: 'meal', quiet: true },
             { t: '05:00', end: '05:45', title: 'Kit on · toilet · gels', detail: 'Vaseline everywhere that rubs. Throwaway layer for the start — it is 6–10 °C and dark', cat: 'routine', quiet: true },
             { t: '05:45', end: '06:00', title: 'To Solomou Square', detail: 'Central start — walk it, it doubles as a warm-up', cat: 'routine', quiet: true },
             { t: '06:00', end: '06:20', title: 'Bag drop · toilet queue', detail: 'Queue early, queue twice', cat: 'routine', quiet: true },

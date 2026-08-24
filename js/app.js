@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.15.0';
+  const APP_VERSION = '4.16.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1371,7 +1371,9 @@
       '<div class="ref-card fuel">' + rows + '</div>' +
       '<div class="ref-note">' + live + '</div>' +
       '<div class="ref-note">' + esc(g.targetNote) + '</div>' +
-      '<div class="ref-note"><b>Salt is the gap.</b> ' + esc(g.sodiumNote) + '</div></div>'
+      '<div class="ref-note"><b>Salt is the gap.</b> ' + esc(g.sodiumNote) + '</div>' +
+      (g.caffeine ? '<div class="ref-note"><b>Caffeine.</b> ' + esc(g.caffeine) + '</div>' : '') +
+      '</div>'
     );
   }
 
