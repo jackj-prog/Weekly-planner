@@ -189,8 +189,9 @@ from §7, ~Wed km, Evo SL, warm up 10 min easy first) · quick shower ·
 
 ### Thursday — easy run + protected evening
 Work day scaffold · **17:10 Easy run (Thu km) + 4×20 s strides** ·
-Tue/Thu easy runs start with **2×15 pogo hops** (tendon stiffness —
-running economy for free) · shower + snack ·
+Tue/Thu easy runs start with **60 s skipping, or 2×15 pogo hops**
+(tendon stiffness — running economy for free; rope preferred, the
+motor pattern is already owned from boxing 9–13) · shower + snack ·
 18:30 dinner · **19:00–21:00 protected free evening** (the release
 valve; flex ≤1h to study only on deadline weeks) · 21:00 deep reading
 anchor · 22:00 read · 22:30 sleep.
@@ -272,8 +273,8 @@ the 3D look).
   Day-after-long-run legs — stress stacks on tired legs, Saturday stays
   fresh. Calf/tendon work now is injury insurance later. Never grind —
   Wednesday quality is two days off.
-- **Plyo micro-dose:** Tue/Thu easy runs start with 2×15 pogo hops
-  (stiff ankles, quiet landings) — tendon stiffness and running economy
+- **Plyo micro-dose:** Tue/Thu easy runs start with 60 s skipping — or
+  2×15 pogo hops (stiff ankles, quiet landings) — tendon stiffness and running economy
   at near-zero fatigue cost. Thu still finishes with the 4×20 s strides.
 - **Session rules:** ramp 2 warm-up sets on the first lift · top of the
   rep range on every set → +2.5 kg next week (upper days only; Lower B

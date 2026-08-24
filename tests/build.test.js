@@ -380,8 +380,14 @@ section('adherence');
 /* ---- 6b. schedule refinements ---- */
 section('schedule refinements');
 ok(/4×20 s relaxed strides/.test(dayOfWeek(5, 3).run.detail), 'Thu easy runs carry strides');
-ok(/2×15 pogo hops/.test(dayOfWeek(5, 3).run.detail), 'Thu easy runs start with pogo hops');
-ok(/2×15 pogo hops/.test(dayOfWeek(5, 1).run.detail), 'Tue easy runs start with pogo hops');
+/* The plyo dose: rope preferred over hops because the motor pattern is
+   already owned, but both must stay named — no rope, still do the hops. */
+ok(/skipping/.test(dayOfWeek(5, 3).run.detail) && /pogo hops/.test(dayOfWeek(5, 3).run.detail),
+  'Thu easy runs open with the plyo dose, rope or hops');
+ok(/skipping/.test(dayOfWeek(5, 1).run.detail) && /pogo hops/.test(dayOfWeek(5, 1).run.detail),
+  'Tue easy runs open with the plyo dose, rope or hops');
+ok(/60 s skipping/.test(PLAN.runCues.tue) && /60 s skipping/.test(PLAN.runCues.thu),
+  'the rope dose is the same on both days');
 ok(!/relaxed strides/.test(dayOfWeek(5, 1).run.detail), 'Tue easy runs carry no strides');
 ok(!/pogo|strides/.test(dayOfWeek(12, 5).run.detail), 'Sat buffer run stays plain — nothing before the long run');
 ok(/headtorch/i.test(dayOfWeek(15, 2).run.detail), 'Oct Wed 17:10 carries the dark-kit note');

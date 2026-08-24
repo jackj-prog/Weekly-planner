@@ -405,12 +405,21 @@ const PLAN = {
     tempStep: 1, tempMin: -5, tempMax: 40, tempDefault: 16,
   },
 
-  /* Run cues (§6): micro-doses stapled onto the easy runs — pogo hops for
-     tendon stiffness/running economy, Thursday strides to stay sharp.
-     Keyed by run slot; special-week fixed runs carry their own details. */
+  /* Run cues (§6): micro-doses stapled onto the easy runs — the plyo dose
+     for tendon stiffness and running economy, Thursday strides to stay
+     sharp. Keyed by run slot; special-week fixed runs carry their own
+     details.
+
+     ROPE, NOT HOPS, WHERE THERE IS A CHOICE (Aug 2026). The athlete skipped
+     from 9–13 in boxing and reactivated it at 22, which is where the
+     unusually high cadence comes from — 86 easy, 92–97 racing, no decay at
+     100 minutes. The stimulus is identical to a pogo hop (stiff ankle,
+     quiet landing, short ground contact) but the motor pattern is already
+     owned, so the quality is higher and the adherence is better. 60 s of
+     rope is roughly the 2×15 dose. */
   runCues: {
-    tue: 'start with 2×15 pogo hops',
-    thu: 'start with 2×15 pogo hops · finish with 4×20 s relaxed strides',
+    tue: 'start with 60 s skipping — or 2×15 pogo hops',
+    thu: 'start with 60 s skipping — or 2×15 pogo hops · finish with 4×20 s relaxed strides',
   },
 
   /* Dark-runs rule (§12 rule 8): evening runs need kit once the light goes.
