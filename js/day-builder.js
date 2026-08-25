@@ -239,6 +239,29 @@
     };
   }
 
+  /* Where a logged easy pace sits against the phase band (§10). The band
+     is a DESCRIPTION, not a target — the whole point of §10 is that
+     running under it at genuine Z2 is fine and running over it to hit a
+     number is not. So the fast side asks a question about heart rate
+     rather than congratulating, and the slow side states a fact rather
+     than complaining. Pass the heat-corrected pace where a temperature
+     is known: 6:19 at 27 °C is not the same run as 6:19 at 15 °C. */
+  function bandPlace(paceSec, week) {
+    const b = easyBand(week);
+    if (!b || !(paceSec > 0)) return null;
+    const band = String(b.band).split('–').map(parsePace);
+    const good = String(b.good).split('–').map(parsePace);
+    if (!band[0] || !band[1] || !good[0] || !good[1]) return null;
+    if (paceSec < band[0]) return { where: 'under', text: 'under the band — fine if the HR was Z2' };
+    if (paceSec > band[1]) return { where: 'over', text: 'over the band for the phase' };
+    if (paceSec >= good[0] && paceSec <= good[1]) return { where: 'good', text: 'clear-day pace' };
+    /* Inside the band splits two ways, and they mean opposite things. A
+       flat "in band" on the quick side reads as neutral when it is in fact
+       better than a clear day — which is exactly the run worth noticing. */
+    if (paceSec < good[0]) return { where: 'sharp', text: 'quicker than a clear day' };
+    return { where: 'band', text: 'in band' };
+  }
+
   /* Percentage change across a series, taken from the least-squares line
      rather than from its two endpoints. First-to-last is the least robust
      estimator available: it throws away every point in between and lets a
@@ -733,7 +756,7 @@
     weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, logVerdict, adjustPace,
-    hrZones, zoneOf, decoupling, decoupleVerdict, trendPct,
+    hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

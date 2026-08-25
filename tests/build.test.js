@@ -836,6 +836,35 @@ section('hr zones');
     ok(m.good < m.ok, 'decoupling thresholds are ordered');
   }
 
+  /* bandPlace reads a logged easy run back against the band the card
+     prescribed. §10 is explicit that the band describes rather than
+     targets, so the fast side must ask about HR rather than praise, and
+     the slow side must state rather than scold. */
+  {
+    const wk = 9;                                    // band 6:10–6:35, good 6:15–6:25
+    const b = DB.easyBand(wk);
+    ok(b.band === '6:10–6:35' && b.good === '6:15–6:25', 'wk 9 band is the one being tested');
+    ok(DB.bandPlace(DB.parsePace('6:19'), wk).where === 'good', '6:19 is a clear-day pace');
+    ok(DB.bandPlace(DB.parsePace('6:15'), wk).where === 'good', 'the good range is inclusive at the fast end');
+    ok(DB.bandPlace(DB.parsePace('6:25'), wk).where === 'good', 'and at the slow end');
+    ok(DB.bandPlace(DB.parsePace('6:12'), wk).where === 'sharp',
+      'inside the band but QUICKER than good is called out as such, not flattened to "in band"');
+    ok(/quicker/.test(DB.bandPlace(DB.parsePace('6:12'), wk).text), 'and says so in words');
+    ok(DB.bandPlace(DB.parsePace('6:31'), wk).where === 'band', 'inside the band but slower than good reads "in band"');
+    ok(DB.bandPlace(DB.parsePace('6:05'), wk).where === 'under', 'quicker than the band reads under');
+    ok(DB.bandPlace(DB.parsePace('6:40'), wk).where === 'over', 'slower than the band reads over');
+    ok(/HR was Z2/.test(DB.bandPlace(DB.parsePace('6:05'), wk).text),
+      'the fast side asks about heart rate — running under the band at true Z2 is fine (§10)');
+    ok(!/slow|lazy|should/i.test(DB.bandPlace(DB.parsePace('6:40'), wk).text),
+      'the slow side states a fact and does not scold');
+    ok(DB.bandPlace(0, wk) === null && DB.bandPlace(380, 0) !== undefined,
+      'bad input returns null rather than a bogus placement');
+    /* the band moves with the phase, so the same pace can change verdict */
+    ok(DB.bandPlace(DB.parsePace('6:32'), 9).where === 'band' &&
+       DB.bandPlace(DB.parsePace('6:32'), 25).where === 'over',
+      '6:32 sits inside the Base band and outside the Build one — the bar moves with the phase');
+  }
+
   /* trendPct must read the LINE, not the endpoints — the whole point is
      that a single flat opener or warm closer cannot set the headline. */
   {

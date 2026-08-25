@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.16.0';
+  const APP_VERSION = '4.17.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -531,6 +531,14 @@
             ' vs last ' + cls;
         }
         if (v.best) line += ' · ★ block-best EF';
+        /* Read the run back against the band the card prescribed. Uses the
+           heat-corrected pace when a temperature was logged — comparing a
+           warm run to the band is really comparing the weather to it. */
+        if (cls === 'easy' && e.sec) {
+          const raw = Math.round(e.sec / (e.km || km));
+          const bp = DB.bandPlace(DB.adjustPace(raw, e.temp) || raw, day.week);
+          if (bp) line += ' · ' + bp.text;
+        }
         logHTML += '<div class="h-verdict' + (v.best ? ' best' : '') + '">' +
           '<span>' + esc(line) + '</span>' +
           '<button class="h-share" aria-label="Share run card">⤴</button></div>';
