@@ -234,20 +234,26 @@ const PLAN = {
   pacing: { easy: 6.6, quality: 6.1, long: 6.75, showerMin: 15 },
 
   /* Quality runs are prescribed by HR, but the readout matters: an
-     expectation set 20 s/km too slow invites another Z3 tempo.
+     expectation set wrong in EITHER direction invites a bad session.
 
-     Re-anchored Aug 2026 to the measured 2-mile (13:00 = 4:02/km, VDOT
-     ~47.6). Threshold for that VDOT is ~4:21–4:25/km, so the old
-     "4:30–4:50" guess — written before there was any hard anchor — sat a
-     zone low and matched almost exactly the 4:31 heat-corrected pace that
-     produced the too-easy 12 Aug tempo. Widened slightly at the slow end
-     for heat and for the fact that VDOT tables assume more mileage than
-     this block carries. */
+     This number has now been guessed twice from formulas and been wrong
+     twice. First 4:30–4:50, derived from the old 4:00 goal — too slow, and
+     the 12 Aug tempo duly came back at Z3. Then 4:20–4:30, derived from
+     Daniels' tables at VDOT 47.6 — too fast, because those tables assume a
+     runner equally trained across distances, and a speed-biased athlete on
+     45 km/week has a threshold well behind what a 13-minute effort implies.
+     Same asymmetry that makes his Riegel marathon exponent high.
+
+     So it is no longer derived at all. It is MEASURED: 26 Aug 2026, the
+     first tempo genuinely run in Z4 (83% HRR), returned 4:44/km raw across
+     the two clean kilometres. The band brackets that. Expect it to quicken
+     through Build as the base fills in — and expect heat to move it a lot,
+     which is why HR still leads and the clock still follows. */
   tempoPaceNote:
     'Run this by HEART RATE — Z4 threshold, not the clock. ' +
-    'On a clear day that should land near 4:20–4:30/km off the 13:00 ' +
-    'two-mile, but that is a readout, not a target — if the pace is there ' +
-    'and the HR is not, it was not a tempo',
+    'On a clear day expect 4:35–4:50/km — measured off your own first true ' +
+    'Z4 tempo, not off a table. It is a readout, not a target: if the pace ' +
+    'is there and the HR is not, it was not a tempo',
 
   /* The dress rehearsal is the only run in the block that rehearses the
      things that are not running: the shoes, the gel interval, the salt,

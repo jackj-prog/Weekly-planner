@@ -941,8 +941,19 @@ section('hr zones');
     const band = (n.match(/(\d):(\d{2})–(\d):(\d{2})\/km/) || []);
     ok(band.length === 5, 'the tempo note carries a pace band');
     const slow = +band[3] * 60 + +band[4];
-    ok(slow < 271, 'the tempo band’s slow end is quicker than the 4:31/km that read Z3, got ' +
+    const fast = +band[1] * 60 + +band[2];
+    /* Anchored to RAW measured paces, not to heat-corrected estimates —
+       the linear heat model is itself least trustworthy at the extremes
+       where the 12 Aug correction was made. 4:56 raw read Z3; 4:44 raw
+       read Z4. A threshold band has to sit between them. */
+    ok(slow < 296, 'the band’s slow end is quicker than the 4:56/km that read Z3, got ' +
       Math.floor(slow / 60) + ':' + String(slow % 60).padStart(2, '0'));
+    ok(fast <= 284 && slow >= 284,
+      'the band brackets the 4:44/km actually measured at 83% HRR, got ' +
+      Math.floor(fast / 60) + ':' + String(fast % 60).padStart(2, '0') + '–' +
+      Math.floor(slow / 60) + ':' + String(slow % 60).padStart(2, '0'));
+    ok(/measured/i.test(n) && !/table/i.test(n.split('not off a table')[0] || n),
+      'the note says the band is measured rather than derived');
     ok(/HEART RATE/.test(n) && /readout, not a target/.test(n),
       'the tempo note still leads with HR and refuses to make the pace a target');
   }
