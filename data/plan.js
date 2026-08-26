@@ -236,24 +236,27 @@ const PLAN = {
   /* Quality runs are prescribed by HR, but the readout matters: an
      expectation set wrong in EITHER direction invites a bad session.
 
-     This number has now been guessed twice from formulas and been wrong
-     twice. First 4:30–4:50, derived from the old 4:00 goal — too slow, and
-     the 12 Aug tempo duly came back at Z3. Then 4:20–4:30, derived from
-     Daniels' tables at VDOT 47.6 — too fast, because those tables assume a
-     runner equally trained across distances, and a speed-biased athlete on
-     45 km/week has a threshold well behind what a 13-minute effort implies.
-     Same asymmetry that makes his Riegel marathon exponent high.
+     MEASURED, not derived — and measured WITH ITS CONDITIONS ATTACHED,
+     which is the part that kept going wrong. 26 Aug 2026, the first tempo
+     genuinely run in Z4 (83% HRR across the two clean kilometres):
+     4:44/km raw at feels-like 25 °C, which is 4:28/km corrected. The band
+     brackets that corrected figure.
 
-     So it is no longer derived at all. It is MEASURED: 26 Aug 2026, the
-     first tempo genuinely run in Z4 (83% HRR), returned 4:44/km raw across
-     the two clean kilometres. The band brackets that. Expect it to quicken
-     through Build as the base fills in — and expect heat to move it a lot,
-     which is why HR still leads and the clock still follows. */
+     Three revisions to get here, and the last one was self-inflicted:
+     4:30–4:50 from the old 4:00 goal (too slow — 12 Aug came back Z3),
+     then 4:20–4:30 from Daniels at VDOT 47.6, then briefly 4:35–4:50 after
+     reading a warm-day RAW pace as if it were a clear-day one. It wasn't
+     the estimate that was broken that time, it was forgetting the weather.
+     Hence the heat line below: a tempo run in the heat SHOULD come back
+     slow, and that is not a failed session. */
   tempoPaceNote:
     'Run this by HEART RATE — Z4 threshold, not the clock. ' +
-    'On a clear day expect 4:35–4:50/km — measured off your own first true ' +
-    'Z4 tempo, not off a table. It is a readout, not a target: if the pace ' +
-    'is there and the HR is not, it was not a tempo',
+    'On a CLEAR day expect 4:25–4:40/km — measured off your own first true ' +
+    'Z4 tempo, not off a table. Add ~0.5%/°C above 15 °C before comparing: ' +
+    'at feels-like 25 °C that same effort is 4:40–4:55, and coming back slow ' +
+    'in the heat is the correction working, not a bad session. It is a ' +
+    'readout, not a target: if the pace is there and the HR is not, it was ' +
+    'not a tempo',
 
   /* The dress rehearsal is the only run in the block that rehearses the
      things that are not running: the shoes, the gel interval, the salt,

@@ -505,13 +505,12 @@ final call; this just means December is not the first time we look.
 5:05–5:20 threshold band was derived from the old 4:00 goal, and the first
 tempo (12 Aug) showed it sits a full zone low: 4:56/km returned HR 164
 (77% HRR — Z3 steady), so the prescribed band would have delivered no
-threshold stimulus at all. **The readout is now MEASURED, not derived.** It was
-guessed twice from formulas and wrong twice — 4:30–4:50 off the old 4:00
-goal (too slow; 12 Aug duly came back Z3), then 4:20–4:30 off Daniels at
-VDOT 47.6 (too fast, because those tables assume a runner equally trained
-across distances). The first tempo genuinely run in Z4 (26 Aug, 83% HRR)
-returned **4:44/km raw**, so the band is **4:35–4:50/km** and will quicken
-through Build. Heat moves it further still. **Run tempos at
+threshold stimulus at all. **The readout is now MEASURED, and measured with its
+CONDITIONS attached.** The first tempo genuinely run in Z4 (26 Aug, 83%
+HRR) returned **4:44/km raw at feels-like 25 °C = 4:28/km corrected**, so
+the clear-day band is **4:25–4:40/km**. Add ~0.5%/°C above 15 °C before
+comparing — at 25 °C that same effort reads 4:40–4:55, and a tempo coming
+back slow in the heat is the correction working, not a failed session. Heat moves it further still. **Run tempos at
 Z4 and let the pace be whatever it is** — HR self-calibrates for
 fitness and weather together, and it does not require guessing a
 threshold pace before the December tune-up has spoken (rule 7).

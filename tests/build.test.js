@@ -942,18 +942,21 @@ section('hr zones');
     ok(band.length === 5, 'the tempo note carries a pace band');
     const slow = +band[3] * 60 + +band[4];
     const fast = +band[1] * 60 + +band[2];
-    /* Anchored to RAW measured paces, not to heat-corrected estimates —
-       the linear heat model is itself least trustworthy at the extremes
-       where the 12 Aug correction was made. 4:56 raw read Z3; 4:44 raw
-       read Z4. A threshold band has to sit between them. */
-    ok(slow < 296, 'the band’s slow end is quicker than the 4:56/km that read Z3, got ' +
-      Math.floor(slow / 60) + ':' + String(slow % 60).padStart(2, '0'));
-    ok(fast <= 284 && slow >= 284,
-      'the band brackets the 4:44/km actually measured at 83% HRR, got ' +
-      Math.floor(fast / 60) + ':' + String(fast % 60).padStart(2, '0') + '–' +
-      Math.floor(slow / 60) + ':' + String(slow % 60).padStart(2, '0'));
-    ok(/measured/i.test(n) && !/table/i.test(n.split('not off a table')[0] || n),
-      'the note says the band is measured rather than derived');
+    /* The band is a CLEAR-DAY band, so it must bracket the heat-CORRECTED
+       measurement, not the raw one. Reading a warm-day raw pace as though
+       it were a clear-day pace is the exact mistake that produced a wrong
+       revision on 26 Aug. */
+    const measuredRaw = 284;                                  // 4:44/km, km 3–4
+    const corrected = DB.adjustPace(measuredRaw, 25);         // at feels-like 25 °C
+    ok(corrected === 268, 'the 26 Aug tempo corrects to 4:28/km, got ' + corrected);
+    ok(fast <= corrected && slow >= corrected,
+      'the clear-day band brackets the corrected measurement, got ' +
+      DB.fmtPaceSec(fast) + '–' + DB.fmtPaceSec(slow) + ' vs ' + DB.fmtPaceSec(corrected));
+    ok(slow < measuredRaw,
+      'and the clear-day band is quicker than that warm-day raw pace, as it must be');
+    ok(/measured/i.test(n), 'the note says the band is measured rather than derived');
+    ok(/°C/.test(n) && /heat|above 15/i.test(n),
+      'the note carries the heat rule — a slow tempo in the heat is the correction working');
     ok(/HEART RATE/.test(n) && /readout, not a target/.test(n),
       'the tempo note still leads with HR and refuses to make the pace a target');
   }
