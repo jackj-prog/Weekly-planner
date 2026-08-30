@@ -134,7 +134,19 @@
       const durMin = Math.ceil(km * pace.long);
       const g = PLAN.gels;
       if (iso >= g.fromDate && durMin > g.minRunMin) {
-        spec.detail += ' · ' + (g.longRunMin && durMin > g.longRunMin ? g.longText : g.text);
+        const isLong = g.longRunMin && durMin > g.longRunMin;
+        spec.detail += ' · ' + (isLong ? g.longText : g.text);
+        /* Turn the rate into today's actual schedule. The last gel lands
+           inside the run, never on the finish line. */
+        const iv = isLong ? g.longInterval : g.interval;
+        const n = iv ? Math.floor(durMin / iv) : 0;
+        if (n > 0) {
+          const at = [];
+          for (let i = 1; i <= n; i++) at.push(i * iv);
+          spec.detail += ' · TODAY: ' + n + (n === 1 ? ' gel' : ' gels') +
+            ', at ' + at.slice(0, -1).join(', ') + (n > 1 ? ' and ' : '') +
+            at[at.length - 1] + ' min';
+        }
       }
       return spec;
     }

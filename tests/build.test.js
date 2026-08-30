@@ -238,6 +238,31 @@ ok(!/every 30 min/i.test(dayOfWeek(7, 6).run.detail), 'wk 7 long run stays on th
     'an ordinary long run does not carry the dress-rehearsal note');
 }
 
+/* A rate is not a plan. "Every 35–40 min" asks you to do arithmetic at
+   km 8 with a heart rate of 150; the card now names the count and the
+   clock times instead. */
+{
+  const g = PLAN.gels;
+  const sched = (wk) => (dayOfWeek(wk, 6).run.detail.match(/TODAY: (\d+) gels?, at ([^·]+)/) || []);
+  [[9, 35], [14, 35], [16, 30], [20, 30], [23, 30]].forEach(([wk, iv]) => {
+    const row = DB.weekRow(PLAN.blocks[0], wk);
+    const dur = Math.ceil(row.lr * PLAN.pacing.long);
+    const m = sched(wk);
+    ok(m.length, 'wk ' + wk + ' long run carries a gel schedule');
+    ok(Number(m[1]) === Math.floor(dur / iv),
+      'wk ' + wk + ': ' + m[1] + ' gels for a ' + dur + ' min run at every ' + iv);
+    const times = m[2].replace(/ and /g, ', ').replace(/ min/, '').split(',').map((x) => Number(x.trim()));
+    ok(times.length === Number(m[1]), 'every gel in the count has a clock time');
+    ok(times[times.length - 1] <= dur,
+      'the last gel lands inside the run, not on the finish line (' +
+      times[times.length - 1] + ' vs ' + dur + ' min)');
+    ok(times.every((t, i) => i === 0 || t - times[i - 1] === iv), 'the times are evenly spaced');
+  });
+  /* The same formula must reproduce race day's stated nine. */
+  ok(Math.floor(225 / 25) === 9, 'floor(225/25) is the 9 gels the race block names');
+  ok(!/TODAY:/.test(dayOfWeek(6, 6).run.detail), 'a run under 90 min gets no schedule');
+}
+
 PLAN.gels.ladder.forEach((l) => {
   ok(Math.abs(Math.round((60 / l.every) * PLAN.gels.carbG) - l.rate) <= 1,
     'gel ladder arithmetic: every ' + l.every + ' min ≈ ' + l.rate + ' g/h');

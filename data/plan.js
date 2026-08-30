@@ -290,8 +290,12 @@ const PLAN = {
      3h45 race. */
   gels: {
     fromDate: '2026-08-10',
-    minRunMin: 90,  text: 'Gel every 35–40 min (~39 g carbs/h) — learning the skill',
-    longRunMin: 150, longText: 'Gel every 30 min (~46 g carbs/h) — practise the race rate',
+    /* interval doubles as the planning number: count = floor(duration /
+       interval), which is also exactly how race day arrives at 9. A rate
+       asks you to do arithmetic at km 8 with a heart rate of 150; a
+       schedule does not. */
+    minRunMin: 90,  interval: 35, text: 'Gel every 35–40 min (~39 g carbs/h) — learning the skill',
+    longRunMin: 150, longInterval: 30, longText: 'Gel every 30 min (~46 g carbs/h) — practise the race rate',
     raceText: 'Gel every 25 min · 9 gels · ~55 g carbs/h',
     /* Reference-page maths. Figures are per 40 g gel at 57 g carbs /
        100 g — re-derive these if the brand changes. */

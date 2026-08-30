@@ -562,7 +562,10 @@ from mile 22.
    means 46, every 25 means 55. Guidance for efforts over 2.5 h is
    60–90 g/h, so one flat interval under-fuels the long end. Tiered:
    runs over 90 min → every 35–40 min (the learning dose, from Wk 7 —
-   gut training takes weeks); runs over 2.5 h → every 30 min; **race day
+   gut training takes weeks); runs over 2.5 h → every 30 min; **the card
+   converts the rate into that day's actual schedule** (count + clock
+   times), because a rate asks for arithmetic at km 8 and a schedule does
+   not; **race day
    → every 25 min, 9 gels, ~55 g/h**, carried, never scavenged from the
    course. Single-transporter gels saturate near 60 g/h, so 55 is the
    honest ceiling on them. **Salt is the gap**: 9 gels carry ~170 mg
