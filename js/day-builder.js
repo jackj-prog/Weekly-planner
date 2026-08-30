@@ -160,11 +160,15 @@
         hard: quality,
       };
     }
-    const names = { tue: 'Easy run', thu: 'Easy run', sat: 'Easy buffer run' };
+    const names = { tue: 'Easy run', thu: 'Easy run', sat: 'Recovery buffer run' };
     const cue = PLAN.runCues && PLAN.runCues[slot];   // strides/pogos live in the data (§14)
+    /* Saturday is prescribed as recovery, so it must NOT carry the easy
+       band — judging a Z1 run against a Z2 band is the same category error
+       as pooling their EF. */
+    const base = slot === 'sat' && PLAN.recoveryNote ? PLAN.recoveryNote : easyPaceText(week);
     return {
       km, title: names[slot], shoe: 'Ghost', paceMin: pace.easy,
-      detail: easyPaceText(week) + (cue ? ' · ' + cue : ''),
+      detail: base + (cue ? ' · ' + cue : ''),
       hard: false,
     };
   }

@@ -440,6 +440,19 @@ const PLAN = {
     tempStep: 1, tempMin: -5, tempMax: 40, tempDefault: 16,
   },
 
+  /* Saturday is a RECOVERY run, not an easy one (Aug 2026, athlete's
+     call). Rule 10 already said Saturday belongs to Sunday, so prescribing
+     Z2 for the one session whose entire purpose is arriving fresh the next
+     morning was the plan disagreeing with its own rule. He had run it at
+     Z1 twice on instinct before the plan caught up — 15 Aug at 59.6% HRR,
+     29 Aug at 60.5% — and both Sundays that followed were the best long
+     runs of the block. The zone token is expanded to real bpm by the
+     renderer (§4.10). */
+  recoveryNote:
+    'Z1 recovery — HR decides, not the clock. Expect 60–90 s/km slower ' +
+    'than easy, and slower still is fine. Saturday belongs to Sunday ' +
+    '(rule 10): this run is blood flow, not fitness',
+
   /* Run cues (§6): micro-doses stapled onto the easy runs — the plyo dose
      for tendon stiffness and running economy, Thursday strides to stay
      sharp. Keyed by run slot; special-week fixed runs carry their own

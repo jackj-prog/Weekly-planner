@@ -861,6 +861,28 @@ section('hr zones');
     ok(m.good < m.ok, 'decoupling thresholds are ordered');
   }
 
+  /* Saturday is a RECOVERY run (Aug 2026). The plan used to prescribe Z2
+     for the one session whose whole job is arriving fresh on Sunday, which
+     contradicted rule 10. It must now name Z1, must NOT carry the easy
+     band, and must still classify as recovery so its EF never pools with
+     easy runs. */
+  {
+    const sat = dayOfWeek(9, 5);
+    ok(/Recovery buffer run/.test(sat.run.title), 'the Saturday run is named a recovery run');
+    ok(/\bZ1\b/.test(sat.run.detail), 'it prescribes Z1');
+    ok(!/\bZ2\b/.test(sat.run.detail), 'and never Z2');
+    ok(sat.run.detail.indexOf(DB.easyBand(9).band) === -1,
+      'it carries no easy band — a Z1 run judged against a Z2 band is the same error as pooling their EF');
+    ok(/rule 10|belongs to Sunday/i.test(sat.run.detail), 'and says why');
+    ok(DB.runClass(sat.run) === 'recovery', 'it still classifies as recovery');
+    /* the other easy days are untouched */
+    [1, 3].forEach((di) => {
+      ok(/\bZ2\b/.test(dayOfWeek(9, di).run.detail),
+        'day ' + di + ' still prescribes Z2 — only Saturday changed');
+    });
+    ok(DB.runClass(dayOfWeek(9, 1).run) === 'easy', 'Tuesday is still an easy run');
+  }
+
   /* bandPlace reads a logged easy run back against the band the card
      prescribed. §10 is explicit that the band describes rather than
      targets, so the fast side must ask about HR rather than praise, and

@@ -204,7 +204,7 @@ Base 12:00 · Build 11:30 · from Wk 23 and Taper 10:30) · lunch ·
 (unless the week says skip — §7/§9) · evening free, out · 22:00 read · sleep.
 
 ### Saturday — buffer run + study
-07:30 wake + Anki · 08:00 breakfast · **08:30 Easy buffer run (Sat km)**
+07:30 wake + Anki · 08:00 breakfast · **08:30 Recovery buffer run (Sat km, Z1)**
 — if Sat km = 0 (most of Base): no run ·
 after the run: **Wks 1–3 (as lived): Lower B ~50 min** — and **no leg
 or calf work on any Saturday from Wk 4 onward**. The day before the long
@@ -589,8 +589,10 @@ from mile 22.
    return, and at 6:45/km 3h20 is 30 km. If easy pace is slower on the
    day, cut the distance — never chase the number.
 10. **Saturday belongs to Sunday.** No leg work, no calf work, no
-   intensity on a Saturday from Wk 4 on. The buffer run is easy or it
-   doesn't happen.
+   intensity on a Saturday from Wk 4 on. The buffer run is **Z1 recovery**
+   or it doesn't happen — recovery, not easy (changed Aug 2026: the plan
+   had been prescribing Z2 for the one session whose whole job is arriving
+   fresh on Sunday, which contradicted this very rule).
 
 ## 13. Sacrifice ledger (what changed vs life-planner v6.4, and why)
 
