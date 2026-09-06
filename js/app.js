@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.22.0';
+  const APP_VERSION = '4.23.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -498,8 +498,12 @@
               d.halfPaceSec > d.halfMin, d.halfPaceSec < d.halfMax) +
             st('hr2', '2ND-HALF HR', d.hr2 + '<small>bpm</small>', d.hr2 > d.hr2Min, d.hr2 < d.hr2Max)
           : '') +
-        '<div class="st-wide">' + st('temp', 'FEELS LIKE', d.temp + '°',
-          d.temp > PLAN.logModel.tempMin, d.temp < PLAN.logModel.tempMax) + '</div>' +
+        (d.gels == null
+          ? '<div class="st-wide">' + st('temp', 'FEELS LIKE', d.temp + '°',
+              d.temp > PLAN.logModel.tempMin, d.temp < PLAN.logModel.tempMax) + '</div>'
+          : st('temp', 'FEELS LIKE', d.temp + '°',
+              d.temp > PLAN.logModel.tempMin, d.temp < PLAN.logModel.tempMax) +
+            st('gels', 'GELS', d.gels + '<small>taken</small>', d.gels > 0, d.gels < 12)) +
         '<div class="st-total">= ' + fmtDur(totalSec) + ' for ' + kmTxt + ' km' +
         (d.temp >= PLAN.benchmark.tempInvalid
           ? ' · <b>too hot to benchmark</b>'
@@ -512,6 +516,13 @@
       logHTML = '<button class="h-log logged" aria-label="Edit run log">' + logged + '</button>';
       /* Decoupling is the long run's headline, not EF — it is the number
          that says whether the base carried the distance. */
+      const cr = DB.carbRate(e.gels, e.sec / 60);
+      if (cr) {
+        const band = cr.pct >= 90 ? 'good' : cr.pct >= 60 ? 'ok' : 'poor';
+        logHTML += '<div class="h-dc ' + band + '"><b>' + cr.rate.toFixed(0) +
+          ' g/h</b> carbs · ' + cr.gels + ' of ' + cr.want + ' gels for ' +
+          Math.round(e.sec / 60) + ' min · target ' + cr.target.toFixed(0) + ' g/h</div>';
+      }
       const dec = DB.decoupling(e.km || km, e.sec, e.hr, e.halfPaceSec, e.hr2);
       const dv = dec ? DB.decoupleVerdict(dec.pct) : null;
       if (dv) {
@@ -582,6 +593,10 @@
          averages — an evenly-run long run needs no adjustment at all. */
       if (DB.runClass(r) === 'long') {
         const d0 = state.runLogDraft;
+        const durMin = Math.round((e.sec || centrePace * km) / 60);
+        if (iso >= PLAN.gels.fromDate && durMin > PLAN.gels.minRunMin) {
+          d0.gels = e.gels != null ? e.gels : 0;
+        }
         const h = e.halfPaceSec || centrePace;
         const h2 = e.hr2 || centreHr;
         d0.halfPaceSec = h; d0.hr2 = h2;
@@ -601,6 +616,8 @@
         d.temp = Math.min(m.tempMax, Math.max(m.tempMin, d.temp + dir * m.tempStep));
       } else if (kind === 'half') {
         d.halfPaceSec = Math.min(d.halfMax, Math.max(d.halfMin, d.halfPaceSec + dir * m.halfPaceStep));
+      } else if (kind === 'gels') {
+        d.gels = Math.min(12, Math.max(0, d.gels + dir));
       } else if (kind === 'hr2') {
         d.hr2 = Math.min(d.hr2Max, Math.max(d.hr2Min, d.hr2 + dir * m.hrStep));
       } else {
@@ -614,6 +631,7 @@
       saveRunLogEntry(iso, {
         sec: Math.round(d.paceSec * km), hr: d.hr, km: null, temp: d.temp,
         halfPaceSec: d.halfPaceSec || null, hr2: d.hr2 || null,
+        gels: d.gels == null ? null : d.gels,
       });
       state.runLogEdit = null; state.runLogDraft = null;
       render();

@@ -278,6 +278,25 @@
     return { where: 'band', text: 'in band' };
   }
 
+  /* Carbohydrate actually taken in, against the tier the run's duration
+     asks for. The one rule in the block with a lead time measured in
+     months (rule 4) had no readback at all — pace, HR, EF, decoupling and
+     zones all report back, and the gut heard nothing. Counting gels is
+     not the point; the RATE is, because the interval is the rate. */
+  function carbRate(gels, durMin) {
+    const g = PLAN.gels;
+    if (!g || gels == null || !(durMin > 0)) return null;
+    const taken = gels * g.carbG;
+    const rate = (taken * 60) / durMin;
+    const iv = durMin > g.longRunMin ? g.longInterval : g.interval;
+    const target = (60 * g.carbG) / iv;
+    const want = Math.floor(durMin / iv);
+    return {
+      gels, taken, rate, target, want, interval: iv,
+      pct: target > 0 ? (rate / target) * 100 : 0,
+    };
+  }
+
   /* Percentage change across a series, taken from the least-squares line
      rather than from its two endpoints. First-to-last is the least robust
      estimator available: it throws away every point in between and lets a
@@ -772,7 +791,7 @@
     weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, logVerdict, adjustPace,
-    hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace,
+    hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

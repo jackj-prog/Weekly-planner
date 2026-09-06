@@ -970,6 +970,32 @@ section('hr zones');
     });
   }
 
+  /* Rule 4 is the only rule in the block with a lead time measured in
+     months, and it was the only one with no readback. Counting gels is not
+     the point — the RATE is, because the interval IS the rate. */
+  {
+    const g = PLAN.gels;
+    /* the two runs that motivated this: near-identical rate, doubled gels */
+    const wk9 = DB.carbRate(1, 101);
+    const wk10 = DB.carbRate(2, 189);
+    ok(Math.abs(wk9.rate - 13.7) < 0.2, 'wk 9: 1 gel over 101 min is 13.7 g/h, got ' + wk9.rate.toFixed(1));
+    ok(Math.abs(wk10.rate - 14.6) < 0.2, 'wk 10: 2 gels over 189 min is 14.6 g/h, got ' + wk10.rate.toFixed(1));
+    ok(Math.abs(wk10.rate - wk9.rate) < 1.5,
+      'doubling the gels while doubling the duration moves the RATE by almost nothing — the thing a gel COUNT hides');
+    /* tier selection follows duration, not distance */
+    ok(wk9.interval === g.interval && wk9.want === Math.floor(101 / g.interval),
+      'a 101 min run sits in the learning tier');
+    ok(wk10.interval === g.longInterval && wk10.want === Math.floor(189 / g.longInterval),
+      'a 189 min run steps up to the every-30 tier, wanting ' + wk10.want + ' gels');
+    ok(wk10.target > wk9.target, 'and the target rate rises with it');
+    /* the race protocol must fall out of the same function */
+    const race = DB.carbRate(9, 225);
+    ok(Math.abs(race.rate - 55) < 1, 'nine gels over 225 min is the ~55 g/h the race block names, got ' + race.rate.toFixed(1));
+    /* guards */
+    ok(DB.carbRate(null, 189) === null && DB.carbRate(2, 0) === null, 'missing input returns null, not a bogus rate');
+    ok(DB.carbRate(0, 189).rate === 0, 'zero gels is a real answer, not a missing one');
+  }
+
   /* The long-run guard is the return rule moved to the moment of decision.
      Wk 10 (Sep 2026) is the case: a niggle stopped Wednesday's tempo and
      rule 5 took Thursday off — both correct — and then Sunday tried to
