@@ -332,6 +332,28 @@ const PLAN = {
       'Wk 26 dress rehearsal, never first on race day.',
   },
 
+  /* A week's TOTAL can be right while its composition is wrong, and the
+     composition is what trains you. Wk 10 (Sep 2026) banked 38.4 of 38 km
+     — 101%, which the app reported as a completed week — while the long
+     run took 71% of it against a planned 47%, Thursday went unrun and the
+     tempo came in at 54% of its distance. §7's whole "Base rebalanced"
+     rationale was to pull the long run's share DOWN toward 47-50%,
+     precisely because a week that is mostly one long run builds less and
+     costs more than the same kilometres spread across five days.
+
+     Fires only once the week's Sunday has passed, so it reports rather
+     than nags. Advisory — it never edits the plan (§14). */
+  shapeRule: {
+    lrShareOverPts: 8,   // percentage points of LR share over plan
+    shortPct: 0.6,       // a session logged under 60% of its planned km
+    overPct: 1.4,        // or over 140%
+    note:
+      'A correct weekly total can hide a badly shaped week. The long run ' +
+      'carrying far more than its planned share means the easy days that ' +
+      'build the aerobic base did not happen — and the single session most ' +
+      'likely to injure you got bigger instead.',
+  },
+
   /* One lost week is not the problem. The week AFTER is: the plan's number
      is unchanged while the body's recent history is not, so a 23 km week
      run as 9 km is followed by a 34 km week the legs have no basis for.

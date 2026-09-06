@@ -932,6 +932,44 @@ section('hr zones');
     ok(DB.trendPct([1.1, 1.0, 0.9]) < 0, 'a falling series reports negative');
   }
 
+  /* The shape rule exists because a correct weekly TOTAL can hide a badly
+     shaped week — wk 10 banked 101% of its kilometres with the long run
+     taking 71% of them against a planned 47%. */
+  {
+    const r = PLAN.shapeRule;
+    ok(r && r.lrShareOverPts > 0 && r.lrShareOverPts <= 15,
+      'the long-run share tolerance is a sane number of percentage points');
+    ok(r.shortPct > 0 && r.shortPct < 1 && r.overPct > 1, 'short and over thresholds bracket 100%');
+    ok(/long run/i.test(r.note) && /aerobic|easy days/i.test(r.note),
+      'the note explains what a skewed week actually costs');
+    ok(/injur/i.test(r.note), 'and names the risk it creates');
+
+    /* the wk 10 case the rule was written from */
+    const row = DB.weekRow(PLAN.blocks[0], 10);
+    const sp = DB.distancesForWeek(row);
+    const planTotal = sp.tue + sp.wed + sp.thu + sp.sat + sp.long;
+    const sharePlan = (sp.long / planTotal) * 100;
+    ok(Math.abs(sharePlan - 47.4) < 1, 'wk 10 plans the long run at ~47% of the week, got ' + sharePlan.toFixed(1));
+    const actual = { tue: 5.02, wed: 3.231, thu: 0, sat: 2.818, long: 27.296 };
+    const ranTotal = Object.values(actual).reduce((a, b) => a + b, 0);
+    const shareRan = (actual.long / ranTotal) * 100;
+    ok(shareRan - sharePlan >= r.lrShareOverPts,
+      'the lived wk 10 trips the share test: ' + shareRan.toFixed(1) + '% vs ' + sharePlan.toFixed(1) + '%');
+    ok(Math.abs(ranTotal / planTotal - 1) < 0.03,
+      'while its TOTAL is within 3% of plan — which is the whole point of the rule');
+    ok(actual.thu / sp.thu < r.shortPct && actual.long / sp.long > r.overPct,
+      'and both a missed session and an oversized one are caught');
+
+    /* §7 documents the rebalance this protects */
+    [7, 9, 10, 12, 14, 16, 20].forEach((wk) => {
+      const w = DB.weekRow(PLAN.blocks[0], wk);
+      const s = DB.distancesForWeek(w);
+      const share = (s.long / (s.tue + s.wed + s.thu + s.sat + s.long)) * 100;
+      ok(share >= 40 && share <= 58,
+        'wk ' + wk + ' plans the long run at a sane share of the week, got ' + share.toFixed(1) + '%');
+    });
+  }
+
   /* The return rule advises after a lost week. It must never tell him to
      make the kilometres up, and must name the long run as the protected
      session — those are the two ways this advice goes wrong. */

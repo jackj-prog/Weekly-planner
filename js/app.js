@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.20.0';
+  const APP_VERSION = '4.21.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -903,6 +903,53 @@
   }
 
   /* ================= week view ================= */
+  /* Week SHAPE, not week total. The banked figure answers "did I run the
+     kilometres"; this answers "did I run the week". They can disagree
+     completely — see PLAN.shapeRule. Reports only once the week is done. */
+  function weekShapeNote(anchor, day0) {
+    const r = PLAN.shapeRule;
+    if (!r || day0.blockId !== 'marathon' || !day0.row) return null;
+    if (DB.addDays(anchor, 6) > todayISO()) return null;      // week still running
+    const split = DB.distancesForWeek(day0.row);
+    const slots = [
+      { di: 1, name: 'Tue', plan: split.tue },
+      { di: 2, name: 'Wed', plan: split.wed },
+      { di: 3, name: 'Thu', plan: split.thu },
+      { di: 5, name: 'Sat', plan: split.sat },
+      { di: 6, name: 'Long', plan: split.long },
+    ].filter((s) => s.plan > 0);
+    let ranTotal = 0, planTotal = 0, lrRan = 0;
+    slots.forEach((s) => {
+      const iso = DB.addDays(anchor, s.di);
+      const e = getRunLogEntry(iso);
+      const day = DB.buildDay(iso);
+      s.ran = e && e.sec ? (e.km || (day.run ? day.run.run.km : 0)) : 0;
+      s.pct = s.plan ? s.ran / s.plan : 0;
+      ranTotal += s.ran; planTotal += s.plan;
+      if (s.di === 6) lrRan = s.ran;
+    });
+    if (!(ranTotal > 0)) return null;
+    const shareRan = (lrRan / ranTotal) * 100;
+    const sharePlan = (split.long / planTotal) * 100;
+    const skewed = shareRan - sharePlan >= r.lrShareOverPts;
+    const off = slots.filter((s) => s.pct < r.shortPct || s.pct > r.overPct);
+    if (!skewed && !off.length) return null;
+
+    const chips = slots.map((s) => {
+      const cls = s.pct < r.shortPct ? ' short' : s.pct > r.overPct ? ' over' : '';
+      return '<span class="shp' + cls + '"><i>' + s.name + '</i>' +
+        (Math.round(s.ran * 10) / 10) + '<small>/' + s.plan + '</small></span>';
+    }).join('');
+    return el(
+      '<div class="wk-shape"><b>Right total, wrong shape.</b> ' +
+      (Math.round(ranTotal * 10) / 10) + ' of ' + planTotal + ' km banked' +
+      (skewed ? ', but the long run took <b>' + Math.round(shareRan) +
+        '%</b> of the week against a planned ' + Math.round(sharePlan) + '%' : '') + '.' +
+      '<div class="shp-row">' + chips + '</div>' +
+      '<div class="shp-note">' + esc(r.note) + '</div></div>'
+    );
+  }
+
   /* Kilometres actually logged in the seven days from `from`. */
   function loggedKm(from) {
     let km = 0;
@@ -982,6 +1029,8 @@
     if (note) view.appendChild(el('<div class="wk-note">' + esc(note) + '</div>'));
     const jump = loadJumpNote(anchor, day0);
     if (jump) view.appendChild(jump);
+    const shape = weekShapeNote(anchor, day0);
+    if (shape) view.appendChild(shape);
 
     /* banked km — only once the week has started */
     if (anchor <= todayISO()) {

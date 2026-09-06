@@ -324,6 +324,29 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border-radius: 8px;
 }
 .wk-jump b { font-weight: 700; }
+
+/* week SHAPE — the total can be right while the composition is not */
+.wk-shape {
+  margin: 0 0 14px; padding: 12px 14px; font-size: 12.5px; line-height: 1.45;
+  color: var(--text); background: var(--surface);
+  border: 1px solid var(--line); border-left: 3px solid var(--accent);
+  border-radius: 8px;
+}
+.wk-shape b { font-weight: 700; }
+.shp-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 9px 0 8px; }
+.shp {
+  display: inline-flex; align-items: baseline; gap: 4px;
+  padding: 3px 8px; border-radius: 6px; background: var(--paper);
+  border: 1px solid var(--line);
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+}
+.shp i { font-style: normal; font-size: 10px; color: var(--t2); letter-spacing: .04em; }
+.shp small { font-weight: 400; color: var(--t2); }
+.shp.short { border-color: var(--accent); color: var(--accent); }
+.shp.short i, .shp.short small { color: var(--accent); opacity: .8; }
+.shp.over { border-color: var(--phase-taper); color: var(--phase-taper); }
+.shp.over i, .shp.over small { color: var(--phase-taper); opacity: .8; }
+.shp-note { color: var(--t2); }
 .wk-days { display: flex; flex-direction: column; gap: 7px; }
 .wk-day {
   position: relative; overflow: hidden;
