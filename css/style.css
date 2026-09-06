@@ -347,6 +347,16 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .shp.over { border-color: var(--phase-taper); color: var(--phase-taper); }
 .shp.over i, .shp.over small { color: var(--phase-taper); opacity: .8; }
 .shp-note { color: var(--t2); }
+.shp-caveat { margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--line); font-style: italic; }
+
+/* long-run guard — shown on the card, before the run, while it can help */
+.h-guard {
+  margin-top: 10px; padding: 10px 12px; border-radius: 8px;
+  background: rgba(255,255,255,0.12);
+  border-left: 3px solid var(--accent);
+  font-size: 12px; line-height: 1.45;
+}
+.h-guard b { font-weight: 700; display: block; margin-bottom: 3px; }
 .wk-days { display: flex; flex-direction: column; gap: 7px; }
 .wk-day {
   position: relative; overflow: hidden;

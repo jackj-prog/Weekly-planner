@@ -352,6 +352,30 @@ const PLAN = {
       'carrying far more than its planned share means the easy days that ' +
       'build the aerobic base did not happen — and the single session most ' +
       'likely to injure you got bigger instead.',
+    /* A short session is not automatically a failed one. Rule 5 says stop
+       when something is sharp, so a truncated Wednesday and a blank
+       Thursday may be the niggle protocol working exactly as written. The
+       panel reports composition; it does not know why, and must not
+       pretend to. */
+    caveat:
+      'Short sessions are not automatically missed ones — stopping a run ' +
+      'for a niggle is rule 5 working, not adherence failing. What this ' +
+      'panel measures is where the kilometres went, not whether the ' +
+      'decisions were right.',
+  },
+
+  /* The moment of decision is the long-run morning, not the following
+     week's review. A week that is already short creates the urge to make
+     the difference up in one session — which converts a well-managed
+     interruption into the single biggest load jump available. This is the
+     v4.13 return rule moved to where it can actually change something. */
+  longRunGuard: {
+    shortPct: 0.75,      // week-to-date under 75% of what was planned by now
+    note:
+      'Run today\u2019s number, not the week\u2019s shortfall. Missed ' +
+      'kilometres are gone, and the long run is the worst place to look ' +
+      'for them: it is already the week\u2019s biggest single load and the ' +
+      'one most likely to injure you. A short week stays short.',
   },
 
   /* One lost week is not the problem. The week AFTER is: the plan's number

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.21.0';
+  const APP_VERSION = '4.22.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -553,6 +553,7 @@
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
       '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span><span><b>TIME</b>' + r.start + '–' + r.end + '</span></div>' +
       '<div class="h-detail">' + esc(withZones(r.detail)) + '</div>' +
+      (longRunGuard(iso, day) || '') +
       paceTableHTML(r.table) +
       logHTML +
       '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="Mark run done">✓</button></section>'
@@ -903,6 +904,33 @@
   }
 
   /* ================= week view ================= */
+  /* The long-run morning is where a short week becomes a big jump. Shown
+     BEFORE the run, on the card, only when the week to date is genuinely
+     behind and the run has not been logged yet — advice has to arrive
+     while it can still change something. */
+  function longRunGuard(iso, day) {
+    const g = PLAN.longRunGuard;
+    if (!g || !day.row || day.blockId !== 'marathon') return null;
+    if (!day.run || DB.runClass(day.run) !== 'long') return null;
+    if (getRunLogEntry(iso)) return null;                 // already run
+    const monday = DB.addDays(iso, -day.dayIndex);
+    const split = DB.distancesForWeek(day.row);
+    const byDay = { 1: split.tue, 2: split.wed, 3: split.thu, 5: split.sat };
+    let plannedSoFar = 0, ranSoFar = 0;
+    Object.keys(byDay).forEach((di) => {
+      const d = DB.addDays(monday, Number(di));
+      if (d >= iso) return;
+      plannedSoFar += byDay[di];
+      const e = getRunLogEntry(d);
+      if (e && e.sec) ranSoFar += e.km || (DB.buildDay(d).run ? DB.buildDay(d).run.run.km : 0);
+    });
+    if (!(plannedSoFar > 0) || ranSoFar >= plannedSoFar * g.shortPct) return null;
+    const short = Math.round((plannedSoFar - ranSoFar) * 10) / 10;
+    return '<div class="h-guard"><b>' + (Math.round(ranSoFar * 10) / 10) + ' of ' +
+      plannedSoFar + ' km this week so far — ' + short + ' km behind.</b> ' +
+      esc(g.note) + '</div>';
+  }
+
   /* Week SHAPE, not week total. The banked figure answers "did I run the
      kilometres"; this answers "did I run the week". They can disagree
      completely — see PLAN.shapeRule. Reports only once the week is done. */
@@ -946,7 +974,9 @@
       (skewed ? ', but the long run took <b>' + Math.round(shareRan) +
         '%</b> of the week against a planned ' + Math.round(sharePlan) + '%' : '') + '.' +
       '<div class="shp-row">' + chips + '</div>' +
-      '<div class="shp-note">' + esc(r.note) + '</div></div>'
+      '<div class="shp-note">' + esc(r.note) + '</div>' +
+      (r.caveat ? '<div class="shp-note shp-caveat">' + esc(r.caveat) + '</div>' : '') +
+      '</div>'
     );
   }
 

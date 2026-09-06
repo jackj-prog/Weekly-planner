@@ -970,6 +970,33 @@ section('hr zones');
     });
   }
 
+  /* The long-run guard is the return rule moved to the moment of decision.
+     Wk 10 (Sep 2026) is the case: a niggle stopped Wednesday's tempo and
+     rule 5 took Thursday off — both correct — and then Sunday tried to
+     make the difference up in one run, turning a well-managed interruption
+     into a 67% long-run jump. */
+  {
+    const g = PLAN.longRunGuard;
+    ok(g && g.shortPct > 0.5 && g.shortPct < 1, 'the guard fires on a genuinely short week, not a slightly imperfect one');
+    ok(/not the week|shortfall/i.test(g.note), 'it names the specific temptation');
+    ok(/injur/i.test(g.note), 'and why the long run is the worst place to look for missed km');
+    ok(!/lazy|should have|failed/i.test(g.note), 'it advises without scolding');
+
+    const sp = DB.distancesForWeek(DB.weekRow(PLAN.blocks[0], 10));
+    const plannedBySun = sp.tue + sp.wed + sp.thu + sp.sat;
+    const ranBySun = 5.02 + 3.231 + 0 + 2.818;
+    ok(ranBySun < plannedBySun * g.shortPct,
+      'wk 10 by Sunday was ' + ranBySun.toFixed(1) + ' of ' + plannedBySun + ' km — the guard would have fired');
+    ok(Math.round((plannedBySun - ranBySun) * 10) / 10 === 8.9,
+      'and named the 8.9 km shortfall it was tempting to add to the long run');
+
+    /* the shape panel must not call a niggle-truncated session a failure */
+    ok(/rule 5/i.test(PLAN.shapeRule.caveat), 'the shape panel credits rule 5 for a short session');
+    ok(/not.*whether the decisions were right|does not know why|not pretend/i.test(
+      PLAN.shapeRule.caveat + ' ' + PLAN.shapeRule.note),
+      'and is explicit that it measures where the km went, not whether the calls were right');
+  }
+
   /* The return rule advises after a lost week. It must never tell him to
      make the kilometres up, and must name the long run as the protected
      session — those are the two ways this advice goes wrong. */
