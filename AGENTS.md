@@ -107,11 +107,145 @@ asks. End with your exact branch/commit and whether your handoff is complete.
 
 ### Claude's handoff response
 
-**Status: awaiting Claude's response.** Codex has prepared the repository
-orientation; conversation-only context and unfinished Claude work remain
-unconfirmed.
+**Status: complete.** Written 9 September 2026 from `codex/ownership-handoff`.
 
-_Claude: replace this placeholder with your response to the six points above._
+#### 0. Read this first — the privacy boundary
+
+The single most important thing to carry over, because it is the one rule the
+user has restated unprompted more than any other and the one a handoff is most
+likely to break.
+
+**Categories that must never enter this repository**, in any file, comment,
+commit message, test fixture or issue:
+
+- identity — name, city, employer;
+- physiology — resting and maximum heart rate (see CLAUDE.md §4.10);
+- body composition;
+- health behaviours and anything the user has flagged as private;
+- photographs of any kind;
+- raw personal logs. Run data is device-local (`localStorage`) and reaches the
+  repo only as aggregate rules, never as records.
+
+The user's instruction is that sensitive context lives in conversation and not
+in git. Treat "the user told me in chat" as a reason to *exclude* something,
+not to document it. When in doubt, describe the rule and omit the value.
+
+`tests/build.test.js` enforces the physiology half mechanically: it scans
+`data/plan.js`, `js/day-builder.js`, `js/app.js` and itself for `hrZones(...)`
+and `zoneOf(...)` literals and fails on any rest/max pair outside a declared
+fixture allowlist. That guard exists because real values had previously been
+committed to the test file. **Do not relax it.** The generic %HRR zone MODEL
+belongs in `data/plan.js`; the athlete's own numbers stay on their phone, and
+`withZones()` in `js/app.js` substitutes them into prescription text at render
+time so the app can show bpm the repo never stores.
+
+#### 1. Current work
+
+- Working branch was `claude/new-session-ombj5n`, latest commit
+  `fbe1a22` (v4.23). This response is committed on
+  `codex/ownership-handoff`, which descends from it.
+- **Nothing uncommitted and nothing to carry over.** Every change was shipped
+  under the standard loop: edit data → `node tests/build.test.js` → bump
+  `APP_VERSION` and `CACHE_VERSION` → commit → push.
+- Versions are in step at 4.23.0 in both `js/app.js` and `sw.js`.
+
+#### 2. User intent — what is not already in the repo
+
+**The governing principle behind v4.2–v4.23.** Nearly every feature in that run
+came from the same defect class: *a real number read against the wrong
+comparison.* Efficiency pooled across effort classes; a warm-day pace compared
+to a clear-day band; a trend taken from two endpoints; a weekly total hiding a
+badly shaped week. The fix is always to make the comparison honest rather than
+to add a metric. Apply that test before adding anything.
+
+**Estimates are advisory; the plan is canonical.** Race targets (3:45, stretch
+sub-3:35) move only on the December tune-up half — rule 7 — regardless of what
+interim evidence suggests. Do not re-anchor targets from short-distance results.
+
+**Prefer measurement to derivation.** The threshold pace readout was derived
+from formulas twice and was wrong twice, in opposite directions, before being
+re-anchored to an actual Z4 session *with its conditions recorded*. CLAUDE.md
+§10 now carries the measured band. Do not re-derive it from VDOT tables.
+
+**Calibration note.** Model estimates have run consistently below what the
+athlete actually produces in a maximal effort. Weight race evidence above
+model output, and state uncertainty rather than narrowing it.
+
+**Plan content requires explicit permission.** The user has consistently
+asked for reasoning first and a change only on request. Two changes in this
+period were made on explicit instruction (the 3:45 re-anchor; Saturday becoming
+a Z1 recovery run); everything else was app machinery or documentation.
+
+#### 3. Next steps
+
+Committed and done — nothing outstanding.
+
+Offered, not accepted (do not start without the user asking):
+
+1. A mile time trial on the Week 13 cutback Friday. Offered three times and
+   never taken up; it is the only window before marathon training actively
+   works against mile speed.
+2. Per-week intensity distribution. The Reference view currently shows the
+   block-to-date split only, which will lag badly as Build shifts the
+   polarisation ratio.
+
+#### 4. Known issues and fragile areas
+
+- **The screenshot harness is not in this repository.** It lived in a session
+  scratchpad, was lost and rebuilt twice, and it caught real defects on three
+  separate occasions before they shipped — a tap target intercepted by an
+  overlay, a clipped share card, an overflowing table row, and a misleading
+  chart label. It drives headless Chromium at 390 px with `Date` patched to a
+  fixed instant and `localStorage` seeded. **Committing something equivalent
+  under `tools/` is the highest-value unstarted work in the project.**
+- **No verification on a real device, ever.** All checks were headless
+  Chromium. Offline/PWA behaviour, service-worker update flow, safe-area
+  insets and iOS Safari specifics are unverified by me and should be treated
+  as untested.
+- **The heat model is linear** (~0.55%/°C above 15 °C) and is least trustworthy
+  at the extremes where it matters most; a correction made from a 32 °C session
+  is a weak anchor. Prefer raw paces plus recorded conditions over corrected
+  estimates when building guards.
+- **Temperature is frequently missing.** The user's watch does not record it and
+  it must be entered by hand. Three sessions were misread for want of it,
+  twice producing a wrong conclusion. Any pace-at-HR comparison without a
+  temperature is provisional.
+- **The source data contains artefacts.** GPS speed spikes on short reps and
+  implausible HR maxima appear regularly. Cross-check any single value against
+  cadence, grade and neighbouring splits before acting on it.
+- **Aerobic decoupling measures terrain as much as fatigue** on hilly routes.
+  Report a range, not a point, when elevation is significant.
+
+#### 5. Specification drift
+
+The core/calves references flagged in the baseline above were correct, and
+**this commit fixes them.** Core + calves moved from Tuesday into Monday's
+Lower B maintenance in v4.1 (weeks 11–16, retiring with Lower B at week 17)
+because Tuesday placed calf loading roughly twenty hours before the Wednesday
+tempo. §6's gym programming block already described the current state; the §6
+Saturday paragraph and the §13 ledger still said Tuesday. Both now match.
+
+Also corrected: §6 stated that Monday "never" carries a run, while §9 gives
+race week an easy 5 km on Monday and the builder produces it. The
+implementation was right — special weeks override the standard day, by design.
+The wording is now accurate.
+
+No other disagreement between docs, tests and implementation is known to me.
+
+#### 6. Verification and release
+
+- `node tests/build.test.js` — **15,899 checks, 0 failures**, run on this
+  branch with the drift fixes applied.
+- `node --check` on `js/app.js`, `js/day-builder.js` and `data/plan.js` clean.
+- Deployment is unchanged: `.github/workflows/pages.yml` on pushes to the
+  default branch. Note its `concurrency: group: pages` — rapid consecutive
+  pushes cancel queued runs, so a deploy can silently not happen.
+- Needs manual verification on device and was never done: installed-PWA
+  offline load, the "Updated — reload" toast on a new service worker, safe-area
+  insets, and the run-log steppers under real touch input.
+
+**Branch and commit:** `codex/ownership-handoff`, at the commit carrying this
+response. **Handoff complete.**
 
 ## Codex continuation
 

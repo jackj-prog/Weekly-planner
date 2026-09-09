@@ -152,7 +152,7 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
 6.1 min/km (includes ~10 min easy warm-up guidance) · Sunday long ≈
 6.75 min/km. Add 15 min shower after every run.
 
-### Monday — legs (Base) then the zero day. No run, ever.
+### Monday — legs (Base) then the zero day. No run in the standard week.
 - **Wks 1–3 (as lived):** work scaffold · 17:00 punchbag · evening as
   below. (Punchbag retired from Wk 4.)
 - **Wks 4–10 (work):** 06:00 Wake + Anki · 06:45 commute · 07:00–16:30
@@ -164,8 +164,9 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
 - **Wks 17+ :** evening completely OFF — Monday is the week's true zero
   day (no run, no gym) as the 50–60 km weeks arrive.
 - **Every era:** 18:30 dinner · 19:30–21:00 German active study ·
-  21:00–22:00 German media · 22:00 read · 22:30 sleep. Monday never
-  carries a run.
+  21:00–22:00 German media · 22:00 read · 22:30 sleep. The STANDARD
+  Monday carries no run; special weeks may override it, and race week
+  (30) does — Mon easy 5 at 16:15 (§9).
 
 ### Tuesday — easy run + Upper A (scaffold varies by era — see §5)
 - **Wks 1–2 (college era):** 06:45 wake + Anki · 08:00–15:00 College (incl
@@ -215,7 +216,8 @@ Base 12:00 · Build 11:30 · from Wk 23 and Taper 10:30) · lunch ·
 after the run: **Wks 1–3 (as lived): Lower B ~50 min** — and **no leg
 or calf work on any Saturday from Wk 4 onward**. The day before the long
 run stays fresh; that is the whole reason Lower B left Saturday, and
-Core + calves lives on Tuesday for the same reason ·
+the same reason Core + calves ended up on Monday (v4.1) rather than
+Tuesday — see the gym programming block below ·
 **10:00 Gym — Upper B** (from Wk 4; Fri 13:00 in Wks 1–3) · shower ·
 12:00 lunch · 13:00–16:30 Study (any subject) · 16:30 free (social/hobbies) ·
 19:00 dinner (carb-forward from Wk 14 whenever tomorrow’s long run
@@ -606,9 +608,12 @@ from mile 22.
   Fri 13:00 until Wk 4, when fragile Fridays lost it).
   Lower A cut immediately; Lower B light on Monday through Base,
   maintenance Wks 11–16, retired from Wk 17 (deadlifts near long runs
-  don't mix). What survives of leg work is **Core + calves on Tuesday
-  from Wk 11** — the soleus and trunk get their insurance dose five
-  days clear of Sunday. Sunday full-body replaced by the long run.
+  don't mix). What survives of leg work is **Core + calves folded into
+  Monday's Lower B maintenance, Wks 11–16** (moved off Tuesday in v4.1,
+  Aug 2026: it had been loading calves ~20 h before the Wednesday tempo).
+  The soleus and trunk get their insurance dose two days clear of the
+  tempo and six clear of Sunday, and it retires with Lower B at Wk 17.
+  Sunday full-body replaced by the long run.
   Running owns the legs; lean bulk pauses ~Oct–Jan, regained after the
   race.
 - **Runs live in the evening gaps** (Tue 16:15, Wed/Thu 17:10) and
