@@ -98,12 +98,23 @@ const MIME = {
   '.json': 'application/json', '.webmanifest': 'application/manifest+json',
   '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ics': 'text/calendar',
 };
+/* Serve ONLY what the app itself loads. A .gitignore keeps a file out of a
+   commit; it does nothing to stop a static server rooted at the repo from
+   handing it to anyone who asks. PRIVATE.md sits in this directory by design
+   (see .gitignore), so the extension allowlist below is what actually keeps
+   it off the wire — an unknown extension is a 404, and .git is refused
+   outright. Verified: GET /PRIVATE.md returns 404. */
+const DENY = /(^|[/\\])\.git([/\\]|$)|(^|[/\\])private([/\\]|$)/i;
 function serve() {
   return new Promise((resolve) => {
     const server = http.createServer((req, res) => {
       let rel = decodeURIComponent(req.url.split('?')[0]);
       if (rel === '/') rel = '/index.html';
-      const file = path.join(ROOT, path.normalize(rel).replace(/^([/\\])+/, ''));
+      const safe = path.normalize(rel).replace(/^([/\\])+/, '');
+      const file = path.join(ROOT, safe);
+      if (DENY.test(safe) || !Object.prototype.hasOwnProperty.call(MIME, path.extname(file))) {
+        res.writeHead(404); return res.end('not found');
+      }
       if (!file.startsWith(ROOT) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
         res.writeHead(404); return res.end('not found');
       }

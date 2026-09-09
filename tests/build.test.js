@@ -1134,6 +1134,37 @@ section('hr zones');
         'no real physiology in ' + f.replace('../', '') + ': rest/max ' + pair + ' is not an allowed fixture');
     }
   });
+
+  /* The same rule, one layer out. tools/shoot.js runs a static server rooted
+     at the repo, and .gitignore has no authority over a running server: an
+     untracked PRIVATE.md sitting in this directory is still a file on disk
+     that a GET can reach. The guard is an extension allowlist — the app only
+     ever loads html/js/css/json/webmanifest/png/svg/woff2/ics, so anything
+     else is a 404 before the path is even resolved. Assert against the real
+     source, not against a copy of it, because a copy drifts. */
+  {
+    const src = require('fs').readFileSync(path.join(__dirname, '../tools/shoot.js'), 'utf8');
+    const mime = src.match(/const MIME = \{[\s\S]*?\n\};/);
+    const deny = src.match(/const DENY = (\/.*\/[a-z]*);/);
+    ok(!!mime && !!deny, 'shoot.js still declares a MIME allowlist and a DENY pattern');
+    if (mime && deny) {
+      // eslint-disable-next-line no-eval
+      const MIME = eval('(' + mime[0].replace(/^const MIME = /, '').replace(/;$/, '') + ')');
+      // eslint-disable-next-line no-eval
+      const DENY = eval(deny[1]);
+      ['.md', '.env', '.json5', '.txt', '.pem', '.key', ''].forEach((ext) => {
+        ok(!Object.prototype.hasOwnProperty.call(MIME, ext),
+          'shoot.js will not serve "' + ext + '" — private notes stay off the wire');
+      });
+      ['.html', '.js', '.css', '.png', '.woff2', '.webmanifest'].forEach((ext) => {
+        ok(Object.prototype.hasOwnProperty.call(MIME, ext), 'shoot.js still serves ' + ext);
+      });
+      ['.git/config', 'private/seed.json', 'a/private/x.png'].forEach((p) => {
+        ok(DENY.test(p), 'shoot.js refuses ' + p);
+      });
+      ok(!DENY.test('js/app.js') && !DENY.test('index.html'), 'DENY does not block the app itself');
+    }
+  }
 }
 
 /* ---- 7b. Pro 4 odometer + run log ---- */
