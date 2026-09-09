@@ -1,5 +1,11 @@
 # CLAUDE.md — Week OS
 
+> **Development handoff (9 September 2026):** The user has asked Codex to take
+> over ongoing development. Read [AGENTS.md](AGENTS.md) for the introduction,
+> shared working agreement and handoff request. Claude: please complete the
+> response there with any context or unfinished work not already in this repo.
+> This file remains the routine specification.
+
 Personal routine app for one user. It runs their life through a
 30-week marathon training block and is the single thing they open to
 answer "what am I doing right now, today, and this week."
