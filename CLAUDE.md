@@ -2,8 +2,7 @@
 
 > **Development handoff (9 September 2026):** The user has asked Codex to take
 > over ongoing development. Read [AGENTS.md](AGENTS.md) for the introduction,
-> shared working agreement and handoff request. Claude: please complete the
-> response there with any context or unfinished work not already in this repo.
+> shared working agreement, Claude's completed response and Codex's acceptance.
 > This file remains the routine specification.
 
 Personal routine app for one user. It runs their life through a
@@ -132,12 +131,13 @@ gym 2–2.5h · running per plan · basketball 2h (~850 kcal ≈ 10 km-equiv:
   Tuesday evening slot; it rides the quiet spells at work.
 - **Wks 12–30** (from Mon 14 Sep, the second Monday): **College moves to
   Mondays.** Monday becomes the college day (08:00–15:00, wake 06:45) while
-  keeping its evening intact — German active 19:30, still no run, no
-  gym. Tuesday stays a work day. Holiday/race weeks still override.
+  keeping German active at 19:30 and no standard Monday run. Lower B +
+  core/calves maintenance continues through Wk 16; from Wk 17 there is no
+  Monday gym. Tuesday stays a work day. Holiday/race weeks still override.
 - **Punchbag retired (Jul 2026, from Wk 4):** Lower B moves off Saturday
   into Monday 17:10 for Wks 4–10 (day-after-long-run legs — Saturday
-  stays fresh for Sunday); Wks 11–16 it drops to a ~35-min maintenance
-  version (keep the hinge, lose the fatigue); from Wk 17 Monday is the
+  stays fresh for Sunday); Wks 11–16 use a 45-min maintenance session
+  including core/calves (keep the hinge, lose the fatigue); from Wk 17 Monday is the
   week's true zero day (no run, no gym) through the 50–60 km weeks and
   taper. Wks 1–3 keep the original layout as lived.
 - **Upper B moves Fri 13:00 → Sat 10:00 (Jul 2026, from Wk 4):**
@@ -159,8 +159,9 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
   Work · 16:30 commute · **17:10 Gym — Lower B** (moved off Saturday —
   day-after-long-run legs, RPE ≤ 7, never grind) · 18:05 shower + snack.
 - **Wks 11–16 (work Wk 11; college on Monday from Wk 12, wake 06:45):**
-  **Lower B (maintenance)** ~35 min after work/college — deadlift 2×5 @
-  RPE 6–7 · RDL 2×8 light · calf raises 3×15 · plank 2×45s.
+  **Lower B + core/calves (maintenance)** 45 min — 17:10–17:55 in Wk 11,
+  16:30–17:15 in Wks 12–16 after college. Deadlift 2×5 @ RPE 6–7 · RDL
+  2×8 light · the full Core + calves sequence in the gym programming below.
 - **Wks 17+ :** evening completely OFF — Monday is the week's true zero
   day (no run, no gym) as the 50–60 km weeks arrive.
 - **Every era:** 18:30 dinner · 19:30–21:00 German active study ·

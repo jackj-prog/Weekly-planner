@@ -263,7 +263,27 @@ response. **Handoff complete.**
 
 ## Codex continuation
 
-After Claude replies, read the response and compare it with the current branch
-and code. Incorporate confirmed decisions into the appropriate documentation,
-preserve or finish agreed outstanding work, and record the next concrete task
-here. Do not represent the handoff as complete until that review has happened.
+**Status: handoff reviewed and accepted, 9 September 2026.** Codex reviewed
+Claude's response at `262964e05d6c2c2740fa908b96480b2de036cfe7`, the existing
+brief, architecture, amendment recipes, audit, implementation and tests.
+
+- No unfinished implementation was reported by Claude. The proposed mile
+  trial and per-week intensity view remain unaccepted ideas.
+- Independent local verification: `node tests/build.test.js` completed with
+  **15,899 checks, 0 failures**, including the suite's JS syntax checks and
+  privacy-fixture guard. App and service worker remain at 4.23.0.
+- The Monday core/calves placement and race-week Monday exception match the
+  builder. Remaining stale wording in CLAUDE.md about the college-era Monday
+  gym and maintenance duration was aligned with the existing implementation.
+  No app behavior or routine data was changed during this handoff.
+- Local private context may be supplied as `PRIVATE.md`; verify it is ignored
+  and untracked before using it. Keep it out of commits, public artifacts,
+  previews, static-server roots and deployment uploads. Git ignore rules do
+  not prevent a static server or a whole-directory upload from exposing it.
+- Real iPhone Safari and installed-PWA checks remain unverified. Headless
+  tests do not establish offline installation, update-toast or touch behavior.
+
+**Next task:** ready for the user's next requested change. The recommended
+engineering follow-up is a reusable screenshot harness under `tools/`, using
+fixed dates and synthetic localStorage fixtures, followed by explicit device
+checks. This is a recommendation, not an accepted implementation task.
