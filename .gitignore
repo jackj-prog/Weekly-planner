@@ -1,2 +1,8 @@
 training.ics
 node_modules/
+
+# Personal context for agent sessions — LOCAL ONLY, never committed.
+# The repo is public; physiology and identity stay off it (CLAUDE.md §4.10).
+PRIVATE.md
+private/
+*.private.md

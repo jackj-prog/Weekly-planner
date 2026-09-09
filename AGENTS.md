@@ -130,6 +130,20 @@ The user's instruction is that sensitive context lives in conversation and not
 in git. Treat "the user told me in chat" as a reason to *exclude* something,
 not to document it. When in doubt, describe the rule and omit the value.
 
+**This repository is public.** Anything committed is published permanently:
+deleting a file in a later commit does not remove it from history, and the
+blob stays reachable by SHA through the PR view, the events API and any fork
+taken in the meantime. There is no "commit it, read it, then scrub it" — a
+real removal needs history rewriting plus a force-push plus GitHub garbage
+collection, and it still cannot recall copies already taken.
+
+If the user wants to give an agent personal context durably, the working
+pattern is a **local, gitignored file** — `PRIVATE.md`, `private/` and
+`*.private.md` are already ignored. Read it from the working tree if it is
+present; never commit it, never quote it into a commit message, an issue, a
+pull request or a file that is committed, and never reproduce its values in
+documentation. If no such file exists, ask the user rather than inferring.
+
 `tests/build.test.js` enforces the physiology half mechanically: it scans
 `data/plan.js`, `js/day-builder.js`, `js/app.js` and itself for `hrZones(...)`
 and `zoneOf(...)` literals and fails on any rest/max pair outside a declared
