@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.30.0';
+  const APP_VERSION = '4.31.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -357,7 +357,9 @@
         const q = el(
           '<div class="tl-quiet' + (isCurrent ? ' current' : '') + '">' +
           '<span class="t">' + b.start + '–' + b.end + '</span>' +
-          '<span>' + esc(b.title) + (b.detail ? ' <span class="d">· ' + esc(withZones(b.detail)) + '</span>' : '') + '</span></div>'
+          '<div class="quiet-main">' + (b.detail ? '<details class="anchor-detail" data-disclosure="' + esc(iso + '|' + b.id) + '"' +
+          (openDetails.has(iso + '|' + b.id) ? ' open' : '') + '><summary>' + esc(b.title) + '</summary>' +
+          '<div class="detail-body">' + esc(withZones(b.detail)) + '</div></details>' : esc(b.title)) + '</div></div>'
         );
         tl.appendChild(q);
       } else {
@@ -372,6 +374,19 @@
     /* weight input just opened — put the cursor in it */
     const wi = view.querySelector('.xw-in');
     if (wi) { wi.focus(); wi.select(); }
+  }
+
+  // Show one intact source clause; keep the remaining source text on tap.
+  function detailHTML(text, key, quiet) {
+    if (!text) return '';
+    const parts = withZones(text).split(' · ');
+    const preview = parts[0].length <= 110 && !quiet ? parts.shift() : '';
+    if (!parts.length) return '<p class="operative">' + esc(preview) + '</p>';
+    return '<details class="session-detail" data-disclosure="' + esc(key) + '"' +
+      (openDetails.has(key) ? ' open' : '') + '><summary>' +
+      (preview ? '<span>' + esc(preview) + '</span>' : '') +
+      '<small>' + (preview ? 'Details' : 'Session details') + '</small></summary>' +
+      '<div class="detail-body">' + parts.map(p => '<p>' + esc(p) + '</p>').join('') + '</div></details>';
   }
 
   function buildNowNext(day) {
@@ -567,8 +582,7 @@
     // source text at its own separators without rewriting any prescription.
     const prefix = kmTxt + ' km · ' + r.run.shoe + ' · ';
     const detail = r.detail.startsWith(prefix) ? r.detail.slice(prefix.length) : r.detail;
-    const instructions = detail.split(' · ');
-    const effort = instructions.splice(0, Math.min(2, instructions.length)).join(' · ');
+
     const hero = el(
       '<section class="hero' + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (just === r.id ? ' just' : '') + '">' +
       '<div class="h-top"><div class="h-tag">' + (isRace ? 'RACE DAY' : 'TODAY’S RUN') +
@@ -578,8 +592,7 @@
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
       '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span><span><b>WINDOW</b>' + r.start + '–' + r.end + '</span></div>' +
-      '<div class="h-detail"><p>' + esc(withZones(effort)) + '</p>' +
-      (instructions.length ? '<ul>' + instructions.map((s) => '<li>' + esc(withZones(s)) + '</li>').join('') + '</ul>' : '') + '</div>' +
+      '<div class="h-detail">' + detailHTML(detail, iso + '|hero', false) + '</div>' +
       (longRunGuard(iso, day) || '') +
       paceTableHTML(r.table) +
       logHTML + '</section>'
@@ -789,9 +802,9 @@
       '<div class="c-time">' + b.start + (b.end && b.end !== b.start ? '–' + b.end : '') +
       (opts.current ? ' <span class="nowflag">· NOW</span>' : '') + '</div>' +
       '<div class="c-title">' + esc(b.title) + '</div>' +
-      (b.detail ? '<div class="c-detail">' + esc(withZones(b.detail)) + '</div>' : '') +
+      '<div class="c-detail">' + detailHTML(b.detail, iso + '|' + b.id, false) + '</div>' +
       (b.table ? paceTableHTML(b.table) : '') +
-      (b.plan ? '<div class="c-plan">' + b.plan.map((p) => {
+      (b.plan ? '<details class="session-plan" data-disclosure="' + esc(iso + '|' + b.id + '|plan') + '"' + (openDetails.has(iso + '|' + b.id + '|plan') ? ' open' : '') + '><summary>' + b.plan.length + ' exercises <span>View session</span></summary><div class="c-plan">' + b.plan.map((p) => {
         let w = '';
         if (b.cat === 'gym') {
           const key = exKey(p.ex);
@@ -806,7 +819,7 @@
         }
         return '<div class="xr"><span class="xn">' + esc(p.ex) + '</span>' +
           '<span class="xs">' + esc(p.sets) + '</span>' + w + '</div>';
-      }).join('') + '</div>' : '') +
+      }).join('') + '</div></details>' : '') +
       '<div class="c-cat">' + esc(b.cat) + (opts.skipped ? ' · skipped' : '') +
       (opts.moved ? ' · moved from ' + esc(fmtShort(opts.moved.fromIso)) : '') + '</div>' +
       (expanded ? '<div class="c-actions">' +
@@ -820,7 +833,7 @@
         '</div>' : '') +
       '</div>' +
       '<div class="c-side">' +
-      '<button class="tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="Mark ' + esc(b.title) + ' done">✓</button>' +
+      '<button class="tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' + (isDone ? 'Mark not done: ' : 'Mark done: ') + esc(b.title) + '">✓ <span>' + (isDone ? 'Done' : 'Mark done') + '</span></button>' +
       '<button class="more-btn" aria-label="Actions">⋯</button>' +
       '</div></div>'
     );
@@ -2005,7 +2018,13 @@
   }
 
   /* ================= router ================= */
+  const openDetails = new Set();
+
   function render() {
+    document.querySelectorAll('details[data-disclosure]').forEach(node => {
+      if (node.open) openDetails.add(node.dataset.disclosure);
+      else openDetails.delete(node.dataset.disclosure);
+    });
     renderHeader();
     document.querySelectorAll('.tab').forEach((t) => {
       t.classList.toggle('active', t.getAttribute('data-nav') === state.view ||

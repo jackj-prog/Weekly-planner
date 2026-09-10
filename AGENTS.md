@@ -392,3 +392,13 @@ claim; under 2% fitted movement reads holding steady (a display convention,
 not a physiological threshold). Values and limitations are available on tap.
 Synthetic tests cover flat, tiny wobble, rise/fall, outliers, rolling reference,
 invalid inputs and irregular dates, and run with the existing deploy suite.
+
+## Round two: progressive disclosure and timeline hierarchy — v4.31
+
+Show an intact first source clause when short; remaining clauses reveal on
+tap. Long single clauses and scaffold rationale sit behind Session details.
+No plan text is rewritten or removed. Gym exercises have a separate session
+disclosure. Native details stay open across ticks, weight edits and minute
+refreshes during this session without adding storage keys. Session titles get
+full width; completion and actions have real 44 px controls below. Scaffold
+anchors use a quiet time column, while doable cards carry category borders.

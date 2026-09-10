@@ -1194,3 +1194,52 @@ body { font-size: var(--type-body); line-height: var(--leading-body); }
 .ef-data th { font-family: var(--body); font-weight: 600; }
 .ef-data th, .ef-data td { text-align: right; padding: 8px 4px; border-bottom: 1px solid var(--line); }
 .ef-data th:first-child, .ef-data td:first-child { text-align: left; }
+
+/* Session-first timeline: anchors are quiet; actions have a clear surface. */
+.tl { gap: 12px; padding-left: 22px; }
+.tl::before { left: 5px; width: 1px; }
+.tl-quiet { align-items: start; padding: 7px 0; gap: 12px; color: var(--t2); }
+.tl-quiet::before { left: -20px; top: 12px; width: 7px; height: 7px; border-width: 1px; }
+.tl-quiet .t { color: var(--t2); flex-basis: 86px; padding-top: 2px; }
+.quiet-main { min-width: 0; flex: 1; }
+.tl-card { display: block; padding: 16px; border-radius: 12px; background: var(--surface); box-shadow: 0 2px 4px rgba(22,36,42,.04); border-left: 3px solid var(--cat); }
+.tl-card::before { left: -24px; top: 20px; width: 11px; height: 11px; }
+.tl-card .c-time { margin-bottom: 6px; color: var(--t2); }
+.tl-card .c-side { flex-direction: row; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.tl-card .tick { width: 44px; height: 44px; font-size: 20px; }
+.tl-card .tick::after, .tl-card .more-btn::after { display: none; }
+.tl-card .more-btn { width: 44px; height: 44px; }
+.tl-card.done .c-title { text-decoration: none; opacity: 1; }
+.tl-card.done .c-detail, .tl-card.done .c-plan { opacity: 1; }
+.tl-card.done { border-color: var(--line); background: color-mix(in srgb, var(--cat) 5%, var(--surface)); }
+.operative { font: inherit; margin-top: 6px; }
+.session-detail { margin-top: 6px; }
+.session-detail summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; list-style: none; cursor: pointer; padding: 8px 0; min-height: 44px; }
+.session-detail summary::-webkit-details-marker { display: none; }
+.session-detail summary span { flex: 1 1 150px; color: var(--text); }
+.session-detail summary small { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--t2); white-space: nowrap; }
+.session-detail summary small::after { content: '+'; font-size: 18px; line-height: 1; }
+.session-detail[open] summary small::after { content: '−'; }
+.detail-body { border-top: 1px solid var(--line); padding-block: 8px; }
+.detail-body p + p { margin-top: 10px; }
+.session-detail, .session-plan { font-family: var(--body); font-size: var(--type-note); line-height: var(--leading-body); }
+.session-plan { margin-top: 12px; border-top: 1px solid var(--line); }
+.session-plan summary { min-height: 48px; padding-block: 12px; font-weight: 600; cursor: pointer; }
+.session-plan summary span { font-size: 12px; font-weight: 400; color: var(--t2); float: right; }
+.session-plan .c-plan { margin-top: 0; }
+.hero .session-detail summary span { color: inherit; font-weight: 600; }
+.hero .session-detail summary small { color: #dce5e3; }
+.hero .detail-body { border-color: rgba(255,255,255,.2); }
+.hero .detail-body p { font-weight: 400; }
+.tl-quiet .session-detail { margin-top: 0; }
+.tl-quiet .session-detail summary { padding-block: 4px; }
+.tl-quiet .detail-body { color: var(--t2); }
+summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.tl-quiet { padding-block: 0; align-items: baseline; }
+.anchor-detail summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; cursor: pointer; list-style: none; }
+.anchor-detail summary::-webkit-details-marker { display: none; }
+.anchor-detail summary::after { content: '+'; font-size: 18px; color: var(--t2); }
+.anchor-detail[open] summary::after { content: '−'; }
+.tl-card .tick { width: auto; min-width: 112px; padding: 0 12px; border-radius: 8px; color: var(--t2); border-width: 1px; font-size: 16px; }
+.tl-card .tick span { font-size: 14px; font-weight: 600; }
+.tl-card .tick.on { color: var(--paper); background: var(--text); border-color: var(--text); }
