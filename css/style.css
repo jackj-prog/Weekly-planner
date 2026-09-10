@@ -13,54 +13,57 @@
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/inter-latin-600-normal.woff2') format('woff2'); }
 
 :root {
-  /* FOREST · CREAM · WINE (v4.36) — see CLAUDE.md §3.
-     The app was teal-and-orange: slate chrome, slate hero, orange accent,
-     blue build phase, ochre taper. It is now built on deep forest green,
-     warm cream and a wine red. Green because the whole subject is running
-     outdoors and it carries a 30-week phase progression naturally; cream
-     because a warm ground makes a dark card look intentional rather than
-     merely dark; wine because the accent must read URGENT for race and key
-     days without being the orange it replaces.
-     --line steps ~8% off --paper, not ~3%, so hairlines survive daylight
-     at arm's length. */
-  --ink: #1e2b24;
-  --paper: #f5f1e8;
-  --surface: #fffdf8;
-  --line: #e3ddcd;
-  --accent: #a62f35;
-  --accent-fill: #a62f35;  /* accent as a FILL behind white text — must stay
-                              dark enough for that in BOTH themes; --accent
-                              itself has to lift in dark to work as text */
+  /* NEAR-BLACK · GREY · ONE RED (v4.38) — see CLAUDE.md §3.
+     Modelled on Netflix's dark UI, which is disciplined rather than
+     colourful: a near-black ground, cards a shade above it, a grey text
+     ladder, white for what matters, and exactly one saturated red carrying
+     every high-signal thing. No light theme — Netflix has none, and one
+     palette means one contrast matrix to keep honest.
+     The greys do the layout work; the red is spent only on the race, key
+     days, NOW, and the run itself. */
+  color-scheme: dark;
 
-  /* derived tokens — the only place light/dark differ */
-  --text: #1e2b24;
-  --t2: #5c6357;           /* secondary text */
-  --t3: #656c5d;           /* tertiary text (times, hints) — AA at 11px */
-  --chrome-bg: #1e2b24;    /* topbar · now/next · active tab · toast */
-  --chrome-text: #f5f1e8;
-  --tabbar-bg: rgba(245, 241, 232, 0.92);
-  --hero-bg: #2f4438;
+  --ink: #141414;          /* the ground, and text on any light-filled chip */
+  --paper: #141414;
+  --surface: #1f1f1f;
+  --line: #333333;
+  --accent: #ff3b45;       /* accent as TEXT — the true brand red is only
+                              3.84:1 on this ground and fails AA, so text
+                              gets a lifted variant */
+  --accent-fill: #e50914;  /* accent as a FILL behind white text — the real
+                              Netflix red, 4.79:1 against white */
 
-  /* Phases read as a progression rather than three unrelated colours:
-     sage while the base is being laid, deep forest through Build, plum as
-     the taper quietens and the accent approaches. */
-  --phase-base: #7d9268;
-  --phase-build: #3f6b55;
-  --phase-taper: #8f6178;
+  --text: #ffffff;
+  --t2: #b3b3b3;           /* secondary text */
+  --t3: #8c8c8c;           /* tertiary text (times, hints) — AA at 11px */
+  --chrome-bg: #000000;    /* topbar · now/next · active tab · toast */
+  --chrome-text: #ffffff;
+  --tabbar-bg: rgba(0, 0, 0, 0.92);
+  --hero-bg: #262626;      /* the run card is RAISED, not coloured */
 
-  /* Categories carry HUE, not just lightness. run/study/work/free/routine
-     were five desaturated grey-greens — legible individually, identical in
-     a list, which is most of why the timeline read as one flat texture. */
-  --cat-run: #2f4438;      /* deep forest — the hero colour */
-  --cat-xt: #3d8f6b;       /* emerald */
-  --cat-gym: #8b6650;      /* clay */
-  --cat-study: #6a5885;    /* violet */
-  --cat-german: #717f42;   /* olive */
-  --cat-work: #787d74;     /* warm grey — quiet by design */
-  --cat-meal: #a06463;     /* rose */
-  --cat-free: #97a68f;     /* pale sage */
-  --cat-reading: #7d5468;  /* wine-plum */
-  --cat-routine: #bdbeb3;  /* palest — the quietest scaffold */
+  /* Phases climb the grey ladder toward the red as the race approaches:
+     quiet while the base is laid, brighter through Build, the accent itself
+     for the taper. */
+  --phase-base: #8a8a8a;
+  --phase-build: #c9c9c9;
+  --phase-taper: #ff3b45;
+
+  /* Categories stay muted and mostly neutral — this is a dark UI, not a
+     rainbow — but each still owns a distinguishable hue, because five
+     shades of the same grey is what made the timeline read flat. All clear
+     3:1 against --surface, the WCAG floor for non-text UI. */
+  --cat-run: #d9d9d9;      /* near-white — running is the subject, but
+                              RED is reserved for hard and race, so the run
+                              category takes the brightest neutral instead */
+  --cat-xt: #4fb8a5;       /* teal */
+  --cat-gym: #bfbfbf;      /* steel */
+  --cat-study: #9b7ede;    /* violet */
+  --cat-german: #5fa872;   /* green */
+  --cat-work: #8c8c8c;     /* grey — quiet by design */
+  --cat-meal: #d98f8f;     /* rose */
+  --cat-free: #9e9e9e;     /* grey */
+  --cat-reading: #c77da8;  /* pink */
+  --cat-routine: #707070;  /* darkest — the quietest scaffold */
 
   --display: "Archivo", "Archivo Black", "Avenir Next Condensed", "Arial Black", "Helvetica Neue", sans-serif;
   --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -82,44 +85,6 @@
 
 /* Dark theme — hand-picked steps from the same hues, not an auto-flip.
    Kicks in with the system setting: the 22:00 read shouldn't glare. */
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Dark stays cool and neutral — a warm cast here reads muddy rather than
-       cosy. --line lifted so card edges survive on an OLED at low brightness.
-       Category hues mirror the light set so a colour means the same thing in
-       both themes. */
-    /* Dark is the same forest, taken down rather than recoloured: a green
-       near-black ground, cream text, the wine accent lifted enough to carry
-       on an OLED at low brightness. Every hue mirrors the light set so a
-       colour means the same thing in both themes. */
-    --paper: #141a16;
-    --surface: #1c2620;
-    --line: #35423a;
-    --accent: #e06d67;
-    --accent-fill: #a62f35;
-    --text: #ece7db;
-    --t2: #aab0a3;
-    --t3: #868d81;
-    --chrome-bg: #22302a;
-    --chrome-text: #ece7db;
-    --tabbar-bg: rgba(20, 26, 22, 0.92);
-    --hero-bg: #2b4438;
-    --phase-base: #9bb083;
-    --phase-build: #5f9077;
-    --phase-taper: #b1839a;
-    --cat-run: #86ac96;
-    --cat-xt: #55b78c;
-    --cat-gym: #b5896e;
-    --cat-study: #9884b5;
-    --cat-german: #9aa963;
-    --cat-work: #9aa094;
-    --cat-meal: #c88b89;
-    --cat-free: #8fa088;
-    --cat-reading: #ad7c95;
-    --cat-routine: #7e8a79;
-  }
-  .chip { color: var(--ink); }   /* dark text on the lightened chip fills */
-}
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -158,9 +123,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   color: var(--chrome-text); background: rgba(255,255,255,0.12);
   border: 1px solid rgba(255,255,255,0.2);
 }
-.topbar-week .ph-base { color: #accb9a; }
-.topbar-week .ph-build { color: #8fc0a5; }
-.topbar-week .ph-taper { color: #d3a7bd; }
+.topbar-week .ph-base { color: var(--phase-base); }
+.topbar-week .ph-build { color: var(--phase-build); }
+.topbar-week .ph-taper { color: var(--phase-taper); }
 .topbar-count {
   margin-left: auto; text-align: right;
   font-family: var(--mono); font-size: 12px; line-height: 1.25;
@@ -185,12 +150,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .chip {
   font-family: var(--mono); font-size: 10px; font-weight: 700;
   letter-spacing: 0.06em; padding: 2px 8px; border-radius: 999px;
-  color: #fff; text-transform: uppercase;
+  color: var(--ink); text-transform: uppercase;
 }
 .chip.base { background: var(--phase-base); }
 .chip.build { background: var(--phase-build); }
 .chip.taper { background: var(--phase-taper); }
-.chip.hot { background: var(--accent-fill); }
+.chip.hot { background: var(--accent-fill); color: #fff; }
 .chip.mut { background: var(--t3); }
 .notday {
   display: inline-flex; align-items: center; gap: 6px;
@@ -551,7 +516,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   font-family: var(--display); font-weight: 800; font-size: 14px;
   color: var(--t2);
 }
-.tab.active { background: var(--chrome-bg); color: var(--chrome-text); }
+.tab.active { background: var(--text); color: var(--ink); }
 
 /* ---- sheet ------------------------------------------------------------ */
 .sheet-backdrop {
@@ -1108,9 +1073,11 @@ body { background: var(--paper); }
 .profile-bars { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); }
 .profile-day { min-width: 44px; padding: 0 2px; display: flex; flex-direction: column; align-items: center; border-radius: 6px; }
 .profile-track { width: 24px; height: 88px; display: flex; align-items: end; border-bottom: 2px solid var(--line); }
-.profile-track i { width: 100%; background: var(--cat-run); border-radius: 5px 5px 0 0; }
+/* The profile must say EASY / HARD / LONG at a glance: mid-grey for the
+   routine days, red for the week's hard session, white for its headline. */
+.profile-track i { width: 100%; background: var(--t2); border-radius: 5px 5px 0 0; }
 .profile-day.hard .profile-track i { background: var(--accent); }
-.profile-day.long .profile-track i { background: var(--phase-build); }
+.profile-day.long .profile-track i { background: var(--text); }
 .profile-km { font-family: var(--mono); font-size: 14px; padding-top: 8px; }
 .profile-date { font-family: var(--mono); font-size: 11px; color: var(--t2); margin-top: 4px; padding: 3px 5px; }
 .profile-day[aria-current] .profile-date { background: var(--text); color: var(--paper); border-radius: 5px; }

@@ -49,40 +49,49 @@ data, day structures, times, or rules below unless explicitly asked.
 
 ## 3. Design tokens (keep this identity)
 
-**FOREST · CREAM · WINE** (v4.36 — replaced the original teal-and-orange).
+**NEAR-BLACK · GREY · ONE RED** (v4.38 — dark only, modelled on Netflix).
 
-- ink #1e2b24 · paper #f5f1e8 · surface #fffdf8 · line #e3ddcd
-- accent (race/key/hard) #a62f35
-- phases: base #7d9268 · build #3f6b55 · taper #8f6178
-- category colours: run #2f4438 · cross-train #3d8f6b · gym #8b6650 ·
-  study #6a5885 · german #717f42 · work #787d74 · meal #a06463 ·
-  free #97a68f · reading #7d5468 · routine #bdbeb3
+- ink/paper #141414 · surface #1f1f1f · line #333333 · text #ffffff
+- secondary #b3b3b3 · tertiary #8c8c8c · chrome #000000
+- accent as TEXT #ff3b45 · accent as FILL #e50914 · hero (raised) #262626
+- phases: base #8a8a8a · build #c9c9c9 · taper #ff3b45
+- category colours: run #d9d9d9 · cross-train #4fb8a5 · gym #bfbfbf ·
+  study #9b7ede · german #5fa872 · work #8c8c8c · meal #d98f8f ·
+  free #9e9e9e · reading #c77da8 · routine #707070
 - Type: Archivo 800/900 (display) · Space Mono (times/data) · Inter (body)
 
-**Why this palette.** The app was teal-and-orange — slate chrome, slate
-hero, orange accent, blue Build phase, ochre taper. The user disliked it,
-and it also had two structural faults. Deep forest green now carries the
-identity: the subject is running outdoors, and green supports a 30-week
-phase progression naturally (sage while the base is laid → deep forest
-through Build → plum as the taper quietens and the accent approaches).
-Cream, not grey-white, because a warm ground makes a dark card look
-intentional rather than merely dark. Wine red for the accent because race
-and key days must read URGENT without being the orange they replaced.
+**Why this palette.** Two earlier attempts were rejected — teal-and-orange,
+then forest-and-cream. This one is modelled on Netflix's dark UI, which is
+disciplined rather than colourful: a near-black ground, cards a shade above
+it, a grey text ladder, white for what matters, and exactly one saturated
+red carrying every high-signal thing. The greys do the layout work; the red
+is spent only on the race, key days, NOW, and the week's hard session.
 
-The structural faults, both fixed and both worth not reintroducing:
-`line` sat ~3% off `paper`, so hairlines vanished on a phone at arm's
-length — it now steps ~8%. And run/study/work/free/routine were five
-desaturated grey-greens: legible one at a time, identical in a list, which
-is most of why the timeline read as one flat texture whatever the type did.
-Every category now owns a distinguishable hue.
+**There is no light theme.** Netflix has none, and one palette means one
+contrast matrix to keep honest rather than two. `:root` declares
+`color-scheme: dark` so native controls match.
 
-Dark is the same forest taken down rather than recoloured — a green
-near-black ground, cream text, the accent lifted for OLED at low
-brightness — and mirrors every hue so a colour means the same thing in both
-themes. **Colours belong in tokens.** v4.36 also removed a set of stale
-hardcoded hex values (old paper, old ink, a blue phase tint, an ochre one)
-that had survived outside `:root` and were still painting the previous
-palette on screen after it had been replaced.
+**Two tokens for the accent, and it is not redundancy.** The real brand red
+#e50914 is only 3.84:1 on this ground, so it fails AA *as text* — but white
+on it is 4.79:1, so it passes *as a fill*. Those requirements pull in
+opposite directions and one token cannot serve both. `--accent` (#ff3b45)
+is for type; `--accent-fill` (#e50914) is for filled surfaces carrying white
+type. Decorative fills with no text on them use `--accent`.
+
+**Semantics the colours must keep.** Red means hard. The distance profile
+reads grey for routine days, red for the week's quality session, white for
+the long run — so `--cat-run` is deliberately a neutral, not the red, or
+easy days shout as loudly as hard ones.
+
+**Colours belong in tokens.** Three separate repaints each left stale hex
+behind — a blue phase tint, an ochre one, an old paper, an old ink — still
+painting a retired palette after it had been replaced. Worse, `theme-color`
+in index.html and `background_color` in the manifest were two palettes out
+of date, so the app flashed a retired colour on every cold launch while
+every pixel it then drew was current. `tests/build.test.js` now reads the
+real tokens out of `css/style.css` and fails any text pair below WCAG AA,
+and separately checks that the PWA's own chrome colours are current tokens.
+Do not reintroduce a colour that lives outside `:root`.
 
 ## 4. Product intent (UX is yours to design)
 

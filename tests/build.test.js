@@ -1186,10 +1186,14 @@ section('palette contrast (WCAG AA)');
     });
     return out;
   };
-  const lightSrc = css.slice(css.indexOf(':root {'), css.indexOf('}', css.indexOf(':root {')));
+  const rootSrc = css.slice(css.indexOf(':root {'), css.indexOf('}', css.indexOf(':root {')));
+  const themes = [['root', grab(rootSrc)]];
+  /* The app is dark-only since v4.38 and declares no light theme. If one is
+     ever reintroduced, it gets held to the same floor automatically. */
   const darkAt = css.indexOf('@media (prefers-color-scheme: dark)');
-  const darkSrc = css.slice(darkAt, css.indexOf('\n  }', darkAt));
-  const light = grab(lightSrc), dark = grab(darkSrc);
+  if (darkAt >= 0) themes.push(['dark', grab(css.slice(darkAt, css.indexOf('\n  }', darkAt)))]);
+  ok(/color-scheme:\s*dark/.test(rootSrc) || darkAt >= 0,
+    'the stylesheet declares its colour scheme, so form controls match the UI');
 
   const lum = (hex) => {
     const v = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
@@ -1210,19 +1214,47 @@ section('palette contrast (WCAG AA)');
     ['--chrome-text', '--chrome-bg'],
   ];
   const AA = 4.5;
-  [['light', light], ['dark', dark]].forEach(([name, set]) => {
+  themes.forEach(([name, set]) => {
     ok(Object.keys(set).length > 10, name + ' palette parsed out of style.css');
     PAIRS.forEach(([f, b]) => {
       if (!set[f] || !set[b]) return ok(false, name + ' palette is missing ' + f + ' or ' + b);
       const r = ratio(set[f], set[b]);
       ok(r >= AA, name + ' ' + f + ' on ' + b + ' is ' + r.toFixed(2) + ':1 (needs ' + AA + ')');
     });
-    /* Cards that paint white type on a filled ground. */
+    /* Surfaces that paint white type on a filled ground. */
     ['--hero-bg', '--accent-fill'].forEach((b) => {
       const r = ratio('#ffffff', set[b]);
       ok(r >= AA, name + ' white on ' + b + ' is ' + r.toFixed(2) + ':1 (needs ' + AA + ')');
     });
+    /* Phase chips: 10px bold mono on a phase fill. Small text on a coloured
+       pill is the easiest thing in the app to get wrong, and it carries the
+       week's phase — one of the few things read at a glance. */
+    ['--phase-base', '--phase-build', '--phase-taper'].forEach((b) => {
+      const r = ratio(set['--ink'], set[b]);
+      ok(r >= AA, name + ' chip text on ' + b + ' is ' + r.toFixed(2) + ':1 (needs ' + AA + ')');
+    });
   });
+
+  /* The PWA's own chrome lives OUTSIDE the stylesheet — the status bar comes
+     from index.html's theme-color and the launch splash from the manifest's
+     background_color. Both had been stale across two repaints, so the app was
+     still flashing a retired palette on every cold launch while every pixel it
+     then drew was current. Colours that live outside the tokens are exactly
+     the ones nobody remembers to change. */
+  {
+    const root = themes[0][1];
+    const html = require('fs').readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+    const mani = JSON.parse(require('fs').readFileSync(path.join(__dirname, '../manifest.webmanifest'), 'utf8'));
+    const themeColors = [...html.matchAll(/<meta name="theme-color"[^>]*content="(#[0-9a-fA-F]{6})"/g)].map((m) => m[1]);
+    ok(themeColors.length > 0, 'index.html declares a theme-color');
+    const live = new Set(Object.values(root).map((v) => v.toLowerCase()));
+    themeColors.forEach((c) => ok(live.has(c.toLowerCase()),
+      'theme-color ' + c + ' is a current palette token, not a retired one'));
+    ok(live.has(String(mani.theme_color).toLowerCase()),
+      'manifest theme_color ' + mani.theme_color + ' is a current palette token');
+    ok(live.has(String(mani.background_color).toLowerCase()),
+      'manifest background_color ' + mani.background_color + ' is current — it is the launch splash');
+  }
 }
 
 /* ---- 7b. Pro 4 odometer + run log ---- */
