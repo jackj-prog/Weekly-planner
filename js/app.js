@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.42.0';
+  const APP_VERSION = '4.43.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1538,9 +1538,11 @@
     return sec >= 4200 && sec <= 12000 ? sec : null;      // 1:10–3:20 sanity band
   }
   function fmtClock(sec) {
-    const h = Math.floor(sec / 3600);
-    const m = Math.round((sec % 3600) / 60);
-    return h + ':' + String(m).padStart(2, '0');
+    /* Round to whole minutes FIRST, then split. Rounding the remainder on
+       its own lets it reach 60 and print an hour that does not exist: a 1:55
+       half projected 3:59:47, which came out as "3:60". */
+    const mins = Math.round(sec / 60);
+    return Math.floor(mins / 60) + ':' + String(mins % 60).padStart(2, '0');
   }
   function fmtPace(secPerKm) {
     const m = Math.floor(secPerKm / 60);
