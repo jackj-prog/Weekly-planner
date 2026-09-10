@@ -1268,6 +1268,7 @@ section('palette contrast (WCAG AA)');
     const root = themes[0][1];
     const html = require('fs').readFileSync(path.join(__dirname, '../index.html'), 'utf8');
     const mani = JSON.parse(require('fs').readFileSync(path.join(__dirname, '../manifest.webmanifest'), 'utf8'));
+    const appSrc = require('fs').readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
     const themeColors = [...html.matchAll(/<meta name="theme-color"[^>]*content="(#[0-9a-fA-F]{6})"/g)].map((m) => m[1]);
     ok(themeColors.length > 0, 'index.html declares a theme-color');
     const live = new Set(Object.values(root).map((v) => v.toLowerCase()));
@@ -1293,6 +1294,17 @@ section('palette contrast (WCAG AA)');
     /* The update toast is the only signal that a new version exists. */
     ok(/id="toast"[^>]*(role="status"|aria-live)/.test(html),
       'the update toast is announced to assistive technology');
+
+    /* aria-haspopup says a menu EXISTS; only aria-expanded says whether it is
+       open right now. And the tab bar is position:fixed, so its place in the
+       DOM is purely tab order — last meant twenty presses through a whole day
+       before reaching primary navigation. */
+    ok(/data-nav="more"[^>]*aria-expanded=/.test(html),
+      'the More button declares aria-expanded');
+    ok(html.indexOf('<nav class="tabbar"') < html.indexOf('<main'),
+      'primary navigation precedes the day content in the DOM, so it is one tab away');
+    ok(/aria-expanded/.test(appSrc) && /'Escape'/.test(appSrc),
+      'the sheet toggles aria-expanded and closes on Escape');
 
     /* 44px tap-target floor. A rendered audit needs a browser, which this
        suite deliberately does not have, so this asserts the rules exist —

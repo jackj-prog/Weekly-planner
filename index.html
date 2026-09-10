@@ -15,6 +15,16 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- The tab bar is position:fixed, so where it sits in the DOM is purely a
+       tab-order decision and has no visual effect. It used to come last, which
+       meant twenty tab presses through a whole day before reaching primary
+       navigation. First is both conventional and free. -->
+  <nav class="tabbar" aria-label="Primary">
+    <button data-nav="today" class="tab active">Today</button>
+    <button data-nav="week" class="tab">Week</button>
+    <button data-nav="more" class="tab" aria-haspopup="true" aria-expanded="false" aria-controls="sheet-backdrop">More</button>
+  </nav>
+
   <header class="topbar" id="topbar">
     <div class="topbar-brand">WEEK<span>OS</span></div>
     <button class="topbar-week" id="hdr-week" aria-label="Current week"></button>
@@ -22,12 +32,6 @@
   </header>
 
   <main id="view" class="view"></main>
-
-  <nav class="tabbar" aria-label="Primary">
-    <button data-nav="today" class="tab active">Today</button>
-    <button data-nav="week" class="tab">Week</button>
-    <button data-nav="more" class="tab" aria-haspopup="true">More</button>
-  </nav>
 
   <div class="sheet-backdrop hidden" id="sheet-backdrop">
     <div class="sheet" role="menu">

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.40.0';
+  const APP_VERSION = '4.41.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -2124,12 +2124,18 @@
   }
 
   /* ---- navigation ---- */
+  /* The sheet's open state has to be announced, not just drawn: aria-haspopup
+     says a menu exists, only aria-expanded says whether it is currently open. */
+  function setSheet(open) {
+    document.getElementById('sheet-backdrop').classList.toggle('hidden', !open);
+    const more = document.querySelector('[data-nav="more"]');
+    if (more) more.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
   document.querySelectorAll('[data-nav]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const nav = btn.getAttribute('data-nav');
-      const backdrop = document.getElementById('sheet-backdrop');
-      if (nav === 'more') { backdrop.classList.remove('hidden'); return; }
-      backdrop.classList.add('hidden');
+      if (nav === 'more') { setSheet(true); return; }
+      setSheet(false);
       if (nav === 'close') return;
       if (nav === 'today') { state.dateISO = todayISO(); state.expanded = null; }
       if (nav === 'week') state.weekAnchor = mondayOf(state.dateISO || todayISO());
@@ -2139,7 +2145,18 @@
     });
   });
   document.getElementById('sheet-backdrop').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
+    if (e.target === e.currentTarget) setSheet(false);
+  });
+  /* Escape closes it, which a menu is expected to do and a keyboard user
+     will reach for before hunting the Close item. */
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const backdrop = document.getElementById('sheet-backdrop');
+    if (backdrop && !backdrop.classList.contains('hidden')) {
+      setSheet(false);
+      const more = document.querySelector('[data-nav="more"]');
+      if (more) more.focus();
+    }
   });
 
   /* ---- minute tick: full render only when the NOW block changes ---- */
