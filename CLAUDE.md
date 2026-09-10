@@ -49,26 +49,40 @@ data, day structures, times, or rules below unless explicitly asked.
 
 ## 3. Design tokens (keep this identity)
 
-- ink #16242a · paper #f3f1ec · surface #ffffff · line #e0dbd2
-- accent (race/key/hard) #d4472a
-- phases: base #6f8c63 · build #436883 · taper #c5872f
-- category colours: run #2c3f46 · cross-train #2f8f83 · gym #9a7340 ·
-  study #5b7f9e · german #43775f · work #6f7a77 · meal #b0742c ·
-  free #93a29b · reading #7a5f84 · routine #b6bdb5
+**FOREST · CREAM · WINE** (v4.36 — replaced the original teal-and-orange).
+
+- ink #1e2b24 · paper #f5f1e8 · surface #fffdf8 · line #e3ddcd
+- accent (race/key/hard) #a62f35
+- phases: base #7d9268 · build #3f6b55 · taper #8f6178
+- category colours: run #2f4438 · cross-train #3d8f6b · gym #8b6650 ·
+  study #6a5885 · german #717f42 · work #787d74 · meal #a06463 ·
+  free #97a68f · reading #7d5468 · routine #bdbeb3
 - Type: Archivo 800/900 (display) · Space Mono (times/data) · Inter (body)
 
-**Palette revised Sep 2026 (v4.35).** Two faults, both structural rather
-than matters of taste. The paper was #eef0ea, a green-cast grey that read
-institutional under warm light and fought the teal chrome; it is now a warm
-neutral, which lets the same cool ink and accent sit on it deliberately
-rather than accidentally. And `line` sat only ~3% off `paper`, so hairlines
-vanished on a phone at arm's length — it now steps ~8%. The category set
-carried the bigger problem: run/study/work/free/routine were five
-desaturated grey-greens, legible one at a time and identical in a list,
-which is most of why the timeline read as one flat texture. Each now owns a
-distinguishable hue while staying muted enough for a tool. Dark theme stays
-cool and neutral — a warm cast there reads muddy — but mirrors the category
-hues so a colour means the same thing in both.
+**Why this palette.** The app was teal-and-orange — slate chrome, slate
+hero, orange accent, blue Build phase, ochre taper. The user disliked it,
+and it also had two structural faults. Deep forest green now carries the
+identity: the subject is running outdoors, and green supports a 30-week
+phase progression naturally (sage while the base is laid → deep forest
+through Build → plum as the taper quietens and the accent approaches).
+Cream, not grey-white, because a warm ground makes a dark card look
+intentional rather than merely dark. Wine red for the accent because race
+and key days must read URGENT without being the orange they replaced.
+
+The structural faults, both fixed and both worth not reintroducing:
+`line` sat ~3% off `paper`, so hairlines vanished on a phone at arm's
+length — it now steps ~8%. And run/study/work/free/routine were five
+desaturated grey-greens: legible one at a time, identical in a list, which
+is most of why the timeline read as one flat texture whatever the type did.
+Every category now owns a distinguishable hue.
+
+Dark is the same forest taken down rather than recoloured — a green
+near-black ground, cream text, the accent lifted for OLED at low
+brightness — and mirrors every hue so a colour means the same thing in both
+themes. **Colours belong in tokens.** v4.36 also removed a set of stale
+hardcoded hex values (old paper, old ink, a blue phase tint, an ochre one)
+that had survived outside `:root` and were still painting the previous
+palette on screen after it had been replaced.
 
 ## 4. Product intent (UX is yours to design)
 
