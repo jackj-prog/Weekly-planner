@@ -371,3 +371,11 @@ Inspected entry, pace, dark pace, run-log and App captures. Verified section
 navigation, disclosure and a Chromium offline reload/navigation pass;
 diagnostics read 4.28.0 and week-os-v4.28.0. Existing plan tests: 15,917 checks,
 0 failures. data/plan.js, day-builder, storage keys and backup format unchanged.
+
+## Round two: type discipline — v4.29
+
+Inter now owns sentences, instructions, captions and generic Reference values.
+Space Mono is opt-in for time, numeric data and short labels; Archivo carries
+display and session headings. Shared roles use 28/22/18 px headings, 16 px body,
+14 px instructions at 1.55 line height, and 12 px time labels. Exercise names
+wrap instead of truncating. Palette, plan content and storage are unchanged.

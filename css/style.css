@@ -47,6 +47,16 @@
   --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --body: "Inter", -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
 
+  /* Type roles: display 28/22/18; language 16/14; data and labels 12. */
+  --type-title: 28px;
+  --type-section: 22px;
+  --type-session: 18px;
+  --type-body: 16px;
+  --type-note: 14px;
+  --type-label: 12px;
+  --leading-title: 1.15;
+  --leading-body: 1.55;
+
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
 }
@@ -139,7 +149,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   font-size: 26px; line-height: 1.05; letter-spacing: -0.01em;
 }
 .day-head .sub {
-  margin-top: 4px; font-family: var(--mono); font-size: 12px; color: var(--t2);
+  margin-top: 4px; font-family: var(--body); font-size: 12px; color: var(--t2);
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
 }
 .chip {
@@ -156,7 +166,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   display: inline-flex; align-items: center; gap: 6px;
   margin-bottom: 10px; padding: 5px 12px; border-radius: 999px;
   background: var(--chrome-bg); color: var(--chrome-text);
-  font-family: var(--mono); font-size: 12px;
+  font-family: var(--body); font-size: 12px;
 }
 .notday b { color: var(--accent); }
 
@@ -173,7 +183,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   letter-spacing: 0.14em; color: var(--accent);
 }
 .nownext .nn-title { font-family: var(--display); font-weight: 800; font-size: 20px; line-height: 1.15; margin: 2px 0; }
-.nownext .nn-time { font-family: var(--mono); font-size: 12px; opacity: 0.75; }
+.nownext .nn-time { font-family: var(--body); font-size: 12px; opacity: 0.75; }
 .nownext .nn-bar { height: 3px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 10px 0 12px; overflow: hidden; }
 .nownext .nn-bar i { display: block; height: 100%; background: var(--accent); }
 .nownext .nn-next { display: flex; gap: 10px; padding-top: 2px; font-size: 12.5px; }
@@ -201,7 +211,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   margin-top: 12px; display: flex; flex-wrap: wrap; gap: 7px;
 }
 .hero .h-meta span {
-  font-family: var(--mono); font-size: 11.5px;
+  font-family: var(--body); font-size: 11.5px;
   background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.14);
   padding: 3px 9px; border-radius: 8px;
 }
@@ -289,7 +299,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .tl-card.skipped .c-title { text-decoration: line-through; }
 .tl-card .c-actions { display: flex; gap: 8px; margin-top: 10px; }
 .tl-card .c-actions button {
-  font-size: 11.5px; font-family: var(--mono); padding: 6px 11px;
+  font-size: 11.5px; font-family: var(--body); padding: 6px 11px;
   border: 1px solid var(--line); border-radius: 9px; color: var(--t2); background: var(--surface);
 }
 .tl-now {
@@ -308,13 +318,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .tl-card.current::before { background: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .tl-quiet.current { color: var(--text); font-weight: 500; }
 .tl-quiet.current::before { background: var(--accent); border-color: var(--accent); }
-.moved-tag { font-family: var(--mono); font-size: 10px; color: var(--accent); margin-top: 4px; }
+.moved-tag { font-family: var(--body); font-size: 10px; color: var(--accent); margin-top: 4px; }
 
 /* ---- week view ------------------------------------------------------- */
 .wk-head { display: flex; align-items: center; gap: 8px; margin: 2px 2px 12px; }
 .wk-head h1 { font-family: var(--display); font-weight: 900; font-size: 24px; flex: 1; }
 .wk-head .nav { width: 38px; height: 38px; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; font-size: 17px; }
-.wk-sub { margin: -6px 2px 12px; font-family: var(--mono); font-size: 12px; color: var(--t2); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.wk-sub { margin: -6px 2px 12px; font-family: var(--body); font-size: 12px; color: var(--t2); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .wk-note { margin: -4px 2px 12px; font-size: 12.5px; color: var(--t2); }
 /* load-jump advisory — loud enough to read, quiet enough not to nag */
 .wk-jump {
@@ -446,7 +456,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .ref h1 { font-family: var(--display); font-weight: 900; font-size: 24px; margin: 2px 2px 12px; }
 .ref h2 {
   display: flex; align-items: center; gap: 8px;
-  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  font-family: var(--body); font-size: 11px; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--t2);
   margin: 18px 2px 8px;
 }
@@ -467,12 +477,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   box-shadow: 0 12px 30px color-mix(in srgb, var(--accent) 38%, transparent);
 }
 .rc-kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.92; }
-.rc-where { font-family: var(--mono); font-size: 11px; opacity: 0.78; margin-top: 2px; }
+.rc-where { font-family: var(--body); font-size: 11px; opacity: 0.78; margin-top: 2px; }
 .rc-goal { font-family: var(--display); font-weight: 900; font-size: 54px; line-height: 1.08; letter-spacing: -0.01em; }
 .rc-goal small { font-family: var(--mono); font-size: 13px; font-weight: 400; margin-left: 10px; opacity: 0.92; letter-spacing: 0; }
 .rc-meta {
   display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap;
-  font-family: var(--mono); font-size: 11.5px; opacity: 0.94; margin-top: 4px;
+  font-family: var(--body); font-size: 11.5px; opacity: 0.94; margin-top: 4px;
 }
 .rc-cd { font-weight: 700; }
 .ref-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px 12px; }
@@ -480,7 +490,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
    corrected pace + HR + EF + a temp chip, which will not fit at 390px */
 .ref-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
 .ref-row:last-child { border-bottom: 0; }
-.ref-row .v { font-family: var(--mono); font-weight: 700; white-space: nowrap; margin-left: auto; }
+.ref-row .v { font-family: var(--body); font-weight: 700; white-space: nowrap; margin-left: auto; }
 /* the date column never wraps — "16 Aug" split over two lines on the
    wider log rows and made the table look broken */
 .ref-row > span:first-child { white-space: nowrap; }
@@ -565,7 +575,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 /* ---- week banked progress ----------------------------------------------- */
 .wkp { margin: -2px 2px 14px; }
-.wkp-label { font-family: var(--mono); font-size: 12px; color: var(--t2); margin-bottom: 5px; }
+.wkp-label { font-family: var(--body); font-size: 12px; color: var(--t2); margin-bottom: 5px; }
 .wkp-label b { color: var(--text); }
 .wkp-track { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .wkp-track i { display: block; height: 100%; border-radius: 3px; background: var(--phase-accent, var(--accent)); }
@@ -606,7 +616,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .data-card { padding: 4px 12px 2px; }
 .data-actions { display: flex; gap: 8px; padding: 2px 0 10px; }
 .data-actions button {
-  font-family: var(--mono); font-size: 12px; padding: 8px 12px;
+  font-family: var(--body); font-size: 12px; padding: 8px 12px;
   border: 1px solid var(--line); border-radius: 8px; color: var(--t2);
   background: var(--paper);
 }
@@ -737,7 +747,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
   background: var(--paper); color: var(--text);
 }
-.recal-out b { font-family: var(--mono); }
+.recal-out b { font-family: var(--body); }
 
 /* ---- gym weight memory ---------------------------------------------------- */
 .c-plan .xr { gap: 8px; }
@@ -782,10 +792,10 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* structured pacing table (TT lap script, race splits) */
 .ptable { margin-top: 10px; overflow-x: auto; }
 .ptable .pt-title {
-  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  font-family: var(--body); font-size: 10px; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; margin-bottom: 4px;
 }
-.ptable table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+.ptable table { width: 100%; border-collapse: collapse; font-family: var(--body); font-size: 12px; }
 .ptable th {
   text-align: left; font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase;
   opacity: 0.6; padding: 2px 8px 4px 0; font-weight: 700;
@@ -799,7 +809,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
    Lives on the dark hero in BOTH themes, so colours are hero-relative. */
 .h-log {
   display: block; width: 100%; margin-top: 10px; padding: 8px 10px;
-  font-family: var(--mono); font-size: 12px; font-weight: 700; text-align: left;
+  font-family: var(--body); font-size: 12px; font-weight: 700; text-align: left;
   background: rgba(255, 255, 255, 0.10); color: inherit;
   border: 1px dashed rgba(255, 255, 255, 0.35); border-radius: 8px; cursor: pointer;
 }
@@ -833,7 +843,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 }
 .st-act { grid-column: 1 / -1; display: flex; gap: 8px; }
 .rl-save {
-  flex: 1; padding: 11px; font-family: var(--mono); font-size: 13px; font-weight: 700;
+  flex: 1; padding: 11px; font-family: var(--body); font-size: 13px; font-weight: 700;
   background: var(--accent); color: #fff; border: 0; border-radius: 8px; cursor: pointer;
 }
 .rl-x {
@@ -853,7 +863,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 }
 .ef-spark circle { fill: var(--accent); }
 .ef-spark .ef-cap {
-  margin-top: 3px; font-family: var(--mono); font-size: 10.5px;
+  margin-top: 3px; font-family: var(--body); font-size: 10.5px;
   letter-spacing: 0.04em; color: var(--t2);
 }
 
@@ -866,7 +876,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .skyline svg { display: block; width: 100%; height: auto; }
 .skyline .sky-cap {
   display: flex; justify-content: space-between; gap: 8px; margin-top: 4px;
-  font-family: var(--mono); font-size: 10px; color: var(--t2); letter-spacing: 0.03em;
+  font-family: var(--body); font-size: 10px; color: var(--t2); letter-spacing: 0.03em;
 }
 .skyline .sky-cap .v { font-weight: 700; color: var(--text); white-space: nowrap; }
 
@@ -875,13 +885,13 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .wkring svg { width: 26px; height: 26px; transform: rotate(-90deg); }
 .wkring .rg-bg { fill: none; stroke: var(--line); stroke-width: 4; }
 .wkring .rg-fg { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
-.wkring .rg-t { font-family: var(--mono); font-size: 11px; color: var(--t2); }
+.wkring .rg-t { font-family: var(--body); font-size: 11px; color: var(--t2); }
 .wkring .rg-t b { color: var(--text); font-size: 12.5px; }
 
 /* verdict line under the logged run */
 .h-verdict {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  margin-top: 7px; font-family: var(--mono); font-size: 11.5px; font-weight: 700;
+  margin-top: 7px; font-family: var(--body); font-size: 11.5px; font-weight: 700;
   opacity: 0.92;
 }
 .h-verdict.best { color: #ffd9a8; }
@@ -898,9 +908,9 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   gap: 12px; padding: 22px; background: rgba(10, 16, 19, 0.9);
 }
 .card-ov img { max-width: 100%; max-height: 72vh; border-radius: 14px; box-shadow: 0 18px 50px rgba(0,0,0,0.5); }
-.card-ov .card-note { font-family: var(--mono); font-size: 12px; color: #eef0ea; opacity: 0.85; }
+.card-ov .card-note { font-family: var(--body); font-size: 12px; color: #eef0ea; opacity: 0.85; }
 .card-ov .card-x {
-  padding: 10px 26px; font-family: var(--mono); font-size: 13px; font-weight: 700;
+  padding: 10px 26px; font-family: var(--body); font-size: 13px; font-weight: 700;
   background: #eef0ea; color: #16242a; border-radius: 999px;
 }
 
@@ -911,7 +921,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .ztable { padding-top: 2px; }
 .zrow {
   display: flex; align-items: baseline; gap: 10px; padding: 7px 0 1px;
-  font-family: var(--mono); font-size: 13px;
+  font-family: var(--body); font-size: 13px;
 }
 .zrow .zk { font-weight: 700; color: var(--accent); min-width: 22px; }
 .zrow .zn { font-weight: 700; }
@@ -922,7 +932,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 }
 .ztable > .zuse:last-child { border-bottom: 0; padding-bottom: 2px; }
 .zedit {
-  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  font-family: var(--body); font-size: 11px; font-weight: 700;
   padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px;
 }
 .hz-form {
@@ -966,7 +976,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .dc-list { margin: 10px 0 2px; }
 .dc-h, .dc-k { font-size: 11px; color: var(--t2); }
-.dc-h { font-family: var(--mono); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.dc-h { font-family: var(--body); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .dc-r {
   display: flex; justify-content: space-between; align-items: baseline;
   padding: 5px 0; border-bottom: 1px solid var(--line); font-size: 13px;
@@ -1142,3 +1152,35 @@ body { background: var(--paper); }
 .run-entry-metrics small { display: block; font-family: var(--body); font-size: 12px; color: var(--t2); margin-bottom: 3px; }
 .run-entry-metrics .adj { display: block; font-size: 12px; margin-top: 3px; }
 .ef-spark svg { overflow: visible; }
+
+/* Type roles. Inter owns language; mono is opt-in on a data value or label. */
+body { font-size: var(--type-body); line-height: var(--leading-body); }
+.day-head h1, .wk-head h1, .ref h1 { font-size: var(--type-title); line-height: var(--leading-title); }
+.timeline-head h2, .ref h2 { font-size: var(--type-section); line-height: 1.2; }
+.tl-card .c-title { font-size: var(--type-session); line-height: 1.3; }
+.tl-card .c-detail, .hero .h-detail, .wk-note, .wk-jump, .wk-shape,
+.ref-note, .ref-list li, .zuse, .frow .fn, .h-guard, .h-dc, .dist-v,
+.dc-k, .h-verdict, .card-note, .ef-cap, .data-msg {
+  font-family: var(--body); font-size: var(--type-note); line-height: var(--leading-body);
+  letter-spacing: normal;
+}
+.tl-quiet, .ref-row, .c-plan .xr { font-size: var(--type-note); line-height: 1.5; }
+.tl-card .c-time, .tl-quiet .t { font-size: var(--type-label); line-height: 1.4; }
+.tl-card .c-cat { font-size: 11px; }
+.tl-card .c-actions button, .data-actions button, .zedit, .rl-save, .card-ov .card-x {
+  font-family: var(--body); font-size: var(--type-note); font-weight: 600;
+}
+.notday, .moved-tag, .wkp-label, .wkring .rg-t, .wk-sub, .skyline .sky-cap,
+.rc-where, .rc-meta { font-family: var(--body); font-size: var(--type-note); line-height: 1.45; letter-spacing: normal; }
+.ref-row .v { font-weight: 600; }
+.ptable table { font-family: var(--body); font-size: var(--type-note); }
+.ptable th, .ptable .pt-title, .dc-h { font-family: var(--body); font-size: var(--type-label); line-height: 1.5; letter-spacing: normal; text-transform: none; }
+.st-v, .h-log .lg-pace, .zrow .zk, .zrow .zb, .wkring .rg-t b { font-family: var(--mono); }
+.stat span { font-family: var(--body); font-size: 11px; letter-spacing: normal; text-transform: none; }
+.run-entry-metrics .adj { font-family: var(--body); }
+.c-plan .xn { white-space: normal; overflow: visible; }
+.c-plan .xr { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 10px; padding-block: 10px; }
+.c-plan .xn { grid-column: 1; font-weight: 600; }
+.c-plan .xs { grid-column: 1; grid-row: 2; font-family: var(--body); font-size: var(--type-note); white-space: normal; }
+.c-plan .xw, .c-plan .xw-in { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+.tl-quiet .t { flex: 0 0 86px; }
