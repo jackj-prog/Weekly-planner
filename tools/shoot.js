@@ -16,6 +16,10 @@
        npm i -g playwright-core          (or: npm i playwright-core in /tmp)
    A browser is found automatically, or point at one:
        WEEKOS_CHROME=/path/to/chrome node tools/shoot.js
+   On Windows, Chrome or Microsoft Edge is found in system/per-user installs.
+   PowerShell with an external playwright-core install:
+       $env:NODE_PATH = 'C:\path\to\external\node_modules'
+       node tools/shoot.js --date=2026-09-14 --view=today
 
    Run:
        node tools/shoot.js                                  → today, Today view
@@ -81,6 +85,15 @@ function findBrowser() {
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
   ];
+  if (process.platform === 'win32') {
+    // Edge ships on Windows even when Chrome is absent. Use the same
+    // Chromium driver; screenshots are still mobile viewport checks.
+    for (const base of [process.env.PROGRAMFILES, process.env['PROGRAMFILES(X86)'], process.env.LOCALAPPDATA]) {
+      if (!base) continue;
+      fixed.push(path.join(base, 'Google', 'Chrome', 'Application', 'chrome.exe'));
+      fixed.push(path.join(base, 'Microsoft', 'Edge', 'Application', 'msedge.exe'));
+    }
+  }
   const pw = '/opt/pw-browsers';            // Playwright's own download dir
   if (fs.existsSync(pw)) {
     for (const d of fs.readdirSync(pw).filter((n) => n.startsWith('chromium')).sort().reverse()) {

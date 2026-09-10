@@ -263,27 +263,56 @@ response. **Handoff complete.**
 
 ## Codex continuation
 
-**Status: handoff reviewed and accepted, 9 September 2026.** Codex reviewed
-Claude's response at `262964e05d6c2c2740fa908b96480b2de036cfe7`, the existing
-brief, architecture, amendment recipes, audit, implementation and tests.
+**Status: screenshot harness verified on Windows, 10 September 2026.**
+Codex accepted the original handoff on 9 September and has now pulled
+Claude's three follow-up commits through `6cee529` on
+`codex/ownership-handoff`.
 
-- No unfinished implementation was reported by Claude. The proposed mile
-  trial and per-week intensity view remain unaccepted ideas.
-- Independent local verification: `node tests/build.test.js` completed with
-  **15,899 checks, 0 failures**, including the suite's JS syntax checks and
-  privacy-fixture guard. App and service worker remain at 4.23.0.
-- The Monday core/calves placement and race-week Monday exception match the
-  builder. Remaining stale wording in CLAUDE.md about the college-era Monday
-  gym and maintenance duration was aligned with the existing implementation.
-  No app behavior or routine data was changed during this handoff.
-- Local private context may be supplied as `PRIVATE.md`; verify it is ignored
-  and untracked before using it. Keep it out of commits, public artifacts,
-  previews, static-server roots and deployment uploads. Git ignore rules do
-  not prevent a static server or a whole-directory upload from exposing it.
-- Real iPhone Safari and installed-PWA checks remain unverified. Headless
-  tests do not establish offline installation, update-toast or touch behavior.
+- Current app and service-worker versions are both **4.24.0**. The reusable
+  harness (`tools/shoot.js`), synthetic seed (`tools/seed.example.json`),
+  manual device checklist (`docs/device-checklist.md`) and Reference → App
+  diagnostics pane have landed. They are completed work, not proposed tasks.
+- Task A succeeded after extending `findBrowser()` for Windows system and
+  per-user Chrome/Edge installations. This machine has Microsoft Edge in
+  Program Files (x86), which the original Chrome-only Windows lookup missed.
+  The existing external `playwright-core` was loaded through `NODE_PATH`;
+  no package manifest, dependency install or vendored files were added here.
+- Ran both requested commands, with `--out` pointing outside the checkout:
+  `node tools/shoot.js --date=2026-09-14 --view=today` and
+  `node tools/shoot.js --view=ref --seed=tools/seed.example.json`.
+  Both wrote PNGs and returned **zero console errors**. Codex opened and
+  visually inspected both images; the Reference capture used 10 September.
+- The Week 12 Monday image confirms wake **06:45**, College **08:00–15:00**,
+  Gym — Lower B + core/calves **16:30–17:15**, and **no run**. The college-era
+  boundary matches the existing routine; no routine data was changed.
+- Also inspected a scrolled Reference capture using the same harness from a
+  local scratch wrapper. The App pane renders v4.24.0, `controlling`,
+  `week-os-v4.24.0` and `browser tab`, with no console errors. These values
+  describe this desktop browser session, not the user's installed app.
+- `node tests/build.test.js`: **15,917 checks, 0 failures**, including syntax
+  checks and the screenshot-server privacy guard.
+- These are **mobile viewport** checks: Chromium via Edge at 390×844 with
+  synthetic localStorage. The user reports the app works on their iPhone;
+  Codex has not controlled or tested that physical device. Standalone launch,
+  real safe-area insets, iOS offline/update behaviour and storage eviction
+  still require the device checklist. Do not resume iOS-emulation setup.
+- Local private context may be supplied as `PRIVATE.md`; keep it ignored,
+  untracked and outside public artifacts, previews and deployment uploads.
+  Git ignore rules do not stop a static server exposing files. Preserve the
+  server's MIME allowlist and DENY restrictions and its existing test guard.
+- **Release instruction:** push only to `codex/ownership-handoff`. Keep PR #1
+  open; do not merge it, create another PR, or edit its description without
+  the user's request. Its base, `claude/new-session-ombj5n`, is also the live
+  Pages deployment branch. The PR description predates v4.24 and is stale;
+  use current code and this continuation for the verified state.
 
-**Next task:** ready for the user's next requested change. The recommended
-engineering follow-up is a reusable screenshot harness under `tools/`, using
-fixed dates and synthetic localStorage fixtures, followed by explicit device
-checks. This is a recommendation, not an accepted implementation task.
+**Recommendations, not accepted feature work:** the Reference pace table is
+visually crowded at 390 px, especially the long phase and threshold values.
+Consider wrapping long values or stacking those rows while preserving the
+actual prescriptions. For future harness work, consider a scroll-to-section
+capture option that waits for reveal animations; full-page capture alone does
+not exercise scrolling to the lower sections. The mile trial and per-week
+intensity view remain unaccepted ideas.
+
+**Next task:** await the user's selected improvement. This change only makes
+the existing harness discover Windows browsers and updates the handoff.
