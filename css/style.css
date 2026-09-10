@@ -13,35 +13,45 @@
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/inter-latin-600-normal.woff2') format('woff2'); }
 
 :root {
+  /* Warm ground, cool ink. The paper was #eef0ea — a green-cast grey that
+     read institutional under warm light and fought the teal chrome. A warm
+     neutral lets the same cool ink and accent sit on it and look deliberate.
+     --line now steps ~8% off --paper instead of ~3%, so hairlines survive
+     a phone screen at arm's length in daylight. */
   --ink: #16242a;
-  --paper: #eef0ea;
+  --paper: #f3f1ec;
   --surface: #ffffff;
-  --line: #dde1da;
-  --accent: #d6492e;
+  --line: #e0dbd2;
+  --accent: #d4472a;
 
   /* derived tokens — the only place light/dark differ */
   --text: #16242a;
-  --t2: #55645f;           /* secondary text */
-  --t3: #66756f;           /* tertiary text (times, hints) */
+  --t2: #5b645f;           /* secondary text */
+  --t3: #6d7671;           /* tertiary text (times, hints) */
   --chrome-bg: #16242a;    /* topbar · now/next · active tab · toast */
-  --chrome-text: #eef0ea;
-  --tabbar-bg: rgba(238, 240, 234, 0.92);
+  --chrome-text: #f3f1ec;
+  --tabbar-bg: rgba(243, 241, 236, 0.92);
   --hero-bg: #2c3f46;
 
   --phase-base: #6f8c63;
   --phase-build: #436883;
   --phase-taper: #c5872f;
 
-  --cat-run: #2c3f46;
-  --cat-xt: #2f8f83;
-  --cat-gym: #8a6d3b;
-  --cat-study: #7c8a8c;
-  --cat-german: #3e6b5e;
-  --cat-work: #55605f;
-  --cat-meal: #a06a2c;
-  --cat-free: #9aa4a0;
-  --cat-reading: #6d5875;
-  --cat-routine: #b9c0b7;
+  /* Categories carry HUE, not just lightness. run/study/work/free/routine
+     were five desaturated grey-greens — legible individually, identical in
+     a list, which is most of why the timeline read as one flat texture.
+     Each now owns a distinguishable hue while staying muted enough for a
+     tool rather than a toy. */
+  --cat-run: #2c3f46;      /* dark slate — the hero colour, unchanged */
+  --cat-xt: #2f8f83;       /* teal */
+  --cat-gym: #9a7340;      /* bronze */
+  --cat-study: #5b7f9e;    /* blue — was #7c8a8c, a grey among greys */
+  --cat-german: #43775f;   /* green */
+  --cat-work: #6f7a77;     /* neutral grey — quiet by design */
+  --cat-meal: #b0742c;     /* amber */
+  --cat-free: #93a29b;     /* sage */
+  --cat-reading: #7a5f84;  /* plum */
+  --cat-routine: #b6bdb5;  /* palest — the quietest scaffold */
 
   --display: "Archivo", "Archivo Black", "Avenir Next Condensed", "Arial Black", "Helvetica Neue", sans-serif;
   --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -65,15 +75,19 @@
    Kicks in with the system setting: the 22:00 read shouldn't glare. */
 @media (prefers-color-scheme: dark) {
   :root {
+    /* Dark stays cool and neutral — a warm cast here reads muddy rather than
+       cosy. --line lifted so card edges survive on an OLED at low brightness.
+       Category hues mirror the light set so a colour means the same thing in
+       both themes. */
     --paper: #10191e;
     --surface: #17242b;
-    --line: #2b3a41;
-    --accent: #e0553a;
-    --text: #e6eae3;
-    --t2: #a7b3ad;
-    --t3: #82918b;
+    --line: #33434b;
+    --accent: #e2573b;
+    --text: #e8ebe5;
+    --t2: #a9b4ae;
+    --t3: #85938d;
     --chrome-bg: #1d2e36;
-    --chrome-text: #e6eae3;
+    --chrome-text: #e8ebe5;
     --tabbar-bg: rgba(16, 25, 30, 0.92);
     --hero-bg: #24424f;
     --phase-base: #8aa87c;
@@ -81,13 +95,13 @@
     --phase-taper: #d9a558;
     --cat-run: #7fa5b5;
     --cat-xt: #45b5a8;
-    --cat-gym: #bd9a5d;
-    --cat-study: #9aa9ab;
-    --cat-german: #6aa18c;
-    --cat-work: #93a09e;
-    --cat-meal: #cf9354;
-    --cat-free: #8b9691;
-    --cat-reading: #a68cb3;
+    --cat-gym: #c2a068;
+    --cat-study: #7ea8c6;
+    --cat-german: #6fa891;
+    --cat-work: #949e9b;
+    --cat-meal: #d69a5c;
+    --cat-free: #8d9a94;
+    --cat-reading: #ab93b8;
     --cat-routine: #7c8c85;
   }
   .chip { color: #10191e; }   /* dark text on the lightened chip fills */

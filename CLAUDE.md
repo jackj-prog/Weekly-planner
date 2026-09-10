@@ -49,13 +49,26 @@ data, day structures, times, or rules below unless explicitly asked.
 
 ## 3. Design tokens (keep this identity)
 
-- ink #16242a · paper #eef0ea · surface #ffffff · line #dde1da
-- accent (race/key/hard) #d6492e
+- ink #16242a · paper #f3f1ec · surface #ffffff · line #e0dbd2
+- accent (race/key/hard) #d4472a
 - phases: base #6f8c63 · build #436883 · taper #c5872f
-- category colours: run #2c3f46 · cross-train #2f8f83 · gym #8a6d3b ·
-  study #7c8a8c · german #3e6b5e · work #55605f · meal #a06a2c ·
-  free #9aa4a0 · reading #6d5875 · routine #b9c0b7
+- category colours: run #2c3f46 · cross-train #2f8f83 · gym #9a7340 ·
+  study #5b7f9e · german #43775f · work #6f7a77 · meal #b0742c ·
+  free #93a29b · reading #7a5f84 · routine #b6bdb5
 - Type: Archivo 800/900 (display) · Space Mono (times/data) · Inter (body)
+
+**Palette revised Sep 2026 (v4.35).** Two faults, both structural rather
+than matters of taste. The paper was #eef0ea, a green-cast grey that read
+institutional under warm light and fought the teal chrome; it is now a warm
+neutral, which lets the same cool ink and accent sit on it deliberately
+rather than accidentally. And `line` sat only ~3% off `paper`, so hairlines
+vanished on a phone at arm's length — it now steps ~8%. The category set
+carried the bigger problem: run/study/work/free/routine were five
+desaturated grey-greens, legible one at a time and identical in a list,
+which is most of why the timeline read as one flat texture. Each now owns a
+distinguishable hue while staying muted enough for a tool. Dark theme stays
+cool and neutral — a warm cast there reads muddy — but mirrors the category
+hues so a colour means the same thing in both.
 
 ## 4. Product intent (UX is yours to design)
 
