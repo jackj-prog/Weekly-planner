@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.26.0';
+  const APP_VERSION = '4.27.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1065,8 +1065,7 @@
       const chips = ['<span class="chip ' + esc(day0.phase) + '">' + esc(day0.phase) + '</span>'];
       if (day0.row.cutback) chips.push('<span class="chip mut">cutback</span>');
       if (day0.row.key) chips.push('<span class="chip hot">key</span>');
-      sub = fmtShort(anchor) + ' – ' + fmtShort(DB.addDays(anchor, 6)) +
-        ' · <b>' + day0.row.km + ' km</b> · LR ' + day0.row.lr + ' ' + chips.join('');
+      sub = fmtShort(anchor) + ' – ' + fmtShort(DB.addDays(anchor, 6)) + ' ' + chips.join('');
       note = day0.label || '';
     } else if (day0.blockId === 'recovery') {
       title = 'Recovery — week ' + day0.week;
@@ -1115,6 +1114,32 @@
     for (let i = 0; i < 7; i++) week7.push(DB.buildDay(DB.addDays(anchor, i)));
     const maxKm = Math.max(1, ...week7.map((dd) => (dd.run ? dd.run.run.km : 0)));
 
+    // The existing daily plan, drawn on one common scale. Completion marks
+    // are separate from bar height: ticking a run does not change its plan.
+    const totalKm = week7.reduce((n, d) => n + (d.run ? d.run.run.km : 0), 0);
+    const profile = el('<section class="week-profile" aria-label="Planned daily distances">' +
+      '<div class="profile-head"><div><span class="profile-label">DISTANCE PROFILE</span>' +
+      '<h2>' + (Math.round(totalKm * 10) / 10) + '<small> km planned</small></h2></div>' +
+      '<span class="profile-count">' + week7.filter((d) => d.run).length + ' run days</span></div>' +
+      '<div class="profile-bars">' + week7.map((d, i) => {
+        const km = d.run ? d.run.run.km : 0;
+        const banked = d.run && !!getDone(d.iso)[d.run.id];
+        const cls = d.run ? DB.runClass(d.run) : 'rest';
+        const kind = cls === 'race' || cls === 'quality' ? 'hard' : cls === 'long' ? 'long' : cls === 'rest' ? 'rest' : 'easy';
+        return '<button class="profile-day ' + kind + '" data-date="' + d.iso + '"' +
+          (d.iso === real ? ' aria-current="date"' : '') + ' aria-label="' + esc(fmtDate(d.iso) +
+          ': ' + (d.run ? km + ' km, ' + d.run.title : 'No run') + (banked ? ', completed' : '')) + '">' +
+          '<span class="profile-track"><i style="height:' + (km / maxKm * 100).toFixed(1) + '%"></i></span>' +
+          '<b class="profile-km">' + (km || '—') + '</b><span class="profile-date">' + DAY_SHORT[i] + '</span>' +
+          '<span class="profile-state">' + (banked ? '✓' : km ? '' : 'rest') + '</span></button>';
+      }).join('') + '</div><div class="profile-legend"><span>Easy / recovery</span><span>Quality / race</span><span>Long</span>' +
+      '<span>✓ completed</span></div></section>');
+    profile.querySelectorAll('[data-date]').forEach((button) => button.addEventListener('click', () => {
+      state.view = 'today'; state.dateISO = button.dataset.date; state.expanded = null;
+      window.scrollTo(0, 0); render();
+    }));
+    view.insertBefore(profile, view.children[2] || null);
+
     const days = el('<div class="wk-days"></div>');
     for (let i = 0; i < 7; i++) {
       const iso = DB.addDays(anchor, i);
@@ -1144,7 +1169,7 @@
       }
 
       const row = el(
-        '<button class="' + cls + '">' +
+        '<button class="' + cls + '"' + (iso === real ? ' aria-current="date"' : '') + '>' +
         '<span class="d-date"><b>' + DAY_SHORT[i] + '</b><span>' + d.getDate() + '</span></span>' +
         '<span class="d-main">' + runHtml.run + '</span>' +
         '<span class="d-right"><span class="d-km">' + runHtml.km + '</span>' +

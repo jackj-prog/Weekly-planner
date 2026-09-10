@@ -356,3 +356,7 @@ Rebuilt the run hierarchy and completion control. Kept distance/shoe in dedicate
 ### 4.26.0 — live time without perpetual motion
 Now/Next is a compact clock rail with a 44px jump to the current timeline position. The run, shoe and effort now fit in the first mobile viewport. Weekly progress moved beside Your day. Removed perpetual NOW pulsing, sweeping shine and staggered first-paint delays; retained short action feedback with reduced-motion support. Clock refresh pauses while hidden and catches up on visibility/pageshow. Verified minute progression, block boundary, jump and midnight rollover; inspected dawn/dark, active-run and late-night/rest captures. App version/cache 4.26.0; 15,917 plan checks pass.
 
+
+### 4.27.0 — the week has a visible rhythm
+Added a seven-day distance profile above the detailed schedule. Columns use the resolved daily plan on a common scale, with separate completion marks and direct day links. Classification comes from the existing runClass helper, not the generic hard flag (which also marks easy long runs). Removed the duplicate headline km so race weeks cannot show a table target beside a contradictory daily total. No prescription changed. Rows wrap long session titles and retain contrast for past dates. Inspected Build, race and standing-week mobile captures, including dark/reduced-motion; checked chart distances, day links and week navigation. App version/cache 4.27.0 and 15,917/0 plan checks.
+

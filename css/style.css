@@ -1071,3 +1071,36 @@ body { background: var(--paper); }
   button:active { filter: brightness(.92); }
   .hero.just .h-tick { animation: tickpop 180ms ease-out; }
 }
+
+/* A week as a rhythm: seven comparable columns, every one a day target. */
+.week-profile { margin: 4px 0 20px; padding: 18px 12px 14px; border-radius: 18px; border: 1px solid var(--line); background: var(--surface); }
+.profile-head { display: flex; justify-content: space-between; align-items: end; gap: 8px; margin: 0 6px 20px; }
+.profile-label { font-family: var(--mono); font-size: 10px; letter-spacing: .09em; color: var(--t2); }
+.profile-head h2 { font-family: var(--display); font-size: 36px; line-height: 1.2; margin-top: 5px; }
+.profile-head h2 small { font-family: var(--body); font-size: 14px; font-weight: 400; color: var(--t2); }
+.profile-count { font-size: 12px; color: var(--t2); margin-bottom: 5px; }
+.profile-bars { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); }
+.profile-day { min-width: 44px; padding: 0 2px; display: flex; flex-direction: column; align-items: center; border-radius: 6px; }
+.profile-track { width: 24px; height: 88px; display: flex; align-items: end; border-bottom: 2px solid var(--line); }
+.profile-track i { width: 100%; background: var(--cat-run); border-radius: 5px 5px 0 0; }
+.profile-day.hard .profile-track i { background: var(--accent); }
+.profile-day.long .profile-track i { background: var(--phase-build); }
+.profile-km { font-family: var(--mono); font-size: 14px; padding-top: 8px; }
+.profile-date { font-family: var(--mono); font-size: 11px; color: var(--t2); margin-top: 4px; padding: 3px 5px; }
+.profile-day[aria-current] .profile-date { background: var(--text); color: var(--paper); border-radius: 5px; }
+.profile-state { height: 20px; font-size: 10px; color: var(--t2); }
+.profile-legend { display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; margin: 8px 6px 0; font-size: 11px; color: var(--t2); }
+.profile-legend span:not(:last-child)::before { content: ''; display: inline-block; width: 7px; height: 7px; background: var(--cat-run); margin-right: 5px; border-radius: 2px; }
+.profile-legend span:nth-child(2)::before { background: var(--accent); }
+.profile-legend span:nth-child(3)::before { background: var(--phase-build); }
+.wk-days { gap: 8px; }
+.wk-day { padding: 15px 12px; min-height: 82px; border-radius: 12px; }
+.wk-day.past { opacity: 1; }
+.wk-day .d-run { font-size: 15px; white-space: normal; overflow: visible; line-height: 1.35; }
+.wk-day .d-extras { font-size: 12px; margin-top: 4px; }
+.wk-day .d-date { min-width: 36px; }
+.wk-day .d-date b { font-size: 11px; }
+.wk-day .d-date span { font-size: 23px; }
+.wk-day .d-km { font-size: 28px; }
+.wk-day.today .d-date { color: var(--accent); }
+.wk-sub { font-size: 13px; margin: 0 2px 16px; }
