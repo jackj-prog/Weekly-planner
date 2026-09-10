@@ -245,6 +245,17 @@
            plausible rather than 90 s/km fast. */
         if (cls === 'recovery') paceSec += model.recoveryPaceAdd || 0;
       }
+      /* Snap ONLY this synthetic fallback to the step grid. The stepper moves
+         in fixed increments FROM the centre, so an unrounded centre makes half
+         the plausible values unreachable — from 6:23 at 5 s/km you can land on
+         5:53 or 5:48 but never on 5:50, which is what was actually run on
+         10 Sep. A rounded centre means every reachable value is a round number,
+         which is also what a watch shows.
+         A declared target pace and a median of real logged runs are NOT
+         rounded: the first is prescribed content and the second is measured
+         data, and snapping either would be inventing a number. */
+      const step = model.paceStep || 1;
+      paceSec = Math.round(paceSec / step) * step;
     }
     const hr = med(like.filter((h) => h.hr).map((h) => h.hr)) || model.fallbackHr[cls];
     return {

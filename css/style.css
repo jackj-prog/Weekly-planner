@@ -1153,6 +1153,18 @@ body { font-size: var(--type-body); line-height: var(--leading-body); }
 .tl-card .c-actions button, .data-actions button, .zedit, .rl-save, .card-ov .card-x {
   font-family: var(--body); font-size: var(--type-note); font-weight: 600;
 }
+
+/* ---- 44px floor: the three controls that were missed ----------------------
+   Everything else already respects it. These did not, and each is tapped in
+   a context that makes a small target worse than usual: the tab bar is the
+   most-used control in the app and sits where the thumb is least precise;
+   two of the four block actions are the injury protocol (rule 5), reached
+   when something already hurts; and the gym weight fields are tapped
+   one-handed between sets. */
+.tab { min-height: 44px; display: flex; align-items: center; justify-content: center; }
+.tl-card .c-actions button { min-height: 44px; padding-inline: 12px; }
+.xw, .xw-in { min-height: 44px; }
+.xw { display: inline-flex; align-items: center; justify-content: center; }
 .notday, .moved-tag, .wkp-label, .wkring .rg-t, .wk-sub, .skyline .sky-cap,
 .rc-where, .rc-meta { font-family: var(--body); font-size: var(--type-note); line-height: 1.45; letter-spacing: normal; }
 .ref-row .v { font-weight: 600; }

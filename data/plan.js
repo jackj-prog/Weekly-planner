@@ -468,8 +468,20 @@ const PLAN = {
      last 3 similar runs; these are the bounds and steps of the ± controls
      and the neutral fallbacks before any history exists. */
   logModel: {
-    paceStep: 5,  paceSpan: 30,     // ± seconds/km around the estimate
-    hrStep: 2,    hrSpan: 20,       // ± bpm around the estimate
+    /* paceSpan was ±30 s/km, which was exactly the problem: with no history
+       for a class the estimate falls back to the plan's band midpoint, and
+       this athlete runs about 30 s/km faster than the band — so the true
+       value sat ON the edge and, on 10 Sep 2026, outside it. 5:50/km could
+       not be entered against a 6:23 estimate at all. Every class cold-starts
+       once, so widening this is the difference between logging the run and
+       logging a rounded guess. */
+    paceStep: 5,  paceSpan: 60,     // ± seconds/km around the estimate
+    /* hrStep was 2, which meant ODD heart rates did not exist: from an even
+       centre only even values are reachable, so a run averaging 151 bpm was
+       unloggable. Not merely imprecise — EF is (m/min) ÷ HR, so 2 bpm of
+       quantisation on ~150 injects up to ~1.3% error into a number whose
+       real signal across a four-week block is a few percent. */
+    hrStep: 1,    hrSpan: 20,       // ± bpm around the estimate
     fallbackHr: { recovery: 140, easy: 150, long: 152, quality: 170, race: 182 },
     /* Long runs can optionally carry two more numbers — first-half pace
        and second-half average HR — which is everything needed to compute

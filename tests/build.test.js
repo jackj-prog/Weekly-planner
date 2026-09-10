@@ -594,8 +594,14 @@ section('run-log maths · key events · pacing tables');
 /* ---- 7a4. Log steppers: classification + estimates (v3.1) ---- */
 section('run classification + log estimates');
 {
-  ok(PLAN.logModel.paceSpan === 30 && PLAN.logModel.hrSpan === 20,
-    'stepper spans are the agreed ±30 s/km and ±20 bpm');
+  /* paceSpan widened 30 → 60 and hrStep dropped 2 → 1 in v4.40. Both were
+     found by trying to log a real run: 5:50/km against a 6:23 estimate was
+     outside the old ±30 span, and 151 bpm does not exist when the step is 2
+     from an even centre. */
+  ok(PLAN.logModel.paceSpan === 60 && PLAN.logModel.hrSpan === 20,
+    'stepper spans are ±60 s/km and ±20 bpm');
+  ok(PLAN.logModel.hrStep === 1,
+    'HR steps 1 bpm — 2 makes odd values unreachable and adds ~1.3% error to EF');
   /* temperature: without it, every pace-at-HR comparison is a weather comparison */
   ok(PLAN.logModel.tempStep === 1 && PLAN.logModel.tempMin < 0 && PLAN.logModel.tempMax >= 35,
     'the log carries an air-temperature stepper across a usable range');
@@ -644,11 +650,28 @@ section('run classification + log estimates');
 
   /* no history → phase band midpoint + fallback HR */
   const bare = DB.logEstimate(dayOfWeek(7, 6), []);
-  ok(bare && bare.paceSec === 383 && bare.hr === PLAN.logModel.fallbackHr.long,
-    'wk 7 long-run estimate with no history: band mid 6:23, fallback HR — got ' +
+  ok(bare && bare.paceSec === 385 && bare.hr === PLAN.logModel.fallbackHr.long,
+    'wk 7 long-run estimate with no history: band mid 6:23 snapped to 6:25, fallback HR — got ' +
     DB.fmtPaceSec(bare.paceSec) + '/' + bare.hr);
-  ok(bare.paceMax - bare.paceMin === 60 && bare.hrMax - bare.hrMin === 40,
-    'stepper bounds span exactly ±30 s and ±20 bpm around the estimate');
+  ok(bare.paceMax - bare.paceMin === 120 && bare.hrMax - bare.hrMin === 40,
+    'stepper bounds span ±60 s and ±20 bpm around the estimate');
+  /* The stepper moves in fixed increments FROM the centre, so an unrounded
+     centre makes half the plausible values unreachable — from 6:23 you can
+     hit 5:53 or 5:48 but never 5:50. Every opening estimate must sit on the
+     grid so every reachable value is a round number. */
+  [1, 7, 14, 20, 24, 30].forEach((w) => {
+    [1, 2, 3, 5, 6].forEach((di) => {
+      const d = dayOfWeek(w, di);
+      if (!d.run) return;
+      const e = DB.logEstimate(d, []);
+      /* Days with a declared target pace are exempt — that value is
+         prescribed content and is deliberately left exactly as written. */
+      if (!e || d.run.run.estPace) return;
+      ok(e.paceSec % PLAN.logModel.paceStep === 0,
+        'wk ' + w + ' day ' + di + ' estimate ' + DB.fmtPaceSec(e.paceSec) + ' sits on the ' +
+        PLAN.logModel.paceStep + ' s step grid');
+    });
+  });
 
   /* history → median of the last three similar runs */
   const hist = [
@@ -1270,6 +1293,18 @@ section('palette contrast (WCAG AA)');
     /* The update toast is the only signal that a new version exists. */
     ok(/id="toast"[^>]*(role="status"|aria-live)/.test(html),
       'the update toast is announced to assistive technology');
+
+    /* 44px tap-target floor. A rendered audit needs a browser, which this
+       suite deliberately does not have, so this asserts the rules exist —
+       enough to catch someone tightening the padding back up. The rendered
+       check lives in tools/shoot.js. */
+    [['.tab', 'the tab bar'],
+     ['.tl-card .c-actions button', 'block actions, two of which are the injury protocol'],
+     ['.xw, .xw-in', 'gym weight fields, tapped one-handed between sets']].forEach(([sel, why]) => {
+      const rule = new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{[^}]*min-height:\\s*(\\d+)px');
+      const m = css.match(rule);
+      ok(m && +m[1] >= 44, sel + ' keeps a 44px minimum — ' + why);
+    });
   }
 }
 
