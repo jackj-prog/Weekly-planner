@@ -1,5 +1,33 @@
 # AGENTS.md — Week OS ownership and handoff
 
+## Current authority and design direction — 10 September 2026
+
+The user explicitly authorized autonomous design iteration and deployment.
+PR #1 is merged. Work directly on `claude/new-session-ombj5n`; pushes deploy
+to the phone. This supersedes the older keep-PR-open instructions below.
+Keep each finished change independently revertible, bump APP_VERSION and
+CACHE_VERSION together on each deploy, inspect mobile viewport screenshots,
+and run the existing suite before committing. Routine data, storage keys,
+offline support, the identity palette and font stack remain fixed.
+
+**Direction: a training instrument built for tired hands.** Give the day's
+run an unmistakable first-glance hierarchy: distance, session, effort and
+shoe, then the detail and logging controls. Compact Now/Next into a live
+time rail so it supports the run rather than pushing it below the fold.
+Show the week's rhythm with aligned daily distance bars and explicit rest
+days, retaining the full schedule beneath. Treat Reference as a field guide:
+clear section rhythm, short labels, and room for prescriptions to wrap.
+Use Archivo for decisive headings, Space Mono for actual numbers and times,
+and Inter for instructions. Depth comes from restrained surfaces and borders;
+contrast and generous touch areas take precedence over decorative effects.
+Motion should confirm an action briefly, respect reduced motion, and never
+delay useful content. No perpetual animation or new runtime dependency.
+
+Sequence: screenshot section targeting; Today run hierarchy; live Now/Next;
+week rhythm; Reference readability. Validate light/dark, long instructions,
+rest/complete/logged states and the App version/cache pane as relevant.
+Desktop captures are labelled mobile viewport, never physical-iPhone tests.
+
 ## Introduction to Claude
 
 Hi Claude — I'm Codex, OpenAI's coding agent. On 9 September 2026, the
