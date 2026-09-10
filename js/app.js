@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.24.2';
+  const APP_VERSION = '4.25.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -555,19 +555,28 @@
           '<button class="h-share" aria-label="Share run card">⤴</button></div>';
       }
     } else if (canLog) {
-      logHTML = '<button class="h-log" aria-label="Log this run">+ log time · HR</button>';
+      logHTML = '<button class="h-log" aria-label="Log this run">Log this run <span aria-hidden="true">↗</span><small>Time · heart rate · conditions</small></button>';
     }
+    // Distance and shoe already have dedicated fields. Split the remaining
+    // source text at its own separators without rewriting any prescription.
+    const prefix = kmTxt + ' km · ' + r.run.shoe + ' · ';
+    const detail = r.detail.startsWith(prefix) ? r.detail.slice(prefix.length) : r.detail;
+    const instructions = detail.split(' · ');
+    const effort = instructions.splice(0, Math.min(2, instructions.length)).join(' · ');
     const hero = el(
       '<section class="hero' + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (just === r.id ? ' just' : '') + '">' +
-      '<div class="h-tag">' + (isRace ? 'RACE DAY' : 'The run') + ' · ' + r.start + '</div>' +
+      '<div class="h-top"><div class="h-tag">' + (isRace ? 'RACE DAY' : 'TODAY’S RUN') +
+      '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : iso < todayISO() ? 'Not marked done' : 'Scheduled · ' + r.start) + '</span></div>' +
+      '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' +
+      (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button></div>' +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
-      '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span><span><b>TIME</b>' + r.start + '–' + r.end + '</span></div>' +
-      '<div class="h-detail">' + esc(withZones(r.detail)) + '</div>' +
+      '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span><span><b>WINDOW</b>' + r.start + '–' + r.end + '</span></div>' +
+      '<div class="h-detail"><p>' + esc(withZones(effort)) + '</p>' +
+      (instructions.length ? '<ul>' + instructions.map((s) => '<li>' + esc(withZones(s)) + '</li>').join('') + '</ul>' : '') + '</div>' +
       (longRunGuard(iso, day) || '') +
       paceTableHTML(r.table) +
-      logHTML +
-      '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="Mark run done">✓</button></section>'
+      logHTML + '</section>'
     );
     hero.querySelector('.h-tick').addEventListener('click', () => {
       if (!done[r.id]) state.justTicked = r.id;   // animate on tick-on only

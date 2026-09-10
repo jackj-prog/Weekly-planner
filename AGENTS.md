@@ -348,3 +348,7 @@ the existing harness discover Windows browsers and updates the handoff.
 ### 4.24.2 — section captures
 Added --scrollto with sticky-header clearance and a reveal-animation wait; invalid or missing targets fail. Added light/dark and reduced-motion capture flags. Uses only the existing external Playwright tool. Verified Reference App at the new version/cache and retained 15,917 passing plan checks.
 
+
+### 4.25.0 — readable run instrument
+Rebuilt the run hierarchy and completion control. Kept distance/shoe in dedicated fields; remaining source instructions are split at their existing separators, never rewritten. Completion stays full contrast. Run logging uses single-column, labelled 48px steppers so values cannot collide at 390px. Inspected light, dark, logged and completed captures; exercised log/adjust/save/reload/undo with synthetic data. App diagnostics show matching 4.25.0 version/cache; plan suite remains 15,917/0.
+

@@ -191,7 +191,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   box-shadow: 0 14px 34px color-mix(in srgb, var(--hero-bg) 45%, transparent), 0 4px 10px rgba(22,36,42,0.18);
 }
 .hero.race { background: var(--accent); background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 84%, #fff) 0%, var(--accent) 55%, color-mix(in srgb, var(--accent) 82%, #000) 100%); box-shadow: 0 16px 40px color-mix(in srgb, var(--accent) 48%, transparent), 0 4px 10px rgba(22,36,42,0.2); }
-.hero.done { opacity: 0.72; }
+.hero.done { opacity: 1; }
 .hero .h-tag { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.14em; opacity: 0.8; text-transform: uppercase; }
 .hero .h-row { display: flex; align-items: baseline; gap: 10px; margin-top: 2px; }
 .hero .h-km { font-family: var(--display); font-weight: 900; font-size: 66px; line-height: 0.9; letter-spacing: -0.03em; text-shadow: 0 2px 20px rgba(0,0,0,0.18); }
@@ -635,7 +635,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .c-plan .xs { font-family: var(--mono); font-size: 11.5px; color: var(--t2); white-space: nowrap; }
 
 /* ---- earned moments ------------------------------------------------------ */
-.hero.done { opacity: 0.82; }
+.hero.done { opacity: 1; }
 .hero.done::after {
   content: "BANKED";
   position: absolute; right: 16px; top: 64px;
@@ -842,7 +842,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; cursor: pointer;
 }
 /* logging stays available after the tick — that's exactly when you log */
-.hero.done .h-detail { padding-right: 110px; }
+.hero.done .h-detail { padding-right: 0; }
 
 /* EF sparkline — one line, no axes, the trend IS the message */
 .ef-spark { margin: 2px 0 10px; }
@@ -1001,3 +1001,39 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .frow.is-race .fr { color: var(--accent); }
 .frow.is-race .fbar i { background: var(--accent); }
 .frow.is-now .fi, .frow.is-now .fn { color: var(--text); font-weight: 700; }
+
+/* Run instrument: stable hierarchy and actual 48px controls, in both themes. */
+.hero { border-radius: 18px; padding: 20px; box-shadow: 0 5px 14px rgba(22,36,42,.15); }
+.hero::before, .hero.done::after { display: none; }
+.h-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.hero .h-tag { font-size: 11px; opacity: 1; letter-spacing: .09em; }
+.h-state { display: block; margin-top: 3px; font-family: var(--body); font-size: 13px; font-weight: 400; letter-spacing: 0; text-transform: none; color: #dce5e3; }
+.hero .h-tick { position: static; flex: 0 0 auto; width: auto; min-height: 48px; height: auto; padding: 0 12px; border-radius: 12px; font-family: var(--body); font-size: 13px; font-weight: 600; line-height: 1.2; border-width: 1px; }
+.hero .h-tick::after { display: none; }
+.hero .h-tick span { margin-right: 4px; }
+.hero .h-row { display: block; margin-top: 20px; }
+.hero .h-km { font-size: 76px; line-height: .95; text-shadow: none; font-variant-numeric: tabular-nums; }
+.hero .h-km small { font-family: var(--mono); font-size: 20px; margin-left: 7px; }
+.hero .h-session { margin-top: 10px; font-size: 23px; line-height: 1.16; text-wrap: balance; }
+.hero .h-meta { display: grid; grid-template-columns: 1fr 1fr; margin-top: 18px; gap: 16px; padding: 14px 0; border-block: 1px solid rgba(255,255,255,.24); }
+.hero .h-meta span { padding: 0; border: 0; border-radius: 0; background: none; font-family: var(--body); font-size: 15px; min-width: 0; }
+.hero .h-meta b { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: .08em; margin-bottom: 4px; opacity: 1; color: #c5d5d8; }
+.hero .h-detail { font-size: 15px; line-height: 1.55; opacity: 1; color: #eef0ea; margin-top: 14px; }
+.hero .h-log { min-height: 52px; padding: 13px 14px; margin-top: 18px; border-style: solid; font-family: var(--body); font-size: 16px; border-color: rgba(255,255,255,.45); background: rgba(255,255,255,.12); border-radius: 12px; }
+.hero .h-log > span[aria-hidden] { float: right; font-size: 22px; }
+.hero .h-log > small { display: block; font-size: 12px; margin-top: 3px; font-weight: 400; color: #dce5e3; }
+.hero .h-log.form { grid-template-columns: 1fr; gap: 14px; padding: 14px; }
+.hero .st-f { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 8px; }
+.hero .st-l { font-size: 11px; opacity: 1; text-align: left; }
+.hero .st-b { width: 48px; height: 48px; flex-basis: 48px; }
+.hero .st-v { min-width: 66px; }
+.hero .st-wide .st { gap: 6px; }
+.hero .rl-save, .hero .rl-x { min-height: 48px; }
+.hero .rl-save { background: var(--paper); color: var(--text); }
+.hero .h-tick:focus-visible, .hero .h-log:focus-visible, .hero .st-b:focus-visible { outline-color: #fff; }
+.hero .h-guard { font-size: 14px; }
+.resthero { border-style: solid; border-left: 4px solid var(--phase-base); padding: 18px; font-size: 15px; }
+.resthero b { font-size: 20px; margin-bottom: 4px; }
+.hero .h-detail p { font-weight: 600; }
+.hero .h-detail ul { margin: 12px 0 0; padding: 12px 0 0 18px; border-top: 1px solid rgba(255,255,255,.2); }
+.hero .h-detail li + li { margin-top: 8px; }
