@@ -1121,7 +1121,8 @@ section('hr zones');
      into committed source must come from this allowlist, so a real
      measurement cannot be pasted in unnoticed by anyone — me included. */
   const ALLOWED = ['50/190', '50/100', '0/190'];
-  const files = ['../data/plan.js', '../js/day-builder.js', '../js/app.js', '../tests/build.test.js'];
+  const files = ['../data/plan.js', '../js/day-builder.js', '../js/app.js',
+    '../js/ef-chart.js', '../js/run-progress.js', '../tests/build.test.js'];
   files.forEach((f) => {
     const src = require('fs').readFileSync(path.join(__dirname, f), 'utf8');
     const re = /(?:hrZones|zoneOf)\s*\(([^)]*)\)/g;
@@ -1165,6 +1166,63 @@ section('hr zones');
       ok(!DENY.test('js/app.js') && !DENY.test('index.html'), 'DENY does not block the app itself');
     }
   }
+}
+
+/* ---- 7c. Palette contrast: the app is read outdoors, in the dark, at 06:00
+   ---- The v4.36 repaint shipped --t3 at 4.23:1 against paper, and --t3 sets
+   the timeline TIMES at 11px — the smallest text in the app, where contrast
+   matters most. Nothing caught it because nothing was looking. This reads the
+   real tokens out of style.css and fails if any text-on-ground pair drops
+   below WCAG AA, so no future repaint can quietly make the app unreadable
+   in the conditions it is actually used in. ---- */
+section('palette contrast (WCAG AA)');
+{
+  const css = require('fs').readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const grab = (block) => {
+    const out = {};
+    (block.match(/--[a-z0-9-]+:\s*#[0-9a-fA-F]{6}/g) || []).forEach((d) => {
+      const [k, v] = d.split(/:\s*/);
+      out[k.trim()] = v.trim();
+    });
+    return out;
+  };
+  const lightSrc = css.slice(css.indexOf(':root {'), css.indexOf('}', css.indexOf(':root {')));
+  const darkAt = css.indexOf('@media (prefers-color-scheme: dark)');
+  const darkSrc = css.slice(darkAt, css.indexOf('\n  }', darkAt));
+  const light = grab(lightSrc), dark = grab(darkSrc);
+
+  const lum = (hex) => {
+    const v = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map((c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)));
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+  };
+  const ratio = (a, b) => {
+    const [hi, lo] = [lum(a), lum(b)].sort((m, n) => n - m);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  /* fg, bg — every pair where the app actually paints text on a ground */
+  const PAIRS = [
+    ['--text', '--paper'], ['--text', '--surface'],
+    ['--t2', '--paper'], ['--t2', '--surface'],
+    ['--t3', '--paper'], ['--t3', '--surface'],
+    ['--accent', '--paper'], ['--accent', '--surface'],
+    ['--chrome-text', '--chrome-bg'],
+  ];
+  const AA = 4.5;
+  [['light', light], ['dark', dark]].forEach(([name, set]) => {
+    ok(Object.keys(set).length > 10, name + ' palette parsed out of style.css');
+    PAIRS.forEach(([f, b]) => {
+      if (!set[f] || !set[b]) return ok(false, name + ' palette is missing ' + f + ' or ' + b);
+      const r = ratio(set[f], set[b]);
+      ok(r >= AA, name + ' ' + f + ' on ' + b + ' is ' + r.toFixed(2) + ':1 (needs ' + AA + ')');
+    });
+    /* Cards that paint white type on a filled ground. */
+    ['--hero-bg', '--accent-fill'].forEach((b) => {
+      const r = ratio('#ffffff', set[b]);
+      ok(r >= AA, name + ' white on ' + b + ' is ' + r.toFixed(2) + ':1 (needs ' + AA + ')');
+    });
+  });
 }
 
 /* ---- 7b. Pro 4 odometer + run log ---- */
