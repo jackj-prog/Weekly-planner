@@ -1,0 +1,27 @@
+{
+  "_comment": [
+    "Example localStorage seed for tools/shoot.js — pass with --seed=tools/seed.example.json.",
+    "Every number here is INVENTED so the screenshots have something to draw.",
+    "Real physiology never enters this repo (CLAUDE.md §4.10); tests/build.test.js",
+    "keeps an allowlist that fails the suite if it does. Copy this file, edit the",
+    "copy, and keep the copy out of git (.gitignore already covers *.private.md;",
+    "name a personal seed private/seed.json).",
+    "",
+    "Keys the app reads: done-ISO (ticks, array of block ids) · ovr-ISO (skips)",
+    "movein-ISO (moved blocks) · runlog-ISO · wt-<lift> (gym weights) · recal · hr.",
+    "Run log entry: { sec, hr, km?, temp?, halfPaceSec?, hr2? }",
+    "  sec = total run seconds · hr = average bpm · km overrides the plan distance",
+    "  temp = air temperature °C (without it every pace-at-HR read is a weather read)",
+    "  halfPaceSec + hr2 = the two extra long-run steppers that give decoupling"
+  ],
+
+  "hr": { "rest": 50, "max": 190, "at": "2026-09-01" },
+
+  "runlog-2026-09-01": { "sec": 3060, "hr": 148, "temp": 17 },
+  "runlog-2026-09-02": { "sec": 2280, "hr": 168, "temp": 16 },
+  "runlog-2026-09-03": { "sec": 2820, "hr": 150, "temp": 15 },
+  "runlog-2026-09-06": { "sec": 7290, "hr": 152, "temp": 14, "halfPaceSec": 400, "hr2": 156 },
+  "runlog-2026-09-08": { "sec": 3120, "hr": 149, "temp": 18 },
+
+  "done-2026-09-08": ["t1710-run", "t1930-gym"]
+}

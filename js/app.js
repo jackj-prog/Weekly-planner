@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.23.0';
+  const APP_VERSION = '4.24.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1346,9 +1346,9 @@
       '<h2>Weekly load budget</h2><div class="ref-note">' + esc(PLAN.loadBudget) + '</div>' +
       '<h2>Open questions</h2><ul class="ref-list qs">' +
       PLAN.openQuestions.map((q) => '<li>' + esc(q) + '</li>').join('') + '</ul>' +
-      '<h2>App</h2><div class="ref-note">Week OS v' + APP_VERSION + ' · offline-first · plan lives in data/plan.js</div>' +
       '</div>'
     ));
+    view.appendChild(buildDiagSection());
     view.appendChild(buildCalendarSection());
     view.appendChild(buildDataSection());
   }
@@ -1773,6 +1773,72 @@
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
     msg.textContent = n + ' sessions exported — open week-os-training.ics to add them.';
+  }
+
+  /* ---- diagnostics: the app says what it knows, because nothing else can ----
+     Remote Web Inspector needs Safari on macOS. From Windows the phone can be
+     watched but not debugged, so docs/device-checklist.md leans on these five
+     rows to tell an install apart from an update, and a cached shell apart
+     from a lucky network. Every value is read defensively: this pane must
+     render on the first offline launch, in private mode, and in any browser
+     that supports none of these APIs. */
+  function buildDiagSection() {
+    const wrap = el(
+      '<div class="ref"><h2>App</h2><div class="ref-card">' +
+      '<div class="ref-row"><span>Version</span><span class="v">v' + APP_VERSION + '</span></div>' +
+      '<div class="ref-row"><span>Service worker</span><span class="v" data-diag="sw">checking…</span></div>' +
+      '<div class="ref-row"><span>Cache</span><span class="v" data-diag="cache">checking…</span></div>' +
+      '<div class="ref-row"><span>Display</span><span class="v" data-diag="mode">—</span></div>' +
+      '<div class="ref-row"><span>Storage used</span><span class="v" data-diag="store">—</span></div>' +
+      '</div><div class="ref-note">Offline-first · plan lives in data/plan.js · ' +
+      'after a deploy this should read the new version and <b>controlling</b>.</div></div>'
+    );
+    const set = (k, txt) => {
+      const n = wrap.querySelector('[data-diag="' + k + '"]');
+      if (n) n.textContent = txt;
+    };
+
+    /* standalone: iOS uses a non-standard flag, everyone else the media query */
+    let mode = 'browser tab';
+    try {
+      if (navigator.standalone === true) mode = 'standalone';
+      else if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) mode = 'standalone';
+    } catch (e) { mode = 'unknown'; }
+    set('mode', mode);
+
+    if (!('serviceWorker' in navigator)) {
+      set('sw', 'unsupported');
+      set('cache', 'unsupported');
+    } else {
+      /* controller present = this page is being served by a worker, which is
+         the only state that means the app will open offline. */
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (!reg) return set('sw', 'not registered');
+        if (reg.waiting) return set('sw', 'update waiting');
+        if (reg.installing) return set('sw', 'installing');
+        set('sw', navigator.serviceWorker.controller ? 'controlling' : 'registered');
+      }).catch(() => set('sw', 'unknown'));
+    }
+
+    if (window.caches && caches.keys) {
+      caches.keys()
+        .then((keys) => {
+          const mine = keys.filter((k) => k.indexOf('week-os') === 0);
+          set('cache', mine.length ? mine.join(' · ') : 'none yet');
+        })
+        .catch(() => set('cache', 'unknown'));
+    } else if ('serviceWorker' in navigator) {
+      set('cache', 'unavailable');
+    }
+
+    if (navigator.storage && navigator.storage.estimate) {
+      navigator.storage.estimate()
+        .then((e) => set('store', e && e.usage ? (e.usage / 1048576).toFixed(1) + ' MB' : '—'))
+        .catch(() => set('store', '—'));
+    } else {
+      set('store', 'unreported');
+    }
+    return wrap;
   }
 
   /* ---- backup / restore (ticks, skips, moves, gym weights, tune-up time) ---- */
