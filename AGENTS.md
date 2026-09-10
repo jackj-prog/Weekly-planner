@@ -344,3 +344,7 @@ intensity view remain unaccepted ideas.
 
 **Next task:** await the user's selected improvement. This change only makes
 the existing harness discover Windows browsers and updates the handoff.
+
+### 4.24.2 — section captures
+Added --scrollto with sticky-header clearance and a reveal-animation wait; invalid or missing targets fail. Added light/dark and reduced-motion capture flags. Uses only the existing external Playwright tool. Verified Reference App at the new version/cache and retained 15,917 passing plan checks.
+

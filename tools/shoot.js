@@ -29,6 +29,8 @@
        node tools/shoot.js --seed=tools/seed.example.json   → with logged runs
 
    Flags: --date=ISO · --time=HH:MM · --view=today|week|plan|ref
+          --scrollto=selector (align below the sticky header; wait for reveals)
+          --theme=light|dark · --reduced (prefers-reduced-motion)
           --out=path.png · --full (full page, not just the fold)
           --seed=file.json (localStorage contents, see seed.example.json)
    ========================================================================== */
@@ -53,6 +55,8 @@ const out = path.resolve(args.out || path.join(__dirname, '..', 'shot-' + view +
 if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) fail('--date must be YYYY-MM-DD, got: ' + date);
 if (!/^\d{2}:\d{2}$/.test(time)) fail('--time must be HH:MM, got: ' + time);
 if (!['today', 'week', 'plan', 'ref'].includes(view)) fail('--view must be today|week|plan|ref');
+if (args.scrollto !== undefined && (typeof args.scrollto !== 'string' || !args.scrollto.trim())) fail('--scrollto requires a CSS selector');
+if (args.theme && !['light', 'dark'].includes(args.theme)) fail('--theme must be light|dark');
 
 function fail(msg) { console.error('shoot: ' + msg); process.exit(1); }
 
@@ -159,6 +163,7 @@ function serve() {
     deviceScaleFactor: 2,
     isMobile: true, hasTouch: true,
     timezoneId: TZ, locale: 'en-GB',
+    colorScheme: args.theme || 'light', reducedMotion: args.reduced ? 'reduce' : 'no-preference',
     /* Real physiology never enters this repo (CLAUDE.md §4.10) — this is a
        fixture, and tests/build.test.js keeps an allowlist that enforces it. */
     userAgent: 'Mozilla/5.0 (Linux; Chromium) WeekOS-shoot',
@@ -200,13 +205,25 @@ function serve() {
     await page.click('[data-nav="' + view + '"]');
   }
   await page.waitForTimeout(400);           // fonts settle, sparklines paint
+  await page.evaluate(() => document.fonts.ready);
+  if (args.scrollto) {
+    const target = page.locator(args.scrollto).first();
+    await target.waitFor({ state: 'visible', timeout: 5000 });
+    await target.evaluate((node) => {
+      const header = document.querySelector('.topbar');
+      const inset = (header ? header.getBoundingClientRect().height : 0) + 16;
+      window.scrollTo({ top: Math.max(0, node.getBoundingClientRect().top + window.scrollY - inset), behavior: 'instant' });
+    });
+    await page.waitForTimeout(800);         // scroll-triggered reveal finishes
+  }
   await page.screenshot({ path: out, fullPage: !!args.full });
 
   await browser.close();
   server.close();
 
   console.log('wrote ' + out + '  —  ' + view + ' · ' + date + ' ' + time + ' ' + TZ +
-    (args.full ? ' · full page' : ' · 390×844 fold'));
+    (args.full ? ' · full page' : ' · 390×844 fold') +
+    (args.scrollto ? ' · section ' + args.scrollto : '') + ' · mobile viewport');
   if (problems.length) {
     console.log('\n' + problems.length + ' console error(s) — these are real, fix them:');
     problems.forEach((p) => console.log('  · ' + p));
