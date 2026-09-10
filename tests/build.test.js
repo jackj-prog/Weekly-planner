@@ -1254,6 +1254,22 @@ section('palette contrast (WCAG AA)');
       'manifest theme_color ' + mani.theme_color + ' is a current palette token');
     ok(live.has(String(mani.background_color).toLowerCase()),
       'manifest background_color ' + mani.background_color + ' is current — it is the launch splash');
+
+    /* Zoom must stay available. `user-scalable=no` / `maximum-scale=1` is a
+       WCAG 1.4.4 failure, and it is not even the thing that gives the app its
+       native feel — `touch-action: pan-x pan-y` on html/body is what stops
+       double-tap zoom. It is an easy line to paste back in while chasing an
+       "app-like" feel, so it is guarded. */
+    const vp = (html.match(/<meta name="viewport"[^>]*content="([^"]+)"/) || [])[1] || '';
+    ok(vp.length > 0, 'index.html declares a viewport');
+    ok(!/user-scalable\s*=\s*no/i.test(vp), 'viewport does not disable zoom (WCAG 1.4.4)');
+    ok(!/maximum-scale\s*=\s*1\b/.test(vp), 'viewport does not cap zoom at 1x (WCAG 1.4.4)');
+    ok(/viewport-fit=cover/.test(vp), 'viewport keeps viewport-fit=cover for the safe-area insets');
+    ok(/touch-action:\s*pan-x pan-y/.test(css), 'double-tap zoom is still suppressed via touch-action');
+
+    /* The update toast is the only signal that a new version exists. */
+    ok(/id="toast"[^>]*(role="status"|aria-live)/.test(html),
+      'the update toast is announced to assistive technology');
   }
 }
 

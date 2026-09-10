@@ -1,38 +1,59 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <!-- Week OS app icon — calendar + check, cyan→purple gradient on white.
+  <!-- Week OS app icon — calendar + runner, on the v4.38 palette.
+       Full bleed: iOS masks apple-touch-icon to its own superellipse, so
+       baking rounded corners in here would double them.
        Vector source for icons/icon-*.png (rendered by tools/make-icons.js). -->
   <defs>
-    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="250" y1="210" x2="800" y2="760">
-      <stop offset="0" stop-color="#4be0ef"/>
-      <stop offset="0.5" stop-color="#5f7bee"/>
-      <stop offset="1" stop-color="#b168e8"/>
-    </linearGradient>
-    <linearGradient id="posts" gradientUnits="userSpaceOnUse" x1="250" y1="210" x2="800" y2="760">
-      <stop offset="0" stop-color="#43e4f2"/>
-      <stop offset="1" stop-color="#4fd4ee"/>
-    </linearGradient>
+    <!-- The runner and its speed lines cross the calendar's edge. Each is
+         drawn twice: once fat in the ground colour to knock a gap through
+         whatever sits behind, then again at true weight on top. -->
+    <!-- What makes a stick figure read as RUNNING rather than standing:
+         a torso that leans into the direction of travel, elbows bent to a
+         visible vertex, and — most of all — legs that are not mirror images.
+         The lead leg drives forward with the knee high and the shin dropped
+         under it; the trailing leg stays long and extends back. -->
+    <g id="runner">
+      <circle cx="800" cy="502" r="50"/>
+      <path d="M 772 566 L 682 700"/>
+      <path d="M 756 592 L 686 596 L 644 556"/>
+      <path d="M 756 592 L 856 630 L 884 716"/>
+      <path d="M 682 700 L 592 786 L 514 858"/>
+      <path d="M 682 700 L 780 728 L 772 850"/>
+    </g>
+    <g id="speed">
+      <path d="M 400 666 L 524 666"/>
+      <path d="M 348 736 L 500 736"/>
+      <path d="M 392 806 L 476 806"/>
+    </g>
   </defs>
 
-  <rect width="1024" height="1024" fill="#ffffff"/>
+  <rect width="1024" height="1024" fill="#141414"/>
 
   <!-- calendar body -->
-  <rect x="272" y="268" width="464" height="440" rx="64" fill="none" stroke="url(#g)" stroke-width="38"/>
+  <rect x="200" y="250" width="540" height="440" rx="58" fill="none" stroke="#ececec" stroke-width="42"/>
   <!-- header rule -->
-  <line x1="272" y1="382" x2="736" y2="382" stroke="url(#g)" stroke-width="34"/>
-  <!-- binding posts -->
-  <rect x="358" y="212" width="48" height="118" rx="24" fill="url(#posts)" stroke="#ffffff" stroke-width="10"/>
-  <rect x="602" y="212" width="48" height="118" rx="24" fill="url(#posts)" stroke="#ffffff" stroke-width="10"/>
+  <line x1="221" y1="372" x2="719" y2="372" stroke="#ececec" stroke-width="40"/>
 
-  <!-- date cells (one shared gradient shades them by position) -->
-  <rect x="342" y="428" width="76" height="76" rx="16" fill="url(#g)"/>
-  <rect x="438" y="428" width="76" height="76" rx="16" fill="url(#g)"/>
-  <rect x="534" y="428" width="76" height="76" rx="16" fill="url(#g)"/>
-  <rect x="342" y="522" width="76" height="76" rx="16" fill="url(#g)"/>
-  <rect x="438" y="522" width="76" height="76" rx="16" fill="url(#g)"/>
-  <rect x="342" y="616" width="76" height="76" rx="16" fill="url(#g)"/>
+  <!-- binding posts, knocked out of the header so they read as separate -->
+  <rect x="330" y="176" width="50" height="126" rx="25" fill="#141414" stroke="#141414" stroke-width="26"/>
+  <rect x="560" y="176" width="50" height="126" rx="25" fill="#141414" stroke="#141414" stroke-width="26"/>
+  <rect x="330" y="176" width="50" height="126" rx="25" fill="#ececec"/>
+  <rect x="560" y="176" width="50" height="126" rx="25" fill="#ececec"/>
 
-  <!-- check circle (white halo breaks the calendar edge) -->
-  <circle cx="678" cy="638" r="158" fill="#ffffff"/>
-  <circle cx="678" cy="638" r="122" fill="#ffffff" stroke="url(#g)" stroke-width="30"/>
-  <path d="M 614 642 L 664 692 L 748 586" fill="none" stroke="url(#g)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- date cells: one red — the day you are on -->
+  <rect x="281" y="424" width="80" height="80" rx="18" fill="#3d3d3d"/>
+  <rect x="381" y="424" width="80" height="80" rx="18" fill="#e50914"/>
+  <rect x="481" y="424" width="80" height="80" rx="18" fill="#3d3d3d"/>
+  <rect x="581" y="424" width="80" height="80" rx="18" fill="#3d3d3d"/>
+  <rect x="281" y="524" width="80" height="80" rx="18" fill="#3d3d3d"/>
+  <rect x="381" y="524" width="80" height="80" rx="18" fill="#3d3d3d"/>
+  <rect x="481" y="524" width="80" height="80" rx="18" fill="#3d3d3d"/>
+
+  <!-- speed lines: gap first, then the red -->
+  <use href="#speed" fill="none" stroke="#141414" stroke-width="54" stroke-linecap="round"/>
+  <use href="#speed" fill="none" stroke="#e50914" stroke-width="32" stroke-linecap="round"/>
+
+  <!-- runner: gap first, then the white -->
+  <use href="#runner" fill="#141414" stroke="#141414" stroke-width="76" stroke-linecap="round" stroke-linejoin="round"/>
+  <use href="#runner" fill="#ececec" stroke="#ececec" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
