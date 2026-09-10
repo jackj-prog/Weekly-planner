@@ -379,3 +379,16 @@ Space Mono is opt-in for time, numeric data and short labels; Archivo carries
 display and session headings. Shared roles use 28/22/18 px headings, 16 px body,
 14 px instructions at 1.55 line height, and 12 px time labels. Exercise names
 wrap instead of truncating. Palette, plan content and storage are unchanged.
+
+## Round two: honest EF geometry — v4.30
+
+The EF plot uses a uniform 340 × 194 viewBox with proportional height. Its
+zero line is the first eligible log within each effort class, labelled with
+date and raw EF. Last 12 points are spaced by elapsed date. A minimum ±10%
+range prevents tiny changes looking dramatic; larger ranges expand in explicit
+5-point steps. Fitted change is regression across dates in percentage points
+of reference EF, not an endpoint comparison. Under four logs gets no trend
+claim; under 2% fitted movement reads holding steady (a display convention,
+not a physiological threshold). Values and limitations are available on tap.
+Synthetic tests cover flat, tiny wobble, rise/fall, outliers, rolling reference,
+invalid inputs and irregular dates, and run with the existing deploy suite.

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.29.0';
+  const APP_VERSION = '4.30.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1584,26 +1584,39 @@
        line would read as noise — or worse, as a collapse on any week
        that happened to end with a shakeout. One trend per class. */
     function sparkFor(cls, label) {
-      const pts0 = entries.filter((e) => e.ef != null && e.cls === cls && !e.tooHot).slice(-12);
-      if (pts0.length < 2) return '';
-      const vals = pts0.map((p) => p.ef);
-      const lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
-      const span = (hi - lo) || 0.01;
-      const pts = vals.map((v, i) =>
-        (i * (100 / (vals.length - 1))).toFixed(1) + ',' + (26 - ((v - lo) / span) * 22).toFixed(1)
-      );
-      /* Least-squares slope, not first-to-last. Two endpoints on noisy
-         data is the least robust estimator there is — one flat first run
-         inflates the trend, one warm last run erases it. The line uses
-         every point; the sparkline still draws the raw ones. */
-      const delta = DB.trendPct(vals);
-      return '<div class="ef-spark" role="img" aria-label="EF trend across ' +
-        pts0.length + ' ' + label + ' runs">' +
-        '<svg viewBox="0 0 100 28" preserveAspectRatio="none">' +
-        '<polyline points="' + pts.join(' ') + '"/>' +
-        '<circle cx="' + pts[pts.length - 1].split(',')[0] + '" cy="' + pts[pts.length - 1].split(',')[1] + '" r="1.8"/>' +
-        '</svg><div class="ef-cap">EF, last ' + pts0.length + ' ' + label + ' runs · ' +
-        (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%</div></div>';
+      const eligible = entries.filter(e => e.cls === cls && !e.tooHot && e.iso <= todayISO());
+      const chart = window.EFChart.chart(eligible);
+      if (!chart) return '';
+      const signed = n => (n > 0 ? '+' : '') + n.toFixed(1) + '%';
+      const date = iso => Number(iso.slice(8)) + ' ' + MONTHS[Number(iso.slice(5,7))-1];
+      const pts = chart.points;
+      const status = pts.length < 4 ? 'Building a picture' : Math.abs(chart.change) < 2
+        ? 'Holding steady' : chart.change > 0 ? 'Efficiency trending up' : 'Efficiency trending down';
+      const ticks = chart.ticks.map(t => '<line x1="48" x2="326" y1="' + t.y + '" y2="' + t.y + '" class="' +
+        (t.value === 0 ? 'ef-reference' : 'ef-grid') + '"/><text x="40" y="' + (t.y+4) +
+        '" text-anchor="end">' + (t.value > 0 ? '+' : '') + t.value + '%</text>').join('');
+      const dots = pts.map(p => '<circle cx="' + p.x.toFixed(2) + '" cy="' + p.y.toFixed(2) +
+        '" r="3"><title>' + p.iso + ': EF ' + p.ef.toFixed(3) + ', ' + signed(p.pct) + '</title></circle>').join('');
+      const rows = pts.map(p => '<tr><td>' + esc(p.iso) + '</td><td>' + p.ef.toFixed(3) +
+        '</td><td>' + signed(p.pct) + '</td></tr>').join('');
+      return '<figure class="ef-chart"><figcaption><span class="ef-kind">' + label +
+        ' run efficiency</span><strong>' + status + '</strong></figcaption>' +
+        '<svg viewBox="0 0 340 194" width="340" height="194" role="img" aria-label="' +
+        esc(label + ' run EF relative to ' + chart.reference.iso + '. Scale minus ' + chart.extent +
+        ' to plus ' + chart.extent + ' percent. ' + pts.length + ' runs. Fitted change ' + signed(chart.change)) + '">' +
+        ticks + '<polyline points="' + pts.map(p => p.x.toFixed(2)+','+p.y.toFixed(2)).join(' ') + '"/>' + dots +
+        '<text x="48" y="184">' + date(pts[0].iso) + '</text><text x="326" y="184" text-anchor="end">' +
+        date(pts[pts.length-1].iso) + '</text></svg>' +
+        '<div class="ef-reading"><b>' + signed(chart.change) + '</b><span>Fitted change · last ' + pts.length +
+        ' runs' + (pts.length < 4 ? '<br>Too few runs to call a trend' : '') + '</span></div>' +
+        '<p class="ef-explain">Reference: EF ' + chart.reference.ef.toFixed(3) + ' on ' + esc(chart.reference.iso) +
+        '. Higher means more speed per heartbeat.</p>' +
+        '<details class="ef-data"><summary>Values &amp; comparison</summary><p>The line joins recorded runs, spaced by date. ' +
+        'Fitted change uses every point across this period, relative to the reference. The scale stays at least ±10% and expands in 5-point steps. ' +
+        'The first eligible log is the reference; editing or deleting it changes the comparison. ' +
+        'Heat-flagged runs are excluded. Temperature, terrain and effort still affect EF; missing temperatures are unverified. ' +
+        'This is an efficiency signal, not proof of a fitness change.</p>' +
+        '<table><thead><tr><th>Date</th><th>EF</th><th>vs reference</th></tr></thead><tbody>' + rows + '</tbody></table></details></figure>';
     }
     let spark = sparkFor('easy', 'easy') + sparkFor('long', 'long');
     /* The only real audit of rule 1: where the running actually sits. One

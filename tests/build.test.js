@@ -1239,5 +1239,7 @@ section('ics export');
 }
 
 /* ---- result ---- */
+// Chart geometry is part of correctness, not just appearance.
+require('./ef-chart.test.js');
 console.log('\n' + checks + ' checks, ' + failures + ' failure' + (failures === 1 ? '' : 's'));
 process.exit(failures ? 1 : 0);
