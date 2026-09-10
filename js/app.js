@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.33.0';
+  const APP_VERSION = '4.34.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -476,7 +476,7 @@
       const km = e.km || day.run.run.km;
       if (!(km > 0)) continue;
       out.push({
-        iso: m[1], cls: DB.runClass(day.run), paceSec: Math.round(e.sec / km),
+        iso: m[1], km, sec: e.sec, cls: DB.runClass(day.run), paceSec: Math.round(e.sec / km),
         hr: e.hr || null, ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
         temp: e.temp == null ? null : e.temp,
       });
@@ -484,6 +484,62 @@
     out.sort((a, b) => (a.iso < b.iso ? -1 : 1));
     return out;
   }
+  function savedProgress() {
+    return window.RunProgress.summarize(runLogHistory(), todayISO());
+  }
+  function recordTime(seconds) {
+    const s = Math.round(seconds), h = Math.floor(s / 3600);
+    return (h ? h + ':' : '') + String(Math.floor(s / 60) % (h ? 60 : 100000)).padStart(h ? 2 : 1, '0') +
+      ':' + String(s % 60).padStart(2, '0');
+  }
+  function earnedHTML(iso) {
+    const p = savedProgress();
+    const best = p.bests.find(e => e.iso === iso);
+    const longest = p.longest && p.longest.iso === iso ? p.longest : null;
+    if (!best && !longest) return '';
+    return '<div class="earned"><span class="earned-star" aria-hidden="true">★</span><div><small>' +
+      (best ? 'Fastest logged ' + best.km + ' km' : 'Longest logged run') + '</small><strong>' +
+      (best ? recordTime(best.sec) : longest.km + ' km') + '</strong>' +
+      (best ? '<span>Best of ' + best.compared + ' runs at this distance</span>' : '') + '</div></div>';
+  }
+  function recordsHTML(progress) {
+    if (!progress.bests.length) return '';
+    return '<section class="records"><h3>Your logged bests</h3>' + progress.bests.slice(0,3).map(r =>
+      '<article class="record"><div><span>Fastest logged ' + r.km + ' km</span><small>' + esc(r.iso) +
+      ' · ' + r.compared + ' runs compared</small></div><b>' + recordTime(r.sec) + '</b></article>').join('') +
+      '<details class="record-method"><summary>What counts as a best?</summary><p>Whole runs at the exact same distance, using the saved distance ' +
+      'or the planned distance when no override is saved. At least two logs are needed. Ties keep the earlier record. ' +
+      'These are bests in this log; no splits or Strava records are inferred.</p></details></section>';
+  }
+  function buildJourney() {
+    const block = PLAN.blocks[0], today = todayISO();
+    let elapsed = 0;
+    const segments = block.weekTable.map(row => {
+      const dates = DB.weekDates(block, row.wk);
+      const past = dates.end < today, current = dates.start <= today && today <= dates.end;
+      if (past) elapsed++;
+      return '<i class="journey-week' + (past ? ' elapsed' : '') + (current ? ' current' : '') +
+        '" style="--phase:var(--phase-' + esc(row.phase) + ')" title="Week ' + row.wk +
+        (current ? ' · current' : past ? ' · elapsed' : ' · ahead') + '"></i>';
+    }).join('');
+    const p = savedProgress();
+    const wrap = el('<section class="journey"><div class="journey-heading"><h2>The work adds up</h2>' +
+      '<button class="journey-link" aria-label="Open the full training plan">↗</button></div>' +
+      '<div class="journey-caption"><b>' + elapsed + '<span> / ' + block.weeks + '</span></b> weeks elapsed</div>' +
+      '<div class="journey-track" role="img" aria-label="' + elapsed + ' of ' + block.weeks +
+      ' weeks elapsed; outlined segment is this week">' + segments + '</div>' +
+      '<div class="journey-legend"><span>Base</span><span>Build</span><span>Taper</span></div>' +
+      '<div class="journey-stats"><div><b>' + p.km.toLocaleString('en-GB',{maximumFractionDigits:1}) +
+      '</b><span>km logged</span></div><div><b>' + p.runs + '</b><span>runs logged</span></div><div><b>' + p.weeks +
+      '</b><span>weeks logged</span></div></div>' +
+      (p.runs ? '<p>Every saved run contributes. Weeks logged count weeks with at least one run.</p>' :
+        '<p>Your first saved run starts these counters. Use Log this run after your session.</p>') + '</section>');
+    wrap.querySelector('.journey-link').addEventListener('click', () => {
+      state.view = 'plan'; window.scrollTo(0,0); render();
+    });
+    return wrap;
+  }
+
   function fmtEf(v) { return v == null ? '—' : v.toFixed(3); }
   function loggedLineHTML(iso, plannedKm) {
     const e = getRunLogEntry(iso);
@@ -587,6 +643,7 @@
           '<span>' + esc(line) + '</span>' +
           '<button class="h-share" aria-label="Share run card">⤴</button></div>';
       }
+      logHTML += earnedHTML(iso);
     } else if (canLog) {
       logHTML = '<button class="h-log" aria-label="Log this run">Log this run <span aria-hidden="true">↗</span><small>Time · heart rate · conditions</small></button>';
     }
@@ -601,6 +658,7 @@
       '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : iso < todayISO() ? 'Not marked done' : 'Scheduled · ' + r.start) + '</span></div>' +
       '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' +
       (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button></div>' +
+      (just === r.id && isDone ? '<div class="completion-note" role="status">✓ Run banked</div>' : '') +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
       '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span><span><b>WINDOW</b>' + r.start + '–' + r.end + '</span></div>' +
@@ -834,6 +892,7 @@
       }).join('') + '</div></details>' : '') +
       '<div class="c-cat">' + esc(b.cat) + (opts.skipped ? ' · skipped' : '') +
       (opts.moved ? ' · moved from ' + esc(fmtShort(opts.moved.fromIso)) : '') + '</div>' +
+      (opts.just && isDone && (b.cat !== 'run' || opts.moved) ? '<div class="completion-note" role="status">✓ Session banked</div>' : '') +
       (expanded ? '<div class="c-actions">' +
         (opts.skipped ? '<button data-act="unskip">Unskip</button>' : '<button data-act="skip">Skip</button>') +
         (opts.moved ? '<button data-act="return">Return to ' + esc(fmtShort(opts.moved.fromIso)) + '</button>'
@@ -1164,6 +1223,7 @@
       window.scrollTo(0, 0); render();
     }));
     view.insertBefore(profile, view.children[2] || null);
+    if (day0.blockId === 'marathon') profile.after(buildJourney());
 
     const days = el('<div class="wk-days"></div>');
     for (let i = 0; i < 7; i++) {
@@ -1643,7 +1703,7 @@
         'This is an efficiency signal, not proof of a fitness change.</p>' +
         '<table><thead><tr><th>Date</th><th>EF</th><th>vs reference</th></tr></thead><tbody>' + rows + '</tbody></table></details></figure>';
     }
-    let spark = sparkFor('easy', 'easy') + sparkFor('long', 'long');
+    let spark = recordsHTML(savedProgress()) + sparkFor('easy', 'easy') + sparkFor('long', 'long');
     /* The only real audit of rule 1: where the running actually sits. One
        stacked bar, weighted by TIME rather than by run count, because four
        easy kilometres and a 30 km long run are not one vote each. */

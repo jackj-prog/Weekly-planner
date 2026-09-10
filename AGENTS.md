@@ -419,3 +419,18 @@ planned run link, resolved through DayBuilder. Say no run rather than implying
 the entire day is inactive. Existing rest-block text remains available via
 the same disclosure; other activities remain in the timeline. No new training
 advice, routine values or storage keys are introduced.
+
+## Round two: earned progress — v4.34
+
+Week now separates the 30-week calendar from effort: elapsed segments with
+a current-week outline, then cumulative logged kilometres, runs and weeks
+with logs. These are not claimed as completed training weeks. Reference and
+the logged Today hero surface fastest whole-run times at identical distances
+only after two observations; ties retain the earlier record, and no splits
+or Strava records are inferred. Missing distance overrides use the existing
+planned-distance fallback, disclosed beside records. Invalid/future logs are
+excluded from these counters. Tick-on gets a short, motion-optional completion
+message; undo removes it. All facts are derived locally, with no new keys.
+The old high-specificity entrance animation survived earlier overrides and
+faded fresh cards during ticks. Disable it at its source; only small action
+feedback animates now, with no full-view fade or delayed first paint.

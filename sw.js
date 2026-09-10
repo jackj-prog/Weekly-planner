@@ -5,7 +5,7 @@
    ========================================================================== */
 'use strict';
 
-const CACHE_VERSION = 'week-os-v4.33.0';
+const CACHE_VERSION = 'week-os-v4.34.0';
 const ASSETS = [
   './',
   './index.html',
@@ -13,6 +13,7 @@ const ASSETS = [
   './js/app.js',
   './js/day-builder.js',
   './js/ef-chart.js',
+  './js/run-progress.js',
   './data/plan.js',
   './manifest.webmanifest',
   './icons/icon-180.png',
