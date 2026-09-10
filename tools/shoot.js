@@ -171,7 +171,11 @@ function serve() {
 
   const epoch = epochFor(date, time);
   const seed = args.seed ? JSON.parse(fs.readFileSync(path.resolve(args.seed), 'utf8')) : {};
-  if (!seed.hr) seed.hr = { rest: 50, max: 190, at: date };   // fixture, not his
+  /* Default the HR fixture only when the seed says nothing about it. An
+     explicit `"hr": null` means "leave storage empty", which is the only way
+     to capture the first-run state — and that state is where two of the
+     audit's findings live, so it has to be reachable. */
+  if (!Object.prototype.hasOwnProperty.call(seed, 'hr')) seed.hr = { rest: 50, max: 190, at: date };
 
   await ctx.addInitScript(({ epoch, seed }) => {
     const Real = Date;
@@ -187,6 +191,7 @@ function serve() {
     window.Date = Fake;
     try {
       for (const [k, v] of Object.entries(seed)) {
+        if (v === null) continue;                 // explicit "leave this unset"
         localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
       }
     } catch (e) { /* private mode — the app copes, so does this */ }

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.41.0';
+  const APP_VERSION = '4.42.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -652,6 +652,26 @@
     const prefix = kmTxt + ' km · ' + r.run.shoe + ' · ';
     const detail = r.detail.startsWith(prefix) ? r.detail.slice(prefix.length) : r.detail;
 
+    /* §4.2 wants distance, session, shoe AND pace without scrolling. Pace had
+       slipped behind the Details tap. The band is already authored per run in
+       data/plan.js, so lift it out of the prescription rather than restating
+       it here — render code carries no plan content (§2). A recovery run
+       genuinely has no pace target (rule 10: Z1, HR decides), so it simply
+       gets no cell rather than an invented one. */
+    const paceTxt = (r.detail.match(/\d{1,2}:\d{2}\s*–\s*\d{1,2}:\d{2}\s*\/\s*km/) ||
+                     r.detail.match(/\d{1,2}:\d{2}\s*\/\s*km/) || [])[0];
+    const paceCell = paceTxt
+      ? '<span><b>PACE</b>' + esc(paceTxt.replace(/\s*\/\s*km/, '')) + '</span>' : '';
+
+    /* Zones are the plan's whole prescription mechanism, and on a fresh
+       install — which includes every Home Screen install, since those get
+       their own storage container — the hero can only say a bare "Z2". Route
+       there from the one screen where the number is missed. */
+    const hrSet = (() => { const h = readJSON('hr', null); return !!(h && h.rest && h.max); })();
+    const zonePrompt = (!hrSet && /\bZ[1-5]\b/.test(r.detail))
+      ? '<button class="h-zoneset" data-goto="ref">Zones not set — add your resting and max HR</button>'
+      : '';
+
     const hero = el(
       '<section class="hero' + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (just === r.id ? ' just' : '') + '">' +
       '<div class="h-top"><div class="h-tag">' + (isRace ? 'RACE DAY' : 'TODAY’S RUN') +
@@ -661,8 +681,10 @@
       (just === r.id && isDone ? '<div class="completion-note" role="status">✓ Run banked</div>' : '') +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
-      '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span><span><b>WINDOW</b>' + r.start + '–' + r.end + '</span></div>' +
+      '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span>' + paceCell +
+      '<span><b>WINDOW</b>' + r.start + '–' + r.end + '</span></div>' +
       '<div class="h-detail">' + detailHTML(detail, iso + '|hero', false) + '</div>' +
+      zonePrompt +
       (longRunGuard(iso, day) || '') +
       paceTableHTML(r.table) +
       logHTML + '</section>'
@@ -670,6 +692,12 @@
     hero.querySelector('.h-tick').addEventListener('click', () => {
       if (!done[r.id]) state.justTicked = r.id;   // animate on tick-on only
       toggleDone(iso, r.id);
+      render();
+    });
+    const zoneBtn = hero.querySelector('[data-goto="ref"]');
+    if (zoneBtn) zoneBtn.addEventListener('click', () => {
+      state.view = 'ref';
+      window.scrollTo(0, 0);
       render();
     });
     const logBtn = hero.querySelector('.h-log:not(.form)');
@@ -1043,9 +1071,16 @@
     });
     if (!(plannedSoFar > 0) || ranSoFar >= plannedSoFar * g.shortPct) return null;
     const short = Math.round((plannedSoFar - ranSoFar) * 10) / 10;
-    return '<div class="h-guard"><b>' + (Math.round(ranSoFar * 10) / 10) + ' of ' +
-      plannedSoFar + ' km this week so far — ' + short + ' km behind.</b> ' +
-      esc(g.note) + '</div>';
+    /* The headline is the fact; the reasoning goes behind the same disclosure
+       everything else uses. Rendered open it is seven lines of body copy in
+       the hero, on the morning of the longest run of the week, and it pushed
+       the log form below the fold. */
+    const key = iso + '|guard';
+    return '<details class="h-guard" data-disclosure="' + esc(key) + '"' +
+      (openDetails.has(key) ? ' open' : '') + '><summary><b>' +
+      (Math.round(ranSoFar * 10) / 10) + ' of ' + plannedSoFar +
+      ' km this week so far — ' + short + ' km behind.</b><small>Why</small></summary>' +
+      '<div class="detail-body"><p>' + esc(g.note) + '</p></div></details>';
   }
 
   /* Week SHAPE, not week total. The banked figure answers "did I run the

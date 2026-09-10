@@ -1306,6 +1306,16 @@ section('palette contrast (WCAG AA)');
     ok(/aria-expanded/.test(appSrc) && /'Escape'/.test(appSrc),
       'the sheet toggles aria-expanded and closes on Escape');
 
+    /* Hero contract (§4.2 + audit §5, §6, §19). These are source checks
+       because the hero is browser-only; the rendered proof lives in
+       tools/shoot.js. */
+    ok(/<details class="h-guard"/.test(appSrc),
+      'the long-run guard folds its reasoning away — open it pushed the log form off the fold');
+    ok(/<b>PACE<\/b>/.test(appSrc),
+      'the hero carries pace, which §4.2 requires visible without scrolling');
+    ok(/h-zoneset/.test(appSrc) && /data-goto="ref"/.test(appSrc),
+      'a hero with no stored zones routes to the zone editor rather than printing a bare "Z2"');
+
     /* 44px tap-target floor. A rendered audit needs a browser, which this
        suite deliberately does not have, so this asserts the rules exist —
        enough to catch someone tightening the padding back up. The rendered
