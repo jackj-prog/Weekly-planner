@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.31.0';
+  const APP_VERSION = '4.32.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -2106,11 +2106,26 @@
 
   /* ---- swipe: left/right moves a day (Today) or a week (Week) ---- */
   let swipeX = null, swipeY = null;
+  // The owner wants an app-sized viewport, including Safari's gesture path.
+  // A pinch must neither scale the page nor turn into a day/week swipe.
+  const stopScale = e => {
+    swipeX = swipeY = null;
+    if (e.cancelable) e.preventDefault();
+  };
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(type => {
+    document.addEventListener(type, stopScale, { passive: false });
+  });
   document.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) { stopScale(e); return; }
     swipeX = e.touches[0].clientX;
     swipeY = e.touches[0].clientY;
-  }, { passive: true });
+  }, { passive: false });
+  document.addEventListener('touchmove', e => {
+    if (e.touches.length > 1) stopScale(e);
+  }, { passive: false });
+  document.addEventListener('touchcancel', () => { swipeX = swipeY = null; }, { passive: true });
   document.addEventListener('touchend', (e) => {
+    if (e.touches.length || !e.changedTouches.length) { swipeX = swipeY = null; return; }
     if (swipeX === null) return;
     const dx = e.changedTouches[0].clientX - swipeX;
     const dy = e.changedTouches[0].clientY - swipeY;

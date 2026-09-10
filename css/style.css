@@ -95,6 +95,8 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
+/* Allow native scrolling, without pinch or double-tap page scaling. */
+html, body { touch-action: pan-x pan-y; }
 body {
   font-family: var(--body);
   /* the app glows in the current training phase's colour (set per render) */
@@ -1243,3 +1245,5 @@ summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; b
 .tl-card .tick { width: auto; min-width: 112px; padding: 0 12px; border-radius: 8px; color: var(--t2); border-width: 1px; font-size: 16px; }
 .tl-card .tick span { font-size: 14px; font-weight: 600; }
 .tl-card .tick.on { color: var(--paper); background: var(--text); border-color: var(--text); }
+/* iPhone focus zoom: every editable field has a readable 16px minimum. */
+input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }

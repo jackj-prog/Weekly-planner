@@ -402,3 +402,12 @@ disclosure. Native details stay open across ticks, weight edits and minute
 refreshes during this session without adding storage keys. Session titles get
 full width; completion and actions have real 44 px controls below. Scaffold
 anchors use a quiet time column, while doable cards carry category borders.
+
+## Owner request: fixed iPhone viewport — v4.32
+
+Disable app gesture zoom explicitly: viewport scale limits, CSS touch-action
+allowing pan on both axes without pinch/double-tap zoom, and Safari gesture
+event cancellation. Multi-touch also cancels day/week swipe detection.
+Single-finger scrolling remains native. Editable controls use at least 16px
+to prevent Safari focus zoom. Browser/OS accessibility overrides are outside
+the app's control; headless mobile tests are not physical-iPhone verification.
