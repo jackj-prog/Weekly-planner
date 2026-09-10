@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.25.0';
+  const APP_VERSION = '4.26.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -298,7 +298,7 @@
       '<button class="nav" data-d="1" aria-label="Next day">›</button></div>' +
       '<div class="sub"><span>' + weekBit + '</span>' + chips.join('') +
       (day.label ? '<span>' + esc(day.label) + '</span>' : '') +
-      (day.blockId === 'marathon' ? weekRingHTML(iso) : '') + '</div></div>'
+      '</div></div>'
     );
     head.querySelectorAll('.nav').forEach((btn) => btn.addEventListener('click', () => {
       state.dateISO = DB.addDays(iso, Number(btn.getAttribute('data-d')));
@@ -322,6 +322,8 @@
       ));
     }
 
+    view.appendChild(el('<div class="timeline-head"><h2>Your day</h2>' +
+      (day.blockId === 'marathon' ? weekRingHTML(iso) : '') + '</div>'));
     /* -- timeline -- */
     const tl = el('<div class="tl"></div>');
     const nMin = nowMin();
@@ -346,7 +348,10 @@
         nowPlaced = true;
       }
       const isCurrent = isToday && nMin >= b.startMin && nMin < b.endMin;
-      if (isCurrent) nowPlaced = true;
+      if (isCurrent) {
+        tl.appendChild(el('<div class="tl-now">NOW ' + DB.fmtHM(nMin) + '</div>'));
+        nowPlaced = true;
+      }
 
       if (b.quiet && !b.doable) {
         const q = el(
@@ -374,30 +379,24 @@
     const cur = day.blocks.find((b) => nMin >= b.startMin && nMin < b.endMin);
     const next = day.blocks.filter((b) => b.startMin > nMin).slice(0, 2);
     nowKey = day.iso + '|' + (cur ? cur.id : '-') + '|' + (next[0] ? next[0].id : '-');
-    let html = '<div class="nownext">';
+    let html = '<section class="nownext" aria-label="Now and next"><div class="nn-current">' +
+      '<div class="nn-clock"><span>NOW</span><time class="live-clock">' + DB.fmtHM(nMin) + '</time></div><div class="nn-main">';
     if (cur) {
       const pct = Math.round(((nMin - cur.startMin) / (cur.endMin - cur.startMin)) * 100);
-      html += '<div class="nn-tag">NOW</div><div class="nn-title">' + esc(cur.title) + '</div>' +
+      html += '<div class="nn-title">' + esc(cur.title) + '</div>' +
         '<div class="nn-time">' + cur.start + '–' + cur.end +
         ' · <span class="nn-left">' + fmtLeft(cur.endMin - nMin) + '</span>' +
-        (cur.detail ? ' · ' + esc(withZones(cur.detail)) : '') + '</div>' +
-        '<div class="nn-bar"><i style="width:' + pct + '%"></i></div>';
+        '</div></div><button class="nn-jump" aria-label="Go to current activity">↓</button></div>' +
+        '<div class="nn-bar" aria-hidden="true"><i style="width:' + pct + '%"></i></div>';
     } else {
-      html += '<div class="nn-tag">NOW</div><div class="nn-title">Off the clock</div>' +
-        '<div class="nn-bar"><i style="width:0%"></i></div>';
+      html += '<div class="nn-title">Off the clock</div><div class="nn-time">Space between activities</div></div>' +
+        '<button class="nn-jump" aria-label="Go to current time">↓</button></div>' +
+        '<div class="nn-bar" aria-hidden="true"><i style="width:0%"></i></div>';
     }
     if (next.length) {
-      html += next.map((b) => '<div class="nn-next"><span class="t">' + b.start + '</span><span>' + esc(b.title) + '</span></div>').join('');
+      html += '<div class="nn-next"><span class="nn-label">NEXT</span><span class="t">' + next[0].start + '</span><span>' + esc(next[0].title) + '</span></div>';
     } else {
-      html += '<div class="nn-next"><span class="t">—</span><span>Nothing left today. Lights out 22:30.</span></div>';
-    }
-    /* today at a glance: while the run is still ahead, keep it in view even
-       when it's hours down the timeline — the day's headline, not a surprise */
-    if (day.run && day.run.startMin > nMin) {
-      const km = day.run.run.km;
-      html += '<div class="nn-tmrw run"><span class="t">RUN</span><span>' +
-        esc(day.run.start + ' · ' + (km === Math.round(km) ? km : km.toFixed(1)) +
-          ' km · ' + day.run.run.shoe) + '</span></div>';
+      html += '<div class="nn-next"><span class="nn-label">NEXT</span><span>Nothing else scheduled today.</span></div>';
     }
     /* evening onwards, look ahead — lay the kit out tonight */
     if (!next.length || nMin >= 21 * 60) {
@@ -409,7 +408,14 @@
         : 'No run — recovery day';
       html += '<div class="nn-tmrw"><span class="t">TMRW</span><span>' + esc(line) + '</span></div>';
     }
-    return el(html + '</div>');
+    const rail = el(html + '</section>');
+    rail.querySelector('.nn-jump').addEventListener('click', () => {
+      const target = document.querySelector('.tl-now');
+      if (!target) return;
+      const inset = document.querySelector('.topbar').getBoundingClientRect().height + 16;
+      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - inset, behavior: 'auto' });
+    });
+    return rail;
   }
 
   /* Structured pacing table (TT lap script, race splits) — renders on any
@@ -1991,7 +1997,8 @@
 
   /* ---- minute tick: full render only when the NOW block changes ---- */
   let lastISO = todayISO();
-  setInterval(() => {
+  function refreshClock() {
+    if (document.hidden) return;
     const iso = todayISO();
     if (iso !== lastISO) {           // midnight rollover
       if (state.dateISO === lastISO) state.dateISO = iso;
@@ -2013,9 +2020,14 @@
     }
     const left = document.querySelector('.nn-left');
     if (left && cur) left.textContent = fmtLeft(cur.endMin - n);
+    const clock = document.querySelector('.live-clock');
+    if (clock) clock.textContent = DB.fmtHM(n);
     const line = document.querySelector('.tl-now');
     if (line) line.textContent = 'NOW ' + DB.fmtHM(n);
-  }, 60000);
+  }
+  setInterval(refreshClock, 60000);
+  document.addEventListener('visibilitychange', refreshClock);
+  window.addEventListener('pageshow', refreshClock);
 
   /* ---- swipe: left/right moves a day (Today) or a week (Week) ---- */
   let swipeX = null, swipeY = null;

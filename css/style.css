@@ -1037,3 +1037,37 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hero .h-detail p { font-weight: 600; }
 .hero .h-detail ul { margin: 12px 0 0; padding: 12px 0 0 18px; border-top: 1px solid rgba(255,255,255,.2); }
 .hero .h-detail li + li { margin-top: 8px; }
+
+/* Live time rail: content paints immediately; only actions earn motion. */
+.nownext { padding: 12px 14px; border-radius: 14px; margin-bottom: 14px; background: var(--surface); color: var(--text); border: 1px solid var(--line); box-shadow: 0 2px 4px rgba(22,36,42,.04); }
+.nn-current { display: flex; align-items: center; gap: 12px; }
+.nn-clock { flex: 0 0 51px; font-family: var(--mono); font-size: 15px; font-weight: 700; }
+.nn-clock > span { display: block; font-size: 10px; color: var(--accent); letter-spacing: .12em; margin-bottom: 2px; }
+.nn-main { flex: 1; min-width: 0; }
+.nownext .nn-title { font-size: 17px; line-height: 1.2; margin: 0 0 3px; }
+.nownext .nn-time { font-family: var(--body); font-size: 12px; color: var(--t2); opacity: 1; }
+.nn-left { color: var(--text); white-space: nowrap; }
+.nn-jump { flex: 0 0 44px; height: 44px; border: 1px solid var(--line); border-radius: 10px; font-size: 22px; background: var(--paper); }
+.nownext .nn-bar { height: 3px; margin: 10px 0; background: var(--line); }
+.nownext .nn-bar i { background: var(--accent); }
+.nownext .nn-next { font-size: 13px; align-items: baseline; gap: 8px; padding: 0; }
+.nownext .nn-next .t { opacity: 1; color: var(--t2); min-width: auto; font-size: 12px; }
+.nn-label { font-family: var(--mono); color: var(--t2); font-size: 10px; letter-spacing: .05em; }
+.nownext .nn-tmrw { border-color: var(--line); font-size: 13px; color: var(--text); }
+.timeline-head { display: flex; align-items: center; justify-content: space-between; margin: 24px 2px 16px; }
+.timeline-head h2 { font-family: var(--display); font-size: 21px; }
+.tl-now { font-size: 12px; padding-block: 5px; }
+.tl-now::before { top: 9px; animation: none; }
+.topbar-week, .day-nav .nav, .wk-head .nav { min-height: 44px; min-width: 44px; }
+.day-head { margin-bottom: 14px; }
+.day-head h1 { font-size: 25px; }
+.day-head .sub { font-size: 10px; gap: 6px; margin-top: 8px; }
+.day-head .sub > span:first-child { display: none; } /* week stays in the top bar */
+body { background: var(--paper); }
+.view.anim > *, .view.anim .tl > *, .view.anim .wk-days > *, .view.anim .plan-rows > * { animation: none; }
+.race-card::before { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  button { transition: background-color 120ms ease, border-color 120ms ease; }
+  button:active { filter: brightness(.92); }
+  .hero.just .h-tick { animation: tickpop 180ms ease-out; }
+}

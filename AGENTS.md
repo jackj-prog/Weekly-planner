@@ -352,3 +352,7 @@ Added --scrollto with sticky-header clearance and a reveal-animation wait; inval
 ### 4.25.0 — readable run instrument
 Rebuilt the run hierarchy and completion control. Kept distance/shoe in dedicated fields; remaining source instructions are split at their existing separators, never rewritten. Completion stays full contrast. Run logging uses single-column, labelled 48px steppers so values cannot collide at 390px. Inspected light, dark, logged and completed captures; exercised log/adjust/save/reload/undo with synthetic data. App diagnostics show matching 4.25.0 version/cache; plan suite remains 15,917/0.
 
+
+### 4.26.0 — live time without perpetual motion
+Now/Next is a compact clock rail with a 44px jump to the current timeline position. The run, shoe and effort now fit in the first mobile viewport. Weekly progress moved beside Your day. Removed perpetual NOW pulsing, sweeping shine and staggered first-paint delays; retained short action feedback with reduced-motion support. Clock refresh pauses while hidden and catches up on visibility/pageshow. Verified minute progression, block boundary, jump and midnight rollover; inspected dawn/dark, active-run and late-night/rest captures. App version/cache 4.26.0; 15,917 plan checks pass.
+
