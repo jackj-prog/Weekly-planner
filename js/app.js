@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.27.0';
+  const APP_VERSION = '4.28.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1328,14 +1328,26 @@
   function renderRef() {
     const view = document.getElementById('view');
     view.innerHTML = '';
-    const refRow = (k, v) => '<div class="ref-row"><span>' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>';
+    const refRow = (k, v) => '<div class="ref-row pace-row' + (/^\d+:\d+\s*\/km$/.test(v) ? ' numeric' : '') +
+      '"><span>' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>';
+    const section = (id, node) => { node.id = id; node.tabIndex = -1; return node; };
     /* the race gets a statement card, not a table */
     const cd = DB.raceCountdown(todayISO());
     const cdBit = cd.past ? 'DONE — MARATHONER'
       : cd.days === 0 ? 'RACE DAY'
       : cd.weeks === 0 ? cd.rem + ' DAY' + (cd.rem === 1 ? '' : 'S') + ' TO THE GUN'
       : cd.weeks + 'W ' + cd.rem + 'D TO THE GUN';
-    view.appendChild(el('<div class="ref"><h1>Reference</h1></div>'));
+    view.appendChild(el('<div class="ref ref-heading" id="ref-top"><h1>Reference</h1><p>Your training field guide</p></div>'));
+    const index = el('<nav class="ref-index" aria-label="Reference sections">' +
+      [['paces', 'Paces'], ['zones', 'HR zones'], ['log', 'Run log'], ['fuel', 'Fuelling'], ['app', 'App status'], ['data', 'Backup']]
+        .map(([id, label]) => '<button data-ref-target="ref-' + id + '">' + label + '<span aria-hidden="true">↗</span></button>').join('') + '</nav>');
+    index.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-ref-target]');
+      if (!button) return;
+      const target = document.getElementById(button.dataset.refTarget);
+      if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'start' }); }
+    });
+    view.appendChild(index);
     view.appendChild(el(
       '<div class="race-card">' +
       '<div class="rc-kicker">🇨🇾 ' + esc(PLAN.race.name) + '</div>' +
@@ -1348,22 +1360,22 @@
     ));
     if (PLAN.race.course || PLAN.race.conditions) {
       view.appendChild(el(
-        '<div class="ref"><h2>The course</h2>' +
+        '<details class="ref ref-course"><summary>Course & conditions</summary>' +
         (PLAN.race.course ? '<div class="ref-note">' + esc(PLAN.race.course) + '</div>' : '') +
         (PLAN.race.conditions ? '<div class="ref-note">' + esc(PLAN.race.conditions) + '</div>' : '') +
-        '</div>'
+        '</details>'
       ));
     }
     view.appendChild(el(
-      '<div class="ref">' +
-      '<h2>Paces</h2><div class="ref-card">' +
+      '<div class="ref" id="ref-paces" tabindex="-1">' +
+      '<h2>Paces</h2><div class="ref-card pace-card">' +
       PLAN.paces.map((p) => refRow(p.type, withZones(p.pace))).join('') + '</div>' +
       '<div class="ref-note">' + esc(PLAN.recalibration) + '</div>' +
       '</div>'
     ));
     view.appendChild(buildEasyBandSection());
-    view.appendChild(buildZoneSection());
-    view.appendChild(buildTrainingLogSection());
+    view.appendChild(section('ref-zones', buildZoneSection()));
+    view.appendChild(section('ref-log', buildTrainingLogSection()));
     view.appendChild(buildRecalSection());
     /* shoes wear their tier: easy / quality / race */
     const shoeTone = (job) => /race/i.test(job) ? 'var(--accent)'
@@ -1378,7 +1390,7 @@
       '</div>'
     ));
     view.appendChild(buildOdoSection());
-    view.appendChild(buildFuelSection());
+    view.appendChild(section('ref-fuel', buildFuelSection()));
     view.appendChild(el(
       '<div class="ref">' +
       '<h2>Rules of the block</h2><ol class="ref-list">' +
@@ -1388,9 +1400,14 @@
       PLAN.openQuestions.map((q) => '<li>' + esc(q) + '</li>').join('') + '</ul>' +
       '</div>'
     ));
-    view.appendChild(buildDiagSection());
+    view.appendChild(section('ref-app', buildDiagSection()));
     view.appendChild(buildCalendarSection());
-    view.appendChild(buildDataSection());
+    view.appendChild(section('ref-data', buildDataSection()));
+    view.querySelectorAll('[id^="ref-"]:not(#ref-top)').forEach((target) => {
+      const back = el('<button class="ref-back">↑ Reference sections</button>');
+      back.addEventListener('click', () => { index.scrollIntoView({ block: 'start' }); index.querySelector('button').focus({ preventScroll: true }); });
+      target.appendChild(back);
+    });
   }
 
   /* ---- tune-up recalibrator (§10, advisory — the plan file stays canonical) ---- */
@@ -1556,7 +1573,7 @@
     if (!entries.length) {
       return el(
         '<div class="ref"><h2>Training log</h2>' +
-        '<div class="ref-note">Nothing logged yet. After a run, tap <b>+ log time · HR</b> on ' +
+        '<div class="ref-note">Nothing logged yet. After a run, tap <b>Log this run</b> on ' +
         'the run card — the app computes pace and EF (metres per minute ÷ heart rate) and ' +
         'trends it here. EF rising while easy runs stay easy is the block working.</div></div>'
       );
@@ -1640,13 +1657,14 @@
         '<div class="dc-k">under ' + m.good + '% sound · to ' + m.ok + '% at the edge · over that, read the day</div></div>';
     }
     const rows = entries.slice(-10).reverse().map((e) =>
-      '<div class="ref-row"><span>' + esc(fmtShort(e.iso)) +
+      '<article class="run-entry"><div class="run-entry-head"><b>' + esc(fmtShort(e.iso)) +
       (e.hard ? ' <i class="dot" style="background:var(--accent)" title="hard session"></i>' : '') +
-      '</span><span class="v">' + e.km + ' km · ' + esc(e.pace || '—') + '/km' +
-      (e.adj ? ' <i class="adj">→ ' + esc(e.adj) + '</i>' : '') +
-      (e.hr ? ' · ' + e.hr + ' <b>' + fmtEf(e.ef) + '</b>' : '') +
+      '</b><span>' + e.km + ' km</span>' +
       (e.temp != null ? ' <i class="tmp' + (e.tooHot ? ' hot' : '') + '">' + e.temp + '°</i>' : '') +
-      '</span></div>'
+      '</div><div class="run-entry-metrics"><span><small>Pace /km</small>' + esc(e.pace || '—') +
+      (e.adj ? '<i class="adj">→ ' + esc(e.adj) + '</i>' : '') + '</span>' +
+      '<span><small>Avg HR</small>' + (e.hr || '—') + '</span>' +
+      '<span><small>EF</small><b>' + fmtEf(e.ef) + '</b></span></div></article>'
     ).join('');
     return el(
       '<div class="ref"><h2>Training log</h2>' + spark +

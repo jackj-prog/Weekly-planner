@@ -360,3 +360,14 @@ Now/Next is a compact clock rail with a 44px jump to the current timeline positi
 ### 4.27.0 — the week has a visible rhythm
 Added a seven-day distance profile above the detailed schedule. Columns use the resolved daily plan on a common scale, with separate completion marks and direct day links. Classification comes from the existing runClass helper, not the generic hard flag (which also marks easy long runs). Removed the duplicate headline km so race weeks cannot show a table target beside a contradictory daily total. No prescription changed. Rows wrap long session titles and retain contrast for past dates. Inspected Build, race and standing-week mobile captures, including dark/reduced-motion; checked chart distances, day links and week navigation. App version/cache 4.27.0 and 15,917/0 plan checks.
 
+
+### 4.28.0 — Reference as a field guide
+Added six direct section shortcuts with keyboard focus and return links.
+Course/conditions use a native disclosure; all source text remains available.
+Pace rows stack labels above full-width values: Inter for sentences and Space
+Mono for numeric paces. Supporting text and section headings are easier to
+read; run-log entries now label pace, average HR and EF in aligned columns.
+Inspected entry, pace, dark pace, run-log and App captures. Verified section
+navigation, disclosure and a Chromium offline reload/navigation pass;
+diagnostics read 4.28.0 and week-os-v4.28.0. Existing plan tests: 15,917 checks,
+0 failures. data/plan.js, day-builder, storage keys and backup format unchanged.

@@ -1104,3 +1104,41 @@ body { background: var(--paper); }
 .wk-day .d-km { font-size: 28px; }
 .wk-day.today .d-date { color: var(--accent); }
 .wk-sub { font-size: 13px; margin: 0 2px 16px; }
+
+/* Reference field guide: navigation first; sentences get their own measure. */
+.ref-heading { margin-bottom: 16px; }
+.ref-heading p { color: var(--t2); font-size: 14px; margin-top: 6px; }
+.ref-index { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-bottom: 22px; }
+.ref-index button { display: flex; justify-content: space-between; align-items: center; gap: 5px; min-height: 48px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 13px; font-weight: 600; text-align: left; }
+.ref-index button span { color: var(--t3); }
+.ref[id], .ref-index { scroll-margin-top: calc(var(--sat) + 84px); }
+.ref[id]:focus { outline: none; }
+.ref h2 { font-family: var(--display); font-size: 20px; letter-spacing: -.01em; text-transform: none; margin: 25px 0 14px; color: var(--text); }
+.ref-note { font-size: 14px; line-height: 1.6; padding: 12px 2px; }
+.ref-row { font-size: 14px; padding-block: 12px; gap: 6px 12px; }
+.ref-row .v { white-space: normal; overflow-wrap: anywhere; }
+.ref-row > span:first-child { white-space: normal; }
+.pace-card { padding: 0 18px; }
+.pace-card .pace-row { display: grid; gap: 7px; padding-block: 18px; }
+.pace-row > span:first-child { color: var(--t2); font-size: 13px; }
+.pace-row .v { margin: 0; font-family: var(--body); font-size: 18px; line-height: 1.35; font-weight: 600; }
+.pace-row.numeric .v { font-family: var(--mono); font-size: 25px; letter-spacing: -.04em; }
+.ref-course { margin: 14px 0 22px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; }
+.ref-course summary { min-height: 48px; padding-block: 13px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.ref-course[open] summary { border-bottom: 1px solid var(--line); }
+.ref-back { min-height: 44px; padding: 10px 2px; margin-top: 8px; font-size: 13px; color: var(--t2); text-decoration: underline; text-underline-offset: 4px; }
+.race-card { box-shadow: 0 4px 10px rgba(22,36,42,.12); padding: 18px; }
+.rc-where, .rc-meta, .rc-kicker { opacity: 1; font-size: 12px; }
+.rc-goal { margin-top: 12px; }
+.ref-list li { font-size: 14px; line-height: 1.6; padding-block: 14px; }
+.ref-list li::before { top: 14px; }
+.data-actions button, .zedit { min-height: 44px; }
+.run-entry { padding: 16px 2px; border-bottom: 1px solid var(--line); }
+.run-entry:last-child { border-bottom: 0; }
+.run-entry-head { display: flex; gap: 12px; align-items: center; font-size: 14px; }
+.run-entry-head .tmp { margin-left: auto; }
+.run-entry-metrics { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; margin-top: 12px; font-family: var(--mono); font-size: 17px; }
+.run-entry-metrics > span { min-width: 0; }
+.run-entry-metrics small { display: block; font-family: var(--body); font-size: 12px; color: var(--t2); margin-bottom: 3px; }
+.run-entry-metrics .adj { display: block; font-size: 12px; margin-top: 3px; }
+.ef-spark svg { overflow: visible; }
