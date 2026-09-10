@@ -1247,3 +1247,16 @@ summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; b
 .tl-card .tick.on { color: var(--paper); background: var(--text); border-color: var(--text); }
 /* iPhone focus zoom: every editable field has a readable 16px minimum. */
 input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
+
+/* No-run days belong to the schedule; give them an intentional hero. */
+.resthero { border: 1px solid color-mix(in srgb, var(--phase-base) 45%, var(--line)); padding: 20px; border-radius: 18px; color: var(--text); background: color-mix(in srgb, var(--phase-base) 12%, var(--surface)); }
+.rest-kicker { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-family: var(--mono); font-size: 12px; color: var(--t2); }
+.rest-mark { display: grid; place-items: center; width: 44px; height: 44px; font-family: var(--body); font-size: 23px; border: 1px solid var(--phase-base); border-radius: 50%; color: var(--text); }
+.resthero h2 { font-family: var(--display); font-size: 36px; line-height: 1.08; letter-spacing: -.02em; margin: 18px 0; }
+.rest-next { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; padding-top: 18px; margin-top: 18px; border-top: 1px solid var(--line); text-align: left; }
+.rest-next small { display: block; font-size: 12px; color: var(--t2); line-height: 1.5; }
+.rest-next strong { display: block; font-size: 16px; font-weight: 600; line-height: 1.4; margin-top: 4px; }
+.rest-distance { flex-shrink: 0; font-family: var(--display); font-size: 36px; line-height: 1; text-align: right; }
+.rest-distance small { font-family: var(--mono); margin-top: 4px; }
+.rest-note { font-size: 14px; color: var(--t2); }
+.rest-mark::before { content: ''; width: 12px; height: 16px; border-inline: 4px solid currentColor; }

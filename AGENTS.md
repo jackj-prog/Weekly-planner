@@ -411,3 +411,11 @@ event cancellation. Multi-touch also cancels day/week swipe detection.
 Single-finger scrolling remains native. Editable controls use at least 16px
 to prevent Safari focus zoom. Browser/OS accessibility overrides are outside
 the app's control; headless mobile tests are not physical-iPhone verification.
+
+## Round two: no-run days — v4.33
+
+Replace the dashed placeholder with an intentional pause state and a next
+planned run link, resolved through DayBuilder. Say no run rather than implying
+the entire day is inactive. Existing rest-block text remains available via
+the same disclosure; other activities remain in the timeline. No new training
+advice, routine values or storage keys are introduced.

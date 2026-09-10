@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.32.0';
+  const APP_VERSION = '4.33.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -315,11 +315,23 @@
       view.appendChild(buildHero(day, done, iso, just));
     } else {
       const restBlock = day.blocks.find((b) => /no run|rest/i.test(b.title));
-      view.appendChild(el(
-        '<div class="resthero"><b>No run today</b>' +
-        esc(restBlock ? restBlock.title + (restBlock.detail ? ' — ' + restBlock.detail : '') : 'Recovery is training too.') +
-        '</div>'
-      ));
+      let nextRun = null;
+      for (let offset = 1; offset <= 14 && !nextRun; offset++) {
+        const nextDay = DB.buildDay(DB.addDays(iso, offset));
+        if (nextDay.run) nextRun = nextDay;
+      }
+      const rest = el('<section class="resthero" aria-label="No run scheduled">' +
+        '<div class="rest-kicker"><span>OFF THE RUN</span><span class="rest-mark" aria-hidden="true"></span></div>' +
+        '<h2>No run.<br>Still on plan.</h2>' +
+        (restBlock ? detailHTML(restBlock.title + (restBlock.detail ? ' · ' + restBlock.detail : ''), iso + '|rest', false) : '') +
+        (nextRun ? '<button class="rest-next"><span><small>Next planned run · ' + esc(fmtShort(nextRun.iso)) + '</small>' +
+          '<strong>' + esc(nextRun.run.title) + '</strong></span><span class="rest-distance">' +
+          nextRun.run.run.km + '<small>km ↗</small></span></button>' :
+          '<p class="rest-note">Your other activities are below.</p>') + '</section>');
+      if (nextRun) rest.querySelector('.rest-next').addEventListener('click', () => {
+        state.dateISO = nextRun.iso; state.expanded = null; render();
+      });
+      view.appendChild(rest);
     }
 
     view.appendChild(el('<div class="timeline-head"><h2>Your day</h2>' +
