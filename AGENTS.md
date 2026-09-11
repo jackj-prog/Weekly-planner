@@ -434,3 +434,11 @@ message; undo removes it. All facts are derived locally, with no new keys.
 The old high-specificity entrance animation survived earlier overrides and
 faded fresh cards during ticks. Disable it at its source; only small action
 feedback animates now, with no full-view fade or delayed first paint.
+
+## September audit: recalibrator — v4.44
+
+The owner approved the existing three §10 anchors, with no invented bands.
+They now live in PLAN.recalibrationAnchors and render beside the entered half
+time. Removed the obsolete sub-4 verdict and automatic lock language. Riegel
+is explicitly a model estimate; comparison does not change the stored plan.
+No thresholds are inferred for times between or beyond the anchors.

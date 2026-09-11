@@ -161,6 +161,11 @@ const PLAN = {
       'Wednesday and Sunday. Above 18 °C add 10–20 s/km before comparing; ' +
       'above 24 °C the run is not a benchmark at all.',
   },
+  recalibrationAnchors: [
+    { half: '1:43–1:46', target: '3:45 is on' },
+    { half: '~1:50', target: 'lock 3:55–4:00' },
+    { half: '~1:55', target: '4:05–4:10' },
+  ],
   recalibration:
     'The Week 24 half settles the target: 1:43–1:46 → 3:45 is on · ' +
     '~1:50 → lock 3:55–4:00 · ~1:55 → 4:05–4:10. Race-day pacing is a negative ' +

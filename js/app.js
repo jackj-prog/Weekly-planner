@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.43.0';
+  const APP_VERSION = '4.44.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1551,19 +1551,15 @@
   }
   function recalVerdict(halfSec) {
     const riegel = halfSec * Math.pow(2, 1.06);           // T×(42.195/21.0975)^1.06
-    let verdict;
-    if (halfSec <= 115 * 60) {
-      verdict = 'Sub-4:00 is ON — lock MP 5:41/km.' +
-        (halfSec <= 112 * 60 ? ' The 3:45 stretch bet is in play — decide with a cool head.' : '');
-    } else if (halfSec >= 120 * 60) {
-      verdict = 'Lock 4:10–4:15 and run it smart — MP 5:55–6:02/km.';
-    } else {
-      verdict = 'Between the §10 anchors — aim ~4:05 (MP ~5:48/km) and decide in the final weeks.';
-    }
-    return esc(verdict) +
-      '<br>Riegel projection: <b>' + esc(fmtClock(riegel)) + '</b> (' + esc(fmtPace(riegel / 42.195)) + ')' +
-      '<br>To lock a new target in, amend data/plan.js — the plan stays canonical.';
+    return '<p>Compare your result with the plan’s reference anchors:</p>' +
+      '<div class="recal-anchors">' + PLAN.recalibrationAnchors.map(a =>
+        '<div class="ref-row"><span>' + esc(a.half) + '</span><span class="v">' + esc(a.target) + '</span></div>').join('') + '</div>' +
+      '<p>' + esc(PLAN.recalibration) + '</p>' +
+      '<p>Riegel model projection: <b>' + esc(fmtClock(riegel)) + '</b> (' + esc(fmtPace(riegel / 42.195)) + '). ' +
+      'A model estimate, not an automatic race target.</p>' +
+      '<p>No additional bands are defined between or beyond these anchors. Your training plan has not changed.</p>';
   }
+
   function buildRecalSection() {
     const saved = readJSONSafeString('recal');
     const wrap = el(
@@ -1571,7 +1567,7 @@
       '<div class="ref-note">After the Week-24 half (Sun 13 Dec), enter your time. §10 sets the target — ambition doesn’t.</div>' +
       '<div class="data-actions"><input class="recal-in" inputmode="numeric" ' +
       'placeholder="1:54:30" value="' + esc(saved) + '" aria-label="Half marathon time"> ' +
-      '<button data-io="recal">Set target</button></div>' +
+      '<button data-io="recal">Compare time</button></div>' +
       '<div class="data-msg recal-out" role="status"></div></div></div>'
     );
     const input = wrap.querySelector('.recal-in');
