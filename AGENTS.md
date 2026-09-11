@@ -442,3 +442,17 @@ They now live in PLAN.recalibrationAnchors and render beside the entered half
 time. Removed the obsolete sub-4 verdict and automatic lock language. Riegel
 is explicitly a model estimate; comparison does not change the stored plan.
 No thresholds are inferred for times between or beyond the anchors.
+
+## September audit: actual run entry — v4.45
+
+Paste-to-parse previews local text before seeding editable distance, moving
+time, pace and HR controls. Steppers remain; direct input removes range traps.
+Missing HR/temperature stay missing. Editing distance preserves measured time,
+and an unchanged save preserves seconds exactly. Distance overrides use the
+existing runlog key; backups remain compatible. The same logger is available
+on unscheduled past/today dates; unclassified runs count in totals without
+being silently treated as easy. Users can explicitly classify them.
+Parser fixtures are invented. Mobile-viewport playthroughs covered preview,
+correction, save, reload, unchanged re-save and progress on planned/rest dates.
+App/cache captures agree at 4.45.0; 15,980 existing checks plus import tests pass.
+The owner approved only the §10 anchors, and explicitly left fuelling pending.

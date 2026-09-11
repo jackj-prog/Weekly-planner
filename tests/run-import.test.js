@@ -1,0 +1,21 @@
+'use strict';
+const assert = require('assert/strict');
+const { parseText, duration } = require('../js/run-import');
+// Entirely invented inputs: exercise formats, not personal activity records.
+let v = parseText('distance=8000m moving=2880s avg_pace=6:00/km HR_avg=139.6 temp=12').values;
+assert.deepEqual(v, { km: 8, sec: 2880, paceSec: 360, hr: 140, temp: 12 });
+v = parseText('HR: 143\nTime: 1:04:00\nDistance: 10 km').values;
+assert.equal(v.km, 10); assert.equal(v.sec, 3840); assert.equal(v.temp, undefined);
+assert.equal(parseText('distance 8,25 km pace 6:00/km').values.km, 8.25);
+assert.equal(parseText('distance 8,000m pace 6:00/km').values.km, 8);
+assert.equal(parseText('distance 5mi time 45:00').values.km, 8.04672);
+assert.equal(parseText('temp: 50 F').values.temp, 10);
+assert.equal(parseText('temperature=-3 C').values.temp, -3);
+assert.equal(parseText('moving=30:00 pace=6:00/km').values.km, 5);
+assert.equal(parseText('distance=8km time=48:00 pace=5:00/km').warnings.length, 1);
+assert.equal(parseText('distance=8km time=48:00 pace=5:00/km').values.paceSec, 360);
+assert.equal(parseText('notes with no measurements').warnings.length, 1);
+assert.equal(parseText('HR=999 distance=0km').values.hr, undefined);
+assert.equal(duration('1:60:00'), null); assert.equal(duration('45:59'), 2759);
+assert.equal(duration('1:02:03'), 3723); assert.equal(duration('-25'), null);
+console.log('Run import: units, clock formats, missing values, inconsistencies and invalid inputs passed');

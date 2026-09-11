@@ -5,12 +5,13 @@
    ========================================================================== */
 'use strict';
 
-const CACHE_VERSION = 'week-os-v4.44.0';
+const CACHE_VERSION = 'week-os-v4.45.0';
 const ASSETS = [
   './',
   './index.html',
   './css/style.css',
   './js/app.js',
+  './js/run-import.js',
   './js/day-builder.js',
   './js/ef-chart.js',
   './js/run-progress.js',

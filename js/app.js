@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.44.0';
+  const APP_VERSION = '4.45.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -332,6 +332,7 @@
         state.dateISO = nextRun.iso; state.expanded = null; render();
       });
       view.appendChild(rest);
+      if (iso <= todayISO()) view.appendChild(buildRunLogger(day, iso));
     }
 
     view.appendChild(el('<div class="timeline-head"><h2>Your day</h2>' +
@@ -472,11 +473,10 @@
       const e = readJSON(k, null);
       if (!e || !e.sec) continue;
       const day = DB.buildDay(m[1]);
-      if (!day.run) continue;
-      const km = e.km || day.run.run.km;
+      const km = e.km || (day.run ? day.run.run.km : 0);
       if (!(km > 0)) continue;
       out.push({
-        iso: m[1], km, sec: e.sec, cls: DB.runClass(day.run), paceSec: Math.round(e.sec / km),
+        iso: m[1], km, sec: e.sec, cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'), paceSec: Math.round(e.sec / km),
         hr: e.hr || null, ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
         temp: e.temp == null ? null : e.temp,
       });
@@ -552,57 +552,21 @@
       (e.km && e.km !== plannedKm ? ' · ' + e.km + ' km' : '');
   }
 
-  function buildHero(day, done, iso, just) {
-    const r = day.run;
-    const isRace = /marathon/i.test(r.title) || (day.row && day.row.race && day.dayIndex === 6);
-    const km = r.run.km;
-    const kmTxt = km === Math.round(km) ? String(km) : km.toFixed(1);
-    const isDone = !!done[r.id];
-    const canLog = iso <= todayISO();
-    const logged = loggedLineHTML(iso, km);
-    const editing = state.runLogEdit === iso;
-    const e = getRunLogEntry(iso) || {};
-    let logHTML = '';
-    if (editing && state.runLogDraft) {
-      const d = state.runLogDraft;
-      const totalSec = Math.round(d.paceSec * km);
-      const st = (kind, label, val, canDown, canUp) =>
-        '<div class="st-f"><i class="st-l">' + label + '</i>' +
-        '<div class="st"><button class="st-b" data-st="' + kind + '" data-d="-1"' + (canDown ? '' : ' disabled') +
-        ' aria-label="Decrease ' + label + '">−</button>' +
-        '<span class="st-v">' + val + '</span>' +
-        '<button class="st-b" data-st="' + kind + '" data-d="1"' + (canUp ? '' : ' disabled') +
-        ' aria-label="Increase ' + label + '">+</button></div></div>';
-      /* Long runs get the two extra numbers that turn a logged run into a
-         decoupling reading. Optional everywhere else — a 4 km Thursday has
-         no meaningful halves. */
-      const dec = d.halfPaceSec
-        ? DB.decoupling(km, totalSec, d.hr, d.halfPaceSec, d.hr2) : null;
-      const dv = dec ? DB.decoupleVerdict(dec.pct) : null;
-      logHTML = '<div class="h-log form" role="group" aria-label="Log this run">' +
-        st('pace', 'PACE', DB.fmtPaceSec(d.paceSec) + '<small>/km</small>', d.paceSec > d.paceMin, d.paceSec < d.paceMax) +
-        st('hr', 'AVG HR', d.hr + '<small>bpm</small>', d.hr > d.hrMin, d.hr < d.hrMax) +
-        (d.halfPaceSec
-          ? st('half', '1ST-HALF PACE', DB.fmtPaceSec(d.halfPaceSec) + '<small>/km</small>',
-              d.halfPaceSec > d.halfMin, d.halfPaceSec < d.halfMax) +
-            st('hr2', '2ND-HALF HR', d.hr2 + '<small>bpm</small>', d.hr2 > d.hr2Min, d.hr2 < d.hr2Max)
-          : '') +
-        (d.gels == null
-          ? '<div class="st-wide">' + st('temp', 'FEELS LIKE', d.temp + '°',
-              d.temp > PLAN.logModel.tempMin, d.temp < PLAN.logModel.tempMax) + '</div>'
-          : st('temp', 'FEELS LIKE', d.temp + '°',
-              d.temp > PLAN.logModel.tempMin, d.temp < PLAN.logModel.tempMax) +
-            st('gels', 'GELS', d.gels + '<small>taken</small>', d.gels > 0, d.gels < 12)) +
-        '<div class="st-total">= ' + fmtDur(totalSec) + ' for ' + kmTxt + ' km' +
-        (d.temp >= PLAN.benchmark.tempInvalid
-          ? ' · <b>too hot to benchmark</b>'
-          : d.temp >= PLAN.benchmark.tempWarn ? ' · warm — read pace generously' : '') +
-        (dv ? '<br><b class="dc ' + dv.band + '">decoupling ' + dec.pct.toFixed(1) + '%</b> · ' +
-          esc(dv.text) : '') + '</div>' +
-        '<div class="st-act"><button class="rl-save">Save</button>' +
-        '<button class="rl-x" aria-label="Cancel">✕</button></div></div>';
-    } else if (logged) {
-      logHTML = '<button class="h-log logged" aria-label="Edit run log">' + logged + '</button>';
+  function buildRunLogger(day, iso) {
+    const plannedKm = day.run ? day.run.run.km : 0;
+    const saved = getRunLogEntry(iso);
+    const editing = state.runLogEdit === iso && state.runLogDraft;
+    const wrap = el('<section class="runlogger" aria-label="Run log"></section>');
+    if (!editing) {
+      if (iso > todayISO()) return wrap;
+      wrap.innerHTML = '<button class="h-log' + (saved ? ' logged' : '') + '">' +
+        (saved ? loggedLineHTML(iso, plannedKm) : day.run
+          ? 'Log this run <span aria-hidden="true">↗</span><small>Paste your run or enter the numbers</small>'
+          : 'Ran today? Add a run <span aria-hidden="true">↗</span><small>Record what happened, even on a rest day</small>') + '</button>' +
+        (saved ? earnedHTML(iso) : '');
+      if (saved) {
+        const e = saved, km = plannedKm, r = day.run;
+        let logHTML = '';
       /* Decoupling is the long run's headline, not EF — it is the number
          that says whether the base carried the distance. */
       const cr = DB.carbRate(e.gels, e.sec / 60);
@@ -620,7 +584,7 @@
       }
       const v = DB.logVerdict(runLogHistory(), iso);
       if (v) {
-        const cls = DB.runClass(r);
+        const cls = e.cls || (r ? DB.runClass(r) : 'unclassified');
         let line;
         if (v.first) {
           line = 'First logged ' + cls + ' run of the block';
@@ -643,10 +607,147 @@
           '<span>' + esc(line) + '</span>' +
           '<button class="h-share" aria-label="Share run card">⤴</button></div>';
       }
-      logHTML += earnedHTML(iso);
-    } else if (canLog) {
-      logHTML = '<button class="h-log" aria-label="Log this run">Log this run <span aria-hidden="true">↗</span><small>Time · heart rate · conditions</small></button>';
+
+        wrap.insertAdjacentHTML('beforeend', logHTML);
+        const share = wrap.querySelector('.h-share');
+        if (share && day.run) share.addEventListener('click', () => shareRunCard(day, iso));
+        else if (share) share.remove();
+      }
+      wrap.querySelector('button').addEventListener('click', () => {
+        const e = saved || {}, estimate = DB.logEstimate(day, runLogHistory());
+        const km = e.km || plannedKm || null;
+        const sec = e.sec || (km && estimate ? Math.round(km * estimate.paceSec) : null);
+        state.runLogEdit = iso;
+        state.runLogDraft = {
+          km, sec, paceSec: sec && km ? sec / km : null, hr: e.hr || null,
+          temp: e.temp == null ? null : e.temp, gels: e.gels == null ? null : e.gels,
+          halfPaceSec: e.halfPaceSec || null, hr2: e.hr2 || null,
+          cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'),
+          paste: '', preview: null, note: saved ? 'Saved values. Change only what needs correcting.' :
+            plannedKm ? 'Distance and time start from the plan. Replace them with your actual run.' : 'Enter actual distance and time. HR and conditions are optional.',
+        };
+        render();
+      });
+      return wrap;
     }
+    const d = state.runLogDraft;
+    const field = (key, label, value, inputmode, unit, step) => '<label class="log-field"><span>' + label + '</span>' +
+      '<span class="log-control">' + (step ? '<button type="button" data-log-step="' + key + '" data-dir="-1" aria-label="Decrease ' + label + '">−</button>' : '') +
+      '<input data-log-field="' + key + '" aria-label="' + label + '" inputmode="' + inputmode + '" value="' + esc(value == null ? '' : value) + '" placeholder="—">' +
+      '<small>' + unit + '</small>' + (step ? '<button type="button" data-log-step="' + key + '" data-dir="1" aria-label="Increase ' + label + '">+</button>' : '') + '</span></label>';
+    const clock = n => n ? recordTime(n) : '';
+    const classes = ['unclassified', 'recovery', 'easy', 'long', 'quality', 'race'];
+    const p = d.preview;
+    const found = p && p.values;
+    wrap.innerHTML = '<div class="h-log form"><div class="log-heading"><h3>Log your run</h3><button class="rl-x" aria-label="Cancel run edit">✕</button></div>' +
+      '<p class="log-note">' + esc(d.note) + '</p>' +
+      '<details class="log-import"' + (d.paste || p ? ' open' : '') + '><summary>Paste run text</summary>' +
+      '<label for="run-paste">Distance, moving time, average HR and conditions</label>' +
+      '<textarea id="run-paste" rows="3" placeholder="distance=8km moving=48:00 HR_avg=140">' + esc(d.paste) + '</textarea>' +
+      '<button class="log-parse">Preview values</button>' +
+      (p ? '<div class="log-preview" role="status"><b>Found</b><p>' +
+        [found.km ? Number(found.km.toFixed(3)) + ' km' : 'No distance', found.sec ? clock(found.sec) : 'No time',
+          found.hr ? found.hr + ' bpm' : 'No HR', found.temp != null ? found.temp + '°C' : 'No temperature'].map(esc).join(' · ') +
+        '</p>' + p.warnings.map(w => '<p>' + esc(w) + '</p>').join('') +
+        (Object.keys(found).length ? '<button class="log-use">Use these values</button>' : '') + '</div>' : '') + '</details>' +
+      field('km', 'Distance', d.km, 'decimal', 'km', true) +
+      field('sec', 'Moving time', clock(d.sec), 'text', 'h:mm:ss', false) +
+      field('paceSec', 'Pace', clock(d.paceSec), 'text', '/km', true) +
+      field('hr', 'Average HR', d.hr, 'numeric', 'bpm', true) +
+      '<label class="log-field">Run type<select class="log-class" aria-label="Run type">' + classes.map(c =>
+        '<option value="' + c + '"' + (c === d.cls ? ' selected' : '') + '>' + (c === 'unclassified' ? 'Not classified' : c[0].toUpperCase() + c.slice(1)) + '</option>').join('') + '</select></label>' +
+      '<details class="log-extra"' + (d.extraOpen ? ' open' : '') + '><summary>Conditions &amp; optional measurements</summary>' +
+      field('temp', 'Feels like', d.temp, 'decimal', '°C', true) + field('gels', 'Gels taken', d.gels, 'numeric', 'gels', true) +
+      '<p class="log-note">For a decoupling estimate, enter measured first-half pace and second-half HR. Leave blank if unavailable.</p>' +
+      field('halfPaceSec', 'First-half pace', clock(d.halfPaceSec), 'text', '/km', true) +
+      field('hr2', 'Second-half HR', d.hr2, 'numeric', 'bpm', true) + '</details>' +
+      '<p class="log-error" role="alert">' + esc(d.error || '') + '</p>' +
+      '<button class="rl-save">Save run</button>' +
+      (saved ? '<button class="log-delete">Delete this log</button>' : '') + '</div>';
+    const remember = () => {
+      d.paste = wrap.querySelector('#run-paste').value;
+      d.extraOpen = wrap.querySelector('.log-extra').open;
+    };
+    wrap.querySelector('#run-paste').addEventListener('input', remember);
+    wrap.querySelector('.log-extra').addEventListener('toggle', remember);
+    const setField = (key, value) => {
+      d[key] = value;
+      if (key === 'paceSec' && d.km && value) d.sec = Math.round(value * d.km);
+      else if ((key === 'sec' || key === 'km') && d.sec && d.km) d.paceSec = d.sec / d.km;
+      d.error = '';
+    };
+    const readField = (input) => {
+      const key = input.dataset.logField, raw = input.value.trim();
+      const n = raw === '' ? null : /sec/i.test(key) ? window.RunImport.duration(raw) : Number(raw.replace(',', '.'));
+      if (raw && (n == null || !Number.isFinite(n) || (key !== 'temp' && n <= 0 && key !== 'gels') || (key === 'gels' && (n < 0 || !Number.isInteger(n))))) {
+        input.setCustomValidity('Check this value.');
+        d.error = 'Check ' + input.getAttribute('aria-label').toLowerCase() + '.';
+        return false;
+      }
+      input.setCustomValidity('');
+      setField(key, n); return true;
+    };
+    wrap.querySelectorAll('[data-log-field]').forEach(input => input.addEventListener('change', () => {
+      remember(); if (readField(input)) {
+        // Refresh dependent numbers without removing the control under the finger.
+        for (const key of ['sec', 'paceSec']) if (input.dataset.logField !== key) wrap.querySelector('[data-log-field="' + key + '"]').value = clock(d[key]);
+      }
+      wrap.querySelector('.log-error').textContent = d.error;
+    }));
+    wrap.querySelectorAll('[data-log-step]').forEach(btn => btn.addEventListener('click', () => {
+      remember();
+      const key = btn.dataset.logStep, dir = +btn.dataset.dir;
+      const steps = { km: .1, paceSec: PLAN.logModel.paceStep, hr: PLAN.logModel.hrStep,
+        halfPaceSec: PLAN.logModel.halfPaceStep, hr2: PLAN.logModel.hrStep, temp: PLAN.logModel.tempStep, gels: 1 };
+      const current = d[key] == null ? (key === 'temp' ? PLAN.logModel.tempDefault : key === 'hr' || key === 'hr2' ? (DB.logEstimate(day, runLogHistory()) || {}).hr || 1 : 0) : d[key];
+      const value = Math.round((current + dir * steps[key]) * 1000) / 1000;
+      setField(key, Math.max(key === 'temp' ? -60 : key === 'gels' ? 0 : steps[key], value));
+      render();
+    }));
+    wrap.querySelector('.log-class').addEventListener('change', e => { d.cls = e.target.value; });
+    wrap.querySelector('.log-parse').addEventListener('click', () => { remember(); d.preview = window.RunImport.parseText(d.paste); render(); });
+    const use = wrap.querySelector('.log-use');
+    if (use) use.addEventListener('click', () => {
+      const v = d.preview.values;
+      // Missing observations must not become the plan or an earlier run's weather.
+      d.km = v.km || null; d.sec = v.sec || null; d.paceSec = v.paceSec || null;
+      d.hr = v.hr || null; d.temp = v.temp == null ? null : v.temp;
+      d.halfPaceSec = d.hr2 = null;
+      d.preview = null; d.paste = ''; d.note = 'Imported into the form. Check the numbers, then Save run.';
+      render();
+    });
+    wrap.querySelector('.rl-x').addEventListener('click', () => { state.runLogEdit = null; state.runLogDraft = null; render(); });
+    wrap.querySelector('.rl-save').addEventListener('click', () => {
+      if (wrap.querySelector('input:invalid') || d.error || !(d.km > 0 && d.km <= 1000 && d.sec > 0 && d.sec <= 604800) ||
+          (d.hr != null && (d.hr < 1 || d.hr > 300)) || (d.temp != null && (d.temp < -60 || d.temp > 65))) {
+        wrap.querySelector('.log-error').textContent = d.error || 'Enter a valid distance and moving time; check HR and temperature if supplied.'; return;
+      }
+      const entry = { ...(saved || {}), sec: d.sec, hr: d.hr == null ? null : Math.round(d.hr),
+        km: d.km === plannedKm ? null : d.km, temp: d.temp, cls: d.cls,
+        halfPaceSec: d.halfPaceSec, hr2: d.hr2, gels: d.gels };
+      try { localStorage.setItem(logKey(iso), JSON.stringify(entry)); }
+      catch (e) { wrap.querySelector('.log-error').textContent = 'Could not save on this device. Keep this form open and free some storage, then try again.'; return; }
+      state.runLogEdit = null; state.runLogDraft = null; render();
+    });
+    const del = wrap.querySelector('.log-delete');
+    if (del) del.addEventListener('click', () => {
+      if (!window.confirm('Delete this run log? The planned session and completion tick stay unchanged.')) return;
+      try { localStorage.removeItem(logKey(iso)); } catch (e) { return; }
+      state.runLogEdit = null; state.runLogDraft = null; render();
+    });
+    return wrap;
+  }
+
+  function buildHero(day, done, iso, just) {
+    const r = day.run;
+    const isRace = /marathon/i.test(r.title) || (day.row && day.row.race && day.dayIndex === 6);
+    const km = r.run.km;
+    const kmTxt = km === Math.round(km) ? String(km) : km.toFixed(1);
+    const isDone = !!done[r.id];
+    const canLog = iso <= todayISO();
+    const logged = loggedLineHTML(iso, km);
+    const editing = state.runLogEdit === iso;
+    const e = getRunLogEntry(iso) || {};
     // Distance and shoe already have dedicated fields. Split the remaining
     // source text at its own separators without rewriting any prescription.
     const prefix = kmTxt + ' km · ' + r.run.shoe + ' · ';
@@ -687,7 +788,7 @@
       zonePrompt +
       (longRunGuard(iso, day) || '') +
       paceTableHTML(r.table) +
-      logHTML + '</section>'
+      '</section>'
     );
     hero.querySelector('.h-tick').addEventListener('click', () => {
       if (!done[r.id]) state.justTicked = r.id;   // animate on tick-on only
@@ -700,72 +801,7 @@
       window.scrollTo(0, 0);
       render();
     });
-    const logBtn = hero.querySelector('.h-log:not(.form)');
-    if (logBtn) logBtn.addEventListener('click', () => {
-      /* centre the steppers on what was logged, else the estimate */
-      const hist = runLogHistory();
-      const est = DB.logEstimate(day, hist);
-      const centrePace = e.sec ? Math.round(e.sec / (e.km || km)) : est.paceSec;
-      const centreHr = e.hr || est.hr;
-      const lastTemp = hist.filter((x) => x.temp != null).pop();
-      state.runLogEdit = iso;
-      state.runLogDraft = {
-        paceSec: centrePace, hr: centreHr,
-        temp: e.temp != null ? e.temp : (lastTemp ? lastTemp.temp : PLAN.logModel.tempDefault),
-        paceMin: centrePace - PLAN.logModel.paceSpan, paceMax: centrePace + PLAN.logModel.paceSpan,
-        hrMin: centreHr - PLAN.logModel.hrSpan, hrMax: centreHr + PLAN.logModel.hrSpan,
-      };
-      /* Long runs open the decoupling pair, centred on the run's own
-         averages — an evenly-run long run needs no adjustment at all. */
-      if (DB.runClass(r) === 'long') {
-        const d0 = state.runLogDraft;
-        const durMin = Math.round((e.sec || centrePace * km) / 60);
-        if (iso >= PLAN.gels.fromDate && durMin > PLAN.gels.minRunMin) {
-          d0.gels = e.gels != null ? e.gels : 0;
-        }
-        const h = e.halfPaceSec || centrePace;
-        const h2 = e.hr2 || centreHr;
-        d0.halfPaceSec = h; d0.hr2 = h2;
-        d0.halfMin = h - PLAN.logModel.halfPaceSpan; d0.halfMax = h + PLAN.logModel.halfPaceSpan;
-        d0.hr2Min = h2 - PLAN.logModel.halfHrSpan; d0.hr2Max = h2 + PLAN.logModel.halfHrSpan;
-      }
-      render();
-    });
-    hero.querySelectorAll('.st-b').forEach((btn) => btn.addEventListener('click', () => {
-      const d = state.runLogDraft;
-      const dir = Number(btn.getAttribute('data-d'));
-      const kind = btn.getAttribute('data-st');
-      const m = PLAN.logModel;
-      if (kind === 'pace') {
-        d.paceSec = Math.min(d.paceMax, Math.max(d.paceMin, d.paceSec + dir * m.paceStep));
-      } else if (kind === 'temp') {
-        d.temp = Math.min(m.tempMax, Math.max(m.tempMin, d.temp + dir * m.tempStep));
-      } else if (kind === 'half') {
-        d.halfPaceSec = Math.min(d.halfMax, Math.max(d.halfMin, d.halfPaceSec + dir * m.halfPaceStep));
-      } else if (kind === 'gels') {
-        d.gels = Math.min(12, Math.max(0, d.gels + dir));
-      } else if (kind === 'hr2') {
-        d.hr2 = Math.min(d.hr2Max, Math.max(d.hr2Min, d.hr2 + dir * m.hrStep));
-      } else {
-        d.hr = Math.min(d.hrMax, Math.max(d.hrMin, d.hr + dir * m.hrStep));
-      }
-      render();
-    }));
-    const saveBtn = hero.querySelector('.rl-save');
-    if (saveBtn) saveBtn.addEventListener('click', () => {
-      const d = state.runLogDraft;
-      saveRunLogEntry(iso, {
-        sec: Math.round(d.paceSec * km), hr: d.hr, km: null, temp: d.temp,
-        halfPaceSec: d.halfPaceSec || null, hr2: d.hr2 || null,
-        gels: d.gels == null ? null : d.gels,
-      });
-      state.runLogEdit = null; state.runLogDraft = null;
-      render();
-    });
-    const xBtn = hero.querySelector('.rl-x');
-    if (xBtn) xBtn.addEventListener('click', () => { state.runLogEdit = null; state.runLogDraft = null; render(); });
-    const shareBtn = hero.querySelector('.h-share');
-    if (shareBtn) shareBtn.addEventListener('click', () => shareRunCard(day, iso));
+    hero.appendChild(buildRunLogger(day, iso));
     return hero;
   }
   function fmtDur(sec) {
@@ -1671,7 +1707,7 @@
       const day = DB.buildDay(m[1]);
       const km = e.km || (day.run ? day.run.run.km : 0);
       if (!(km > 0)) continue;
-      const cls = day.run ? DB.runClass(day.run) : 'easy';
+      const cls = e.cls || (day.run ? DB.runClass(day.run) : 'unclassified');
       const dec = DB.decoupling(km, e.sec, e.hr, e.halfPaceSec, e.hr2);
       entries.push({
         iso: m[1], km, cls, sec: e.sec, dec: dec ? dec.pct : null,

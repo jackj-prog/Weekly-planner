@@ -1325,3 +1325,27 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   .completion-note { animation: confirm-in 180ms ease-out; }
   @keyframes confirm-in { from { opacity: .2; transform: translateY(3px); } }
 }
+
+/* Run entry: measured values, thumb-sized correction, language in Inter. */
+.runlogger { margin: 16px 0; }
+.hero .runlogger { margin-bottom: 0; }
+.log-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.log-heading h3 { font: 800 22px/1.2 var(--display); margin: 0; }
+.runlogger .h-log.form { display: block; text-align: left; }
+.log-note, .log-import label, .log-preview p, .log-error { font: 400 14px/1.55 var(--body); color: var(--t2); }
+.log-heading button, .log-control button { min-width: 44px; min-height: 48px; }
+.log-field { display: grid; gap: 8px; margin: 18px 0; font: 600 14px/1.4 var(--body); color: var(--text); }
+.log-control { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper); }
+.log-control input { width: 100%; min-width: 0; min-height: 48px; border: 0; background: none; color: var(--text); text-align: center; font: 400 18px var(--mono); padding: 8px 0; }
+.log-control small { white-space: nowrap; font: 400 12px var(--mono); color: var(--t2); padding-right: 8px; }
+.log-control button { flex: 0 0 44px; border: 0; background: var(--surface); color: var(--text); font-size: 24px; }
+.log-field select { min-height: 48px; width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--paper); color: var(--text); font: 400 16px var(--body); }
+.log-import, .log-extra { border-block: 1px solid var(--line); margin: 16px 0; }
+.log-import summary, .log-extra summary { padding: 15px 0; min-height: 48px; box-sizing: border-box; font: 600 14px/1.4 var(--body); cursor: pointer; }
+.log-import textarea { box-sizing: border-box; width: 100%; padding: 12px; margin: 10px 0; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; color: var(--text); font: 400 16px/1.5 var(--body); }
+.log-parse, .log-use, .log-delete { min-height: 48px; width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--text); font: 600 14px var(--body); }
+.log-preview { padding: 12px 0; }
+.runlogger .rl-save { width: 100%; min-height: 48px; border: 0; border-radius: 12px; background: var(--accent-fill); color: var(--text); font: 700 16px var(--body); }
+.log-error:empty { display: none; }
+.log-error { color: var(--accent); }
+.log-delete { margin-top: 16px; }

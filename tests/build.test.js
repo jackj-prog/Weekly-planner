@@ -1145,7 +1145,7 @@ section('hr zones');
      measurement cannot be pasted in unnoticed by anyone — me included. */
   const ALLOWED = ['50/190', '50/100', '0/190'];
   const files = ['../data/plan.js', '../js/day-builder.js', '../js/app.js',
-    '../js/ef-chart.js', '../js/run-progress.js', '../tests/build.test.js'];
+    '../js/ef-chart.js', '../js/run-progress.js', '../js/run-import.js', '../tests/run-import.test.js', '../tests/build.test.js'];
   files.forEach((f) => {
     const src = require('fs').readFileSync(path.join(__dirname, f), 'utf8');
     const re = /(?:hrZones|zoneOf)\s*\(([^)]*)\)/g;
@@ -1405,5 +1405,6 @@ section('ics export');
 // Chart geometry is part of correctness, not just appearance.
 require('./ef-chart.test.js');
 require('./run-progress.test.js');
+require('./run-import.test.js');
 console.log('\n' + checks + ' checks, ' + failures + ' failure' + (failures === 1 ? '' : 's'));
 process.exit(failures ? 1 : 0);
