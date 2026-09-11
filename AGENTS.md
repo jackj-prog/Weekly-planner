@@ -456,3 +456,14 @@ Parser fixtures are invented. Mobile-viewport playthroughs covered preview,
 correction, save, reload, unchanged re-save and progress on planned/rest dates.
 App/cache captures agree at 4.45.0; 15,980 existing checks plus import tests pass.
 The owner approved only the §10 anchors, and explicitly left fuelling pending.
+
+## September audit: honest recorded distance — v4.46
+
+Recorded distance now takes actual logs first, then planned distance for ticks,
+without counting both. Applies to weekly totals, the season skyline and the
+pre-long-run check, including unplanned logs. The guard resolves each date
+instead of reconstructing a standard week. Missing ticks/logs are unknown,
+never labelled behind. Weekly comparisons describe recorded evidence, with
+planned-distance estimates disclosed. Average-HR grouping is labelled as an
+estimate until stream import supplies measured intervals. Unclassified logs
+no longer receive an EF best/comparison against other unclassified effort.

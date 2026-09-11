@@ -1401,6 +1401,16 @@ section('ics export');
   ok((DB.buildICS('2026-01-01').match(/BEGIN:VEVENT/g) || []).length === expect, 'pre-block export clamps to block start');
 }
 
+section('recorded distance precedence');
+{
+ const day = DB.buildDay('2026-09-08'), done = { [day.run.id]: true };
+ ok(DB.recordedKm(day, done, null) === day.run.run.km, 'tick without log uses planned km');
+ ok(DB.recordedKm(day, done, {sec: 2400, km: 8.2}) === 8.2, 'log wins without double counting tick');
+ ok(DB.recordedKm(day, {}, null) === 0, 'unrecorded is zero known km');
+ ok(DB.recordedKm(day, {}, {sec: 2400}) === day.run.run.km, 'old logs keep planned fallback');
+ ok(DB.recordedKm(DB.buildDay('2026-09-14'), {}, {sec: 2400, km: 8.2}) === 8.2, 'unplanned log counts');
+ ok(DB.recordedKm(day, {}, {sec: -1, km: 8.2}) === 0, 'invalid duration excluded');
+}
 /* ---- result ---- */
 // Chart geometry is part of correctness, not just appearance.
 require('./ef-chart.test.js');

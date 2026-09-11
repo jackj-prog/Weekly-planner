@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.45.0';
+  const APP_VERSION = '4.46.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -582,7 +582,7 @@
         logHTML += '<div class="h-dc ' + dv.band + '"><b>' + dec.pct.toFixed(1) +
           '%</b> decoupling · ' + esc(dv.text) + '</div>';
       }
-      const v = DB.logVerdict(runLogHistory(), iso);
+      const v = (e.cls || (r ? DB.runClass(r) : 'unclassified')) === 'unclassified' ? null : DB.logVerdict(runLogHistory(), iso);
       if (v) {
         const cls = e.cls || (r ? DB.runClass(r) : 'unclassified');
         let line;
@@ -911,7 +911,7 @@
 
   /* ---- week-progress ring: banked vs planned run km this week ---- */
   function weekRingHTML(iso) {
-    const wk = DB.weekKm(getDone, mondayOf(iso));
+    const wk = DB.weekKm(getDone, mondayOf(iso), getRunLogEntry);
     if (!wk.planned) return '';
     const pct = Math.min(1, wk.done / wk.planned);
     const C = 2 * Math.PI * 13;
@@ -1031,7 +1031,7 @@
   /* The skyline: all 30 weeks as one shape — planned km as phase-coloured
      bars, banked km filled inside them, key days flagged, race starred. */
   function buildSkyline(curWeek) {
-    const shape = DB.seasonShape(getDone);
+    const shape = DB.seasonShape(getDone, getRunLogEntry);
     const maxKm = Math.max.apply(null, shape.map((w) => w.km));
     const W = 360, H = 118, base = 100, top = 14;
     const slot = W / shape.length, barW = slot * 0.72;
@@ -1094,19 +1094,23 @@
     if (!g || !day.row || day.blockId !== 'marathon') return null;
     if (!day.run || DB.runClass(day.run) !== 'long') return null;
     if (getRunLogEntry(iso)) return null;                 // already run
+    if (iso > todayISO() || getDone(iso)[day.run.id]) return null;
     const monday = DB.addDays(iso, -day.dayIndex);
-    const split = DB.distancesForWeek(day.row);
-    const byDay = { 1: split.tue, 2: split.wed, 3: split.thu, 5: split.sat };
-    let plannedSoFar = 0, ranSoFar = 0;
-    Object.keys(byDay).forEach((di) => {
-      const d = DB.addDays(monday, Number(di));
-      if (d >= iso) return;
-      plannedSoFar += byDay[di];
-      const e = getRunLogEntry(d);
-      if (e && e.sec) ranSoFar += e.km || (DB.buildDay(d).run ? DB.buildDay(d).run.run.km : 0);
-    });
+    let plannedSoFar = 0, ranSoFar = 0, estimated = 0, unknown = 0;
+    for (let i = 0; i < day.dayIndex; i++) {
+      const d = DB.addDays(monday, i), built = DB.buildDay(d), e = getRunLogEntry(d), done = getDone(d);
+      const plan = built.run ? built.run.run.km : 0;
+      plannedSoFar += plan;
+      ranSoFar += DB.recordedKm(built, done, e);
+      if (plan && !(e && e.sec > 0)) {
+        if (done[built.run.id]) estimated++;
+        else unknown++;
+      }
+    }
     if (!(plannedSoFar > 0) || ranSoFar >= plannedSoFar * g.shortPct) return null;
-    const short = Math.round((plannedSoFar - ranSoFar) * 10) / 10;
+    const headline = ranSoFar === 0
+      ? 'Earlier runs this week are not recorded yet.'
+      : (Math.round(ranSoFar * 10) / 10) + ' km recorded against ' + plannedSoFar + ' km scheduled before today.';
     /* The headline is the fact; the reasoning goes behind the same disclosure
        everything else uses. Rendered open it is seven lines of body copy in
        the hero, on the morning of the longest run of the week, and it pushed
@@ -1114,9 +1118,9 @@
     const key = iso + '|guard';
     return '<details class="h-guard" data-disclosure="' + esc(key) + '"' +
       (openDetails.has(key) ? ' open' : '') + '><summary><b>' +
-      (Math.round(ranSoFar * 10) / 10) + ' of ' + plannedSoFar +
-      ' km this week so far — ' + short + ' km behind.</b><small>Why</small></summary>' +
-      '<div class="detail-body"><p>' + esc(g.note) + '</p></div></details>';
+      esc(headline) + '</b><small>Why</small></summary>' +
+      '<div class="detail-body"><p>' + (unknown ? unknown + ' scheduled runs have neither a log nor a completion tick. Not recorded does not mean not done. ' : '') +
+      (estimated ? 'Planned distance used for ' + estimated + ' completed runs without logs. ' : '') + '</p><p>' + esc(g.note) + '</p></div></details>';
   }
 
   /* Week SHAPE, not week total. The banked figure answers "did I run the
@@ -1139,7 +1143,7 @@
       const iso = DB.addDays(anchor, s.di);
       const e = getRunLogEntry(iso);
       const day = DB.buildDay(iso);
-      s.ran = e && e.sec ? (e.km || (day.run ? day.run.run.km : 0)) : 0;
+      s.ran = DB.recordedKm(day, getDone(iso), e);
       s.pct = s.plan ? s.ran / s.plan : 0;
       ranTotal += s.ran; planTotal += s.plan;
       if (s.di === 6) lrRan = s.ran;
@@ -1157,7 +1161,7 @@
         (Math.round(s.ran * 10) / 10) + '<small>/' + s.plan + '</small></span>';
     }).join('');
     return el(
-      '<div class="wk-shape"><b>Right total, wrong shape.</b> ' +
+      '<div class="wk-shape"><b>Recorded week shape.</b> ' +
       (Math.round(ranTotal * 10) / 10) + ' of ' + planTotal + ' km banked' +
       (skewed ? ', but the long run took <b>' + Math.round(shareRan) +
         '%</b> of the week against a planned ' + Math.round(sharePlan) + '%' : '') + '.' +
@@ -1190,16 +1194,16 @@
     const prev = DB.addDays(anchor, -7);
     const prevRow = DB.weekRow(PLAN.blocks[0], day0.week - 1);
     if (!prevRow) return null;
-    const ran = loggedKm(prev);
+    const ran = DB.weekKm(getDone, prev, getRunLogEntry).done;
     if (!(ran > 0)) return null;                 // nothing logged ≠ nothing run
     if (ran >= prevRow.km * r.shortfall) return null;
     if (day0.row.km < ran * r.jumpRatio) return null;
     const pct = Math.round((ran / prevRow.km) * 100);
     return el(
-      '<div class="wk-jump"><b>Coming off a short week.</b> Week ' + (day0.week - 1) +
-      ' logged <b>' + (Math.round(ran * 10) / 10) + ' of ' + prevRow.km + ' km</b> (' + pct +
+      '<div class="wk-jump"><b>Last week’s recorded distance.</b> Week ' + (day0.week - 1) +
+      ' records <b>' + (Math.round(ran * 10) / 10) + ' of ' + prevRow.km + ' km</b> (' + pct +
       '%). This week plans ' + day0.row.km + ' — about ' +
-      (Math.round((day0.row.km / ran) * 10) / 10) + '× what you actually ran.<br>' +
+      (Math.round((day0.row.km / ran) * 10) / 10) + '× the recorded distance. Missing logs or ticks may understate it.<br>' +
       esc(r.note) + '</div>'
     );
   }
@@ -1251,13 +1255,13 @@
 
     /* banked km — only once the week has started */
     if (anchor <= todayISO()) {
-      const km = DB.weekKm(getDone, anchor);
+      const km = DB.weekKm(getDone, anchor, getRunLogEntry);
       if (km.planned > 0) {
         const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
         const pct = Math.min(100, (km.done / km.planned) * 100).toFixed(1);
         view.appendChild(el(
           '<div class="wkp" role="img" aria-label="' + fmt(km.done) + ' of ' + fmt(km.planned) + ' km banked">' +
-          '<div class="wkp-label">✓ <b>' + fmt(km.done) + '</b> of ' + fmt(km.planned) + ' km banked</div>' +
+          '<div class="wkp-label">✓ <b>' + fmt(km.done) + '</b> of ' + fmt(km.planned) + ' km recorded</div><p class="log-note">Logged distance, or planned distance for runs ticked done.</p>' +
           '<div class="wkp-track"><i style="width:' + pct + '%"></i></div></div>'
         ));
       }
@@ -1773,7 +1777,7 @@
         '<table><thead><tr><th>Date</th><th>EF</th><th>vs reference</th></tr></thead><tbody>' + rows + '</tbody></table></details></figure>';
     }
     let spark = recordsHTML(savedProgress()) + sparkFor('easy', 'easy') + sparkFor('long', 'long');
-    /* The only real audit of rule 1: where the running actually sits. One
+    /* Average-HR grouping is an estimate, not measured time in zones. One
        stacked bar, weighted by TIME rather than by run count, because four
        easy kilometres and a 30 km long run are not one vote each. */
     spark += (function () {
@@ -1803,12 +1807,12 @@
           '"></i>Z' + (i + 1) + ' ' + Math.round((s / total) * 100) + '%</span>'
         : '').join('');
       const ok = easy >= t.easyPct;
-      return '<div class="dist"><div class="dc-h">Where the running sits · by time</div>' +
+      return '<div class="dist"><div class="dc-h">Run intensity · by average HR</div>' +
         '<div class="dist-bar">' + segs + '</div>' +
         '<div class="dist-key">' + key + '</div>' +
         '<div class="dist-v ' + (ok ? 'good' : 'warn') + '"><b>' + Math.round(easy) +
-        '%</b> at Z2 or easier · target ' + t.easyPct + '%+ — ' + esc(ok ? t.good : t.warn) +
-        '</div></div>';
+        '%</b> of logged duration assigned to Z2 or easier · target ' + t.easyPct + '%+ — ' + esc(ok ? t.good : t.warn) +
+        '</div><p class="log-note">Each whole run is grouped by its average HR. Harder segments within a run are not measured here.</p></div>';
     }());
     /* Decoupling gets a ladder rather than a sparkline: the threshold is
        the point, not the shape. Falling numbers are the base arriving. */

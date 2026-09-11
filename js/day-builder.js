@@ -395,7 +395,7 @@
 
   /* The whole block as one shape — drives the Plan-view skyline.
      banked = ticked run km per week (same source as the Plan stats). */
-  function seasonShape(getDone) {
+  function seasonShape(getDone, getLog) {
     const block = PLAN.blocks[0];
     const keyWks = new Set((PLAN.keyEvents || []).map((e) => e.wk));
     return block.weekTable.map((row, i) => {
@@ -404,7 +404,7 @@
       for (let d = 0; d < 7; d++) {
         const iso = addDays(anchor, d);
         const day = buildDay(iso);
-        if (day.run && (getDone(iso) || {})[day.run.id]) banked += day.run.run.km;
+        banked += recordedKm(day, getDone(iso), getLog && getLog(iso));
       }
       return {
         wk: row.wk, km: row.km, lr: row.lr, phase: row.phase,
@@ -785,21 +785,28 @@
   }
 
   /* Run km banked vs planned across the 7 days from anchor (any block). */
-  function weekKm(getDone, anchorIso) {
+  function recordedKm(day, done, log) {
+    const plan = day.run ? day.run.run.km : 0;
+    if (log && Number.isFinite(log.sec) && log.sec > 0) {
+      if (Number.isFinite(log.km) && log.km > 0) return log.km;
+      if (log.km == null) return plan;
+    }
+    return day.run && (done || {})[day.run.id] ? plan : 0;
+  }
+  function weekKm(getDone, anchorIso, getLog) {
     const out = { done: 0, planned: 0 };
     for (let i = 0; i < 7; i++) {
       const iso = addDays(anchorIso, i);
       const day = buildDay(iso);
-      if (!day.run) continue;
-      out.planned += day.run.run.km;
-      if ((getDone(iso) || {})[day.run.id]) out.done += day.run.run.km;
+      if (day.run) out.planned += day.run.run.km;
+      out.done += recordedKm(day, getDone(iso), getLog && getLog(iso));
     }
     return out;
   }
 
   return {
     buildDay, resolveBlock, weekNumber, dayIndex, distancesForWeek,
-    weekRow, weekDates, raceCountdown, adherence, weekKm, buildICS,
+    weekRow, weekDates, raceCountdown, adherence, weekKm, recordedKm, buildICS,
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
