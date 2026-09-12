@@ -71,6 +71,113 @@ const UPPER_B = {
   ],
 };
 
+/* ---- The split rebuilt from Wk 12 (Sep 2026, athlete's call) -------------
+   Monday's Lower B is gone. Three sessions become PULL / PUSH / shape, and
+   the only leg work left is supplemental, appended to Monday — the one day
+   it is legal: day-after-long-run legs, two days clear of the Wednesday
+   tempo, six clear of Sunday. Not Saturday (rule 10), and not Tuesday,
+   because v4.1 moved calf work off Tuesday precisely for loading calves
+   ~20 h before the tempo.
+   Monday and Tuesday are consecutive, so they must not overlap: pull then
+   push is the only clean pairing on back-to-back days. Each movement
+   pattern is still hit TWICE a week (press Tue + Sat, pull Mon + Sat), so
+   a third session adds no new joint load.
+   Saturday is deliberately the lightest of the three. Rule 10 only forbids
+   leg work there, but Saturday belongs to Sunday, and 4 × 8–10 incline
+   sixteen hours before a 30 km run was never the spirit of it.
+   UPPER_A / UPPER_B / CORE_CALVES above are left untouched: weeks 1–11 are
+   as lived, and rewriting them would misreport sessions already done. */
+const PULL = {
+  title: 'Gym — Pull + legs', cat: 'gym', doable: true, gym: 'upper',
+  detail: 'Day-after-long-run legs, two days clear of Wednesday · add weight to pull-ups past 10 reps · the leg work is insurance, not progression — RPE ≤ 7, never grind',
+  plan: [
+    { ex: 'Pull-ups',                 sets: '4 × max' },
+    { ex: 'Barbell row',              sets: '4 × 6–8' },
+    { ex: 'Face pulls',               sets: '3 × 15' },
+    { ex: 'Rear-delt flyes',          sets: '3 × 12–15' },
+    { ex: 'Hammer curls',             sets: '3 × 10–12' },
+    { ex: 'Romanian deadlift',        sets: '2 × 8 light' },
+    { ex: 'Straight-leg calf raises', sets: '2 × 15' },
+    { ex: 'Bent-knee calf raises',    sets: '2 × 12 — soleus, the marathon muscle' },
+    { ex: 'Plank',                    sets: '2 × 45s' },
+    { ex: 'Dead bugs',                sets: '2 × 10' },
+  ],
+  maintDetail: '2 hard sets each, 3 reps in reserve — hold the back through the taper',
+  maintPlan: [
+    { ex: 'Pull-ups',        sets: '2 × max−3' },
+    { ex: 'Barbell row',     sets: '2 × 8' },
+    { ex: 'Face pulls',      sets: '2 × 15' },
+    { ex: 'Rear-delt flyes', sets: '2 × 12' },
+    { ex: 'Hammer curls',    sets: '2 × 10' },
+  ],
+};
+
+/* Wk 17+: the legs come off, the pull stays. §6's argument holds — calf
+   work earns its place while volume is LOW, building tolerance ahead of the
+   load; once 50–60 km a week supplies that load it is redundant and costs
+   recovery. Trunk work is not leg work and costs nothing, so it stays. */
+const PULL_LEAN = {
+  title: 'Gym — Pull', cat: 'gym', doable: true, gym: 'upper',
+  detail: 'Legs retired at Wk 17 — the running now supplies far more calf loading than 2 × 15 raises ever did · add weight to pull-ups past 10 reps',
+  plan: [
+    { ex: 'Pull-ups',        sets: '4 × max' },
+    { ex: 'Barbell row',     sets: '4 × 6–8' },
+    { ex: 'Face pulls',      sets: '3 × 15' },
+    { ex: 'Rear-delt flyes', sets: '3 × 12–15' },
+    { ex: 'Hammer curls',    sets: '3 × 10–12' },
+    { ex: 'Plank',           sets: '2 × 45s' },
+    { ex: 'Dead bugs',       sets: '2 × 10' },
+  ],
+  maintDetail: '2 hard sets each, 3 reps in reserve — hold the back through the taper',
+  maintPlan: [
+    { ex: 'Pull-ups',        sets: '2 × max−3' },
+    { ex: 'Barbell row',     sets: '2 × 8' },
+    { ex: 'Face pulls',      sets: '2 × 15' },
+    { ex: 'Rear-delt flyes', sets: '2 × 12' },
+    { ex: 'Hammer curls',    sets: '2 × 10' },
+  ],
+};
+
+const PUSH = {
+  title: 'Gym — Push', cat: 'gym', doable: true, gym: 'upper',
+  detail: 'The heavy day, and it sits where it costs running nothing · ramp 2 warm-up sets on bench · top of the range → +2.5 kg next week · pull-aparts ride the bench rests · drive over, no run-commute — legs are for running',
+  plan: [
+    { ex: 'Bench press',      sets: '4 × 6–8' },
+    { ex: 'Band pull-aparts', sets: '4 × 15–20' },
+    { ex: 'Overhead press',   sets: '3 × 8' },
+    { ex: 'Weighted dips',    sets: '3 × 8–10' },
+    { ex: 'Lateral raises',   sets: '4 × 12–15' },
+    { ex: 'Rope pushdowns',   sets: '3 × 10–12' },
+  ],
+  maintDetail: '2 hard sets each, 3 reps in reserve — keep the look through the taper',
+  maintPlan: [
+    { ex: 'Bench press',      sets: '2 × 6–8' },
+    { ex: 'Band pull-aparts', sets: '2 × 15' },
+    { ex: 'Overhead press',   sets: '2 × 8' },
+    { ex: 'Weighted dips',    sets: '2 × 8' },
+  ],
+};
+
+const SHAPE = {
+  title: 'Gym — Arms & shoulders', cat: 'gym', doable: true, gym: 'upper',
+  detail: 'Deliberately the lightest of the three — Saturday belongs to Sunday (rule 10). No heavy compounds, no legs, no calves · superset curls + pushdowns to hold the slot',
+  plan: [
+    { ex: 'Incline DB press',   sets: '3 × 10–12' },
+    { ex: 'Chin-ups',           sets: '3 × max' },
+    { ex: 'Lateral raises',     sets: '4 × 12–15' },
+    { ex: 'EZ bar curls',       sets: '3 × 10–12' },
+    { ex: 'Rope pushdowns',     sets: '3 × 10–12' },
+    { ex: 'Hanging leg raises', sets: '3 × 10–15' },
+  ],
+  maintDetail: 'In and out — the race is the priority, the look keeps ticking',
+  maintPlan: [
+    { ex: 'Incline DB press', sets: '2 × 10' },
+    { ex: 'Chin-ups',         sets: '2 × max−3' },
+    { ex: 'Lateral raises',   sets: '2 × 12' },
+    { ex: 'Arms superset',    sets: '1 × 12 + 12' },
+  ],
+};
+
 const PLAN = {
 
   /* ---- Race & targets (§1, §10) ------------------------------------- */
@@ -907,22 +1014,38 @@ const PLAN = {
           { t: '07:45', end: '08:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
           { t: '08:00', end: '15:00', title: 'College', detail: 'College day (Mondays from 14 Sep) · free periods = study', cat: 'study', quiet: true },
           { t: '15:00', end: '16:00', title: 'Commute + snack', detail: 'Home ~16:00', cat: 'work', quiet: true },
-          { t: '16:30', end: '17:15', title: 'Gym — Lower B + core/calves (maintenance)', cat: 'gym', doable: true,
-            detail: 'Keep the hinge, lose the fatigue · RPE ≤ 7, in and out · absorbs the trunk and calf work: day-after-long-run legs, two days clear of Wednesday, six clear of Sunday',
-            plan: [
-              { ex: 'Deadlift',              sets: '2 × 5 @ RPE 6–7' },
-              { ex: 'Romanian deadlift',     sets: '2 × 8 light' },
-              { ex: 'Straight-leg calf raises', sets: '2 × 15' },
-              { ex: 'Bent-knee calf raises', sets: '2 × 12 — soleus, the marathon muscle' },
-              { ex: 'Plank',                 sets: '3 × 45s' },
-              { ex: 'Side plank',            sets: '2 × 30s/side' },
-              { ex: 'Dead bugs',             sets: '3 × 10' },
-              { ex: 'Glute bridges',         sets: '2 × 15' },
-            ] },
-          { t: '17:15', end: '18:30', title: 'Shower · feet up', cat: 'routine', quiet: true },
+          Object.assign({ t: '16:30', end: '17:20' }, PULL),
+          { t: '17:20', end: '18:30', title: 'Shower · feet up', cat: 'routine', quiet: true },
           { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Fixed anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
+          { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+          { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+        ],
+        1: [
+          { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating', cat: 'routine', quiet: true },
+          { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
+          { t: '07:00', end: '12:00', title: 'Work', detail: 'Quiet spells = study — never flat out', cat: 'work', quiet: true },
+          { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+          { t: '13:00', end: '16:30', title: 'Work', detail: 'More study in the gaps', cat: 'work', quiet: true },
+          { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
+          { t: '17:10', run: 'tue' },
+          { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
+          Object.assign({ t: '19:30', end: '20:45' }, PUSH),
+          { t: '20:45', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
+          { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+          { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+        ],
+        5: [
+          { t: '07:30', end: '08:00', title: 'Wake · Anki', cat: 'routine', quiet: true },
+          { t: '08:00', end: '08:30', title: 'Breakfast', cat: 'meal', quiet: true },
+          { t: '08:30', run: 'sat' },
+          Object.assign({ t: '10:00', end: '10:50' }, SHAPE),
+          { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+          { t: '13:00', end: '16:30', title: 'Study', cat: 'study', doable: true },
+          { t: '16:30', end: '19:00', title: 'Free — social / hobbies', cat: 'free', quiet: true },
+          { t: '19:00', end: '20:00', title: 'Dinner', cat: 'meal', quiet: true, carbEve: true },
+          { t: '20:00', end: '22:00', title: 'Free evening', cat: 'free', quiet: true },
           { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
           { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
         ],
@@ -936,7 +1059,8 @@ const PLAN = {
           { t: '07:45', end: '08:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
           { t: '08:00', end: '15:00', title: 'College', detail: 'College day (Mondays from 14 Sep) · free periods = study', cat: 'study', quiet: true },
           { t: '15:00', end: '16:00', title: 'Commute + snack', detail: 'Home ~16:00', cat: 'work', quiet: true },
-          { t: '16:00', end: '18:30', title: 'Full rest — the week’s zero day', detail: 'No run, no gym — Build volume is carried by this evening', cat: 'free', quiet: true },
+          Object.assign({ t: '16:30', end: '17:15' }, PULL_LEAN),
+          { t: '17:15', end: '18:30', title: 'Shower · feet up', cat: 'routine', quiet: true },
           { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Fixed anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
@@ -1055,7 +1179,7 @@ const PLAN = {
             { t: '09:00', end: '09:25', title: 'PARKRUN 5K — all-out PB', detail: 'Evo SL · even splits, don’t sprint km 1', cat: 'run', doable: true, runKm: 5, shoe: 'Evo SL', estPace: '4:10' },
             { t: '09:25', end: '09:45', title: 'Cool-down jog', cat: 'run', quiet: true },
             { t: '10:00', end: '10:30', title: 'Shower + refuel', cat: 'routine', quiet: true },
-            Object.assign({ t: '10:30', end: '12:00' }, UPPER_B),
+            Object.assign({ t: '10:30', end: '11:20' }, SHAPE),
             { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
             { t: '13:00', end: '16:30', title: 'Study', detail: 'Normal study afternoon — any subject, the slot is the commitment', cat: 'study', doable: true },
             { t: '16:30', end: '19:00', title: 'Free — social / hobbies', cat: 'free', quiet: true },

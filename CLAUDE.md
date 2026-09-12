@@ -167,9 +167,10 @@ gym 2–2.5h · running per plan · basketball 2h (~850 kcal ≈ 10 km-equiv:
   Tuesday evening slot; it rides the quiet spells at work.
 - **Wks 12–30** (from Mon 14 Sep, the second Monday): **College moves to
   Mondays.** Monday becomes the college day (08:00–15:00, wake 06:45) while
-  keeping German active at 19:30 and no standard Monday run. Lower B +
-  core/calves maintenance continues through Wk 16; from Wk 17 there is no
-  Monday gym. Tuesday stays a work day. Holiday/race weeks still override.
+  keeping German active at 19:30 and no standard Monday run. From Wk 12
+  Monday carries **Pull + legs** 16:30 (see the rebuilt split below); the
+  leg work retires at Wk 17 and the pull session runs to Wk 30. Tuesday
+  stays a work day. Holiday/race weeks still override.
 - **Punchbag retired (Jul 2026, from Wk 4):** Lower B moves off Saturday
   into Monday 17:10 for Wks 4–10 (day-after-long-run legs — Saturday
   stays fresh for Sunday); Wks 11–16 use a 45-min maintenance session
@@ -194,12 +195,9 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
 - **Wks 4–10 (work):** 06:00 Wake + Anki · 06:45 commute · 07:00–16:30
   Work · 16:30 commute · **17:10 Gym — Lower B** (moved off Saturday —
   day-after-long-run legs, RPE ≤ 7, never grind) · 18:05 shower + snack.
-- **Wks 11–16 (work Wk 11; college on Monday from Wk 12, wake 06:45):**
-  **Lower B + core/calves (maintenance)** 45 min — 17:10–17:55 in Wk 11,
-  16:30–17:15 in Wks 12–16 after college. Deadlift 2×5 @ RPE 6–7 · RDL
-  2×8 light · the full Core + calves sequence in the gym programming below.
-- **Wks 17+ :** evening completely OFF — Monday is the week's true zero
-  day (no run, no gym) as the 50–60 km weeks arrive.
+- **Wk 11 (as lived):** Lower B + core/calves (maintenance) 17:10–17:55.
+- **Wks 12–16:** **Gym — Pull + legs** 16:30–17:20 after college.
+- **Wks 17–30:** **Gym — Pull** 16:30–17:15 — same session, leg work gone.
 - **Every era:** 18:30 dinner · 19:30–21:00 German active study ·
   21:00–22:00 German media · 22:00 read · 22:30 sleep. The STANDARD
   Monday carries no run; special weeks may override it, and race week
@@ -271,13 +269,15 @@ Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
 ### Phase deltas summary
 - Fri German active end: 12:00 (Base) → 11:30 (Build) → 10:30 (Wk 23+ and Taper).
 - Mon gym: punchbag (Wks 1–3, retired) → Lower B 17:10 (Wks 4–10) →
-  Lower B maintenance (Wks 11–16) → zero day (Wk 17+).
-- Sat gym: Lower B (Wks 1–3 as lived) → Upper B only from Wk 4. No
-  lower-body or calf work on a Saturday ever again — Saturday is the
-  long run's rest day.
-- Tue gym: Upper A every era, and nothing else. Tuesday is a work day
-  that already carries a run and 75 min of upper body; it does not also
-  get leg work the evening before the tempo.
+  Lower B maintenance (Wk 11) → **Pull + legs (Wks 12–16)** → **Pull,
+  no legs (Wks 17–30)**.
+- Sat gym: Lower B (Wks 1–3 as lived) → Upper B (Wks 4–11) → **Arms &
+  shoulders from Wk 12**. No lower-body or calf work on a Saturday ever
+  again — Saturday is the long run's rest day, and from Wk 12 it is also
+  the LIGHTEST of the three sessions.
+- Tue gym: Upper A (to Wk 11) → **Push from Wk 12**, and nothing else.
+  Tuesday already carries a run and 75 min of upper body; it does not
+  also get leg work the evening before the tempo.
 - **Wk 8 (TT week) carries no leg work and deloads both upper days.**
   The only race week in the block that still had a Monday Lower B, and
   only by accident of the era boundaries — 17, 24 and 30 all sit in the
@@ -303,21 +303,52 @@ fatigue near key runs. Compounds first, nothing to failure. The brief:
 close to pushing (rear delts + pull-aparts are shoulder insurance AND
 the 3D look).
 
-- **Upper A — Tue 19:30:** bench 4×6–8 · band pull-aparts 4×15–20 (in
-  the bench rests) · row 4×6–8 · OHP 3×8 · weighted dips 3×8–10 ·
-  EZ bar curls 3×10–12 · face pulls 3×15 (superset curls + face pulls
-  to finish inside the 75 min).
-- **Upper B — Sat 10:00 (Fri 13:00 in Wks 1–3 as lived):** incline
-  bench 4×8–10 · pull-ups 4×max (add weight past 10 reps) · lateral
-  raises 4×12–15 · rear-delt flyes 3×12–15 · hammer curls 3×10–12 ·
-  rope pushdowns 3×10–12 (superset curls + pushdowns to hold the
-  slot) · hanging leg raises 3×10–15.
-- **Lower B — Mon 17:10 (Base only; Sat in Wks 1–3 as lived, Monday
-  from Wk 4; maintenance 2×5 Wks 11–16, retired from Wk 17):** deadlift 3×5 @ RPE 7 · RDL 3×8
-  light · step-ups 2×10/leg · calf raises 3×15 · plank finisher 3×45s.
-  Day-after-long-run legs — stress stacks on tired legs, Saturday stays
-  fresh. Calf/tendon work now is injury insurance later. Never grind —
-  Wednesday quality is two days off.
+**THE SPLIT WAS REBUILT AT WK 12 (Sep 2026, athlete's call).** Lower B is
+gone as a session. Three sessions become **Pull / Push / Arms & shoulders**,
+and the only surviving leg work is supplemental — appended to Monday, the
+one day it is legal: day-after-long-run legs, two days clear of the
+Wednesday tempo, six clear of Sunday. Monday and Tuesday are consecutive,
+so they must not overlap; pull-then-push is the only clean pairing. Each
+movement pattern is still hit **twice** a week (press Tue + Sat, pull Mon +
+Sat), so a third session adds no new joint load. Weeks 1–11 keep Upper A /
+Upper B / Lower B exactly as lived.
+
+- **Pull + legs — Mon 16:30, Wks 12–16:** pull-ups 4×max (add weight past
+  10) · barbell row 4×6–8 · face pulls 3×15 · rear-delt flyes 3×12–15 ·
+  hammer curls 3×10–12 · **legs (~8 min):** RDL 2×8 light · straight-leg
+  calf raises 2×15 · bent-knee calf raises 2×12 (soleus) · plank 2×45s ·
+  dead bugs 2×10. RPE ≤ 7 on the leg work — insurance, not progression.
+- **Pull — Mon 16:30, Wks 17–30:** identical minus the RDL and calves.
+  They retire at Wk 17 on §6's own argument: calf work earns its place
+  while volume is LOW, building tolerance ahead of the load; once the
+  running supplies 50–60 km a week it is redundant and costs recovery.
+  Trunk work is not leg work and costs nothing, so plank and dead bugs stay.
+- **Push — Tue 19:30, Wk 12+:** bench 4×6–8 (band pull-aparts 4×15–20 in
+  the rests) · OHP 3×8 · weighted dips 3×8–10 · lateral raises 4×12–15 ·
+  rope pushdowns 3×10–12. This is the heavy day, and it sits on the one
+  evening where heavy pressing costs running nothing.
+- **Arms & shoulders — Sat 10:00, Wk 12+:** incline DB press 3×10–12 ·
+  chin-ups 3×max · lateral raises 4×12–15 · EZ bar curls 3×10–12 · rope
+  pushdowns 3×10–12 · hanging leg raises 3×10–15. **Deliberately the
+  lightest of the three.** Rule 10 only forbids leg work on a Saturday,
+  but Saturday belongs to Sunday, and 4×8–10 incline sixteen hours before
+  a 30 km run was never the spirit of it.
+- **Pulling and pushing come out at 27 sets each**, which keeps the §6
+  brief intact: functional fit legs, aesthetic fit upper body, with
+  pulling volume never behind pushing.
+
+**As lived, Wks 1–11 (kept for the record, not prescribed forward):**
+- **Upper A — Tue 19:30:** bench 4×6–8 · band pull-aparts 4×15–20 · row
+  4×6–8 · OHP 3×8 · weighted dips 3×8–10 · EZ bar curls 3×10–12 · face
+  pulls 3×15.
+- **Upper B — Sat 10:00 (Fri 13:00 in Wks 1–3):** incline bench 4×8–10 ·
+  pull-ups 4×max · lateral raises 4×12–15 · rear-delt flyes 3×12–15 ·
+  hammer curls 3×10–12 · rope pushdowns 3×10–12 · hanging leg raises
+  3×10–15.
+- **Lower B — Mon 17:10:** deadlift 3×5 @ RPE 7 · RDL 3×8 light ·
+  step-ups 2×10/leg · calf raises 3×15 · plank 3×45s. Maintenance 2×5 in
+  Wk 11; replaced by Pull + legs at Wk 12.
+
 - **Plyo micro-dose:** Tue/Thu easy runs start with 60 s skipping — or
   2×15 pogo hops (stiff ankles, quiet landings) — tendon stiffness and running economy
   at near-zero fatigue cost. Thu still finishes with the 4×20 s strides.
