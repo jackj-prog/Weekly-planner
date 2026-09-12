@@ -161,7 +161,7 @@
       };
     }
     const names = { tue: 'Easy run', thu: 'Easy run', sat: 'Recovery buffer run' };
-    const cue = PLAN.runCues && PLAN.runCues[slot];   // strides/pogos live in the data (§14)
+    const cue = PLAN.runCues && PLAN.runCues[slot];   // strides live in the data (§14)
     /* Saturday is prescribed as recovery, so it must NOT carry the easy
        band — judging a Z1 run against a Z2 band is the same category error
        as pooling their EF. */

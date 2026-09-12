@@ -285,27 +285,37 @@ ok(hasBlock(dayOfWeek(5, 0), /Lower B/i), 'Wks 4–10 Mon holds Lower B (day aft
 ok(!dayOfWeek(5, 5).blocks.some((b) => /Lower B|Deadlift/i.test(b.title)), 'Wks 4–10 Sat has no leg work — legs fresh for Sunday');
 ok(hasBlock(dayOfWeek(11, 0), /Lower B \+ core\/calves \(maintenance\)/) && hasBlock(dayOfWeek(11, 0), /Deadlift 2 × 5/),
   'Wks 11–16 Mon drops Lower B to maintenance and absorbs the core/calf work');
-ok(hasBlock(dayOfWeek(14, 0), /Gym — Pull \+ legs/) && hasBlock(dayOfWeek(14, 0), /Bent-knee calf raises/),
-  'Wk 14 Mon holds Pull + the supplemental leg work');
+ok(hasBlock(dayOfWeek(14, 0), /Legs microdose/) && hasBlock(dayOfWeek(14, 0), /Leg press 2 × 5–6/),
+  'Wk 14 Mon holds the legs microdose');
 /* Wk 17+ Monday is no longer the zero day (Sep 2026, athlete's call): the
    PULL session stays all block, but its leg work retires exactly where
    Lower B used to — §6's argument that calf work earns its place only while
    volume is LOW is unchanged, it now applies to two exercises rather than a
    whole session. */
-ok(hasBlock(dayOfWeek(18, 0), /Gym — Pull$|Gym — Pull \(/), 'Wk 17+ Mon keeps the Pull session');
-ok(!hasBlock(dayOfWeek(18, 0), /calf raises/i) && !hasBlock(dayOfWeek(18, 0), /Romanian deadlift/i),
-  'Wk 17+ Mon has NO leg work — the running supplies that load now');
+ok(hasBlock(dayOfWeek(18, 0), /Legs microdose/), 'Wk 17+ Mon keeps the same Monday session');
+/* The leg dose is now scaled by FATIGUE, not by the calendar — a live rule
+   beats a scheduled retirement, because the thing that should govern it is
+   how Sunday actually went. */
+ok(!hasBlock(dayOfWeek(18, 0), /Romanian deadlift/i),
+  'RDLs are excluded all block — eccentric hamstring and erector cost is wrong at 40–65 km/wk');
+ok(hasBlock(dayOfWeek(18, 0), /Seated leg curl/),
+  'the leg curl replaces the RDL: same hamstring strength, far cheaper');
 ok(!hasBlock(dayOfWeek(12, 5), /Core \+ calves/i), 'Core + calves is OFF Saturday — calves must not load the day before the long run');
 ok(!hasBlock(dayOfWeek(12, 1), /Core \+ calves|calf/i),
   'Wk 11+ Tue carries NO calf work — it sat ~20 h before the Wednesday tempo');
-ok(dayOfWeek(12, 0).blocks.some((b) => (b.plan || []).some((p) => /Bent-knee calf/.test(p.ex))),
+ok(dayOfWeek(12, 0).blocks.some((b) => (b.plan || []).some((p) => /Seated calf raises/.test(p.ex))),
   'the soleus work lives on Monday now, on day-after-long-run legs');
-ok(dayOfWeek(12, 1).blocks.some((b) => /Wind down/.test(b.title) && b.start === '20:45'),
-  'Tuesday now ends at 20:45, not 21:10');
+/* Tuesday lost its gym when push moved onto the quality day, and study took
+   the slot back — so the evening now ends where the study block does. */
+ok(dayOfWeek(12, 1).blocks.some((b) => /Wind down/.test(b.title) && b.start === '21:00'),
+  'Wk 12+ Tuesday winds down at 21:00, off the back of study');
+ok(dayOfWeek(12, 1).blocks.some((b) => b.cat === 'study' && b.start === '19:30' && b.end === '21:00'),
+  'Wk 12+ Tuesday carries the study block that Wednesday gave up');
 ok(!hasBlock(dayOfWeek(10, 1), /Core \+ calves/i), 'Core + calves does not start before Wk 11');
 ok(!dayOfWeek(20, 5).blocks.some((b) => /calf|calves/i.test(b.title) || (b.plan || []).some((p) => /calf/i.test(p.ex))),
   'no calf work anywhere on Saturday in peak Build');
-ok(hasBlock(dayOfWeek(23, 1), /maintenance/i), 'Wk 23 Tue gym should be maintenance');
+ok(!dayOfWeek(23, 1).blocks.some((b) => b.cat === 'gym'), 'Wk 23 Tue has no gym — push moved to Wednesday');
+ok(hasBlock(dayOfWeek(23, 2), /maintenance/i), 'Wk 23 Wed push is maintenance');
 
 /* gym programming — structured plans on the blocks */
 ok(hasBlock(dayOfWeek(5, 1), /Bench press 4 × 6–8/), 'Upper A should carry the full prescription');
@@ -318,34 +328,36 @@ ok(hasBlock(dayOfWeek(5, 5), /Hanging leg raises/), 'Upper B should carry the ab
 /* Upper B: Fri in Wks 1–3 (as lived) → Sat 10:00 from Wk 4 */
 ok(hasBlock(dayOfWeek(2, 4), /Incline bench/), 'Wks 1–3 Fri holds Upper B (as lived)');
 ok(!dayOfWeek(5, 4).blocks.some((b) => b.cat === 'gym'), 'Wks 4+ Fri has no gym — Upper B moved to Saturday');
-ok(hasBlock(dayOfWeek(17, 5), /Arms & shoulders/), 'wk17 parkrun Saturday keeps the light session after the PB');
+ok(hasBlock(dayOfWeek(17, 5), /Light upper/), 'wk17 parkrun Saturday keeps the light session after the PB');
 ok(!hasBlock(dayOfWeek(24, 5), /Upper B/), 'wk24 Sat has no Upper B — half taper');
-ok(hasBlock(dayOfWeek(23, 1), /Weighted dips 2 × 8/), 'Wk 23 maintenance keeps dips');
+ok(hasBlock(dayOfWeek(23, 2), /Overhead press 2 × 8/), 'Wk 23 push maintenance keeps the overhead press');
 ok(hasBlock(dayOfWeek(23, 5), /Arms superset/), 'Wk 23 Saturday maintenance keeps the arm work');
-ok(hasBlock(dayOfWeek(23, 5), /Lateral raises 2 × 12/), 'Wk 23 Upper B maintenance keeps laterals');
+ok(hasBlock(dayOfWeek(23, 5), /Lateral raises 2 × 15/), 'Wk 23 Saturday maintenance keeps laterals');
 ok(hasBlock(dayOfWeek(5, 0), /Deadlift 3 × 5/), 'Base Lower B should carry the prescription');
 ok(hasBlock(dayOfWeek(5, 0), /Plank finisher/), 'Base Lower B should carry the core finisher');
 ok(hasBlock(dayOfWeek(5, 1), /\+2\.5 kg/), 'Upper A should carry the progression rule');
 ok(hasBlock(dayOfWeek(3, 0), /6 × 3 min rounds/), 'Wks 1–3 Mondays keep punchbag (as lived)');
 ok(hasBlock(dayOfWeek(11, 0), /Plank 3 × 45s/), 'Wk 11 Monday carries the trunk prescription (as lived)');
-ok(hasBlock(dayOfWeek(12, 0), /Plank 2 × 45s/), 'Wk 12+ Monday keeps trunk work inside the Pull session');
+ok(hasBlock(dayOfWeek(12, 0), /Ab wheel/) && hasBlock(dayOfWeek(12, 0), /Pallof press/),
+  'Wk 12+ Monday carries anti-extension and anti-rotation core');
 /* push:pull rebalance + calves-all-block (assessed from first principles) */
 ok(hasBlock(dayOfWeek(5, 1), /Band pull-aparts 4 × 15–20/), 'Upper A should carry pull-aparts in the bench rests');
 ok(hasBlock(dayOfWeek(5, 5), /Rear-delt flyes 3 × 12–15/), 'Upper B should carry rear-delt flyes');
-ok(hasBlock(dayOfWeek(23, 1), /Band pull-aparts 2 × 15/), 'Wk 23 maintenance keeps pull-aparts');
-ok(hasBlock(dayOfWeek(23, 0), /Rear-delt flyes 2 × 12/), 'Wk 23 maintenance keeps rear delts — §6: they cost nothing');
-ok(hasBlock(dayOfWeek(23, 1), /Band pull-aparts 2 × 15/), 'Wk 23 maintenance keeps pull-aparts — §6: same reason');
-ok(hasBlock(dayOfWeek(12, 0), /Straight-leg calf raises 2 × 15/), 'Wk 11+ Monday carries straight-leg calf work');
-ok(hasBlock(dayOfWeek(12, 0), /Bent-knee calf raises/), 'Wk 11+ Monday carries the soleus work');
+ok(hasBlock(dayOfWeek(23, 0), /Rear-delt fly 2 × 15/), 'Wk 23 maintenance keeps rear delts — they cost nothing');
+ok(hasBlock(dayOfWeek(12, 0), /Straight-leg calf raises 2 × 8–12/), 'Wk 12+ Monday carries straight-leg calf work');
+ok(hasBlock(dayOfWeek(12, 0), /Seated calf raises 2 × 10–15/), 'Wk 12+ Monday carries the soleus work');
+ok(hasBlock(dayOfWeek(11, 0), /Bent-knee calf raises/), 'Wk 11 Monday keeps the soleus work as lived');
 /* the whole point: nothing loads the calves the day before the tempo */
 for (const wk of [12, 14, 16]) {
   ok(!dayOfWeek(wk, 1).blocks.some((b) => (b.plan || []).some((p) => /calf/i.test(p.ex))),
     'wk ' + wk + ' Tuesday carries no calf work — Wednesday is the tempo');
 }
 ok(hasBlock(dayOfWeek(5, 0), /Calf raises 3 × 15/), 'Base Lower B still carries its calf raises');
-ok(hasBlock(dayOfWeek(23, 1), /3 reps in reserve/), 'Wk 23 Upper A should swap to the maintenance session');
-ok(hasBlock(dayOfWeek(23, 1), /Bench press 2 × 6–8/), 'Wk 23 Upper A plan should be the reduced sets');
-ok(!hasBlock(dayOfWeek(23, 1), /Bench press 4 × 6–8/), 'Wk 23 Upper A should not show the full-volume session');
+/* The pressing session is Upper A on Tuesday up to Wk 11 and Push on
+   Wednesday from Wk 12 — the maintenance swap must follow it across. */
+ok(hasBlock(dayOfWeek(23, 2), /3 reps in reserve/), 'Wk 23 push should swap to the maintenance session');
+ok(hasBlock(dayOfWeek(23, 2), /Bench press 2 × 5–8/), 'Wk 23 push plan should be the reduced sets');
+ok(!hasBlock(dayOfWeek(23, 2), /Bench press 3 × 5–8/), 'Wk 23 push should not show the full-volume session');
 {
   const gymBlocks = [];
   for (let i = 0; i < 210; i++) {
@@ -434,14 +446,21 @@ section('adherence');
 /* ---- 6b. schedule refinements ---- */
 section('schedule refinements');
 ok(/4×20 s relaxed strides/.test(dayOfWeek(5, 3).run.detail), 'Thu easy runs carry strides');
-/* The plyo dose: rope preferred over hops because the motor pattern is
-   already owned, but both must stay named — no rope, still do the hops. */
-ok(/skipping/.test(dayOfWeek(5, 3).run.detail) && /pogo hops/.test(dayOfWeek(5, 3).run.detail),
-  'Thu easy runs open with the plyo dose, rope or hops');
-ok(/skipping/.test(dayOfWeek(5, 1).run.detail) && /pogo hops/.test(dayOfWeek(5, 1).run.detail),
-  'Tue easy runs open with the plyo dose, rope or hops');
-ok(/60 s skipping/.test(PLAN.runCues.tue) && /60 s skipping/.test(PLAN.runCues.thu),
-  'the rope dose is the same on both days');
+/* The plyo micro-dose is OFF for the block (Sep 2026, athlete's call):
+   Friday basketball already supplies jumps, landings, cuts and accelerations,
+   so extra impact at 40–65 km/week is cost without benefit. Strides stay —
+   they are running, not plyometrics. This is asserted, not merely absent,
+   so nobody quietly reinstates it. */
+ok(!/skipping|pogo/.test(dayOfWeek(5, 3).run.detail),
+  'Thu easy runs carry no plyo dose — basketball supplies the impact');
+ok(!/skipping|pogo/.test(dayOfWeek(5, 1).run.detail),
+  'Tue easy runs carry no plyo dose — basketball supplies the impact');
+ok(PLAN.runCues.tue === null || PLAN.runCues.tue === undefined,
+  'the Tuesday plyo cue is retired at the data layer, not just unrendered');
+for (const [wk, di] of [[5, 1], [12, 1], [12, 3], [20, 3], [27, 3]]) {
+  ok(!/skipping|pogo/.test(dayOfWeek(wk, di).run.detail),
+    'wk ' + wk + ' day ' + di + ' carries no plyo dose');
+}
 ok(!/relaxed strides/.test(dayOfWeek(5, 1).run.detail), 'Tue easy runs carry no strides');
 ok(!/pogo|strides/.test(dayOfWeek(12, 5).run.detail), 'Sat buffer run stays plain — nothing before the long run');
 ok(/headtorch/i.test(dayOfWeek(15, 2).run.detail), 'Oct Wed 17:10 carries the dark-kit note');
@@ -477,10 +496,10 @@ section('scaffold eras');
   ok(hasBlock(dayOfWeek(5, 0), /Lower B/i), 'wk5 Mon carries Lower B (punchbag retired from Wk 4)');
   // Wk 12+: Monday becomes the college day
   ok(hasBlock(dayOfWeek(12, 0), /^College$/m ? /College/ : /College/), 'wk12 Mon is the college day');
-  ok(hasBlock(dayOfWeek(12, 0), /College/) && hasBlock(dayOfWeek(12, 0), /Gym — Pull \+ legs/),
-    'wk12 Mon is a college day with Pull + legs after');
-  ok(hasBlock(dayOfWeek(18, 0), /Gym — Pull/) && !hasBlock(dayOfWeek(18, 0), /calf raises/i),
-    'wk18 Mon keeps Pull but has shed the leg work');
+  ok(hasBlock(dayOfWeek(12, 0), /College/) && hasBlock(dayOfWeek(12, 0), /Legs microdose · Pull · Core/),
+    'wk12 Mon is a college day with the long gym session after');
+  ok(hasBlock(dayOfWeek(18, 0), /Legs microdose · Pull · Core/) && hasBlock(dayOfWeek(18, 0), /calf raises/i),
+    'wk18 Mon carries the SAME session — the leg dose is scaled by fatigue, not by the calendar');
   ok(dayOfWeek(12, 0).run === null, 'wk12 Mon still has no run');
   ok(hasBlock(dayOfWeek(12, 1), /Work/), 'wk12 Tue stays a work day');
   ok(hasRunAt(dayOfWeek(12, 1), '17:10'), 'wk12 Tue run still 17:10');
@@ -745,14 +764,16 @@ section('season shape + verdicts');
 /* ---- 7a6. Gym deload on cutback weeks (v3.3) ---- */
 section('gym deload');
 {
-  /* Tuesday's session is Upper A up to Wk 11 (as lived) and Push from Wk 12,
-     when the split was rebuilt. The deload rules are indifferent to which. */
-  const upperA = (wk) => dayOfWeek(wk, 1).blocks.find((b) => /Upper A|Gym — Push/.test(b.title));
+  /* The pressing session is Upper A on TUESDAY up to Wk 11 (as lived) and
+     Push on WEDNESDAY from Wk 12, when the split was rebuilt and push moved
+     onto the quality day. The deload rules are indifferent to which. */
+  const upperA = (wk) => dayOfWeek(wk, wk >= 12 ? 2 : 1).blocks
+    .find((b) => /Upper A|Gym — Push/.test(b.title));
   const setsOf = (b, ex) => (b.plan.find((p) => new RegExp(ex, 'i').test(p.ex)) || {}).sets;
 
-  ok(!/deload/i.test(upperA(12).title) && setsOf(upperA(12), 'Bench') === '4 × 6–8',
+  ok(!/deload/i.test(upperA(12).title) && setsOf(upperA(12), 'Bench') === '3 × 5–8 @ ~2 RIR',
     'wk 12 (not a cutback) keeps full sets');
-  ok(/deload/i.test(upperA(13).title) && setsOf(upperA(13), 'Bench') === '2 × 6–8',
+  ok(/deload/i.test(upperA(13).title) && setsOf(upperA(13), 'Bench') === '2 × 5–8 @ ~2 RIR',
     'wk 13 cutback halves the sets, same rep range');
   ok(/deload/i.test(upperA(21).title), 'wk 21 cutback deloads');
   ok(!/deload/i.test(upperA(4).title),

@@ -168,20 +168,26 @@ gym 2–2.5h · running per plan · basketball 2h (~850 kcal ≈ 10 km-equiv:
 - **Wks 12–30** (from Mon 14 Sep, the second Monday): **College moves to
   Mondays.** Monday becomes the college day (08:00–15:00, wake 06:45) while
   keeping German active at 19:30 and no standard Monday run. From Wk 12
-  Monday carries **Pull + legs** 16:30 (see the rebuilt split below); the
-  leg work retires at Wk 17 and the pull session runs to Wk 30. Tuesday
-  stays a work day. Holiday/race weeks still override.
+  Monday carries **Legs microdose · Pull · Core** 16:30–17:40 (see the
+  rebuilt split below), and carries it unchanged to Wk 30 — the leg dose
+  is scaled by Sunday's fatigue, not retired on a date. Tuesday stays a
+  work day. Holiday/race weeks still override.
 - **Punchbag retired (Jul 2026, from Wk 4):** Lower B moves off Saturday
   into Monday 17:10 for Wks 4–10 (day-after-long-run legs — Saturday
-  stays fresh for Sunday); Wks 11–16 use a 45-min maintenance session
-  including core/calves (keep the hinge, lose the fatigue); from Wk 17 Monday is the
-  week's true zero day (no run, no gym) through the 50–60 km weeks and
-  taper. Wks 1–3 keep the original layout as lived.
+  stays fresh for Sunday); Wk 11 uses a 45-min maintenance session
+  including core/calves (keep the hinge, lose the fatigue); from Wk 12
+  the whole split is rebuilt (below). Wks 1–3 keep the original layout
+  as lived.
 - **Upper B moves Fri 13:00 → Sat 10:00 (Jul 2026, from Wk 4):**
   Fridays proved the fragile day (German + evening plans + basketball), and
   Base Saturdays are clear (Sat km is mostly 0 until ~Wk 11). Friday
-  becomes gym-free; Wk 17 keeps Upper B after the parkrun; Wk 24
-  Saturday has no gym (half taper).
+  becomes gym-free; Wk 17 keeps the Saturday session after the parkrun;
+  Wk 24 Saturday has no gym (half taper).
+- **Tuesday's gym moves onto Wednesday (Sep 2026, from Wk 12):** push
+  now sits AFTER the quality run on the same day, so the only two hard
+  days in the week are the same two days. Tuesday becomes run-only and
+  takes back the 19:30–21:00 study block that Wednesday gave up — a
+  straight swap, net zero study hours.
 
 ## 6. Standard week templates (with times)
 
@@ -189,15 +195,18 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
 6.1 min/km (includes ~10 min easy warm-up guidance) · Sunday long ≈
 6.75 min/km. Add 15 min shower after every run.
 
-### Monday — legs (Base) then the zero day. No run in the standard week.
+### Monday — legs (Base) then the long gym day. No run in the standard week.
 - **Wks 1–3 (as lived):** work scaffold · 17:00 punchbag · evening as
   below. (Punchbag retired from Wk 4.)
 - **Wks 4–10 (work):** 06:00 Wake + Anki · 06:45 commute · 07:00–16:30
   Work · 16:30 commute · **17:10 Gym — Lower B** (moved off Saturday —
   day-after-long-run legs, RPE ≤ 7, never grind) · 18:05 shower + snack.
 - **Wk 11 (as lived):** Lower B + core/calves (maintenance) 17:10–17:55.
-- **Wks 12–16:** **Gym — Pull + legs** 16:30–17:20 after college.
-- **Wks 17–30:** **Gym — Pull** 16:30–17:15 — same session, leg work gone.
+- **Wks 12–30:** **Gym — Legs microdose · Pull · Core** 16:30–17:40 after
+  college, then 17:40–18:30 shower + feet up. It is the week's longest
+  session and its only lower-body work, and it is the same session for
+  nineteen weeks — what changes is the leg DOSE, by the three-tier
+  fatigue rule (below), never the date.
 - **Every era:** 18:30 dinner · 19:30–21:00 German active study ·
   21:00–22:00 German media · 22:00 read · 22:30 sleep. The STANDARD
   Monday carries no run; special weeks may override it, and race week
@@ -212,28 +221,36 @@ Run scheduling durations: easy pace ≈ 6.6 min/km · Wednesday quality ≈
   18:30 dinner · **19:30 Gym — Upper A** (bench/row/OHP/dips/curls;
   drive over, no run-commute — legs are for running) · 20:45 wind down ·
   22:00 read · 22:30 sleep.
-- **Wks 11+ :** unchanged — Upper A 19:30–20:45, then wind down.
+- **Wks 11 :** unchanged — Upper A 19:30–20:45, then wind down.
   Core + calves briefly sat here and was moved to Monday: it put calf
   loading ~20 h before the Wednesday tempo, the same mistake that had
   moved it off Saturday, aimed at a different session.
+- **Wks 12–30: NO GYM.** Push moved onto Wednesday, after the quality
+  run, so that the week's two hard days are the same two days. Tuesday
+  is a pure Z2 day — run, eat, recover — and takes back the
+  **19:30–21:00 Study** block Wednesday gave up.
 
-Upper A every era: **bench 4×6–8 (pull-aparts 4×15–20 in the rests) ·
-row 4×6–8 · OHP 3×8 · weighted dips 3×8–10 · EZ bar curls 3×10–12 ·
-face pulls 3×15** (see gym programming).
+Upper A (Wks 1–11 only): **bench 4×6–8 (pull-aparts 4×15–20 in the
+rests) · row 4×6–8 · OHP 3×8 · weighted dips 3×8–10 · EZ bar curls
+3×10–12 · face pulls 3×15** (see gym programming).
 Week 23 special: the Tue run's first 5 km are the **Pro 4 fit-check**
 (exchange window opens).
 
 ### Wednesday — quality run (the week's hard session)
 Work day scaffold as Monday until 16:30 · **17:10 Quality run** (session
 from §7, ~Wed km, Evo SL, warm up 10 min easy first) · quick shower ·
-18:30 dinner · **19:30–21:00 Study** (moved into the old gym slot — any subject) ·
-21:00 wind down · 22:00 read · 22:30 sleep.
+18:30 dinner ·
+- **Wks 1–11:** **19:30–21:00 Study** (it took the old gym slot — any subject).
+- **Wks 12–30:** **19:30–20:20 Gym — Push**, then wind down. The run
+  always takes priority and the two are separated by dinner. Study
+  swapped to Tuesday 19:30–21:00 — net zero study hours.
 
 ### Thursday — easy run + protected evening
 Work day scaffold · **17:10 Easy run (Thu km) + 4×20 s strides** ·
-Tue/Thu easy runs start with **60 s skipping, or 2×15 pogo hops**
-(tendon stiffness — running economy for free; rope preferred, the
-motor pattern is already owned from boxing 9–13) · shower + snack ·
+**No plyo dose (Sep 2026):** Friday basketball already supplies jumps,
+landings, cuts and accelerations, so extra impact at 40–65 km/week is
+cost without benefit. Strides stay — they are running, not plyometrics.
+Plyo returns post-race · shower + snack ·
 18:30 dinner · **19:00–21:00 protected free evening** (the release
 valve; flex ≤1h to study only on deadline weeks) · 21:00 deep reading
 anchor · 22:00 read · 22:30 sleep.
@@ -253,7 +270,8 @@ or calf work on any Saturday from Wk 4 onward**. The day before the long
 run stays fresh; that is the whole reason Lower B left Saturday, and
 the same reason Core + calves ended up on Monday (v4.1) rather than
 Tuesday — see the gym programming block below ·
-**10:00 Gym — Upper B** (from Wk 4; Fri 13:00 in Wks 1–3) · shower ·
+**10:00 Gym — Upper B** (Wks 4–11; Fri 13:00 in Wks 1–3) or
+**10:00 Gym — Light upper** 10:00–10:50 (Wk 12+) · shower ·
 12:00 lunch · 13:00–16:30 Study (any subject) · 16:30 free (social/hobbies) ·
 19:00 dinner (carb-forward from Wk 14 whenever tomorrow’s long run
 ≥ 22 km) · free evening · 22:00 read · 22:30 sleep.
@@ -269,19 +287,22 @@ Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
 ### Phase deltas summary
 - Fri German active end: 12:00 (Base) → 11:30 (Build) → 10:30 (Wk 23+ and Taper).
 - Mon gym: punchbag (Wks 1–3, retired) → Lower B 17:10 (Wks 4–10) →
-  Lower B maintenance (Wk 11) → **Pull + legs (Wks 12–16)** → **Pull,
-  no legs (Wks 17–30)**.
-- Sat gym: Lower B (Wks 1–3 as lived) → Upper B (Wks 4–11) → **Arms &
-  shoulders from Wk 12**. No lower-body or calf work on a Saturday ever
+  Lower B maintenance (Wk 11) → **Legs microdose · Pull · Core 16:30
+  (Wks 12–30)**, unchanged for nineteen weeks. The leg dose scales by
+  the fatigue rule, not by the calendar.
+- Sat gym: Lower B (Wks 1–3 as lived) → Upper B (Wks 4–11) → **Light
+  upper from Wk 12**. No lower-body or calf work on a Saturday ever
   again — Saturday is the long run's rest day, and from Wk 12 it is also
   the LIGHTEST of the three sessions.
-- Tue gym: Upper A (to Wk 11) → **Push from Wk 12**, and nothing else.
-  Tuesday already carries a run and 75 min of upper body; it does not
-  also get leg work the evening before the tempo.
+- Tue gym: Upper A (to Wk 11) → **none from Wk 12**. Tuesday is a pure
+  Z2 day; it takes back the Wednesday study block in exchange.
+- Wed gym: none (to Wk 11) → **Push 19:30 from Wk 12**, after the
+  quality run and after dinner. Putting the only pressing session on
+  the day that is already hard keeps the week's hard days to two.
 - **Wk 8 (TT week) carries no leg work and deloads both upper days.**
   The only race week in the block that still had a Monday Lower B, and
-  only by accident of the era boundaries — 17, 24 and 30 all sit in the
-  Wk 17+ era where Monday is already the zero day. The clash is with
+  only by accident of the era boundaries — 17, 24 and 30 were all in
+  the Wk 17+ era where Monday was then the zero day. The clash is with
   Tuesday's 4×400 rehearsal ~20 h later, not with Friday. Lower B is
   insurance rather than progression, so a week off costs nothing.
 - **Gym deload on cutback weeks from Wk 13** (wks 13, 21 — 17 and 25
@@ -303,39 +324,60 @@ fatigue near key runs. Compounds first, nothing to failure. The brief:
 close to pushing (rear delts + pull-aparts are shoulder insurance AND
 the 3D look).
 
-**THE SPLIT WAS REBUILT AT WK 12 (Sep 2026, athlete's call).** Lower B is
-gone as a session. Three sessions become **Pull / Push / Arms & shoulders**,
-and the only surviving leg work is supplemental — appended to Monday, the
-one day it is legal: day-after-long-run legs, two days clear of the
-Wednesday tempo, six clear of Sunday. Monday and Tuesday are consecutive,
-so they must not overlap; pull-then-push is the only clean pairing. Each
-movement pattern is still hit **twice** a week (press Tue + Sat, pull Mon +
-Sat), so a third session adds no new joint load. Weeks 1–11 keep Upper A /
-Upper B / Lower B exactly as lived.
+**THE SPLIT WAS REBUILT AT WK 12 (Sep 2026, athlete's call), and again in
+its final form later that month.** Lower B is gone as a session. Three
+sessions become **Monday long day / Wednesday push / Saturday light
+upper**, and the only leg work in the block is a supplemental microdose
+appended to Monday — the one day it is legal: day-after-long-run legs,
+two days clear of the Wednesday tempo, six clear of Sunday. **The two
+hard days of the week are Wednesday and Sunday, and the gym never adds
+a third**: push goes on Wednesday precisely because Wednesday is already
+hard. Weeks 1–11 keep Upper A / Upper B / Lower B exactly as lived.
 
-- **Pull + legs — Mon 16:30, Wks 12–16:** pull-ups 4×max (add weight past
-  10) · barbell row 4×6–8 · face pulls 3×15 · rear-delt flyes 3×12–15 ·
-  hammer curls 3×10–12 · **legs (~8 min):** RDL 2×8 light · straight-leg
-  calf raises 2×15 · bent-knee calf raises 2×12 (soleus) · plank 2×45s ·
-  dead bugs 2×10. RPE ≤ 7 on the leg work — insurance, not progression.
-- **Pull — Mon 16:30, Wks 17–30:** identical minus the RDL and calves.
-  They retire at Wk 17 on §6's own argument: calf work earns its place
-  while volume is LOW, building tolerance ahead of the load; once the
-  running supplies 50–60 km a week it is redundant and costs recovery.
-  Trunk work is not leg work and costs nothing, so plank and dead bugs stay.
-- **Push — Tue 19:30, Wk 12+:** bench 4×6–8 (band pull-aparts 4×15–20 in
-  the rests) · OHP 3×8 · weighted dips 3×8–10 · lateral raises 4×12–15 ·
-  rope pushdowns 3×10–12. This is the heavy day, and it sits on the one
-  evening where heavy pressing costs running nothing.
-- **Arms & shoulders — Sat 10:00, Wk 12+:** incline DB press 3×10–12 ·
-  chin-ups 3×max · lateral raises 4×12–15 · EZ bar curls 3×10–12 · rope
-  pushdowns 3×10–12 · hanging leg raises 3×10–15. **Deliberately the
-  lightest of the three.** Rule 10 only forbids leg work on a Saturday,
-  but Saturday belongs to Sunday, and 4×8–10 incline sixteen hours before
-  a 30 km run was never the spirit of it.
-- **Pulling and pushing come out at 27 sets each**, which keeps the §6
-  brief intact: functional fit legs, aesthetic fit upper body, with
-  pulling volume never behind pushing.
+**The evaluation criterion (athlete's own words):** do not judge this
+programme by bodybuilding standards alone. Judge it by whether it
+improves or preserves strength and physique **without compromising the
+quality of the running programme**. The running structure is fixed; the
+gym bends around it.
+
+- **Legs microdose · Pull · Core — Mon 16:30–17:40, Wks 12–30.**
+  Legs FIRST, then pull. Compounds at 2 RIR, never to failure.
+  · leg press 2×5–6 @ 2–3 RIR · seated leg curl 2×6–10 @ 2–3 RIR ·
+  straight-leg calf raises 2×8–12 · seated calf raises 2×10–15 (soleus)
+  · pull-ups 3×6–10 · chest-supported row 3×6–10 · rear-delt fly
+  3×12–20 · hammer curls 2×8–12 · ab wheel 2×8–12 · Pallof press
+  2×10–15/side.
+  **The three-tier leg rule — this is what scales the dose, not the
+  calendar:** normal week → 2 sets of each of the four leg movements ·
+  after a brutal Sunday (very long, MP-heavy, or legs still battered)
+  → halve it, 1 set of each · sharp or one-sided pain, joint or tendon
+  pain, or altered running mechanics → skip the lower-body work
+  entirely, upper only. One missed week of leg strength beats
+  compromising Wednesday, Friday, Sunday or your health. The success
+  metric is not "did I destroy my legs" but "did I expose them to
+  useful force without costing the week's running".
+- **NO RDLs, and no barbell hinge, for the whole block.** The eccentric
+  hamstring and erector cost is simply the wrong purchase at 40–65
+  km/week. The seated leg curl buys the same hamstring strength for a
+  fraction of the systemic price, and the leg press buys quadriceps
+  force with the spine unloaded and the stretch shortened. This is why
+  the leg dose can stay in all 30 weeks where Lower B could not.
+- **Push — Wed 19:30–20:20, Wk 12+:** bench 3×5–8 @ ~2 RIR · OHP
+  2×6–10 · weighted dips 2×8–10 · lateral raises 3×12–20 · rope
+  pushdowns 2×10–15. **After the quality run, and the run takes
+  priority** — separate them by a few hours where possible (dinner
+  does it). No lower body here, which is exactly why it costs the run
+  nothing.
+- **Light upper — Sat 10:00–10:50, Wk 12+:** incline DB press 3×8–12 @
+  2–3 RIR · chin-ups 2×6–10 · chest-supported row 2×10–12 · lateral
+  raises 3×12–20 · EZ bar curls 3×8–12 · rope pushdowns 3×10–15 ·
+  hanging leg raises 2×10–15. **No legs · no calves · no RDLs · no
+  squats · no heavy unsupported rows · no grinding · no failure · and
+  nothing extra because you feel good.** Productive upper body at very
+  low systemic cost — Saturday belongs to Sunday.
+- **Every pattern is still hit twice a week** (press Wed + Sat, pull Mon
+  + Sat), so nothing was lost by dropping to three sessions; the pulling
+  volume stays level with the pushing, which is the §6 brief.
 
 **As lived, Wks 1–11 (kept for the record, not prescribed forward):**
 - **Upper A — Tue 19:30:** bench 4×6–8 · band pull-aparts 4×15–20 · row
@@ -347,30 +389,28 @@ Upper B / Lower B exactly as lived.
   3×10–15.
 - **Lower B — Mon 17:10:** deadlift 3×5 @ RPE 7 · RDL 3×8 light ·
   step-ups 2×10/leg · calf raises 3×15 · plank 3×45s. Maintenance 2×5 in
-  Wk 11; replaced by Pull + legs at Wk 12.
+  Wk 11; replaced at Wk 12.
+- **Core + calves — folded into Monday's Lower B (maintenance), Wk 11:**
+  straight-leg calf raises 2×15 · bent-knee calf raises 2×12 (soleus —
+  the marathon muscle) · plank 3×45s · side plank 2×30s/side · dead bugs
+  3×10 · glute bridges 2×15, on top of the deadlift/RDL hinge. **Monday
+  was the right day and the only one:** day-after-long-run legs, two days
+  clear of the Wednesday tempo, six clear of the Sunday long run. It was
+  moved off Tuesday (v4.1) because it had been loading calves ~20 h
+  before the tempo. From Wk 12 the calf and trunk work is absorbed into
+  the Monday microdose and carries on all block.
 
-- **Plyo micro-dose:** Tue/Thu easy runs start with 60 s skipping — or
-  2×15 pogo hops (stiff ankles, quiet landings) — tendon stiffness and running economy
-  at near-zero fatigue cost. Thu still finishes with the 4×20 s strides.
+- **NO plyometrics for the whole block (Sep 2026, athlete's call).**
+  The Tue/Thu skipping-or-pogo dose is retired. Friday basketball
+  already supplies jumps, landings, cuts and accelerations twice over,
+  so extra impact at 40–65 km/week is cost without benefit. Strides
+  stay — they are running, not plyometrics. Plyo returns after the race
+  alongside jump work.
 - **Session rules:** ramp 2 warm-up sets on the first lift · top of the
-  rep range on every set → +2.5 kg next week (upper days only; Lower B
-  holds at RPE ≤ 7, it is insurance not progression) · rest 2–3 min on
-  compounds, 60–90 s on accessories.
-- **Core + calves — folded into Monday's Lower B (maintenance), Wks
-  11–16:** straight-leg calf raises 2×15 · bent-knee calf raises 2×12
-  (soleus — the marathon muscle) · plank 3×45s · side plank 2×30s/side ·
-  dead bugs 3×10 · glute bridges 2×15, on top of the deadlift/RDL hinge.
-  **Monday is the right day and the only one:** day-after-long-run legs
-  (the plan's own principle for stacking leg stress), two days clear of
-  the Wednesday tempo, six clear of the Sunday long run. It also removes
-  a duplication — Lower B maintenance already carried calf raises and a
-  plank, so Wks 11–16 had been loading calves on Monday *and* Tuesday.
-  **It retires with Lower B at Wk 17**, deliberately: by then the running
-  is 50–60 km/week and the calves are getting far more loading from that
-  than from 2×15 raises. Calf-specific work earns its place while volume
-  is LOW, building tolerance ahead of the load; once the load arrives it
-  is redundant and costs recovery. Monday stays the true zero day.
-- **Maintenance from Wk 23 (both upper days):** 2 hard sets per lift,
+  rep range on every set → +2.5 kg next week (upper work only; the leg
+  microdose holds at 2–3 RIR, it is exposure not progression) · rest 2–3
+  min on compounds, 60–90 s on accessories · nothing to failure.
+- **Maintenance from Wk 23 (all three sessions):** 2 hard sets per lift,
   3 reps in reserve (pull-aparts and rear delts stay — they cost
   nothing). Strength holds on far less than it was built on.
 - **Race week (30):** no gym at all.
@@ -467,11 +507,14 @@ usual. Week lands ~23 km on the cutback.
 strides. Fri: NO basketball ("fresh legs for the race"). Sat: light
 breakfast 90 min before · travel + 2 km warm-up + 3–4 strides · **09:00
 PARKRUN 5K all-out PB in the Evo SL** · even splits, don't sprint km 1 ·
-cool-down jog · Upper B 10:30 (legs are done — ride the PB high) ·
+cool-down jog · light upper 10:30 (legs are done — ride the PB high) ·
 normal study afternoon. Sun: easy 16 recovery.
 
-**Week 24 — tune-up (Sun 13 Dec).** Mon: zero day as normal, study eased.
-Tue: easy 6. Wed: easy 5 + strides. Thu: REST. Fri: NO basketball. Sat:
+**Week 24 — tune-up (Sun 13 Dec).** Mon: the Monday session as normal
+(maintenance dose by then — six days out, and the leg half is one set
+of each), study eased.
+Tue: easy 6. Wed: easy 5 + strides — push as normal, it is maintenance
+by Wk 23. Thu: REST. Fri: NO basketball. Sat:
 3 km shakeout · race prep (kit, pacing plan, early carb dinner). Sun:
 **TUNE-UP HALF ~21 km, raced honest** — this sets the marathon target
 (§10).
@@ -630,9 +673,14 @@ from mile 22.
    sagittal). It repeatedly reaches Z4/Z5, so it is also a genuine
    VO2max stimulus, and after the block — on ~3 easy runs a week — it
    becomes the *keystone* session that holds VO2max and therefore the
-   sub-21 5k / sub-45 10k targets. The **shooting hour** is active recovery (~350 kcal, about
-   a brisk walk). Flex the 1v1 half first: least marathon-specific,
-   highest ankle risk. Both OFF on weeks 17, 24, 26, 27, 30.
+   sub-21 5k / sub-45 10k targets. **It is also the block's plyometric
+   dose** — jumps, landings, cuts and accelerations, an hour a week —
+   which is why the Tue/Thu skipping-and-pogo micro-dose was retired
+   (Sep 2026) rather than kept alongside it: at 40–65 km/week that was
+   impact cost with nothing left to buy. The **shooting hour** is active
+   recovery (~350 kcal, about a brisk walk). Flex the 1v1 half first:
+   least marathon-specific, highest ankle risk. Both OFF on weeks 17,
+   24, 26, 27, 30.
 4. **Fuelling is a skill, and the interval IS the carb rate.** A 40 g gel
    is ~23 g carbs, so "every 35 min" literally means 39 g/h, every 30
    means 46, every 25 means 55. Guidance for efforts over 2.5 h is
@@ -672,30 +720,38 @@ from mile 22.
 
 ## 13. Sacrifice ledger (what changed vs life-planner v6.4, and why)
 
-- **Gym 5 → 2 sessions** (Upper A Tue 19:30 · Upper B Sat 10:00 —
-  Fri 13:00 until Wk 4, when fragile Fridays lost it).
-  Lower A cut immediately; Lower B light on Monday through Base,
-  maintenance Wks 11–16, retired from Wk 17 (deadlifts near long runs
-  don't mix). What survives of leg work is **Core + calves folded into
-  Monday's Lower B maintenance, Wks 11–16** (moved off Tuesday in v4.1,
-  Aug 2026: it had been loading calves ~20 h before the Wednesday tempo).
-  The soleus and trunk get their insurance dose two days clear of the
-  tempo and six clear of Sunday, and it retires with Lower B at Wk 17.
-  Sunday full-body replaced by the long run.
+- **Gym 5 → 2 sessions, then → 3** (Wks 1–11: Upper A Tue 19:30 · Upper
+  B Sat 10:00 — Fri 13:00 until Wk 4, when fragile Fridays lost it.
+  Wks 12–30: Monday long day 16:30 · Push Wed 19:30 · Light upper Sat
+  10:00). Lower A cut immediately; Lower B light on Monday through Base,
+  maintenance Wk 11, gone at Wk 12 (deadlifts near long runs don't mix).
+  **What survives of leg work is the Monday microdose — leg press, leg
+  curl and both calf raises, two sets each, scaled down or dropped
+  outright by the three-tier fatigue rule (§6).** It is two days clear
+  of the tempo and six clear of Sunday, and unlike Lower B it is light
+  enough to run all 30 weeks. Sunday full-body replaced by the long run.
   Running owns the legs; lean bulk pauses ~Oct–Jan, regained after the
   race.
+- **No barbell hinge and no plyometrics for the block.** RDLs and
+  deadlifts are the wrong eccentric purchase at 40–65 km/week; the
+  plyo micro-dose is redundant because Friday basketball already
+  supplies jumps, landings, cuts and accelerations. Both come back
+  after the race.
 - **Runs live in the evening gaps** (Tue 16:15, Wed/Thu 17:10) and
   weekend mornings — built around the 18:30 dinner anchor. No 05:30 alarms;
   sleep protected.
 - **Mon 25-min run → punchbag → retired (Jul 2026)**: Lower B took the
-  Monday slot through Base (day-after-long-run legs), holds on as a
-  maintenance hinge Wks 11–16, and from Wk 17 Monday is the week's zero
-  day — the only fully-off evening in peak Build.
+  Monday slot through Base (day-after-long-run legs), held on as a
+  maintenance hinge in Wk 11, and from Wk 12 Monday carries the week's
+  longest gym session — the college day ends at 15:00, so the evening
+  has the room the work days never did.
 - **German active trims by phase** (Fri block 4.5h → 4h → 2.5–3h from
   Wk 23). All passive German untouched (~11.75h: Anki, commute pods,
   work listening, media).
-- **Study moves rather than shrinks**: Wed evening study takes the old gym
-  slot (19:30–21:00). ~12h/wk in Build vs 13.5 planned; Thu free
+- **Study moves rather than shrinks**: Wed evening study took the old gym
+  slot (19:30–21:00) in Wks 1–11, then swapped to Tuesday 19:30–21:00
+  from Wk 12 when push moved onto Wednesday — same slot, same 90 min,
+  one day earlier. ~12h/wk in Build vs 13.5 planned; Thu free
   evening is the named flex on deadline weeks only.
 - **Protected and untouched**: Mon–Thu dinners · Friday evenings out · Thu
   free evening · all reading targets · daily Anki · 22:30 sleep.

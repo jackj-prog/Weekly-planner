@@ -71,109 +71,94 @@ const UPPER_B = {
   ],
 };
 
-/* ---- The split rebuilt from Wk 12 (Sep 2026, athlete's call) -------------
-   Monday's Lower B is gone. Three sessions become PULL / PUSH / shape, and
-   the only leg work left is supplemental, appended to Monday — the one day
-   it is legal: day-after-long-run legs, two days clear of the Wednesday
-   tempo, six clear of Sunday. Not Saturday (rule 10), and not Tuesday,
-   because v4.1 moved calf work off Tuesday precisely for loading calves
-   ~20 h before the tempo.
-   Monday and Tuesday are consecutive, so they must not overlap: pull then
-   push is the only clean pairing on back-to-back days. Each movement
-   pattern is still hit TWICE a week (press Tue + Sat, pull Mon + Sat), so
-   a third session adds no new joint load.
-   Saturday is deliberately the lightest of the three. Rule 10 only forbids
-   leg work there, but Saturday belongs to Sunday, and 4 × 8–10 incline
-   sixteen hours before a 30 km run was never the spirit of it.
+/* ---- The split rebuilt from Wk 12 (Sep 2026, athlete's programme) --------
+   A marathon programme first and a gym programme second. Three sessions:
+   Monday long (legs microdose + pull + core), Wednesday push AFTER the
+   quality run, Saturday light upper.
+
+   Monday takes the leg work because every alternative is worse: Tuesday is
+   too close to Wednesday quality, Thursday sits directly before basketball,
+   Friday IS the basketball load, Saturday precedes the long run, and Sunday
+   is the long run. Monday's only flaw — it follows the long run — is handled
+   by keeping the dose tiny and by legFatigue below.
+
+   Push moved OFF Tuesday to polarise the week: Tue easy / Wed hard / Thu
+   easy, rather than moderate stress smeared across all three. Lifting after
+   the quality run costs the run little because the run goes first and none
+   of it is lower body. Study and gym simply swapped evenings.
+
+   RDLs are deliberately excluded for the block — eccentric hamstring and
+   erector fatigue is the wrong cost to pay at 40–65 km/week. A seated leg
+   curl buys the same hamstring strength far cheaper. They return after the
+   race. Plyometrics are excluded for the same class of reason: Friday
+   basketball already supplies jumps, landings, cuts and accelerations.
+
    UPPER_A / UPPER_B / CORE_CALVES above are left untouched: weeks 1–11 are
    as lived, and rewriting them would misreport sessions already done. */
-const PULL = {
-  title: 'Gym — Pull + legs', cat: 'gym', doable: true, gym: 'upper',
-  detail: 'Day-after-long-run legs, two days clear of Wednesday · add weight to pull-ups past 10 reps · the leg work is insurance, not progression — RPE ≤ 7, never grind',
+const MON_LONG = {
+  title: 'Gym — Legs microdose · Pull · Core', cat: 'gym', doable: true, gym: 'upper',
+  detail: 'Legs FIRST, then pull · compounds at 2 RIR, never to failure · the leg dose is the smallest useful one: high force, no DOMS' +
+    ' · NORMAL WEEK: 2 leg press, 2 leg curl, 2 straight-leg calf, 2 seated calf' +
+    ' · AFTER A BRUTAL SUNDAY (very long, MP-heavy, or legs still battered): halve it — 1 set of each' +
+    ' · SHARP OR ONE-SIDED PAIN, joint or tendon pain, or altered running mechanics: skip the lower-body work entirely, upper only. One missed week of leg strength beats compromising Wednesday, Friday, Sunday or your health' +
+    ' · the success metric is not "did I destroy my legs" but "did I expose them to useful force without costing the week\'s running"',
   plan: [
-    { ex: 'Pull-ups',                 sets: '4 × max' },
-    { ex: 'Barbell row',              sets: '4 × 6–8' },
-    { ex: 'Face pulls',               sets: '3 × 15' },
-    { ex: 'Rear-delt flyes',          sets: '3 × 12–15' },
-    { ex: 'Hammer curls',             sets: '3 × 10–12' },
-    { ex: 'Romanian deadlift',        sets: '2 × 8 light' },
-    { ex: 'Straight-leg calf raises', sets: '2 × 15' },
-    { ex: 'Bent-knee calf raises',    sets: '2 × 12 — soleus, the marathon muscle' },
-    { ex: 'Plank',                    sets: '2 × 45s' },
-    { ex: 'Dead bugs',                sets: '2 × 10' },
+    { ex: 'Leg press',                sets: '2 × 5–6 @ 2–3 RIR' },
+    { ex: 'Seated leg curl',          sets: '2 × 6–10 @ 2–3 RIR' },
+    { ex: 'Straight-leg calf raises', sets: '2 × 8–12 @ ~2 RIR' },
+    { ex: 'Seated calf raises',       sets: '2 × 10–15 @ ~2 RIR — soleus' },
+    { ex: 'Pull-ups',                 sets: '3 × 6–10 @ ~2 RIR' },
+    { ex: 'Chest-supported row',      sets: '3 × 6–10 @ ~2 RIR' },
+    { ex: 'Rear-delt fly',            sets: '3 × 12–20 @ 1–2 RIR' },
+    { ex: 'Hammer curls',             sets: '2 × 8–12 @ 1–2 RIR' },
+    { ex: 'Ab wheel',                 sets: '2 × 8–12' },
+    { ex: 'Pallof press',             sets: '2 × 10–15/side' },
   ],
-  maintDetail: '2 hard sets each, 3 reps in reserve — hold the back through the taper',
+  maintDetail: '2 hard sets each, 3 reps in reserve — the race is the priority now',
   maintPlan: [
-    { ex: 'Pull-ups',        sets: '2 × max−3' },
-    { ex: 'Barbell row',     sets: '2 × 8' },
-    { ex: 'Face pulls',      sets: '2 × 15' },
-    { ex: 'Rear-delt flyes', sets: '2 × 12' },
-    { ex: 'Hammer curls',    sets: '2 × 10' },
+    { ex: 'Leg press',           sets: '1 × 5 @ 3 RIR' },
+    { ex: 'Seated leg curl',     sets: '1 × 8 @ 3 RIR' },
+    { ex: 'Pull-ups',            sets: '2 × 6' },
+    { ex: 'Chest-supported row', sets: '2 × 8' },
+    { ex: 'Rear-delt fly',       sets: '2 × 15' },
   ],
 };
 
-/* Wk 17+: the legs come off, the pull stays. §6's argument holds — calf
-   work earns its place while volume is LOW, building tolerance ahead of the
-   load; once 50–60 km a week supplies that load it is redundant and costs
-   recovery. Trunk work is not leg work and costs nothing, so it stays. */
-const PULL_LEAN = {
-  title: 'Gym — Pull', cat: 'gym', doable: true, gym: 'upper',
-  detail: 'Legs retired at Wk 17 — the running now supplies far more calf loading than 2 × 15 raises ever did · add weight to pull-ups past 10 reps',
-  plan: [
-    { ex: 'Pull-ups',        sets: '4 × max' },
-    { ex: 'Barbell row',     sets: '4 × 6–8' },
-    { ex: 'Face pulls',      sets: '3 × 15' },
-    { ex: 'Rear-delt flyes', sets: '3 × 12–15' },
-    { ex: 'Hammer curls',    sets: '3 × 10–12' },
-    { ex: 'Plank',           sets: '2 × 45s' },
-    { ex: 'Dead bugs',       sets: '2 × 10' },
-  ],
-  maintDetail: '2 hard sets each, 3 reps in reserve — hold the back through the taper',
-  maintPlan: [
-    { ex: 'Pull-ups',        sets: '2 × max−3' },
-    { ex: 'Barbell row',     sets: '2 × 8' },
-    { ex: 'Face pulls',      sets: '2 × 15' },
-    { ex: 'Rear-delt flyes', sets: '2 × 12' },
-    { ex: 'Hammer curls',    sets: '2 × 10' },
-  ],
-};
-
-const PUSH = {
+const WED_PUSH = {
   title: 'Gym — Push', cat: 'gym', doable: true, gym: 'upper',
-  detail: 'The heavy day, and it sits where it costs running nothing · ramp 2 warm-up sets on bench · top of the range → +2.5 kg next week · pull-aparts ride the bench rests · drive over, no run-commute — legs are for running',
+  detail: 'AFTER the quality run and the run takes priority — separate them by a few hours if you can · 2 RIR, never to failure · no lower body here, which is exactly why it does not cost the run',
   plan: [
-    { ex: 'Bench press',      sets: '4 × 6–8' },
-    { ex: 'Band pull-aparts', sets: '4 × 15–20' },
-    { ex: 'Overhead press',   sets: '3 × 8' },
-    { ex: 'Weighted dips',    sets: '3 × 8–10' },
-    { ex: 'Lateral raises',   sets: '4 × 12–15' },
-    { ex: 'Rope pushdowns',   sets: '3 × 10–12' },
+    { ex: 'Bench press',    sets: '3 × 5–8 @ ~2 RIR' },
+    { ex: 'Overhead press', sets: '2 × 6–10 @ ~2 RIR' },
+    { ex: 'Weighted dips',  sets: '2 × 8–10 @ ~2 RIR' },
+    { ex: 'Lateral raises', sets: '3 × 12–20 @ 1–2 RIR' },
+    { ex: 'Rope pushdowns', sets: '2 × 10–15 @ 1–2 RIR' },
   ],
   maintDetail: '2 hard sets each, 3 reps in reserve — keep the look through the taper',
   maintPlan: [
-    { ex: 'Bench press',      sets: '2 × 6–8' },
-    { ex: 'Band pull-aparts', sets: '2 × 15' },
-    { ex: 'Overhead press',   sets: '2 × 8' },
-    { ex: 'Weighted dips',    sets: '2 × 8' },
+    { ex: 'Bench press',    sets: '2 × 5–8' },
+    { ex: 'Overhead press', sets: '2 × 8' },
+    { ex: 'Lateral raises', sets: '2 × 15' },
   ],
 };
 
-const SHAPE = {
-  title: 'Gym — Arms & shoulders', cat: 'gym', doable: true, gym: 'upper',
-  detail: 'Deliberately the lightest of the three — Saturday belongs to Sunday (rule 10). No heavy compounds, no legs, no calves · superset curls + pushdowns to hold the slot',
+const SAT_LIGHT = {
+  title: 'Gym — Light upper', cat: 'gym', doable: true, gym: 'upper',
+  detail: 'No legs · no calves · no RDLs · no squats · no heavy unsupported rows · no grinding · no failure · and nothing extra because you feel good. Productive upper body at very low systemic cost — Sunday belongs to the long run',
   plan: [
-    { ex: 'Incline DB press',   sets: '3 × 10–12' },
-    { ex: 'Chin-ups',           sets: '3 × max' },
-    { ex: 'Lateral raises',     sets: '4 × 12–15' },
-    { ex: 'EZ bar curls',       sets: '3 × 10–12' },
-    { ex: 'Rope pushdowns',     sets: '3 × 10–12' },
-    { ex: 'Hanging leg raises', sets: '3 × 10–15' },
+    { ex: 'Incline DB press',    sets: '3 × 8–12 @ 2–3 RIR' },
+    { ex: 'Chin-ups',            sets: '2 × 6–10 @ 2–3 RIR' },
+    { ex: 'Chest-supported row', sets: '2 × 10–12 @ 2–3 RIR' },
+    { ex: 'Lateral raises',      sets: '3 × 12–20 @ 1–2 RIR' },
+    { ex: 'EZ bar curls',        sets: '3 × 8–12 @ 1–2 RIR' },
+    { ex: 'Rope pushdowns',      sets: '3 × 10–15 @ 1–2 RIR' },
+    { ex: 'Hanging leg raises',  sets: '2 × 10–15' },
   ],
   maintDetail: 'In and out — the race is the priority, the look keeps ticking',
   maintPlan: [
     { ex: 'Incline DB press', sets: '2 × 10' },
-    { ex: 'Chin-ups',         sets: '2 × max−3' },
-    { ex: 'Lateral raises',   sets: '2 × 12' },
+    { ex: 'Chin-ups',         sets: '2 × 6' },
+    { ex: 'Lateral raises',   sets: '2 × 15' },
     { ex: 'Arms superset',    sets: '1 × 12 + 12' },
   ],
 };
@@ -636,8 +621,12 @@ const PLAN = {
      owned, so the quality is higher and the adherence is better. 60 s of
      rope is roughly the 2×15 dose. */
   runCues: {
-    tue: 'start with 60 s skipping — or 2×15 pogo hops',
-    thu: 'start with 60 s skipping — or 2×15 pogo hops · finish with 4×20 s relaxed strides',
+    /* Plyo micro-dose removed for the block (Sep 2026): Friday basketball
+       already supplies jumps, landings, cuts and accelerations, and extra
+       impact at 40–65 km/week is cost without benefit. Strides stay — they
+       are running, not plyometrics. Plyo returns post-race with jump work. */
+    tue: null,
+    thu: 'finish with 4×20 s relaxed strides',
   },
 
   /* Dark-runs rule (§12 rule 8): evening runs need kit once the light goes.
@@ -1014,8 +1003,8 @@ const PLAN = {
           { t: '07:45', end: '08:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
           { t: '08:00', end: '15:00', title: 'College', detail: 'College day (Mondays from 14 Sep) · free periods = study', cat: 'study', quiet: true },
           { t: '15:00', end: '16:00', title: 'Commute + snack', detail: 'Home ~16:00', cat: 'work', quiet: true },
-          Object.assign({ t: '16:30', end: '17:20' }, PULL),
-          { t: '17:20', end: '18:30', title: 'Shower · feet up', cat: 'routine', quiet: true },
+          Object.assign({ t: '16:30', end: '17:40' }, MON_LONG),
+          { t: '17:40', end: '18:30', title: 'Shower · feet up', cat: 'routine', quiet: true },
           { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Fixed anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
@@ -1031,8 +1020,22 @@ const PLAN = {
           { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
           { t: '17:10', run: 'tue' },
           { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
-          Object.assign({ t: '19:30', end: '20:45' }, PUSH),
-          { t: '20:45', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
+          { t: '19:30', end: '21:00', title: 'Study', detail: 'Swapped with Wednesday when push moved onto the quality day — any subject, interchangeable', cat: 'study', doable: true },
+          { t: '21:00', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
+          { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+          { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+        ],
+        2: [
+          { t: '06:00', end: '06:45', title: 'Wake · Anki · breakfast', detail: '15 min Anki while eating', cat: 'routine', quiet: true },
+          { t: '06:45', end: '07:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
+          { t: '07:00', end: '12:00', title: 'Work', detail: '~2h passive German listening', cat: 'work', quiet: true },
+          { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+          { t: '13:00', end: '16:30', title: 'Work', cat: 'work', quiet: true },
+          { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
+          { t: '17:10', run: 'wed' },
+          { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
+          Object.assign({ t: '19:30', end: '20:20' }, WED_PUSH),
+          { t: '20:20', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
           { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
           { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
         ],
@@ -1040,7 +1043,7 @@ const PLAN = {
           { t: '07:30', end: '08:00', title: 'Wake · Anki', cat: 'routine', quiet: true },
           { t: '08:00', end: '08:30', title: 'Breakfast', cat: 'meal', quiet: true },
           { t: '08:30', run: 'sat' },
-          Object.assign({ t: '10:00', end: '10:50' }, SHAPE),
+          Object.assign({ t: '10:00', end: '10:50' }, SAT_LIGHT),
           { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
           { t: '13:00', end: '16:30', title: 'Study', cat: 'study', doable: true },
           { t: '16:30', end: '19:00', title: 'Free — social / hobbies', cat: 'free', quiet: true },
@@ -1059,8 +1062,8 @@ const PLAN = {
           { t: '07:45', end: '08:00', title: 'Commute', detail: 'German podcasts', cat: 'work', quiet: true },
           { t: '08:00', end: '15:00', title: 'College', detail: 'College day (Mondays from 14 Sep) · free periods = study', cat: 'study', quiet: true },
           { t: '15:00', end: '16:00', title: 'Commute + snack', detail: 'Home ~16:00', cat: 'work', quiet: true },
-          Object.assign({ t: '16:30', end: '17:15' }, PULL_LEAN),
-          { t: '17:15', end: '18:30', title: 'Shower · feet up', cat: 'routine', quiet: true },
+          Object.assign({ t: '16:30', end: '17:40' }, MON_LONG),
+          { t: '17:40', end: '18:30', title: 'Shower · feet up', cat: 'routine', quiet: true },
           { t: '18:30', end: '19:30', title: 'Dinner', detail: 'Fixed anchor — never scheduled over', cat: 'meal', quiet: true },
           { t: '19:30', end: '21:00', title: 'German active study', detail: 'Grammar / writing', cat: 'german', doable: true },
           { t: '21:00', end: '22:00', title: 'German media', detail: 'TV / film in German (passive)', cat: 'german', quiet: true },
@@ -1091,10 +1094,10 @@ const PLAN = {
         label: 'Cutback · 2-MILE TT',
         days: {
           /* Monday: Lower B dropped for the week. Every OTHER race week in
-             the block already carries no leg work — but by accident, not
-             decision: 17, 24 and 30 all sit in the Wk 17+ era where Monday
-             is already the zero day. Wk 8 is the only race week that still
-             had a Lower B, purely because it falls in the Wks 4–10 era.
+             the block carries only the Monday microdose, which the
+             three-tier fatigue rule already scales (and Wks 26, 27 and 30
+             drop entirely). Wk 8 is the one race week that still had a
+             full Lower B, purely because it falls in the Wks 4–10 era.
              The clash is with TUESDAY, not Friday: deadlifts, step-ups and
              calf raises land ~20 h before the 4 × 400 rehearsal, which is
              the only speed work since June and the session that actually
@@ -1179,7 +1182,7 @@ const PLAN = {
             { t: '09:00', end: '09:25', title: 'PARKRUN 5K — all-out PB', detail: 'Evo SL · even splits, don’t sprint km 1', cat: 'run', doable: true, runKm: 5, shoe: 'Evo SL', estPace: '4:10' },
             { t: '09:25', end: '09:45', title: 'Cool-down jog', cat: 'run', quiet: true },
             { t: '10:00', end: '10:30', title: 'Shower + refuel', cat: 'routine', quiet: true },
-            Object.assign({ t: '10:30', end: '11:20' }, SHAPE),
+            Object.assign({ t: '10:30', end: '11:20' }, SAT_LIGHT),
             { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
             { t: '13:00', end: '16:30', title: 'Study', detail: 'Normal study afternoon — any subject, the slot is the commitment', cat: 'study', doable: true },
             { t: '16:30', end: '19:00', title: 'Free — social / hobbies', cat: 'free', quiet: true },
