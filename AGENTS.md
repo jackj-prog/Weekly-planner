@@ -499,3 +499,18 @@ the already-authored pain/altered-mechanics rule to Monday's maintenance
 detail (the maintDetail swap had hidden it). Maintenance copy now accurately
 says one set of leg press/curl and two sets of pulling work. Focused guards
 cover weeks 23, 24 and 28. Fuelling is still pending, not silently approved.
+
+## September audit: Reference disclosure and time alignment — v4.51
+
+Reference sections are native, labelled disclosures; the six shortcuts open
+and focus the chosen section. Moving existing nodes preserves editor/backup
+handlers, and open state survives app rerenders without new storage keys.
+The capture tool opens the target and any enclosing disclosures for section
+captures. Now/Next clock and titles align at the top when wrapping. The week
+note gets an explicit Week label below the chips, rather than orphaned text.
+No prescription or primary-nav ordering changed.
+The no-HR hero shortcut opens the zone editor's section, and the rest-day
+logger now has a readable full-width action. Browser checks exercised all six
+shortcuts, focus/keyboard operation, HR edit/rerender, recalibration and backup
+export/restore. Collapsed Reference is 1,588px at the 390px viewport. Captures
+were inspected; App and cache both show 4.51.0. All 16,068 checks pass.

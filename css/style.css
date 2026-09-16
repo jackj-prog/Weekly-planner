@@ -1329,6 +1329,8 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 /* Run entry: measured values, thumb-sized correction, language in Inter. */
 .runlogger { margin: 16px 0; }
 .hero .runlogger { margin-bottom: 0; }
+.resthero + .runlogger > .h-log { display: block; width: 100%; min-height: 72px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--text); text-align: left; font: 600 16px/1.5 var(--body); }
+.resthero + .runlogger > .h-log small { display: block; margin-top: 4px; color: var(--t2); font: 400 14px/1.5 var(--body); }
 .log-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .log-heading h3 { font: 800 22px/1.2 var(--display); margin: 0; }
 .runlogger .h-log.form { display: block; text-align: left; }
@@ -1352,3 +1354,19 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 
 .log-file-label { display: grid; gap: 10px; margin: 12px 0; }
 .log-file { max-width: 100%; min-height: 48px; font: 400 16px var(--body); }
+
+/* A field guide: scan section titles, reveal only the material you need. */
+.ref-fold { border: 1px solid var(--line); border-radius: 14px; margin: 12px 0; background: var(--surface); scroll-margin-top: 84px; }
+.ref-fold > summary { display: flex; align-items: center; justify-content: space-between; min-height: 64px; gap: 16px; padding: 16px; cursor: pointer; list-style: none; }
+.ref-fold > summary::-webkit-details-marker { display: none; }
+.ref-fold > summary h2 { margin: 0; font: 800 18px/1.3 var(--display); color: var(--text); }
+.ref-fold > summary h2::after { display: none; }
+.ref-fold > summary > span { font: 400 24px/1 var(--body); color: var(--t2); }
+.ref-fold[open] > summary { border-bottom: 1px solid var(--line); }
+.ref-fold[open] > summary > span { transform: rotate(45deg); }
+.ref-fold > .ref { margin: 0; padding: 16px; }
+.ref-fold .ref-card { margin-top: 0; }
+.nn-current { align-items: flex-start; }
+.nownext .nn-next { align-items: flex-start; }
+.day-label { display: flex; align-items: baseline; gap: 8px; margin: 8px 0 0; color: var(--t2); font: 400 12px/1.5 var(--body); }
+.day-label > span { font: 400 11px var(--mono); color: var(--t3); flex-shrink: 0; }

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.50.0';
+  const APP_VERSION = '4.51.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -297,8 +297,7 @@
       '<h1>' + esc(fmtDate(iso)) + '</h1>' +
       '<button class="nav" data-d="1" aria-label="Next day">›</button></div>' +
       '<div class="sub"><span>' + weekBit + '</span>' + chips.join('') +
-      (day.label ? '<span>' + esc(day.label) + '</span>' : '') +
-      '</div></div>'
+      '</div>' + (day.label ? '<p class="day-label"><span>Week ' + day.week + '</span> ' + esc(day.label) + '</p>' : '') + '</div>'
     );
     head.querySelectorAll('.nav').forEach((btn) => btn.addEventListener('click', () => {
       state.dateISO = DB.addDays(iso, Number(btn.getAttribute('data-d')));
@@ -649,7 +648,7 @@
     const found = p && p.values;
     wrap.innerHTML = '<div class="h-log form"><div class="log-heading"><h3>Log your run</h3><button class="rl-x" aria-label="Cancel run edit">✕</button></div>' +
       '<p class="log-note">' + esc(d.note) + '</p>' +
-      '<details class="log-import"' + (d.paste || p ? ' open' : '') + '><summary>Paste run text</summary>' +
+      '<details class="log-import"' + (d.paste || p ? ' open' : '') + '><summary>Paste or import a run</summary>' +
       '<label for="run-paste">Distance, moving time, average HR and conditions</label>' +
       '<textarea id="run-paste" rows="3" placeholder="distance=8km moving=48:00 HR_avg=140">' + esc(d.paste) + '</textarea>' +
       '<button class="log-parse">Preview values</button>' +
@@ -829,6 +828,7 @@
       state.view = 'ref';
       window.scrollTo(0, 0);
       render();
+      view.querySelector('[data-ref-target="ref-zones"]').click();
     });
     hero.appendChild(buildRunLogger(day, iso));
     return hero;
@@ -1534,7 +1534,10 @@
       const button = event.target.closest('[data-ref-target]');
       if (!button) return;
       const target = document.getElementById(button.dataset.refTarget);
-      if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'start' }); }
+      if (target) {
+        if (target.tagName === 'DETAILS') target.open = true;
+        (target.querySelector('summary') || target).focus({ preventScroll: true }); target.scrollIntoView({ block: 'start' });
+      }
     });
     view.appendChild(index);
     view.appendChild(el(
@@ -1596,6 +1599,18 @@
       const back = el('<button class="ref-back">↑ Reference sections</button>');
       back.addEventListener('click', () => { index.scrollIntoView({ block: 'start' }); index.querySelector('button').focus({ preventScroll: true }); });
       target.appendChild(back);
+    });
+    // Move live nodes into native disclosures so their existing controls keep
+    // their event handlers. Every section remains reachable from the index.
+    Array.from(view.children).filter(node => node.matches('div.ref:not(.ref-heading)')).forEach(node => {
+      const heading = node.querySelector('h2'); if (!heading) return;
+      const title = heading.textContent;
+      const id = node.id || 'ref-' + title.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+      const fold = el('<details class="ref-fold" id="' + esc(id) + '" data-disclosure="' + esc(id) +
+        '"><summary><h2>' + esc(title) + '</h2><span aria-hidden="true">+</span></summary></details>');
+      fold.open = openDetails.has(id);
+      node.removeAttribute('id'); node.removeAttribute('tabindex'); heading.remove();
+      node.before(fold); fold.appendChild(node);
     });
   }
 

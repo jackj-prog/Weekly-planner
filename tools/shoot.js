@@ -213,6 +213,12 @@ function serve() {
   await page.evaluate(() => document.fonts.ready);
   if (args.scrollto) {
     const target = page.locator(args.scrollto).first();
+    await target.waitFor({ state: 'attached', timeout: 5000 });
+    await target.evaluate(node => {
+      for (let current = node; current; current = current.parentElement) {
+        if (current.tagName === 'DETAILS') current.open = true;
+      }
+    });
     await target.waitFor({ state: 'visible', timeout: 5000 });
     await target.evaluate((node) => {
       const header = document.querySelector('.topbar');
