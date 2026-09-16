@@ -1349,3 +1349,6 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .log-error:empty { display: none; }
 .log-error { color: var(--accent); }
 .log-delete { margin-top: 16px; }
+
+.log-file-label { display: grid; gap: 10px; margin: 12px 0; }
+.log-file { max-width: 100%; min-height: 48px; font: 400 16px var(--body); }

@@ -467,3 +467,25 @@ never labelled behind. Weekly comparisons describe recorded evidence, with
 planned-distance estimates disclosed. Average-HR grouping is labelled as an
 estimate until stream import supplies measured intervals. Unclassified logs
 no longer receive an EF best/comparison against other unclassified effort.
+
+## September audit: activity files — v4.49
+
+GPX/TCX are parsed locally with DOMParser into the existing preview/correction
+flow. File dates must match the selected day. Only aggregate HR-duration
+histograms and equal-distance-half summaries persist in runlog entries; no
+XML or route coordinates are retained. Existing backups include these fields.
+Recorded time includes stops within tracks, and GPS distance is an estimate.
+Gaps, separate segments and incomplete HR suppress decoupling; valid samples
+still contribute to a separate measured-zone bar. Legacy average-HR estimates
+remain separate. The existing decoupling verdict is restricted to long runs.
+Editing distance, time, pace or average HR clears incompatible stream analysis.
+Synthetic math tests cover unequal sampling/halves, missing HR, gaps, resets
+and GPS distance; browser checks cover namespaced GPX/TCX, malformed XML,
+preview/save/reload, zones, offline module loading and edit invalidation.
+All 16,062 plan checks pass; captures show matching app/cache 4.49.0.
+
+Reviewed Claude's 4.47–4.48 gym changes: ordinary weekdays match the new split
+and the expanded suite passes. Maintenance and holiday exceptions conflict
+with broad specification claims. Owner delegated the decision: preserve the
+explicit reduced templates, reconcile docs, and retain the existing pain rule
+in maintenance. Fuelling remains pending under the earlier explicit decision.

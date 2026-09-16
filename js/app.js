@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.48.0';
+  const APP_VERSION = '4.49.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -552,6 +552,13 @@
       (e.km && e.km !== plannedKm ? ' · ' + e.km + ' km' : '');
   }
 
+  function streamReadingHTML(stream) {
+    const split = stream.splitSec;
+    return '<details class="record-method"><summary>Imported track analysis</summary><p>' + esc(stream.source) +
+      ' · ' + Math.round(stream.coveredSec/60) + ' min with HR samples.</p>' +
+      (Number.isFinite(split) ? '<p>Equal-distance halves: second half ' + (Math.abs(split)<1 ? 'matched the first.' : recordTime(Math.abs(split)) + (split<0 ? ' faster (negative split).' : ' slower.')) + '</p>' : '<p>Half-run comparison unavailable for this track.</p>') +
+      '<p>Track time includes recorded stops. GPS, terrain and missing samples affect comparisons. Only summaries are saved; the route stays out of storage.</p></details>';
+  }
   function buildRunLogger(day, iso) {
     const plannedKm = day.run ? day.run.run.km : 0;
     const saved = getRunLogEntry(iso);
@@ -576,9 +583,9 @@
           ' g/h</b> carbs · ' + cr.gels + ' of ' + cr.want + ' gels for ' +
           Math.round(e.sec / 60) + ' min · target ' + cr.target.toFixed(0) + ' g/h</div>';
       }
-      const dec = DB.decoupling(e.km || km, e.sec, e.hr, e.halfPaceSec, e.hr2);
+      const dec = e.stream ? (Number.isFinite(e.stream.decPct) ? {pct:e.stream.decPct} : null) : DB.decoupling(e.km || km, e.sec, e.hr, e.halfPaceSec, e.hr2);
       const dv = dec ? DB.decoupleVerdict(dec.pct) : null;
-      if (dv) {
+      if (dv && (e.cls || (r ? DB.runClass(r) : 'unclassified')) === 'long') {
         logHTML += '<div class="h-dc ' + dv.band + '"><b>' + dec.pct.toFixed(1) +
           '%</b> decoupling · ' + esc(dv.text) + '</div>';
       }
@@ -608,6 +615,7 @@
           '<button class="h-share" aria-label="Share run card">⤴</button></div>';
       }
 
+        if (e.stream) logHTML += streamReadingHTML(e.stream);
         wrap.insertAdjacentHTML('beforeend', logHTML);
         const share = wrap.querySelector('.h-share');
         if (share && day.run) share.addEventListener('click', () => shareRunCard(day, iso));
@@ -622,7 +630,7 @@
           km, sec, paceSec: sec && km ? sec / km : null, hr: e.hr || null,
           temp: e.temp == null ? null : e.temp, gels: e.gels == null ? null : e.gels,
           halfPaceSec: e.halfPaceSec || null, hr2: e.hr2 || null,
-          cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'),
+          cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'), stream: e.stream || null,
           paste: '', preview: null, note: saved ? 'Saved values. Change only what needs correcting.' :
             plannedKm ? 'Distance and time start from the plan. Replace them with your actual run.' : 'Enter actual distance and time. HR and conditions are optional.',
         };
@@ -645,13 +653,14 @@
       '<label for="run-paste">Distance, moving time, average HR and conditions</label>' +
       '<textarea id="run-paste" rows="3" placeholder="distance=8km moving=48:00 HR_avg=140">' + esc(d.paste) + '</textarea>' +
       '<button class="log-parse">Preview values</button>' +
-      (p ? '<div class="log-preview" role="status"><b>Found</b><p>' +
+      '<label class="log-file-label">Or import a GPX / TCX activity<input class="log-file" type="file" accept=".gpx,.tcx,application/gpx+xml,application/xml,text/xml"></label>' +
+      (p ? '<div class="log-preview" role="status"><b>Found' + (p.date ? ' · ' + esc(p.date) : '') + '</b><p>' +
         [found.km ? Number(found.km.toFixed(3)) + ' km' : 'No distance', found.sec ? clock(found.sec) : 'No time',
           found.hr ? found.hr + ' bpm' : 'No HR', found.temp != null ? found.temp + '°C' : 'No temperature'].map(esc).join(' · ') +
         '</p>' + p.warnings.map(w => '<p>' + esc(w) + '</p>').join('') +
-        (Object.keys(found).length ? '<button class="log-use">Use these values</button>' : '') + '</div>' : '') + '</details>' +
+        (p.date && p.date !== iso ? '<p>Open ' + esc(p.date) + ' before importing this activity. No values have been saved.</p>' : Object.keys(found).length ? '<button class="log-use">Use these values</button>' : '') + '</div>' : '') + '</details>' +
       field('km', 'Distance', d.km, 'decimal', 'km', true) +
-      field('sec', 'Moving time', clock(d.sec), 'text', 'h:mm:ss', false) +
+      field('sec', d.stream ? 'Track time' : 'Moving time', clock(d.sec), 'text', 'h:mm:ss', false) +
       field('paceSec', 'Pace', clock(d.paceSec), 'text', '/km', true) +
       field('hr', 'Average HR', d.hr, 'numeric', 'bpm', true) +
       '<label class="log-field">Run type<select class="log-class" aria-label="Run type">' + classes.map(c =>
@@ -659,8 +668,9 @@
       '<details class="log-extra"' + (d.extraOpen ? ' open' : '') + '><summary>Conditions &amp; optional measurements</summary>' +
       field('temp', 'Feels like', d.temp, 'decimal', '°C', true) + field('gels', 'Gels taken', d.gels, 'numeric', 'gels', true) +
       '<p class="log-note">For a decoupling estimate, enter measured first-half pace and second-half HR. Leave blank if unavailable.</p>' +
+      (d.stream ? '<p class="log-note">Half-run analysis uses the imported track when coverage permits. Gaps leave it unavailable.</p>' :
       field('halfPaceSec', 'First-half pace', clock(d.halfPaceSec), 'text', '/km', true) +
-      field('hr2', 'Second-half HR', d.hr2, 'numeric', 'bpm', true) + '</details>' +
+      field('hr2', 'Second-half HR', d.hr2, 'numeric', 'bpm', true)) + '</details>' +
       '<p class="log-error" role="alert">' + esc(d.error || '') + '</p>' +
       '<button class="rl-save">Save run</button>' +
       (saved ? '<button class="log-delete">Delete this log</button>' : '') + '</div>';
@@ -671,6 +681,9 @@
     wrap.querySelector('#run-paste').addEventListener('input', remember);
     wrap.querySelector('.log-extra').addEventListener('toggle', remember);
     const setField = (key, value) => {
+      if (d[key] !== value && ['km','sec','paceSec','hr'].includes(key) && d.stream) {
+        d.stream = null; d.note = 'Measurements edited. Import the file again to restore stream analysis.';
+      }
       d[key] = value;
       if (key === 'paceSec' && d.km && value) d.sec = Math.round(value * d.km);
       else if ((key === 'sec' || key === 'km') && d.sec && d.km) d.paceSec = d.sec / d.km;
@@ -706,13 +719,29 @@
     }));
     wrap.querySelector('.log-class').addEventListener('change', e => { d.cls = e.target.value; });
     wrap.querySelector('.log-parse').addEventListener('click', () => { remember(); d.preview = window.RunImport.parseText(d.paste); render(); });
+    wrap.querySelector('.log-file').addEventListener('change', async event => {
+      const file = event.target.files[0]; if (!file) return;
+      remember(); d.note = 'Reading activity on this device…';
+      wrap.querySelector('.log-note').textContent = d.note;
+      try {
+        if (file.size > 20*1024*1024) throw new Error('Choose an activity file smaller than 20 MB.');
+        const parsed = window.RunStream.parseXML(await file.text());
+        if (state.runLogDraft !== d || state.runLogEdit !== iso) return;
+        d.preview = parsed;
+        d.note = 'File read locally. Review the date and measurements before using them.';
+      } catch (error) {
+        if (state.runLogDraft !== d || state.runLogEdit !== iso) return;
+        d.preview = { values: {}, warnings: [error.message] };
+      }
+      d.paste = ''; render();
+    });
     const use = wrap.querySelector('.log-use');
     if (use) use.addEventListener('click', () => {
       const v = d.preview.values;
       // Missing observations must not become the plan or an earlier run's weather.
       d.km = v.km || null; d.sec = v.sec || null; d.paceSec = v.paceSec || null;
       d.hr = v.hr || null; d.temp = v.temp == null ? null : v.temp;
-      d.halfPaceSec = d.hr2 = null;
+      d.halfPaceSec = d.hr2 = null; d.stream = d.preview.stream || null;
       d.preview = null; d.paste = ''; d.note = 'Imported into the form. Check the numbers, then Save run.';
       render();
     });
@@ -724,7 +753,7 @@
       }
       const entry = { ...(saved || {}), sec: d.sec, hr: d.hr == null ? null : Math.round(d.hr),
         km: d.km === plannedKm ? null : d.km, temp: d.temp, cls: d.cls,
-        halfPaceSec: d.halfPaceSec, hr2: d.hr2, gels: d.gels };
+        halfPaceSec: d.halfPaceSec, hr2: d.hr2, gels: d.gels, stream: d.stream || null };
       try { localStorage.setItem(logKey(iso), JSON.stringify(entry)); }
       catch (e) { wrap.querySelector('.log-error').textContent = 'Could not save on this device. Keep this form open and free some storage, then try again.'; return; }
       state.runLogEdit = null; state.runLogDraft = null; render();
@@ -1712,9 +1741,9 @@
       const km = e.km || (day.run ? day.run.run.km : 0);
       if (!(km > 0)) continue;
       const cls = e.cls || (day.run ? DB.runClass(day.run) : 'unclassified');
-      const dec = DB.decoupling(km, e.sec, e.hr, e.halfPaceSec, e.hr2);
+      const dec = e.stream ? (Number.isFinite(e.stream.decPct) ? {pct:e.stream.decPct} : null) : DB.decoupling(km, e.sec, e.hr, e.halfPaceSec, e.hr2);
       entries.push({
-        iso: m[1], km, cls, sec: e.sec, dec: dec ? dec.pct : null,
+        iso: m[1], km, cls, sec: e.sec, dec: dec ? dec.pct : null, stream: e.stream || null,
         pace: DB.paceOf(km, e.sec),
         hr: e.hr || null,
         ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
@@ -1777,46 +1806,43 @@
         '<table><thead><tr><th>Date</th><th>EF</th><th>vs reference</th></tr></thead><tbody>' + rows + '</tbody></table></details></figure>';
     }
     let spark = recordsHTML(savedProgress()) + sparkFor('easy', 'easy') + sparkFor('long', 'long');
-    /* Average-HR grouping is an estimate, not measured time in zones. One
-       stacked bar, weighted by TIME rather than by run count, because four
-       easy kilometres and a 30 km long run are not one vote each. */
+    /* Measured samples and whole-run estimates never share a denominator. */
     spark += (function () {
       const hr = readJSON('hr', null);
-      if (!hr || !hr.rest || !hr.max) return '';
-      const zs = DB.hrZones(hr.rest, hr.max);
-      if (!zs) return '';
-      const secs = [0, 0, 0, 0, 0];
-      let total = 0;
-      entries.forEach((e) => {
-        if (!e.hr || !e.sec) return;
-        const z = DB.zoneOf(e.hr, hr.rest, hr.max);
-        secs[z && z.z ? z.z - 1 : 0] += e.sec;   /* below Z1 counts as Z1 */
-        total += e.sec;
+      if (!hr || !DB.hrZones(hr.rest, hr.max)) return '';
+      const measured = [0,0,0,0,0], estimated = [0,0,0,0,0];
+      let uncovered = 0;
+      entries.forEach(e => {
+        if (e.iso > todayISO()) return;
+        if (e.stream && Array.isArray(e.stream.hrSeconds)) {
+          let covered = 0;
+          e.stream.hrSeconds.forEach(pair => {
+            if (!Array.isArray(pair) || !Number.isFinite(pair[0]) || pair[0] <= 0 || pair[0] > 300 || !Number.isFinite(pair[1]) || pair[1] <= 0) return;
+            const z = DB.zoneOf(pair[0], hr.rest, hr.max);
+            measured[z && z.z ? z.z-1 : 0] += pair[1]; covered += pair[1];
+          });
+          uncovered += Math.max(0,e.sec-covered);
+        } else if (e.hr && e.sec) {
+          const z = DB.zoneOf(e.hr,hr.rest,hr.max);
+          estimated[z && z.z ? z.z-1 : 0] += e.sec;
+        }
       });
-      if (!total) return '';
-      const t = PLAN.intensityTarget;
-      const easy = ((secs[0] + secs[1]) / total) * 100;
-      const tone = ['var(--phase-base)', 'var(--phase-base)', 'var(--phase-taper)',
-        'var(--accent)', 'var(--accent)'];
-      const segs = secs.map((s, i) => s
-        ? '<i style="width:' + ((s / total) * 100).toFixed(2) + '%;background:' + tone[i] +
-          (i === 1 || i === 4 ? ';opacity:.72' : '') + '" title="Z' + (i + 1) + '"></i>'
-        : '').join('');
-      const key = secs.map((s, i) => s
-        ? '<span><i style="background:' + tone[i] + (i === 1 || i === 4 ? ';opacity:.72' : '') +
-          '"></i>Z' + (i + 1) + ' ' + Math.round((s / total) * 100) + '%</span>'
-        : '').join('');
-      const ok = easy >= t.easyPct;
-      return '<div class="dist"><div class="dc-h">Run intensity · by average HR</div>' +
-        '<div class="dist-bar">' + segs + '</div>' +
-        '<div class="dist-key">' + key + '</div>' +
-        '<div class="dist-v ' + (ok ? 'good' : 'warn') + '"><b>' + Math.round(easy) +
-        '%</b> of logged duration assigned to Z2 or easier · target ' + t.easyPct + '%+ — ' + esc(ok ? t.good : t.warn) +
-        '</div><p class="log-note">Each whole run is grouped by its average HR. Harder segments within a run are not measured here.</p></div>';
-    }());
-    /* Decoupling gets a ladder rather than a sparkline: the threshold is
+      const bar = (secs, title, note) => {
+        const total = secs.reduce((a,b)=>a+b,0); if (!total) return '';
+        const tone = ['var(--phase-base)','var(--phase-build)','var(--phase-taper)','var(--accent)','var(--accent)'];
+        const easy = (secs[0]+secs[1])/total*100;
+        return '<div class="dist"><div class="dc-h">' + title + '</div><div class="dist-bar">' +
+          secs.map((v,i)=>v ? '<i style="width:'+(v/total*100).toFixed(2)+'%;background:'+tone[i]+'"></i>' : '').join('') +
+          '</div><div class="dist-key">' + secs.map((v,i)=>v ? '<span>Z'+(i+1)+' '+Math.round(v/total*100)+'% · '+Math.round(v/60)+' min</span>' : '').join('') +
+          '</div><p class="log-note">'+Math.round(easy)+'% at Z2 or easier · plan target '+PLAN.intensityTarget.easyPct+'%+</p><p class="log-note">'+note+'</p></div>';
+      };
+      return bar(measured,'Time in zones · imported HR samples',
+        'Time-weighted recorded samples, using your current zones. Each reading holds until the next sample (at most 30 seconds). '+Math.round(uncovered/60)+' min without usable HR excluded.') +
+        bar(estimated,'Run intensity · average-HR estimate',
+          'Each whole run is grouped by average HR. This cannot detect harder segments inside a run and is separate from measured time in zones.');
+    }());    /* Decoupling gets a ladder rather than a sparkline: the threshold is
        the point, not the shape. Falling numbers are the base arriving. */
-    const decPts = entries.filter((e) => e.dec != null).slice(-6);
+    const decPts = entries.filter((e) => e.dec != null && e.cls === 'long' && e.iso <= todayISO()).slice(-6);
     if (decPts.length) {
       const m = PLAN.decoupleModel;
       spark += '<div class="dc-list"><div class="dc-h">Aerobic decoupling · long runs</div>' +
