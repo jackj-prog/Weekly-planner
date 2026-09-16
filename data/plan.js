@@ -114,7 +114,7 @@ const MON_LONG = {
     { ex: 'Ab wheel',                 sets: '2 × 8–12' },
     { ex: 'Pallof press',             sets: '2 × 10–15/side' },
   ],
-  maintDetail: '2 hard sets each, 3 reps in reserve — the race is the priority now',
+  maintDetail: 'Leg press and leg curl: 1 set each; pull work: 2 sets each · 3 reps in reserve — the race is the priority now · SHARP OR ONE-SIDED PAIN, joint or tendon pain, or altered running mechanics: skip the lower-body work entirely, upper only',
   maintPlan: [
     { ex: 'Leg press',           sets: '1 × 5 @ 3 RIR' },
     { ex: 'Seated leg curl',     sets: '1 × 8 @ 3 RIR' },

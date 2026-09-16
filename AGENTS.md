@@ -489,3 +489,13 @@ and the expanded suite passes. Maintenance and holiday exceptions conflict
 with broad specification claims. Owner delegated the decision: preserve the
 explicit reduced templates, reconcile docs, and retain the existing pain rule
 in maintenance. Fuelling remains pending under the earlier explicit decision.
+
+## Claude review reconciliation — v4.50
+
+Owner delegated judgement on the spec/template conflicts. Kept the explicit
+maintenance and holiday prescriptions, with no added exercises or volume.
+Corrected the specification's blanket two-sets/all-weeks claims, and restored
+the already-authored pain/altered-mechanics rule to Monday's maintenance
+detail (the maintDetail swap had hidden it). Maintenance copy now accurately
+says one set of leg press/curl and two sets of pulling work. Focused guards
+cover weeks 23, 24 and 28. Fuelling is still pending, not silently approved.

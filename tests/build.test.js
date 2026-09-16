@@ -1444,6 +1444,12 @@ section('recorded distance precedence');
  ok(DB.recordedKm(DB.buildDay('2026-09-14'), {}, {sec: 2400, km: 8.2}) === 8.2, 'unplanned log counts');
  ok(DB.recordedKm(day, {}, {sec: -1, km: 8.2}) === 0, 'invalid duration excluded');
 }
+section('maintenance instructions');
+for (const wk of [23, 24, 28]) {
+ const gym = dayOfWeek(wk, 0).blocks.find(b => b.cat === 'gym');
+ ok(/altered running mechanics: skip the lower-body work/.test(gym.detail), 'wk ' + wk + ' retains the pain rule during maintenance');
+ ok(gym.plan.length === 5 && gym.plan[0].sets === '1 × 5 @ 3 RIR', 'wk ' + wk + ' retains the authored reduced template');
+}
 /* ---- result ---- */
 // Chart geometry is part of correctness, not just appearance.
 require('./ef-chart.test.js');

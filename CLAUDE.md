@@ -288,8 +288,9 @@ Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
 - Fri German active end: 12:00 (Base) → 11:30 (Build) → 10:30 (Wk 23+ and Taper).
 - Mon gym: punchbag (Wks 1–3, retired) → Lower B 17:10 (Wks 4–10) →
   Lower B maintenance (Wk 11) → **Legs microdose · Pull · Core 16:30
-  (Wks 12–30)**, unchanged for nineteen weeks. The leg dose scales by
-  the fatigue rule, not by the calendar.
+  (regular weeks from Wk 12)**. The full session runs through Wk 22,
+  then the explicit maintenance template below takes over. Holiday and race
+  weeks remain exceptions.
 - Sat gym: Lower B (Wks 1–3 as lived) → Upper B (Wks 4–11) → **Light
   upper from Wk 12**. No lower-body or calf work on a Saturday ever
   again — Saturday is the long run's rest day, and from Wk 12 it is also
@@ -332,7 +333,8 @@ appended to Monday — the one day it is legal: day-after-long-run legs,
 two days clear of the Wednesday tempo, six clear of Sunday. **The two
 hard days of the week are Wednesday and Sunday, and the gym never adds
 a third**: push goes on Wednesday precisely because Wednesday is already
-hard. Weeks 1–11 keep Upper A / Upper B / Lower B exactly as lived.
+hard. Weeks 1–11 keep the original gym templates. The explicit Wk 23+ maintenance
+and holiday exceptions below take precedence over the general split.
 
 **The evaluation criterion (athlete's own words):** do not judge this
 programme by bodybuilding standards alone. Judge it by whether it
@@ -410,9 +412,17 @@ gym bends around it.
   rep range on every set → +2.5 kg next week (upper work only; the leg
   microdose holds at 2–3 RIR, it is exposure not progression) · rest 2–3
   min on compounds, 60–90 s on accessories · nothing to failure.
-- **Maintenance from Wk 23 (all three sessions):** 2 hard sets per lift,
-  3 reps in reserve (pull-aparts and rear delts stay — they cost
-  nothing). Strength holds on far less than it was built on.
+- **Maintenance from Wk 23:** use the explicit reduced templates in
+  data/plan.js. Monday is leg press 1×5, seated leg curl 1×8, pull-ups
+  2×6, chest-supported row 2×8 and rear-delt fly 2×15, at 3 RIR.
+  Calf raises, curls and core are omitted in this maintenance template.
+  The existing sharp/one-sided pain, joint/tendon pain or altered-mechanics
+  rule still removes lower-body work. Wednesday and Saturday likewise use
+  their authored maintPlan lists, not a blanket two-set substitution.
+- **Holiday weeks 26–27 are explicit exceptions:** Monday stays fully off;
+  Tuesday retains the authored 11:00–12:00 Upper A maintenance session.
+  Wednesday has no gym; Saturday uses Light upper maintenance. The regular
+  Monday/Wednesday/Saturday split resumes after the holidays.
 - **Race week (30):** no gym at all.
 
 ## 7. The 30-week block
@@ -511,8 +521,8 @@ cool-down jog · light upper 10:30 (legs are done — ride the PB high) ·
 normal study afternoon. Sun: easy 16 recovery.
 
 **Week 24 — tune-up (Sun 13 Dec).** Mon: the Monday session as normal
-(maintenance dose by then — six days out, and the leg half is one set
-of each), study eased.
+(maintenance dose by then — six days out, with one set each of leg
+press and seated leg curl), study eased.
 Tue: easy 6. Wed: easy 5 + strides — push as normal, it is maintenance
 by Wk 23. Thu: REST. Fri: NO basketball. Sat:
 3 km shakeout · race prep (kit, pacing plan, early carb dinner). Sun:
