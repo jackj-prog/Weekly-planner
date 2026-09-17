@@ -514,3 +514,19 @@ logger now has a readable full-width action. Browser checks exercised all six
 shortcuts, focus/keyboard operation, HR edit/rerender, recalibration and backup
 export/restore. Collapsed Reference is 1,588px at the 390px viewport. Captures
 were inspected; App and cache both show 4.51.0. All 16,068 checks pass.
+
+## Time entry correctness and Pages cleanup — v4.52, 17 September
+
+Reject incomplete/malformed run clocks (for example `1:`) and invalid minute
+or second fields in half results. A rejected half result does not overwrite
+the previously saved result. Round projected pace to total seconds before
+splitting minutes/seconds, so a carry displays `4:00/km`, never `3:60/km`.
+The existing reference anchors and all training prescriptions are unchanged.
+Regression tests execute the actual pure render helpers; browser checks cover
+the errors, retained result, corrected run save and matching app/cache 4.52.0.
+
+The duplicate Pages job failed because Jekyll parsed an invalid-JSON example
+in the audit as Liquid. The owner changed Settings → Pages → Source to GitHub
+Actions. Keep that setting: `.github/workflows/pages.yml` is the test-gated
+publisher; do not enable a second branch/Jekyll deployment or escape the audit
+merely to make an unintended publisher work.

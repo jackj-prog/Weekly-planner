@@ -18,4 +18,6 @@ assert.equal(parseText('notes with no measurements').warnings.length, 1);
 assert.equal(parseText('HR=999 distance=0km').values.hr, undefined);
 assert.equal(duration('1:60:00'), null); assert.equal(duration('45:59'), 2759);
 assert.equal(duration('1:02:03'), 3723); assert.equal(duration('-25'), null);
+for (const bad of ['1:', ':30', '1::30', '1:2', '1:02:', '1:02.5', '1:2e1', '1: 2', '1:99:00', '1:20:60']) assert.equal(duration(bad), null, bad);
+assert.equal(duration('3600.5s'), 3600.5);
 console.log('Run import: units, clock formats, missing values, inconsistencies and invalid inputs passed');

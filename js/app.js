@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.51.0';
+  const APP_VERSION = '4.52.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1617,7 +1617,7 @@
   /* ---- tune-up recalibrator (§10, advisory — the plan file stays canonical) ---- */
   function parseHalf(s) {
     const m = String(s).trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-    if (!m) return null;
+    if (!m || +m[2] >= 60 || +(m[3] || 0) >= 60) return null;
     const sec = (+m[1]) * 3600 + (+m[2]) * 60 + (+(m[3] || 0));
     return sec >= 4200 && sec <= 12000 ? sec : null;      // 1:10–3:20 sanity band
   }
@@ -1629,9 +1629,7 @@
     return Math.floor(mins / 60) + ':' + String(mins % 60).padStart(2, '0');
   }
   function fmtPace(secPerKm) {
-    const m = Math.floor(secPerKm / 60);
-    const s = Math.round(secPerKm % 60);
-    return m + ':' + String(s).padStart(2, '0') + '/km';
+    return DB.fmtPaceSec(Math.round(secPerKm)) + '/km';
   }
   function recalVerdict(halfSec) {
     const riegel = halfSec * Math.pow(2, 1.06);           // T×(42.195/21.0975)^1.06
@@ -1662,8 +1660,11 @@
       out.innerHTML = recalVerdict(sec);
     };
     wrap.querySelector('[data-io="recal"]').addEventListener('click', () => {
-      try { localStorage.setItem('recal', input.value.trim()); } catch (e) { /* fine */ }
-      show(input.value.trim());
+      const raw = input.value.trim();
+      if (!raw || parseHalf(raw)) {
+        try { localStorage.setItem('recal', raw); } catch (e) { /* fine */ }
+      }
+      show(raw);
     });
     if (saved) show(saved);
     return wrap;

@@ -4,6 +4,7 @@
   function duration(value) {
     const s = String(value).trim();
     if (/^\d+(?:\.\d+)?\s*s?$/i.test(s)) return Number(s.replace(/s/i, '')) || null;
+    if (!/^\d+:\d{2}(?::\d{2})?$/.test(s)) return null;
     const p = s.split(':').map(Number);
     if (p.length < 2 || p.length > 3 || p.some(n => !Number.isFinite(n) || n < 0) ||
         p.slice(1).some(n => n >= 60)) return null;

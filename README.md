@@ -45,3 +45,10 @@ node tests/build.test.js
 
 Static host (GitHub Pages works — all asset paths are relative). After the
 first visit the app is fully offline.
+
+For this repository, Settings → Pages → Build and deployment → Source must
+be **GitHub Actions**. `.github/workflows/pages.yml` runs the tests, generates
+the calendar feed and deploys pushes to `claude/new-session-ombj5n`. Do not
+also enable "Deploy from a branch": that starts an unnecessary Jekyll build
+over the repository's documentation. Bump both `APP_VERSION` in `js/app.js`
+and `CACHE_VERSION` in `sw.js` for each app deployment.
