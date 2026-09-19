@@ -530,3 +530,27 @@ in the audit as Liquid. The owner changed Settings → Pages → Source to GitHu
 Actions. Keep that setting: `.github/workflows/pages.yml` is the test-gated
 publisher; do not enable a second branch/Jekyll deployment or escape the audit
 merely to make an unintended publisher work.
+
+## Pasted measurement integrity — v4.53, 19 September
+
+Review found elapsed time winning over explicit moving time, mile pace being
+read as kilometre pace, negative distance losing its sign via a fallback,
+and malformed clocks being accepted by matching only their valid prefix.
+Prefer moving time regardless of field order; convert explicit mile pace and
+disclose the conversion. Capture full clocks and signed distances, reject
+invalid measurements before calculating dependent values, and require manual
+correction of an explicitly invalid time or distance. Elapsed-only imports
+explain that stops may be included. Existing correction/preview/save flow and
+storage keys stay intact; no prescription or fuelling changes.
+
+## Creative direction — 19 September, before implementation
+
+Owner asked for ambitious, creative improvements to implement and deploy.
+Turn the block into an interactive training journey: a week selector over a
+proportional volume landscape, recorded effort alongside the plan, and key
+days that lead directly into their sessions. Calendar progress must remain
+distinct from completed training. Add a focused session view for one-handed
+use, with large essentials and existing completion/logging actions. No GPS,
+invented fitness claims, background timers, new prescriptions or storage keys.
+Keep these independently revertible; inspect empty, recorded, future and
+complete states before each release.
