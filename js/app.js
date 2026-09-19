@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.53.0';
+  const APP_VERSION = '4.54.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1059,59 +1059,69 @@
 
   /* The skyline: all 30 weeks as one shape — planned km as phase-coloured
      bars, banked km filled inside them, key days flagged, race starred. */
-  function buildSkyline(curWeek) {
-    const shape = DB.seasonShape(getDone, getRunLogEntry);
-    const maxKm = Math.max.apply(null, shape.map((w) => w.km));
-    const W = 360, H = 118, base = 100, top = 14;
-    const slot = W / shape.length, barW = slot * 0.72;
-    const y = (km) => base - (km / maxKm) * (base - top);
-    let svg = '';
-    for (let i = 0; i < shape.length; i++) {
-      const wkr = shape[i];
-      const xPos = i * slot + (slot - barW) / 2;
-      const h = base - y(wkr.km);
-      const cur = wkr.wk === curWeek;
-      const past = curWeek != null && wkr.wk < curWeek;
-      const op = cur ? 1 : past ? 0.9 : wkr.cutback ? 0.32 : 0.5;
-      svg += '<rect x="' + xPos.toFixed(1) + '" y="' + y(wkr.km).toFixed(1) +
-        '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) +
-        '" rx="1.6" fill="var(--phase-' + wkr.phase + ')" opacity="' + op + '"/>';
-      if (wkr.banked > 0) {
-        svg += '<rect x="' + xPos.toFixed(1) + '" y="' + y(Math.min(wkr.banked, wkr.km)).toFixed(1) +
-          '" width="' + barW.toFixed(1) + '" height="' + (base - y(Math.min(wkr.banked, wkr.km))).toFixed(1) +
-          '" rx="1.6" fill="var(--text)" opacity="0.38"/>';
-      }
-      if (wkr.race) {
-        svg += '<text x="' + (xPos + barW / 2).toFixed(1) + '" y="' + (y(42.2) - 6).toFixed(1) +
-          '" text-anchor="middle" font-size="11" fill="var(--accent)">★</text>' +
-          '<rect x="' + xPos.toFixed(1) + '" y="' + y(42.2).toFixed(1) + '" width="' + barW.toFixed(1) +
-          '" height="' + (base - y(42.2)).toFixed(1) + '" rx="1.6" fill="var(--accent)" opacity="0.85"/>';
-      } else if (wkr.key) {
-        svg += '<circle cx="' + (xPos + barW / 2).toFixed(1) + '" cy="' + (y(wkr.km) - 5).toFixed(1) +
-          '" r="2" fill="var(--accent)"/>';
-      }
-      if (cur) {
-        svg += '<rect x="' + (xPos - 2).toFixed(1) + '" y="' + (y(wkr.km) - 2).toFixed(1) +
-          '" width="' + (barW + 4).toFixed(1) + '" height="' + (h + 4).toFixed(1) +
-          '" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.6"/>' +
-          '<text x="' + (xPos + barW / 2).toFixed(1) + '" y="' + (y(wkr.km) - 8).toFixed(1) +
-          '" text-anchor="middle" font-size="9" font-weight="700" fill="var(--accent)" ' +
-          'font-family="Space Mono, monospace">WK' + wkr.wk + '</text>';
-      }
+  function buildTrainingJourney(journey) {
+    const weeks = journey.weeks, block = PLAN.blocks[0], today = todayISO();
+    const current = weeks.find(w=>w.start<=today && today<=w.end);
+    const initial = state.journeyWeek || (current ? current.wk : today<block.start ? 1 : weeks.length);
+    const fmt = n => Number(n.toFixed(1));
+    const max = Math.ceil(Math.max(...weeks.map(w=>Math.max(w.planned,w.recorded)))/10)*10;
+    const W=360, left=28, right=352, base=160, top=24, slot=(right-left)/weeks.length;
+    const x = i => left+(i+.5)*slot, y = km => base-km/max*(base-top);
+    let chart='';
+    for(const n of [0,max/2,max]) chart+='<line x1="'+left+'" x2="'+right+'" y1="'+y(n)+'" y2="'+y(n)+'" class="journey-grid"/><text x="20" y="'+(y(n)+3)+'" text-anchor="end">'+n+'</text>';
+    weeks.forEach((w,i)=>{
+      chart+='<rect x="'+(x(i)-3.8)+'" y="'+y(w.planned)+'" width="7.6" height="'+(base-y(w.planned))+'" rx="2" class="journey-plan-bar"/>';
+      if(w.recorded>0) chart+='<rect x="'+(x(i)-2.1)+'" y="'+y(w.recorded)+'" width="4.2" height="'+(base-y(w.recorded))+'" rx="1.5" class="journey-record-bar"/>';
+      if((PLAN.keyEvents||[]).some(e=>e.wk===w.wk)) chart+='<circle cx="'+x(i)+'" cy="'+(y(Math.max(w.planned,w.recorded))-7)+'" r="2.5" class="journey-key-dot"/>';
+    });
+    chart+='<g class="journey-cursor"><line x1="0" x2="0" y1="12" y2="170"/><path d="M-4 7 L4 7 L0 12 Z"/></g>';
+    const root=el('<section class="training-journey"><div class="journey-intro"><div class="journey-kicker">YOUR TRAINING JOURNEY</div>'+
+      '<h1>Built one run<br>at a time.</h1><div class="journey-totals"><div><b>'+fmt(journey.recorded)+'</b><span>km recorded</span></div><div><b>'+journey.runs+'</b><span>runs recorded</span></div></div>'+
+      '<p class="journey-story">'+(journey.runs ? journey.activeWeeks+' weeks with recorded runs. Each one leaves a mark.' : 'Your first recorded run starts the story. The road ahead is already here.')+'</p>'+
+      '<div class="journey-calendar"><span>'+journey.elapsedWeeks+' / '+weeks.length+' weeks elapsed</span><span>'+esc(fmtShort(PLAN.race.date))+' · '+esc(PLAN.race.city||'Race day')+'</span></div></div>'+
+      '<div class="journey-landscape"><div class="journey-chart-label"><b>The shape of the block</b><span>km / week</span></div>'+
+      '<svg viewBox="0 0 '+W+' 180" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Scheduled and recorded weekly kilometres on a shared scale">'+chart+'</svg>'+
+      '<div class="journey-legend"><span><i></i>Scheduled</span><span><i></i>Recorded</span><span><i></i>Key day</span></div>'+
+      '<div class="journey-phases">'+Object.entries(block.phases).map(([name,range])=>'<button data-journey-week="'+range[0]+'">'+esc(name)+'</button>').join('')+'</div>'+
+      '<div class="journey-scrub"><button data-journey-step="-1" aria-label="Previous journey week">‹</button><label><span class="journey-range-label">Explore the weeks</span><input type="range" min="1" max="'+weeks.length+'" step="1" value="'+initial+'" aria-label="Explore training week"></label><button data-journey-step="1" aria-label="Next journey week">›</button></div>'+
+      '<div class="journey-selected"></div></div><details class="journey-method"><summary>Where these numbers come from</summary><p>Scheduled kilometres come from the resolved daily sessions, including race day. Recorded kilometres use saved run distance, or scheduled distance for a completion tick or older log without a distance. Future entries are excluded. Weeks elapsed measures calendar time, not completed training.</p></details></section>');
+    const range=root.querySelector('input[type="range"]');
+    function paint(value) {
+      const week=weeks[Math.max(0,Math.min(weeks.length-1,Number(value)-1))]; state.journeyWeek=week.wk;
+      range.value=week.wk; range.setAttribute('aria-valuetext','Week '+week.wk+', '+week.phase+', '+fmt(week.planned)+' km scheduled, '+fmt(week.recorded)+' km recorded');
+      root.querySelector('.journey-cursor').setAttribute('transform','translate('+x(week.wk-1)+' 0)');
+      root.querySelectorAll('[data-journey-step]').forEach(b=>b.disabled=Number(b.dataset.journeyStep)<0?week.wk===1:week.wk===weeks.length);
+      root.querySelectorAll('[data-journey-week]').forEach(b=>b.classList.toggle('active',block.weekTable[Number(b.dataset.journeyWeek)-1].phase===week.phase));
+      const dailyMax=Math.max(...week.days.map(d=>Math.max(d.planned,d.recorded)),1);
+      root.querySelector('.journey-selected').innerHTML='<div class="journey-week-head"><div><span>WEEK</span><h2>'+String(week.wk).padStart(2,'0')+'</h2></div><div><b>'+esc(week.phase)+(week.cutback?' · cutback':'')+'</b><span>'+esc(fmtShort(week.start))+' – '+esc(fmtShort(week.end))+'</span>'+(current&&current.wk===week.wk?'<strong>You are here</strong>':'')+'</div></div>'+
+        '<div class="journey-week-numbers"><div><b>'+fmt(week.planned)+'</b><span>km scheduled</span></div><div><b>'+fmt(week.recorded)+'</b><span>km recorded</span></div><div><b>'+fmt(week.longest)+'</b><span>longest run · km</span></div></div>'+
+        '<div class="journey-days" aria-label="Open a day">'+week.days.map((d,i)=>'<button data-journey-day="'+d.iso+'" aria-label="'+DAY_NAMES[i]+', '+(d.title?esc(d.title)+', '+fmt(d.planned)+' km':'no run scheduled')+', '+fmt(d.recorded)+' km recorded"><span>'+DAY_SHORT[i].slice(0,1)+'</span><span class="journey-day-plot"><i style="height:'+d.planned/dailyMax*100+'%" class="'+(d.cls==='quality'||d.cls==='race'?'hard':'')+'"></i>'+(d.recorded?'<em style="height:'+d.recorded/dailyMax*100+'%"></em>':'')+'</span><b>'+ (d.planned?fmt(d.planned):'–')+'</b></button>').join('')+'</div>'+
+        '<button class="journey-open" data-journey-open="'+week.start+'">Open week '+week.wk+' <span aria-hidden="true">↗</span></button>';
     }
-    svg += '<line x1="0" y1="' + (base + 0.5) + '" x2="' + W + '" y2="' + (base + 0.5) +
-      '" stroke="var(--line)" stroke-width="1"/>';
-    const banked = shape.reduce((a, w) => a + w.banked, 0);
-    const total = shape.reduce((a, w) => a + w.km, 0);
-    const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
-    return el(
-      '<div class="skyline" role="img" aria-label="30 weeks of training: bars are planned km, ' +
-      'filled portions are km already run, the star is race day">' +
-      '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet">' + svg + '</svg>' +
-      '<div class="sky-cap"><span>base → build → taper · • key days · ★ the gun</span>' +
-      '<span class="v">' + fmt(banked) + ' / ' + total + ' km</span></div></div>'
-    );
+    range.addEventListener('input',()=>paint(range.value));
+    root.addEventListener('click',event=>{
+      const button=event.target.closest('button'); if(!button)return;
+      if(button.dataset.journeyStep) paint(state.journeyWeek+Number(button.dataset.journeyStep));
+      if(button.dataset.journeyWeek) paint(button.dataset.journeyWeek);
+      if(button.dataset.journeyDay || button.dataset.journeyOpen) {
+        if(button.dataset.journeyDay) {state.dateISO=button.dataset.journeyDay;state.view='today';}
+        else {state.weekAnchor=button.dataset.journeyOpen;state.view='week';}
+        window.scrollTo(0,0);render();
+      }
+    });
+    paint(initial); return root;
   }
+
+  function buildLandmarks(journey) {
+    const today=todayISO();
+    const root=el('<section class="journey-landmarks"><div class="journey-section-title"><h2>The days that count</h2><span>KEY DAYS</span></div>'+ (PLAN.keyEvents||[]).map((e,i)=>{
+      const week=journey.weeks[e.wk-1], day=week.days[e.di], delta=DB.daysBetween(today,day.iso);
+      const status=day.recorded>0?'Recorded':delta<0?'Past · not recorded':delta===0?'Today':delta+' days away';
+      return '<button class="journey-event'+(delta>=0?' ahead':'')+'" data-event-day="'+day.iso+'"><span class="journey-event-index">'+String(i+1).padStart(2,'0')+'</span><span><small>WEEK '+e.wk+' · '+esc(fmtShort(day.iso))+'</small><b>'+esc(e.label)+'</b><em>'+status+'</em></span><span aria-hidden="true">↗</span></button>';
+    }).join('')+'</section>');
+    root.addEventListener('click',event=>{const b=event.target.closest('[data-event-day]');if(!b)return;state.dateISO=b.dataset.eventDay;state.view='today';window.scrollTo(0,0);render();});return root;
+  }
+
 
   /* ================= week view ================= */
   /* The long-run morning is where a short week becomes a big jump. Shown
@@ -1389,44 +1399,11 @@
     const today = todayISO();
     const cur = DB.resolveBlock(today);
 
-    view.appendChild(el(
-      '<div class="plan-head"><h1>The 30-week block</h1>' +
-      '<div class="wk-sub">' + fmtShort(block.start) + ' → race ' + fmtShort(PLAN.race.date) + ' · gun ' + esc(PLAN.race.gun) + '</div></div>'
-    ));
-    view.appendChild(buildSkyline(cur.week));
-
-    /* adherence so far — the block talks back */
-    const adh = DB.adherence(getDone, (iso) => getOvr(iso).skip, today);
-    const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
-    if (adh.day > 0) {
-      view.appendChild(el(
-        '<div class="stats" role="group" aria-label="Block progress so far">' +
-        '<div class="stat"><b>' + adh.day + '<small>/' + adh.days + '</small></b><span>day</span></div>' +
-        '<div class="stat"><b>' + fmt(adh.kmDone) + '<small>/' + fmt(adh.kmDue) + '</small></b><span>km banked</span></div>' +
-        '<div class="stat"><b>' + adh.runsDone + '<small>/' + adh.runsDue + '</small></b><span>runs</span></div>' +
-        '<div class="stat"><b>' + adh.streak + (adh.bestStreak > adh.streak ? '<small>best ' + adh.bestStreak + '</small>' : '') + '</b><span>run streak</span></div>' +
-        '</div>'
-      ));
-      /* phase strip: base 10 · build 17 · taper 3 wks, marker = today.
-         Identity is order + labels, never colour alone (muted brand tokens). */
-      const pct = Math.min(100, (adh.day / adh.days) * 100).toFixed(1);
-      view.appendChild(el(
-        '<div class="blockbar" role="img" aria-label="Day ' + adh.day + ' of ' + adh.days + ' — base, build, taper">' +
-        '<i class="bb-base" style="flex-grow:10"></i>' +
-        '<i class="bb-build" style="flex-grow:17"></i>' +
-        '<i class="bb-taper" style="flex-grow:3"></i>' +
-        '<span class="bb-mark" style="left:' + pct + '%"></span></div>'
-      ));
-      /* every planned run in the block, one dot each */
-      const log = DB.runLog(getDone, (iso) => getOvr(iso).skip, today);
-      const doneN = log.filter((r) => r.state === 'done').length;
-      view.appendChild(el(
-        '<div class="runlog" role="img" aria-label="' + doneN + ' of ' + log.length + ' runs done">' +
-        log.map((r) =>
-          '<i class="rl rl-' + r.state + ' ph-' + esc(r.phase) + '" title="' + r.iso + ' · ' + r.km + ' km"></i>'
-        ).join('') + '</div>'
-      ));
-    }
+    const journey = DB.trainingJourney(getDone,getRunLogEntry,today);
+    const adh = {weekKmDone:Object.fromEntries(journey.weeks.map(w=>[w.wk,w.recorded]))};
+    const fmt = n => Number(n.toFixed(1));
+    view.appendChild(buildTrainingJourney(journey));
+    view.appendChild(buildLandmarks(journey));
 
     const rows = el('<div class="plan-rows"></div>');
     const PHASE = { base: 'var(--phase-base)', build: 'var(--phase-build)', taper: 'var(--phase-taper)' };
@@ -1509,7 +1486,8 @@
     }
 
     Array.prototype.forEach.call(rows.children, (c, i) => c.style.setProperty('--i', i));
-    view.appendChild(rows);
+    const archive = el('<details class="journey-all"><summary>All weeks & recovery <span>View the full programme</span></summary></details>');
+    archive.appendChild(rows); view.appendChild(archive);
     view.appendChild(el('<div class="ref-note">After the fortnight the standing week takes over — until the next block is written into data/plan.js.</div>'));
   }
 

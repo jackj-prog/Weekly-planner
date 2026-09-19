@@ -1457,5 +1457,6 @@ require('./run-progress.test.js');
 require('./run-import.test.js');
 require('./run-stream.test.js');
 require('./time-input.test.js');
+require('./training-journey.test.js');
 console.log('\n' + checks + ' checks, ' + failures + ' failure' + (failures === 1 ? '' : 's'));
 process.exit(failures ? 1 : 0);

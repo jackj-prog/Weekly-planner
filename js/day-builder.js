@@ -414,6 +414,29 @@
     });
   }
 
+  // A journey is resolved sessions, not the headline week-table totals.
+  // This matters in special weeks, whose totals may exclude the race itself.
+  function trainingJourney(getDone, getLog, today) {
+    const block = PLAN.blocks[0];
+    const weeks = block.weekTable.map(row => {
+      const dates = weekDates(block, row.wk);
+      const days = Array.from({length:7}, (_,i) => {
+        const iso = addDays(dates.start,i), day = buildDay(iso);
+        const done = iso <= today ? getDone(iso) : {};
+        const log = iso <= today ? getLog(iso) : null;
+        const recorded = recordedKm(day,done,log);
+        return {iso, planned:day.run ? day.run.run.km : 0, recorded,
+          title:day.run ? day.run.title : '', cls:day.run ? runClass(day.run) : null,
+          estimated:recorded > 0 && !(log && Number.isFinite(log.km) && log.km > 0)};
+      });
+      return {wk:row.wk, phase:row.phase, cutback:!!row.cutback, ...dates, days,
+        planned:days.reduce((n,d)=>n+d.planned,0), recorded:days.reduce((n,d)=>n+d.recorded,0),
+        longest:Math.max(...days.map(d=>d.planned)), runs:days.filter(d=>d.recorded>0).length};
+    });
+    return {weeks, recorded:weeks.reduce((n,w)=>n+w.recorded,0), runs:weeks.reduce((n,w)=>n+w.runs,0),
+      activeWeeks:weeks.filter(w=>w.runs>0).length, elapsedWeeks:weeks.filter(w=>w.end<today).length};
+  }
+
   /* Verdict after a log: this run against the previous of its class, and
      whether it set the block's best EF for that class. list = chronological
      [{iso, cls, paceSec, hr, ef}]. */
@@ -808,7 +831,7 @@
     buildDay, resolveBlock, weekNumber, dayIndex, distancesForWeek,
     weekRow, weekDates, raceCountdown, adherence, weekKm, recordedKm, buildICS,
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
-    fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, logVerdict, adjustPace,
+    fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };

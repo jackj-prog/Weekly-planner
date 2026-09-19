@@ -554,3 +554,15 @@ use, with large essentials and existing completion/logging actions. No GPS,
 invented fitness claims, background timers, new prescriptions or storage keys.
 Keep these independently revertible; inspect empty, recorded, future and
 complete states before each release.
+
+## Interactive training journey — v4.54
+
+The full block now opens as an interactive volume landscape. Scrub any week
+with the native range control, step with large buttons, or jump to a phase.
+The selected week shows scheduled/recorded distance and seven direct day
+links; landmarks lead into their actual dated sessions. Full programme rows
+and recovery remain in a disclosure. Totals count logs and ticks once, include
+unplanned runs, and exclude future entries. Calendar weeks elapsed is labelled
+separately. The chart derives scheduled distance from resolved days, including
+the marathon in race week, on a labelled shared scale with recorded distance.
+No new storage keys. Existing Week-view progress links into this new page.
