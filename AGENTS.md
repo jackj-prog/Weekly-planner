@@ -590,3 +590,15 @@ exercise navigation, keyboard focus, swipe isolation, future preview and
 matching app/cache 4.55.0. Captures of run, brief, exercises, saved, completed
 and future states were opened and reviewed. This is Chromium at 390px, not a
 physical iPhone or Safari test. Fuelling remains pending.
+
+## Post-run design direction — 20 September, before implementation
+
+A saved run should make Today feel finished: give actual distance, elapsed
+entry, pace and effort the hero position, with the original session still
+available on tap. Reflect earned progress through whole-run records as they
+stood on that date, a neutral comparison with the previous run of the same
+type, and cumulative logged-distance milestones. One first log is a baseline;
+estimated distances and later performances must not manufacture or erase a
+record. Keep edits, deletion, sharing and the unplanned-run path intact.
+Make celebration specific to saved evidence, with no inferred segment PBs,
+training advice, new storage keys or ongoing animation.
