@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.54.0';
+  const APP_VERSION = '4.55.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -766,6 +766,169 @@
     return wrap;
   }
 
+  /* Session focus is a view of the authored block, never a workout tracker.
+     The native dialog traps focus; its controls reuse existing storage keys. */
+  let focusedSession = null;
+  function focusWindow(b, iso, today, minute) {
+    if (iso !== today) return iso < today ? 'Scheduled window ended' : 'Scheduled for ' + fmtShort(iso);
+    if (minute < b.startMin) return 'Starts in ' + (b.startMin - minute) + ' min';
+    if (minute >= b.endMin) return 'Scheduled window ended';
+    return fmtLeft(b.endMin - minute) + ' in scheduled window';
+  }
+  function focusBrief(text) {
+    const clauses = String(text || '').split(' · ');
+    // The source marks conditional instructions with uppercase headings.
+    // Preserve their first complete sentence; leave rationale in disclosure.
+    const rules = clauses.filter((s, i) => i > 0 && /^[A-Z][A-Z -]{4,}[^:]*:/.test(s));
+    return { intro: clauses[0], rules: rules.map(s => s.split(/\.\s/)[0]) };
+  }
+  function refreshFocusClock() {
+    if (!focusedSession) return;
+    const { dialog, block, iso } = focusedSession;
+    dialog.querySelector('.focus-clock').textContent = focusWindow(block, iso, todayISO(), nowMin());
+  }
+  function openSessionFocus(block, iso, trigger) {
+    if (focusedSession) return;
+    const exercises = block.cat === 'gym' && block.plan ? block.plan : [];
+    const dialog = el('<dialog class="session-focus' + (exercises.length ? ' is-gym' : '') + '" aria-labelledby="focus-title">' +
+      '<div class="focus-shell"><header class="focus-header"><span>SESSION FOCUS</span><button class="focus-back" hidden>← Session brief</button>' +
+      '<button class="focus-close" aria-label="Close session focus" autofocus>✕</button></header>' +
+      '<div class="focus-scroll"><p class="focus-date">' + esc(DAY_NAMES[DB.dayIndex(iso)] + ' · ' + fmtShort(iso)) + '</p>' +
+      '<h1 id="focus-title">' + esc(block.title) + '</h1>' +
+      '<div class="focus-window"><span>' + esc(block.start + '–' + block.end) + '</span><p class="focus-clock"></p></div>' +
+      '<div class="focus-content"></div>' +
+      '<details class="focus-notes"><summary>Session instructions</summary><p>' + esc(withZones(block.detail)) + '</p>' + paceTableHTML(block.table) + '</details>' +
+      '</div><footer class="focus-footer"><p class="focus-status" role="status"></p>' +
+      '<button class="focus-done"></button>' + (block.run && iso <= todayISO() ? '<button class="focus-log">Log run →</button>' : '') + '</footer></div></dialog>');
+    const scrollY = window.scrollY;
+    const oldStyle = document.body.getAttribute('style');
+    focusedSession = { dialog, block, iso, index: 0 };
+    document.body.appendChild(dialog);
+    // Fixed-body locking also covers standalone Safari; restore the exact scroll.
+    Object.assign(document.body.style, { position: 'fixed', top: -scrollY + 'px', width: '100%' });
+    const status = dialog.querySelector('.focus-status');
+    const doneBtn = dialog.querySelector('.focus-done');
+    const canComplete = () => iso <= todayISO() && !getOvr(iso).skip[block.id] && !getOvr(iso).moved[block.id];
+    const paintDone = () => {
+      const done = !!getDone(iso)[block.id];
+      dialog.classList.toggle('is-banked', done);
+      doneBtn.textContent = done ? '✓ Session banked · Undo' : 'Mark session done';
+      doneBtn.setAttribute('aria-pressed', String(done));
+      doneBtn.disabled = !canComplete();
+      status.textContent = done ? 'Saved to your day.' : iso > todayISO() ? 'Preview your upcoming session.' : !canComplete() ? 'This session is skipped or moved.' : 'Mark done when you have finished.';
+    };
+    const paintExercise = (moveFocus) => {
+      const i = focusedSession.index, p = exercises[i], key = exKey(p.ex), last = lastWeight(key);
+      const content = dialog.querySelector('.focus-content');
+      content.innerHTML = '<div class="focus-ex-progress" aria-hidden="true">' + exercises.map((_, n) => '<i class="' + (n === i ? 'selected' : '') + '"></i>').join('') + '</div>' +
+        '<p class="focus-eyebrow">EXERCISE ' + (i + 1) + ' / ' + exercises.length + '</p>' +
+        '<h2 class="focus-ex-name" tabindex="-1">' + esc(p.ex) + '</h2><p class="focus-sets">' + esc(p.sets) + '</p>' +
+        '<form class="focus-weight"><label for="focus-kg">Working weight <span>kg</span></label>' +
+        '<div><input id="focus-kg" inputmode="decimal" autocomplete="off" value="' + (last ? esc(String(last.kg)) : '') + '" placeholder="—"' + (iso > todayISO() ? ' disabled' : '') + '>' +
+        '<button type="submit"' + (iso > todayISO() ? ' disabled' : '') + '>Save</button></div>' +
+        '<p class="focus-weight-note" role="status">' + (last ? 'Last saved: ' + esc(fmtKg(last.kg) + ' · ' + fmtShort(last.d)) : 'No weight saved for this exercise yet.') + '</p></form>' +
+        '<nav class="focus-ex-nav" aria-label="Exercises"><button data-step="-1"' + (i === 0 ? ' disabled' : '') + '>← Previous</button><button data-step="1"' + (i === exercises.length - 1 ? ' disabled' : '') + '>Next →</button></nav>' +
+        (i < exercises.length - 1 ? '<p class="focus-up-next"><span>UP NEXT</span>' + esc(exercises[i + 1].ex) + '</p>' : '<p class="focus-up-next">Last exercise in this session.</p>');
+      content.querySelectorAll('[data-step]').forEach(btn => btn.addEventListener('click', () => {
+        dialog.classList.add('focus-working');
+        dialog.querySelector('.focus-back').hidden = false;
+        focusedSession.index += Number(btn.dataset.step);
+        paintExercise(true);
+      }));
+      content.querySelector('form').addEventListener('submit', e => {
+        e.preventDefault();
+        if (iso > todayISO()) return;
+        const raw = content.querySelector('input').value.trim().replace(',', '.');
+        const kg = /^\d+(?:\.\d+)?$/.test(raw) ? Number(raw) : NaN;
+        const note = content.querySelector('.focus-weight-note');
+        if (!Number.isFinite(kg) || kg <= 0 || kg >= 500) {
+          note.textContent = 'Enter a weight above 0 and below 500 kg.';
+          content.querySelector('input').setAttribute('aria-invalid', 'true');
+          return;
+        }
+        saveWeight(key, iso, kg);
+        const saved = lastWeight(key);
+        note.textContent = saved && saved.d === iso && saved.kg === kg ? 'Saved · ' + fmtKg(kg) : 'Could not save. Check device storage and try again.';
+        content.querySelector('input').removeAttribute('aria-invalid');
+        content.querySelector('input').blur();
+      });
+      if (moveFocus) {
+        const heading = content.querySelector('h2');
+        heading.focus({ preventScroll: true });
+        heading.scrollIntoView({ block: 'start', behavior: 'instant' });
+      }
+    };
+    if (exercises.length) {
+      const notes = dialog.querySelector('.focus-notes');
+      const brief = focusBrief(block.detail);
+      const intro = el('<div class="focus-brief"><p>' + esc(withZones(brief.intro)) + '</p>' +
+        brief.rules.map(s => '<p class="focus-rule">' + esc(withZones(s)) + '</p>').join('') +
+        '<button class="focus-jump">Go to exercises ↓</button></div>');
+      const content = dialog.querySelector('.focus-content');
+      content.before(intro, notes);
+      notes.querySelector('summary').textContent = 'Full session instructions';
+      intro.querySelector('button').addEventListener('click', () => {
+        dialog.classList.add('focus-working');
+        dialog.querySelector('.focus-back').hidden = false;
+        const heading = content.querySelector('h2');
+        heading.focus({ preventScroll: true });
+        heading.scrollIntoView({ block: 'start', behavior: 'instant' });
+      });
+      paintExercise(false);
+    }
+    else if (block.run) {
+      const pace = (block.detail.match(/\d{1,2}:\d{2}(?:\s*–\s*\d{1,2}:\d{2})?\s*\/\s*km/) || [])[0];
+      const prefix = block.run.km + ' km · ' + block.run.shoe + ' · ';
+      let detail = block.detail.startsWith(prefix) ? block.detail.slice(prefix.length) : block.detail;
+      if (detail.startsWith(block.run.shoe + ' · ')) detail = detail.slice(block.run.shoe.length + 3);
+      dialog.querySelector('.focus-notes').remove();
+      dialog.querySelector('.focus-content').innerHTML = '<div class="focus-distance">' + esc(String(block.run.km)) + '<span>km</span></div>' +
+        '<div class="focus-run-facts">' + (pace ? '<div class="focus-pace"><span>PACE</span><strong>' + esc(pace) + '</strong></div>' : '') +
+        '<div><span>SHOE</span><strong>' + esc(block.run.shoe) + '</strong></div></div>' +
+        '<div class="focus-run-brief">' + detailHTML(detail, iso + '|focus', false) + paceTableHTML(block.table) + '</div>';
+    }
+    doneBtn.addEventListener('click', () => {
+      if (!canComplete()) return;
+      const before = !!getDone(iso)[block.id];
+      toggleDone(iso, block.id);
+      paintDone();
+      if (!!getDone(iso)[block.id] === before) status.textContent = 'Could not save. Check device storage and try again.';
+    });
+    let logAfterClose = false;
+    dialog.querySelector('.focus-back').addEventListener('click', () => {
+      dialog.classList.remove('focus-working');
+      dialog.querySelector('.focus-back').hidden = true;
+      dialog.querySelector('.focus-scroll').scrollTop = 0;
+      dialog.querySelector('.focus-jump').focus({ preventScroll: true });
+    });
+    const logBtn = dialog.querySelector('.focus-log');
+    if (logBtn) logBtn.addEventListener('click', () => { logAfterClose = true; dialog.close(); });
+    dialog.querySelector('.focus-close').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => {
+      focusedSession = null;
+      dialog.remove();
+      if (oldStyle === null) document.body.removeAttribute('style'); else document.body.setAttribute('style', oldStyle);
+      render();
+      window.scrollTo(0, scrollY);
+      // Rendering replaces the opener. Restore its new counterpart by block id.
+      const opener = Array.from(document.querySelectorAll('[data-focus-id]')).find(n => n.dataset.focusId === block.id);
+      if (opener) opener.focus({ preventScroll: true }); else if (trigger && trigger.isConnected) trigger.focus({ preventScroll: true });
+      if (logAfterClose) {
+        state.view = 'today'; state.dateISO = iso;
+        render();
+        const edit = document.querySelector('.runlogger button.h-log');
+        if (edit) edit.click();
+        const form = document.querySelector('.runlogger .h-log.form');
+        if (form) { form.scrollIntoView({ block: 'start' }); const input = form.querySelector('input'); if (input) input.focus({ preventScroll: true }); }
+      }
+    }, { once: true });
+    paintDone();
+    refreshFocusClock();
+    dialog.showModal();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+
   function buildHero(day, done, iso, just) {
     const r = day.run;
     const isRace = /marathon/i.test(r.title) || (day.row && day.row.race && day.dayIndex === 6);
@@ -815,6 +978,7 @@
       '<div class="h-detail">' + detailHTML(detail, iso + '|hero', false) + '</div>' +
       zonePrompt +
       (longRunGuard(iso, day) || '') +
+      '<button class="session-focus-open" data-focus-id="' + esc(r.id) + '">Focus session <span aria-hidden="true">↗</span></button>' +
       paceTableHTML(r.table) +
       '</section>'
     );
@@ -830,6 +994,7 @@
       render();
       view.querySelector('[data-ref-target="ref-zones"]').click();
     });
+    hero.querySelector('.session-focus-open').addEventListener('click', e => openSessionFocus(r, iso, e.currentTarget));
     hero.appendChild(buildRunLogger(day, iso));
     return hero;
   }
@@ -983,6 +1148,7 @@
         return '<div class="xr"><span class="xn">' + esc(p.ex) + '</span>' +
           '<span class="xs">' + esc(p.sets) + '</span>' + w + '</div>';
       }).join('') + '</div></details>' : '') +
+      (b.cat === 'gym' && b.plan && !opts.moved && !opts.skipped ? '<button class="session-focus-open" data-focus-id="' + esc(b.id) + '">Focus session <span aria-hidden="true">↗</span></button>' : '') +
       '<div class="c-cat">' + esc(b.cat) + (opts.skipped ? ' · skipped' : '') +
       (opts.moved ? ' · moved from ' + esc(fmtShort(opts.moved.fromIso)) : '') + '</div>' +
       (opts.just && isDone && (b.cat !== 'run' || opts.moved) ? '<div class="completion-note" role="status">✓ Session banked</div>' : '') +
@@ -1001,6 +1167,8 @@
       '<button class="more-btn" aria-label="Actions">⋯</button>' +
       '</div></div>'
     );
+    const focusBtn = card.querySelector('.session-focus-open');
+    if (focusBtn) focusBtn.addEventListener('click', () => openSessionFocus(b, iso, focusBtn));
     card.querySelector('.tick').addEventListener('click', () => {
       if (!isDone) state.justTicked = b.id;       // animate on tick-on only
       toggleDone(iso, b.id);
@@ -2256,6 +2424,7 @@
   let lastISO = todayISO();
   function refreshClock() {
     if (document.hidden) return;
+    refreshFocusClock();
     const iso = todayISO();
     if (iso !== lastISO) {           // midnight rollover
       if (state.dateISO === lastISO) state.dateISO = iso;
@@ -2307,6 +2476,7 @@
   }, { passive: false });
   document.addEventListener('touchcancel', () => { swipeX = swipeY = null; }, { passive: true });
   document.addEventListener('touchend', (e) => {
+    if (focusedSession) { swipeX = swipeY = null; return; }
     if (e.touches.length || !e.changedTouches.length) { swipeX = swipeY = null; return; }
     if (swipeX === null) return;
     const dx = e.changedTouches[0].clientX - swipeX;

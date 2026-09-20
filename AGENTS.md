@@ -566,3 +566,27 @@ unplanned runs, and exclude future entries. Calendar weeks elapsed is labelled
 separately. The chart derives scheduled distance from resolved days, including
 the marathon in race week, on a labelled shared scale with recorded distance.
 No new storage keys. Existing Week-view progress links into this new page.
+
+## Session Focus — v4.55, 20 September
+
+Run heroes and scheduled gym cards now open a native fullscreen dialog. Runs
+show large distance, authored pace/shoe, session details, completion/undo and
+a direct route into the existing run logger. Gym sessions present a brief,
+then one exercise at a time with the original sets and existing weight memory.
+The source's uppercase conditional instructions are surfaced before exercises;
+full rationale remains on tap. Exercise navigation brings the new heading into
+view, and the brief remains one tap away. No prescription edits or new keys.
+
+The clock describes the scheduled window, never elapsed exercise or tracking.
+It reuses the existing minute tick. Future sessions are previews; completion
+and weights cannot be saved ahead of today. Writes are read back before showing
+success. Native focus trapping, Escape/close, scroll restoration and isolated
+swipes keep the underlying day stable. Motion is a short entry/completion cue
+with reduced-motion support, with no new background loop.
+
+The 16,068 plan checks and helper regressions pass. Mobile-viewport browser
+checks cover completion/undo, logger handoff, weight validation/save/reopen,
+exercise navigation, keyboard focus, swipe isolation, future preview and
+matching app/cache 4.55.0. Captures of run, brief, exercises, saved, completed
+and future states were opened and reviewed. This is Chromium at 390px, not a
+physical iPhone or Safari test. Fuelling remains pending.

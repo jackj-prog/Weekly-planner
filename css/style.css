@@ -1444,3 +1444,65 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   .journey-cursor { transition: transform 100ms ease-out; }
   .journey-days button:active, .journey-event:active { transform: scale(.97); }
 }
+/* A single session, held at arm's length. No ongoing animation or timer. */
+.session-focus-open { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 50px; margin-top: 18px; padding: 12px 15px; border: 1px solid var(--t3); border-radius: 12px; background: transparent; color: var(--text); font: 600 15px/1.4 var(--body); }
+.session-focus-open span { font-size: 23px; line-height: 1; }
+.session-focus { position: fixed; inset: 0; width: 100%; height: 100%; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: var(--paper); color: var(--text); overscroll-behavior: contain; overflow: hidden; }
+.session-focus::backdrop { background: var(--chrome-bg); }
+.focus-shell { display: flex; flex-direction: column; max-width: 560px; height: 100%; margin: auto; }
+.focus-header { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; padding: max(12px,env(safe-area-inset-top)) 20px 8px; background: var(--paper); }
+.focus-back { min-height: 48px; font: 600 14px var(--body); }
+.focus-working .focus-header > span, .focus-working .focus-date, .focus-working h1, .focus-working .focus-window, .focus-working .focus-brief, .focus-working .focus-notes { display: none; }
+.focus-header > span, .focus-eyebrow { font: 400 12px/1.5 var(--mono); letter-spacing: .09em; color: var(--t2); }
+.focus-close { width: 48px; height: 48px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--text); font: 400 22px var(--body); }
+.focus-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 22px 24px; }
+.focus-date { margin: 8px 0 10px; color: var(--t2); font: 400 14px/1.5 var(--body); }
+.session-focus h1 { font: 900 34px/1.08 var(--display); letter-spacing: -.035em; margin: 0 0 20px; }
+.session-focus.is-gym h1 { font: 800 22px/1.25 var(--display); letter-spacing: -.02em; margin-bottom: 14px; }
+.focus-window { padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.focus-window > span { font: 400 17px/1.4 var(--mono); }
+.focus-clock { margin: 6px 0 0; color: var(--t2); font: 400 13px/1.5 var(--body); }
+.focus-distance { display: flex; align-items: baseline; gap: 12px; margin: 18px 0; font: 900 clamp(76px,24vw,108px)/1 var(--display); letter-spacing: -.06em; }
+.focus-distance span { color: var(--t2); font: 400 22px var(--mono); letter-spacing: 0; }
+.focus-run-facts { display: grid; gap: 18px; padding: 20px; border-radius: 18px; background: linear-gradient(140deg,var(--hero-bg),var(--surface)); }
+.focus-run-facts span { display: block; margin-bottom: 8px; font: 400 11px var(--mono); color: var(--t2); letter-spacing: .08em; }
+.focus-run-facts strong { display: block; font: 600 20px/1.4 var(--body); }
+.focus-run-facts .focus-pace strong { font-family: var(--mono); }
+.focus-run-brief { margin: 22px 0; font: 400 16px/1.6 var(--body); }
+.focus-notes { margin-top: 20px; border-top: 1px solid var(--line); }
+.focus-notes summary { padding: 18px 0; font: 600 15px/1.5 var(--body); cursor: pointer; }
+.focus-notes p { color: var(--t2); font: 400 15px/1.65 var(--body); }
+.focus-brief { margin-top: 20px; font: 400 14px/1.6 var(--body); }
+.focus-brief > p { margin: 12px 0; }
+.focus-rule { padding-left: 12px; border-left: 2px solid var(--t3); color: var(--t2); }
+.focus-jump { min-height: 48px; margin-top: 4px; font: 600 15px var(--body); text-decoration: underline; text-underline-offset: 4px; }
+.focus-ex-name { scroll-margin-top: 16px; }
+.focus-ex-progress { display: flex; gap: 5px; margin: 24px 0 18px; }
+.focus-ex-progress i { height: 4px; flex: 1; border-radius: 2px; background: var(--line); }
+.focus-ex-progress i.selected { background: var(--text); }
+.focus-eyebrow { margin: 0 0 12px; }
+.focus-ex-name { font: 800 30px/1.16 var(--display); letter-spacing: -.025em; margin: 0 0 12px; }
+.focus-sets { margin: 0 0 24px; font: 600 20px/1.45 var(--body); }
+.focus-weight { border: 1px solid var(--line); border-radius: 16px; padding: 16px; background: var(--surface); }
+.focus-weight label { display: flex; justify-content: space-between; margin-bottom: 12px; font: 600 14px var(--body); }
+.focus-weight label span { font-family: var(--mono); color: var(--t2); }
+.focus-weight > div { display: flex; gap: 12px; }
+.focus-weight input { flex: 1; min-width: 0; width: 100%; min-height: 52px; padding: 8px 12px; border: 1px solid var(--t3); border-radius: 10px; font: 400 25px var(--mono); background: var(--paper); color: var(--text); }
+.focus-weight button { min-width: 78px; min-height: 52px; border: 0; border-radius: 10px; background: var(--text); color: var(--paper); font: 600 15px var(--body); }
+.focus-weight-note { margin: 12px 0 0; color: var(--t2); font: 400 13px/1.5 var(--body); }
+.focus-ex-nav { display: flex; gap: 12px; margin: 18px 0; }
+.focus-ex-nav button { flex: 1; min-height: 52px; border: 1px solid var(--t3); border-radius: 12px; background: transparent; color: var(--text); font: 600 15px var(--body); }
+.session-focus button:disabled, .session-focus input:disabled { opacity: .45; cursor: default; }
+.focus-up-next { color: var(--t2); font: 400 14px/1.5 var(--body); margin: 20px 0; }
+.focus-up-next span { display: block; margin-bottom: 6px; font: 400 11px var(--mono); letter-spacing: .08em; }
+.focus-footer { flex-shrink: 0; padding: 10px 22px max(18px,env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--paper); }
+.focus-status { min-height: 20px; margin: 0 0 10px; text-align: center; color: var(--t2); font: 400 13px/1.5 var(--body); }
+.focus-done { width: 100%; min-height: 56px; border: 1px solid var(--text); border-radius: 14px; background: var(--text); color: var(--paper); font: 600 16px var(--body); }
+.is-banked .focus-done { background: var(--surface); color: var(--text); }
+.focus-log { width: 100%; min-height: 44px; margin-top: 6px; border: 0; background: transparent; color: var(--text); font: 600 14px var(--body); }
+@media (prefers-reduced-motion: no-preference) {
+  .session-focus[open] .focus-shell { animation: focus-arrive 160ms ease-out; }
+  .is-banked .focus-done { animation: focus-bank 180ms ease-out; }
+  @keyframes focus-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes focus-bank { 50% { transform: scale(.97); } }
+}
