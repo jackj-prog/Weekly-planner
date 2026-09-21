@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.55.0';
+  const APP_VERSION = '4.56.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -330,8 +330,17 @@
       if (nextRun) rest.querySelector('.rest-next').addEventListener('click', () => {
         state.dateISO = nextRun.iso; state.expanded = null; render();
       });
-      view.appendChild(rest);
-      if (iso <= todayISO()) view.appendChild(buildRunLogger(day, iso));
+      const recap = window.RunProgress.debrief(runLogHistory(), iso, todayISO());
+      if (recap && state.runLogEdit !== iso) {
+        const result = el('<section class="hero has-recap unplanned-recap" aria-label="Logged run"></section>');
+        const planned = el('<details class="recap-plan"><summary>View rest-day plan</summary></details>');
+        planned.appendChild(rest);
+        result.append(buildRunRecap(day, iso, recap), planned, buildRunLogger(day, iso, true));
+        view.appendChild(result);
+      } else {
+        view.appendChild(rest);
+        if (iso <= todayISO()) view.appendChild(buildRunLogger(day, iso));
+      }
     }
 
     view.appendChild(el('<div class="timeline-head"><h2>Your day</h2>' +
@@ -465,6 +474,7 @@
   /* History feed for the estimate model: every logged run, classified. */
   function runLogHistory() {
     const out = [];
+    try {
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       const m = k && k.match(/^runlog-(\d{4}-\d{2}-\d{2})$/);
@@ -475,11 +485,12 @@
       const km = e.km || (day.run ? day.run.run.km : 0);
       if (!(km > 0)) continue;
       out.push({
-        iso: m[1], km, sec: e.sec, cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'), paceSec: Math.round(e.sec / km),
+        iso: m[1], km, sec: e.sec, estimatedKm: !(Number.isFinite(e.km) && e.km > 0), cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'), paceSec: Math.round(e.sec / km),
         hr: e.hr || null, ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
         temp: e.temp == null ? null : e.temp,
       });
     }
+    } catch (e) { return []; } // Storage can be denied even while enumerating.
     out.sort((a, b) => (a.iso < b.iso ? -1 : 1));
     return out;
   }
@@ -490,6 +501,10 @@
     const s = Math.round(seconds), h = Math.floor(s / 3600);
     return (h ? h + ':' : '') + String(Math.floor(s / 60) % (h ? 60 : 100000)).padStart(h ? 2 : 1, '0') +
       ':' + String(s % 60).padStart(2, '0');
+  }
+  function loggedDistance(km) {
+    // Exact whole-run records must not round 9.999 km into a 10 km claim.
+    return km.toLocaleString('en-GB', { maximumFractionDigits: 20 });
   }
   function earnedHTML(iso) {
     const p = savedProgress();
@@ -506,8 +521,8 @@
     return '<section class="records"><h3>Your logged bests</h3>' + progress.bests.slice(0,3).map(r =>
       '<article class="record"><div><span>Fastest logged ' + r.km + ' km</span><small>' + esc(r.iso) +
       ' · ' + r.compared + ' runs compared</small></div><b>' + recordTime(r.sec) + '</b></article>').join('') +
-      '<details class="record-method"><summary>What counts as a best?</summary><p>Whole runs at the exact same distance, using the saved distance ' +
-      'or the planned distance when no override is saved. At least two logs are needed. Ties keep the earlier record. ' +
+      '<details class="record-method"><summary>What counts as a best?</summary><p>Whole runs at the exact same explicitly saved distance. ' +
+      'Logs using a planned-distance fallback do not establish records. At least two logs are needed. Ties keep the earlier record. ' +
       'These are bests in this log; no splits or Strava records are inferred.</p></details></section>';
   }
   function buildJourney() {
@@ -558,7 +573,52 @@
       (Number.isFinite(split) ? '<p>Equal-distance halves: second half ' + (Math.abs(split)<1 ? 'matched the first.' : recordTime(Math.abs(split)) + (split<0 ? ' faster (negative split).' : ' slower.')) + '</p>' : '<p>Half-run comparison unavailable for this track.</p>') +
       '<p>Track time includes recorded stops. GPS, terrain and missing samples affect comparisons. Only summaries are saved; the route stays out of storage.</p></details>';
   }
-  function buildRunLogger(day, iso) {
+  function buildRunRecap(day, iso, report) {
+    const r = report.current;
+    const hrLabel = value => Number.isFinite(value) && value > 0 ? String(value) : '—';
+    const fmt = loggedDistance;
+    const pace = DB.paceOf(r.km, r.sec);
+    const awards = [];
+    if (report.best) awards.push({ label: 'Fastest logged ' + fmt(r.km) + ' km', value: recordTime(r.sec),
+      detail: recordTime(report.best.gainSec) + ' quicker than your previous best on ' + fmtShort(report.best.previous.iso) + '.' });
+    if (report.longest) awards.push({ label: 'Longest logged run', value: fmt(r.km) + ' km',
+      detail: fmt(Number(report.longest.gainKm.toPrecision(12))) + ' km beyond your previous longest on ' + fmtShort(report.longest.previous.iso) + '.' });
+    if (report.milestone) awards.push({ label: 'Distance milestone', value: fmt(report.milestone) + ' km',
+      detail: 'This run reached a new mark in your log.' });
+    let comparison = '';
+    if (report.previous) {
+      const prev = report.previous;
+      const delta = Math.round(Math.abs(report.deltaPaceSec));
+      const paceText = delta === 0 ? 'Same pace to the second' : delta + ' s/km ' + (report.deltaPaceSec > 0 ? 'quicker' : 'slower');
+      const hrText = report.deltaHr == null ? 'HR comparison unavailable' : report.deltaHr === 0 ? 'Same average HR' : Math.abs(report.deltaHr) + ' bpm ' + (report.deltaHr > 0 ? 'higher' : 'lower');
+      comparison = '<details class="recap-compare"><summary><span>Compared with your last ' + esc(r.cls) + ' run</span><span aria-hidden="true">+</span></summary>' +
+        '<div class="recap-deltas"><div><b>' + esc(paceText) + '</b><span>' + esc(hrText) + '</span></div></div>' +
+        '<table><caption>' + esc(fmtShort(prev.iso)) + ' → ' + esc(fmtShort(iso)) + '</caption><thead><tr><th>Saved values</th><th>Previous</th><th>This run</th></tr></thead><tbody>' +
+        '<tr><th>Distance</th><td>' + fmt(prev.km) + ' km</td><td>' + fmt(r.km) + ' km</td></tr>' +
+        '<tr><th>Pace</th><td>' + DB.paceOf(prev.km, prev.sec) + '</td><td>' + pace + '</td></tr>' +
+        '<tr><th>Average HR</th><td>' + hrLabel(prev.hr) + '</td><td>' + hrLabel(r.hr) + '</td></tr></tbody></table>' +
+        '<p>Pace is per km; HR is bpm. Distance, route, effort and weather can differ. This comparison is not a fitness verdict.' +
+        (r.estimatedKm || prev.estimatedKm ? ' At least one distance comes from the plan.' : '') + '</p></details>';
+    }
+    const wrap = el('<section class="run-recap" aria-label="Saved run recap"><div class="recap-intro"><h2 tabindex="-1">' +
+      (report.runCount === 1 ? 'The first one, saved.' : 'That’s in the bank.') + '</h2><span>RUN ' + String(report.runCount).padStart(2, '0') + '</span></div>' +
+      '<div class="recap-distance"><strong>' + fmt(r.km) + '</strong><span>km</span></div>' +
+      '<p class="recap-subtitle">' + esc(day.run ? day.run.title : 'Unplanned run') +
+      (r.estimatedKm ? ' · distance from plan' : ' · logged distance') + '</p>' +
+      '<div class="recap-metrics"><div><span>TIME</span><b>' + recordTime(r.sec) + '</b></div><div><span>PACE / KM</span><b>' + pace + '</b></div><div><span>AVG HR</span><b>' + hrLabel(r.hr) + '</b></div></div>' +
+      awards.map(a => '<article class="recap-award"><span class="recap-seal" aria-hidden="true">✦</span><div><h3>' + esc(a.label) + '</h3><strong>' + esc(a.value) + '</strong><p>' + esc(a.detail) + '</p></div></article>').join('') +
+      (report.runCount === 1 ? '<p class="recap-baseline">Your history starts here. Future runs build the comparison.</p>' : '') +
+      '<div class="recap-total"><span>Your log to this run</span><p><b>' + fmt(report.totalKm) + '</b> km <span>across ' + report.runCount + (report.runCount === 1 ? ' run' : ' runs') + '</span></p>' +
+      (report.estimatedCount ? '<small>Includes ' + report.estimatedCount + ' ' + (report.estimatedCount === 1 ? 'distance' : 'distances') + ' from the plan.</small>' : '') + '</div>' +
+      comparison + '<details class="recap-method"><summary>What this recap counts</summary><p>Saved whole runs through ' + esc(fmtShort(iso)) +
+      '. Records use explicitly saved distances and earlier logs only. First observations and ties do not earn a new best; segment times are never inferred.' +
+      (report.estimatedCount ? ' Totals include ' + report.estimatedCount + ' ' + (report.estimatedCount === 1 ? 'log' : 'logs') + ' whose distance comes from the plan.' : '') +
+      ' Editing or deleting a log updates these figures.</p></details></section>');
+    return wrap;
+  }
+
+
+  function buildRunLogger(day, iso, hasRecap) {
     const plannedKm = day.run ? day.run.run.km : 0;
     const saved = getRunLogEntry(iso);
     const editing = state.runLogEdit === iso && state.runLogDraft;
@@ -566,10 +626,10 @@
     if (!editing) {
       if (iso > todayISO()) return wrap;
       wrap.innerHTML = '<button class="h-log' + (saved ? ' logged' : '') + '">' +
-        (saved ? loggedLineHTML(iso, plannedKm) : day.run
+        (saved ? (hasRecap ? 'Edit run <span aria-hidden="true">↗</span>' : loggedLineHTML(iso, plannedKm)) : day.run
           ? 'Log this run <span aria-hidden="true">↗</span><small>Paste your run or enter the numbers</small>'
           : 'Ran today? Add a run <span aria-hidden="true">↗</span><small>Record what happened, even on a rest day</small>') + '</button>' +
-        (saved ? earnedHTML(iso) : '');
+        (saved && !hasRecap ? earnedHTML(iso) : '');
       if (saved) {
         const e = saved, km = plannedKm, r = day.run;
         let logHTML = '';
@@ -588,7 +648,7 @@
         logHTML += '<div class="h-dc ' + dv.band + '"><b>' + dec.pct.toFixed(1) +
           '%</b> decoupling · ' + esc(dv.text) + '</div>';
       }
-      const v = (e.cls || (r ? DB.runClass(r) : 'unclassified')) === 'unclassified' ? null : DB.logVerdict(runLogHistory(), iso);
+      const v = (e.cls || (r ? DB.runClass(r) : 'unclassified')) === 'unclassified' ? null : DB.logVerdict(runLogHistory().filter(run => run.iso <= iso), iso);
       if (v) {
         const cls = e.cls || (r ? DB.runClass(r) : 'unclassified');
         let line;
@@ -609,7 +669,7 @@
           const bp = DB.bandPlace(DB.adjustPace(raw, e.temp) || raw, day.week);
           if (bp) line += ' · ' + bp.text;
         }
-        logHTML += '<div class="h-verdict' + (v.best ? ' best' : '') + '">' +
+        logHTML += hasRecap ? '<details class="recap-method recap-readback"><summary>Training readback</summary><p>' + esc(line) + '</p></details>' : '<div class="h-verdict' + (v.best ? ' best' : '') + '">' +
           '<span>' + esc(line) + '</span>' +
           '<button class="h-share" aria-label="Share run card">⤴</button></div>';
       }
@@ -619,6 +679,11 @@
         const share = wrap.querySelector('.h-share');
         if (share && day.run) share.addEventListener('click', () => shareRunCard(day, iso));
         else if (share) share.remove();
+        if (hasRecap) {
+          const receipt = el('<button class="recap-share">Share run receipt <span aria-hidden="true">↗</span></button>');
+          receipt.addEventListener('click', () => shareRunCard(day, iso));
+          wrap.appendChild(receipt);
+        }
       }
       wrap.querySelector('button').addEventListener('click', () => {
         const e = saved || {}, estimate = DB.logEstimate(day, runLogHistory());
@@ -634,6 +699,8 @@
             plannedKm ? 'Distance and time start from the plan. Replace them with your actual run.' : 'Enter actual distance and time. HR and conditions are optional.',
         };
         render();
+        const editor = view.querySelector('.runlogger .h-log.form');
+        if (editor) editor.scrollIntoView({ block: 'start' });
       });
       return wrap;
     }
@@ -751,11 +818,13 @@
         wrap.querySelector('.log-error').textContent = d.error || 'Enter a valid distance and moving time; check HR and temperature if supplied.'; return;
       }
       const entry = { ...(saved || {}), sec: d.sec, hr: d.hr == null ? null : Math.round(d.hr),
-        km: d.km === plannedKm ? null : d.km, temp: d.temp, cls: d.cls,
+        km: d.km, temp: d.temp, cls: d.cls,
         halfPaceSec: d.halfPaceSec, hr2: d.hr2, gels: d.gels, stream: d.stream || null };
       try { localStorage.setItem(logKey(iso), JSON.stringify(entry)); }
       catch (e) { wrap.querySelector('.log-error').textContent = 'Could not save on this device. Keep this form open and free some storage, then try again.'; return; }
       state.runLogEdit = null; state.runLogDraft = null; render();
+      const recapHeading = view.querySelector('.run-recap h2');
+      if (recapHeading) { recapHeading.focus({ preventScroll: true }); recapHeading.scrollIntoView({ block: 'start' }); }
     });
     const del = wrap.querySelector('.log-delete');
     if (del) del.addEventListener('click', () => {
@@ -995,7 +1064,17 @@
       view.querySelector('[data-ref-target="ref-zones"]').click();
     });
     hero.querySelector('.session-focus-open').addEventListener('click', e => openSessionFocus(r, iso, e.currentTarget));
-    hero.appendChild(buildRunLogger(day, iso));
+    const recap = window.RunProgress.debrief(runLogHistory(), iso, todayISO());
+    if (recap && !editing) {
+      hero.classList.add('has-recap');
+      const top = hero.querySelector('.h-top');
+      top.querySelector('.h-tag').firstChild.textContent = 'RUN LOGGED';
+      top.querySelector('.h-state').textContent = fmtShort(iso);
+      const planned = el('<details class="recap-plan" data-disclosure="' + iso + '|recap-plan"' + (openDetails.has(iso + '|recap-plan') ? ' open' : '') + '><summary>View planned session <span>' + kmTxt + ' km</span></summary><div></div></details>');
+      Array.from(hero.children).filter(n => n !== top).forEach(n => planned.querySelector('div').appendChild(n));
+      hero.append(buildRunRecap(day, iso, recap), planned);
+    }
+    hero.appendChild(buildRunLogger(day, iso, !!recap));
     return hero;
   }
   function fmtDur(sec) {
@@ -1003,78 +1082,57 @@
     return (h ? h + ':' + String(m).padStart(2, '0') : String(m)) + ':' + String(s).padStart(2, '0');
   }
 
-  /* ---- shareable run card: 1080×1350, drawn on-device, no network ----
-     Brand tokens are the LOCKED §3 identity, not the live theme, so the
-     card looks the same shared from light or dark. */
-  const CARD = {
-    ink: '#16242a', paper: '#eef0ea', accent: '#d6492e',
-    phase: { base: '#6f8c63', build: '#436883', taper: '#c5872f' },
-  };
+  /* A shareable receipt rendered entirely on this device, from live tokens. */
   function shareRunCard(day, iso) {
-    const r = day.run;
-    const e = getRunLogEntry(iso);
-    if (!r || !e) return;
-    const km = e.km || r.run.km;
-    const pace = DB.paceOf(km, e.sec);
-    const efv = e.hr ? DB.ef(km, e.sec, e.hr) : null;
-    const ready = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    const report = window.RunProgress.debrief(runLogHistory(), iso, todayISO());
+    if (!report) return;
+    const e = report.current;
+    const ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
     ready.then(() => {
-      const c = document.createElement('canvas');
-      c.width = 1080; c.height = 1350;
-      const x = c.getContext('2d');
-      const phase = CARD.phase[day.phase] || CARD.accent;
-      x.fillStyle = CARD.ink; x.fillRect(0, 0, 1080, 1350);
-      const grad = x.createRadialGradient(540, -80, 60, 540, -80, 900);
-      grad.addColorStop(0, phase + '55'); grad.addColorStop(1, 'rgba(0,0,0,0)');
-      x.fillStyle = grad; x.fillRect(0, 0, 1080, 1350);
-      x.fillStyle = phase; x.fillRect(0, 1330, 1080, 20);
-      const mono = '"Space Mono", Menlo, monospace';
-      const disp = '"Archivo", "Arial Black", sans-serif';
-      x.textBaseline = 'alphabetic';
-      /* wordmark + week */
-      x.font = '900 64px ' + disp;
-      x.fillStyle = CARD.paper; x.fillText('WEEK', 72, 118);
-      x.fillStyle = CARD.accent; x.fillText('OS', 72 + x.measureText('WEEK').width, 118);
-      x.font = '700 34px ' + mono; x.fillStyle = CARD.paper; x.textAlign = 'right';
-      x.fillText('WK ' + day.week + '/30 · ' + String(day.phase || '').toUpperCase(), 1008, 112);
-      x.textAlign = 'left';
-      /* date + session */
-      x.font = '700 40px ' + mono; x.globalAlpha = 0.7;
-      x.fillText(fmtDate(iso).toUpperCase(), 72, 240); x.globalAlpha = 1;
-      /* the number */
-      x.font = '900 330px ' + disp;
-      const kmTxt = km === Math.round(km) ? String(km) : km.toFixed(1);
-      x.fillText(kmTxt, 60, 560);
-      const bigW = measure(x, '900 330px ' + disp, kmTxt);
-      x.font = '900 90px ' + disp; x.globalAlpha = 0.85;
-      x.fillText('km', 78 + bigW, 560);
-      x.globalAlpha = 1;
-      x.font = '800 64px ' + disp;
-      wrapText(x, r.title, 72, 680, 936, 74);
-      /* stats */
-      x.font = '700 44px ' + mono; x.fillStyle = CARD.paper;
-      const stats = [pace + '/km', e.hr ? e.hr + ' bpm' : null, efv ? 'EF ' + efv.toFixed(3) : null]
-        .filter(Boolean).join(' · ');
-      x.fillText(stats, 72, 850);
-      /* countdown footer */
-      const cd = DB.raceCountdown(iso);
-      x.font = '700 40px ' + mono; x.globalAlpha = 0.75;
-      x.fillText(('' + PLAN.race.name).toUpperCase(), 72, 1180);
-      x.globalAlpha = 1;
-      x.font = '900 84px ' + disp; x.fillStyle = CARD.accent;
-      x.fillText(cd.past ? 'MARATHONER' : cd.weeks + 'w ' + cd.rem + 'd to the gun', 72, 1280);
-      const blob2file = (blob) => new File([blob], 'week-os-run.png', { type: 'image/png' });
-      c.toBlob((blob) => {
+      const styles = getComputedStyle(document.documentElement);
+      const token = name => styles.getPropertyValue(name).trim();
+      const ink = token('--paper'), text = token('--text'), muted = token('--t2');
+      const canvas = document.createElement('canvas'); canvas.width = 1080; canvas.height = 1350;
+      const x = canvas.getContext('2d');
+      const display = '"Archivo", sans-serif', mono = '"Space Mono", monospace', body = '"Inter", sans-serif';
+      const write = (value, px, family, weight, left, top, color) => {
+        x.font = weight + ' ' + px + 'px ' + family; x.fillStyle = color || text; x.fillText(String(value), left, top);
+      };
+      x.fillStyle = ink; x.fillRect(0, 0, 1080, 1350);
+      x.fillStyle = token('--surface'); x.fillRect(36, 36, 1008, 1278);
+      write('WEEK', 52, display, 900, 72, 125);
+      write('OS', 52, display, 900, 72 + x.measureText('WEEK').width, 125, token('--accent'));
+      x.textAlign = 'right'; write('RUN ' + String(report.runCount).padStart(2, '0'), 28, mono, 400, 1008, 118, muted); x.textAlign = 'left';
+      write(fmtDate(iso), 30, body, 400, 72, 210, muted);
+      const km = loggedDistance(e.km);
+      let size = 260;
+      while (measure(x, '900 ' + size + 'px ' + display, km) > 790 && size > 100) size -= 4;
+      write(km, size, display, 900, 62, 480);
+      const numberWidth = x.measureText(km).width;
+      write('km', 58, mono, 400, 80 + numberWidth, 480, muted);
+      write(e.estimatedKm ? 'Distance from plan' : 'Logged distance', 25, body, 400, 72, 535, muted);
+      x.font = '800 48px ' + display; x.fillStyle = text;
+      wrapText(x, day.run ? day.run.title : 'Unplanned run', 72, 620, 920, 57);
+      x.strokeStyle = token('--line'); x.lineWidth = 2; x.beginPath(); x.moveTo(72, 790); x.lineTo(1008, 790); x.stroke();
+      const values = [['TIME',recordTime(e.sec)],['PACE / KM',DB.paceOf(e.km,e.sec)],['AVG HR',e.hr || '—']];
+      values.forEach((v,i) => { write(v[0],22,mono,400,72+i*320,845,muted); write(v[1],42,mono,400,72+i*320,912); });
+      const label = report.best ? 'Fastest logged ' + km + ' km' : report.longest ? 'Longest logged run' : report.milestone ? report.milestone + ' km milestone' : 'Your log, to this run';
+      const detail = report.best ? recordTime(report.best.gainSec) + ' quicker than your previous best' : report.longest ? '+' + loggedDistance(Number(report.longest.gainKm.toPrecision(12))) + ' km beyond your previous longest' : loggedDistance(report.totalKm) + ' km across ' + report.runCount + ' saved runs';
+      write(label, 36, display, 800, 72, 1040);
+      write(detail, 27, body, 400, 72, 1092, muted);
+      x.setLineDash([8,8]); x.beginPath(); x.moveTo(72,1150); x.lineTo(1008,1150); x.stroke(); x.setLineDash([]);
+      write('THAT’S IN THE BANK.', 34, display, 900, 72, 1220);
+      write('Whole-run log · ' + iso + (report.estimatedCount ? ' · includes plan-distance estimates' : ''), 22, body, 400, 72, 1270, muted);
+      canvas.toBlob(blob => {
         if (!blob) return;
-        const file = blob2file(blob);
-        if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
-          navigator.share({ files: [file] }).catch(() => showCardOverlay(c));
-        } else {
-          showCardOverlay(c);
-        }
+        const file = new File([blob], 'week-os-run-' + iso + '.png', {type:'image/png'});
+        if (navigator.canShare && navigator.canShare({files:[file]}) && navigator.share) {
+          navigator.share({files:[file]}).catch(() => showCardOverlay(canvas));
+        } else showCardOverlay(canvas);
       }, 'image/png');
     });
   }
+
   function measure(x, font, text) {
     const prev = x.font; x.font = font;
     const w = x.measureText(text).width; x.font = prev;
@@ -1093,14 +1151,17 @@
   }
   function showCardOverlay(canvas) {
     const ov = el(
-      '<div class="card-ov" role="dialog" aria-label="Run card">' +
+      '<dialog class="card-ov" aria-label="Run receipt">' +
       '<img alt="Run card — long-press to save">' +
       '<div class="card-note">Long-press the card to save or share it</div>' +
-      '<button class="card-x">Close</button></div>'
+      '<div class="card-actions"><a class="card-save" download="week-os-run.png">Save image</a><button class="card-x" autofocus>Close</button></div></dialog>'
     );
     ov.querySelector('img').src = canvas.toDataURL('image/png');
-    ov.querySelector('.card-x').addEventListener('click', () => ov.remove());
+    ov.querySelector('.card-save').href = ov.querySelector('img').src;
+    ov.querySelector('.card-x').addEventListener('click', () => ov.close());
+    ov.addEventListener('close', () => ov.remove(), {once:true});
     document.body.appendChild(ov);
+    ov.showModal();
   }
 
   /* ---- week-progress ring: banked vs planned run km this week ---- */
@@ -2476,7 +2537,7 @@
   }, { passive: false });
   document.addEventListener('touchcancel', () => { swipeX = swipeY = null; }, { passive: true });
   document.addEventListener('touchend', (e) => {
-    if (focusedSession) { swipeX = swipeY = null; return; }
+    if (focusedSession || document.querySelector('.card-ov[open]')) { swipeX = swipeY = null; return; }
     if (e.touches.length || !e.changedTouches.length) { swipeX = swipeY = null; return; }
     if (swipeX === null) return;
     const dx = e.changedTouches[0].clientX - swipeX;

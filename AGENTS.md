@@ -602,3 +602,35 @@ estimated distances and later performances must not manufacture or erase a
 record. Keep edits, deletion, sharing and the unplanned-run path intact.
 Make celebration specific to saved evidence, with no inferred segment PBs,
 training advice, new storage keys or ongoing animation.
+
+## Saved-run recap and receipt — v4.56, 21 September
+
+A saved run now occupies the Today hero with logged distance, time, pace and
+HR. The original session and Focus view remain in a disclosure. Unplanned
+runs get the same recap, with the rest-day plan available beneath it. Editing
+and deleting return through the existing logger; training readback, imported
+track analysis and fuelling readback remain available.
+
+RunProgress.debrief compares only logs through the viewed date: later runs
+cannot erase a historical achievement. Exact-distance bests and longest runs
+need an earlier explicitly recorded distance, and ties/first observations are
+baselines. Cumulative 100 km milestones include legacy estimates with a clear
+disclosure. Exact record labels preserve precision (9.999 km is not 10 km).
+Pace/HR comparison is descriptive and does not imply a fitness verdict.
+
+New saves retain the entered km even when it matches the plan. Existing null
+km logs still resolve through the plan and remain readable, but cannot set a
+distance-based record until an explicit distance is saved. No storage keys
+or training prescriptions changed. Storage enumeration failure now falls back
+to an empty history so Today can still render when localStorage is denied.
+
+The shareable receipt uses the current design tokens and runs entirely on the
+device, including unplanned runs. Native sharing has an image-preview/save
+fallback with a modal focus boundary; nothing is uploaded automatically.
+
+The 16,068 checks and regression suites pass. Mobile-viewport checks exercised
+historical PB/milestone, comparison, plan/Focus access, receipt generation,
+exact-distance save, edit/delete, first/unplanned/legacy states, 9.999 km
+precision, and denied-storage startup. Captures were inspected, including
+Reference → App showing matching 4.56.0 app/cache. Native iPhone sharing and
+physical Safari remain device checks; browser captures use synthetic logs.

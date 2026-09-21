@@ -11,6 +11,8 @@ const helper = name => {
   return vm.runInNewContext('(' + match[0] + ')', {DB});
 };
 const parseHalf = helper('parseHalf'), fmtPace = helper('fmtPace'), fmtClock = helper('fmtClock');
+assert.equal(helper('loggedDistance')(9.999), '9.999');
+assert.equal(helper('loggedDistance')(10), '10');
 assert.equal(parseHalf('1:50'), 6600);
 assert.equal(parseHalf('1:50:30'), 6630);
 for (const bad of ['1:60', '1:99:00', '1:20:60', '1:20:99', '1:', '1:2', '1:20:']) assert.equal(parseHalf(bad), null, bad);
