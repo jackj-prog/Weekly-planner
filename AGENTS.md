@@ -696,3 +696,14 @@ now classes the Wk 24 tune-up half ("raced honest") as `race`, not `long`, so
 it cannot inflate the long-run EF trend or pick up long-run guards. Each EF
 trend card adds "At your usual N bpm: about A → B/km", read off the existing
 fitted line at the window's median HR: the same data expressed as pace.
+
+## Leave a run out of trends — v4.62, 29 September (Claude)
+
+The run log's optional measurements gain "Leave out of trends" (stored as
+`x: true` on the existing `runlog-ISO` entry; absent means included, so old
+logs and backups are unchanged). A flagged run still counts for distance,
+totals, ticks and time in zones, but is excluded from the EF trend cards, the
+decoupling list, the log estimate and other runs' "vs last" readback, and is
+tagged "not in trends" in the run list. Motivation: the real Wk 10 long run
+(lost, 305 m of climb, trail walking) was pulling the long-run trend down by
+~8%; flagged, the card reads +8.7% and 6:30 → 5:58/km at the usual 147 bpm.

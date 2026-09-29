@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.61.0';
+  const APP_VERSION = '4.62.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -526,7 +526,7 @@
       out.push({
         iso: m[1], km, sec: e.sec, estimatedKm: !(Number.isFinite(e.km) && e.km > 0), cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'), paceSec: Math.round(e.sec / km),
         hr: e.hr || null, ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
-        temp: e.temp == null ? null : e.temp,
+        temp: e.temp == null ? null : e.temp, x: e.x === true,
       });
     }
     } catch (e) { return []; } // Storage can be denied even while enumerating.
@@ -714,7 +714,7 @@
         logHTML += '<div class="h-dc ' + dv.band + '"><b>' + dec.pct.toFixed(1) +
           '%</b> decoupling · ' + esc(dv.text) + '</div>';
       }
-      const v = (e.cls || (r ? DB.runClass(r) : 'unclassified')) === 'unclassified' ? null : DB.logVerdict(runLogHistory().filter(run => run.iso <= iso), iso);
+      const v = (e.cls || (r ? DB.runClass(r) : 'unclassified')) === 'unclassified' ? null : DB.logVerdict(runLogHistory().filter(run => run.iso <= iso && (!run.x || run.iso === iso)), iso);
       if (v) {
         const cls = e.cls || (r ? DB.runClass(r) : 'unclassified');
         let line;
@@ -752,7 +752,7 @@
         }
       }
       wrap.querySelector('button').addEventListener('click', () => {
-        const e = saved || {}, estimate = DB.logEstimate(day, runLogHistory());
+        const e = saved || {}, estimate = DB.logEstimate(day, runLogHistory().filter(run => !run.x));
         const km = e.km || plannedKm || null;
         const sec = e.sec || (km && estimate ? Math.round(km * estimate.paceSec) : null);
         state.runLogEdit = iso;
@@ -760,7 +760,7 @@
           km, sec, paceSec: sec && km ? sec / km : null, hr: e.hr || null,
           temp: e.temp == null ? null : e.temp, gels: e.gels == null ? null : e.gels,
           halfPaceSec: e.halfPaceSec || null, hr2: e.hr2 || null,
-          cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'), stream: e.stream || null,
+          cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'), stream: e.stream || null, x: e.x === true,
           paste: '', preview: null, note: saved ? 'Saved values. Change only what needs correcting.' :
             plannedKm ? 'Distance and time start from the plan. Replace them with your actual run.' : 'Enter actual distance and time. HR and conditions are optional.',
         };
@@ -802,7 +802,10 @@
       '<p class="log-note">For a decoupling estimate, enter measured first-half pace and second-half HR. Leave blank if unavailable.</p>' +
       (d.stream ? '<p class="log-note">Half-run analysis uses the imported track when coverage permits. Gaps leave it unavailable.</p>' :
       field('halfPaceSec', 'First-half pace', clock(d.halfPaceSec), 'text', '/km', true) +
-      field('hr2', 'Second-half HR', d.hr2, 'numeric', 'bpm', true)) + '</details>' +
+      field('hr2', 'Second-half HR', d.hr2, 'numeric', 'bpm', true)) +
+      '<label class="log-exclude"><input type="checkbox" class="log-x"' + (d.x ? ' checked' : '') + '>' +
+      '<span><b>Leave out of trends</b><small>Lost, hilly, ill, hungover or a different route. The run still counts for distance; it just isn\u2019t compared.</small></span></label>' +
+      '</details>' +
       '<p class="log-error" role="alert">' + esc(d.error || '') + '</p>' +
       '<button class="rl-save">Save run</button>' +
       (saved ? '<button class="log-delete">Delete this log</button>' : '') + '</div>';
@@ -844,12 +847,13 @@
       const key = btn.dataset.logStep, dir = +btn.dataset.dir;
       const steps = { km: .1, paceSec: PLAN.logModel.paceStep, hr: PLAN.logModel.hrStep,
         halfPaceSec: PLAN.logModel.halfPaceStep, hr2: PLAN.logModel.hrStep, temp: PLAN.logModel.tempStep, gels: 1 };
-      const current = d[key] == null ? (key === 'temp' ? PLAN.logModel.tempDefault : key === 'hr' || key === 'hr2' ? (DB.logEstimate(day, runLogHistory()) || {}).hr || 1 : 0) : d[key];
+      const current = d[key] == null ? (key === 'temp' ? PLAN.logModel.tempDefault : key === 'hr' || key === 'hr2' ? (DB.logEstimate(day, runLogHistory().filter(run => !run.x)) || {}).hr || 1 : 0) : d[key];
       const value = Math.round((current + dir * steps[key]) * 1000) / 1000;
       setField(key, Math.max(key === 'temp' ? -60 : key === 'gels' ? 0 : steps[key], value));
       render();
     }));
     wrap.querySelector('.log-class').addEventListener('change', e => { d.cls = e.target.value; });
+    wrap.querySelector('.log-x').addEventListener('change', e => { d.x = e.target.checked; remember(); });
     wrap.querySelector('.log-parse').addEventListener('click', () => { remember(); d.preview = window.RunImport.parseText(d.paste); render(); });
     wrap.querySelector('.log-file').addEventListener('change', async event => {
       const file = event.target.files[0]; if (!file) return;
@@ -886,6 +890,7 @@
       const entry = { ...(saved || {}), sec: d.sec, hr: d.hr == null ? null : Math.round(d.hr),
         km: d.km, temp: d.temp, cls: d.cls,
         halfPaceSec: d.halfPaceSec, hr2: d.hr2, gels: d.gels, stream: d.stream || null };
+      if (d.x) entry.x = true; else delete entry.x;
       try { localStorage.setItem(logKey(iso), JSON.stringify(entry)); }
       catch (e) { wrap.querySelector('.log-error').textContent = 'Could not save on this device. Keep this form open and free some storage, then try again.'; return; }
       state.runLogEdit = null; state.runLogDraft = null; render();
@@ -2102,6 +2107,7 @@
         hard: cls === 'quality' || cls === 'race',
         temp: e.temp == null ? null : e.temp,
         tooHot: e.temp != null && e.temp >= PLAN.benchmark.tempInvalid,
+        x: e.x === true,
         adj: (function () {
           const a = DB.adjustPace(Math.round(e.sec / km), e.temp);
           return a ? DB.fmtPaceSec(a) : null;
@@ -2138,7 +2144,7 @@
         '/km</b> across these runs, read off the fitted line.</p>';
     }
     function sparkFor(cls, label) {
-      const eligible = entries.filter(e => e.cls === cls && !e.tooHot && e.iso <= todayISO());
+      const eligible = entries.filter(e => e.cls === cls && !e.tooHot && !e.x && e.iso <= todayISO());
       const chart = window.EFChart.chart(eligible);
       if (!chart) return '';
       const signed = n => (n > 0 ? '+' : '') + n.toFixed(1) + '%';
@@ -2210,7 +2216,7 @@
           'Each whole run is grouped by average HR. This cannot detect harder segments inside a run and is separate from measured time in zones.');
     }());    /* Decoupling gets a ladder rather than a sparkline: the threshold is
        the point, not the shape. Falling numbers are the base arriving. */
-    const decPts = entries.filter((e) => e.dec != null && e.cls === 'long' && e.iso <= todayISO()).slice(-6);
+    const decPts = entries.filter((e) => e.dec != null && e.cls === 'long' && !e.x && e.iso <= todayISO()).slice(-6);
     if (decPts.length) {
       const m = PLAN.decoupleModel;
       spark += '<div class="dc-list"><div class="dc-h">Aerobic decoupling · long runs</div>' +
@@ -2226,6 +2232,7 @@
       (e.hard ? ' <i class="dot" style="background:var(--accent)" title="hard session"></i>' : '') +
       '</b><span>' + e.km + ' km</span>' +
       (e.temp != null ? ' <i class="tmp' + (e.tooHot ? ' hot' : '') + '">' + e.temp + '°</i>' : '') +
+      (e.x ? ' <i class="tmp xout">not in trends</i>' : '') +
       '</div><div class="run-entry-metrics"><span><small>Pace /km</small>' + esc(e.pace || '—') +
       (e.adj ? '<i class="adj">→ ' + esc(e.adj) + '</i>' : '') + '</span>' +
       '<span><small>Avg HR</small>' + (e.hr || '—') + '</span>' +
