@@ -773,3 +773,18 @@ more it offers "Use N as resting HR", which rewrites `hr.rest` (max kept,
 is falling (fitness and a dropped habit), and every Karvonen zone moves with
 it. The run card's resting-HR stepper buttons gained full aria labels.
 Browser-checked: header, usual, offer threshold both ways, and the write.
+
+## Browser interaction checks — tools/interactions.js, 29 September (Claude)
+
+A dev-only tool (not shipped, not cached by the service worker) that drives
+the app in headless Chromium with an invented fixture (HR 50/190 and
+53/190) and asserts what each control actually stores: missed-run question,
+skip/undo/done, move to any day and back, moved run taking a rest day's hero,
+morning resting HR and the zones update, leave out of trends, backup/restore
+of `rhr-ISO`, MP check by hand and from a TCX finish, then a 234-day and
+34-week render sweep with Plan and Reference, and an offline reload. 40
+checks pass on v4.67. Its static server carries the same MIME allowlist and
+DENY rule as shoot.js, and tests/build.test.js now asserts both, plus that
+its fixture pairs stay fixtures. Run it before shipping interaction changes:
+`NODE_PATH=<dir>/node_modules node tools/interactions.js [--quick]`.
+Version 4.67.1 only reflects the docs line in CLAUDE.md §14 ("Move to…").

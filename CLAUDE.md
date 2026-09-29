@@ -790,10 +790,10 @@ converting a week to cutback after illness, changing a distance,
 retiming a day's scaffold (e.g. Tuesday becoming a work day mid-block),
 adding or removing a life anchor.
 
-**In-app day-level flexibility (v1):** "Skip" and "Move to tomorrow"
-actions on any doable block, stored as per-date localStorage overrides
-that never mutate the plan. Real life gets absorbed without a deploy;
-the plan file stays canonical.
+**In-app day-level flexibility (v1; "Move to…" since v4.58):** "Skip" and
+"Move to…" (any other day of the same week) on any doable block, stored as
+per-date localStorage overrides that never mutate the plan. Real life gets
+absorbed without a deploy; the plan file stays canonical.
 
 **Blocks model — post-marathon territory:**
 - The app is built around a `blocks` array. The marathon block is just

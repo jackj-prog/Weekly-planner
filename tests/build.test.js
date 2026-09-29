@@ -1180,6 +1180,13 @@ section('hr zones');
   const ALLOWED = ['50/190', '50/100', '0/190'];
   const files = ['../data/plan.js', '../js/day-builder.js', '../js/app.js',
     '../js/ef-chart.js', '../js/run-progress.js', '../js/run-import.js', '../tests/run-import.test.js', '../js/run-stream.js', '../tests/run-stream.test.js', '../tests/build.test.js'];
+  {
+    /* The browser tool seeds localStorage directly, so its fixture is the
+       place a real pair would most easily slip in. */
+    const src = require('fs').readFileSync(path.join(__dirname, '../tools/interactions.js'), 'utf8');
+    const pairs = [...src.matchAll(/rest:\s*(\d+),\s*max:\s*(\d+)/g)].map((m) => m[1] + '/' + m[2]);
+    ok(pairs.length > 0 && pairs.every((p) => ['50/190', '53/190'].includes(p)), 'interactions.js uses fixture HR pairs only: ' + pairs.join(', '));
+  }
   files.forEach((f) => {
     const src = require('fs').readFileSync(path.join(__dirname, f), 'utf8');
     const re = /(?:hrZones|zoneOf)\s*\(([^)]*)\)/g;
@@ -1200,11 +1207,11 @@ section('hr zones');
      ever loads html/js/css/json/webmanifest/png/svg/woff2/ics, so anything
      else is a 404 before the path is even resolved. Assert against the real
      source, not against a copy of it, because a copy drifts. */
-  {
-    const src = require('fs').readFileSync(path.join(__dirname, '../tools/shoot.js'), 'utf8');
+  for (const tool of ['shoot.js', 'interactions.js']) {
+    const src = require('fs').readFileSync(path.join(__dirname, '../tools/' + tool), 'utf8');
     const mime = src.match(/const MIME = \{[\s\S]*?\n\};/);
     const deny = src.match(/const DENY = (\/.*\/[a-z]*);/);
-    ok(!!mime && !!deny, 'shoot.js still declares a MIME allowlist and a DENY pattern');
+    ok(!!mime && !!deny, tool + ' still declares a MIME allowlist and a DENY pattern');
     if (mime && deny) {
       // eslint-disable-next-line no-eval
       const MIME = eval('(' + mime[0].replace(/^const MIME = /, '').replace(/;$/, '') + ')');
@@ -1212,13 +1219,13 @@ section('hr zones');
       const DENY = eval(deny[1]);
       ['.md', '.env', '.json5', '.txt', '.pem', '.key', ''].forEach((ext) => {
         ok(!Object.prototype.hasOwnProperty.call(MIME, ext),
-          'shoot.js will not serve "' + ext + '" — private notes stay off the wire');
+          tool + ' will not serve "' + ext + '" — private notes stay off the wire');
       });
       ['.html', '.js', '.css', '.png', '.woff2', '.webmanifest'].forEach((ext) => {
-        ok(Object.prototype.hasOwnProperty.call(MIME, ext), 'shoot.js still serves ' + ext);
+        ok(Object.prototype.hasOwnProperty.call(MIME, ext), tool + ' still serves ' + ext);
       });
       ['.git/config', 'private/seed.json', 'a/private/x.png'].forEach((p) => {
-        ok(DENY.test(p), 'shoot.js refuses ' + p);
+        ok(DENY.test(p), tool + ' refuses ' + p);
       });
       ok(!DENY.test('js/app.js') && !DENY.test('index.html'), 'DENY does not block the app itself');
     }

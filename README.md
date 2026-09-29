@@ -26,6 +26,7 @@ keyed per ISO date.
 | `tests/build.test.js` | Headless test: builds all 210 days + the §15 definition-of-done checks. |
 | `icons/icon.svg` | Vector source for the app icon (calendar + check). |
 | `tools/make-icons.js` | Dev-only: renders `icons/icon.svg` → the 180/512 PNGs via headless Chromium. |
+| `tools/interactions.js` | Dev-only: drives the app in headless Chromium with an invented fixture and checks what the buttons store (skips, moves, logs, backups, MP check), sweeps every day of the block and reloads offline. |
 
 ## Amendment workflow
 
@@ -39,6 +40,13 @@ via per-date localStorage overrides — the plan file stays canonical.
 
 ```
 node tests/build.test.js
+```
+
+Browser wiring (needs `playwright-core` installed outside the repo, like
+`tools/shoot.js`; add `--quick` to skip the 234-day render sweep):
+
+```
+NODE_PATH=<dir>/node_modules node tools/interactions.js
 ```
 
 ## Deploy
