@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.71.0';
+  const APP_VERSION = '4.71.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -151,10 +151,11 @@
       const d = DB.addDays(monday, i);
       if (d === iso) continue;
       const day = DB.buildDay(d), ovr = getOvr(d);
-      const same = day.blocks.filter((x) => x.doable && x.cat === block.cat && !ovr.skip[x.id] && !ovr.moved[x.id]).map((x) => x.title)
-        .concat(getMoveIn(d).filter((m) => m.cat === block.cat && m.srcId !== block.id).map((m) => m.title));
+      const head = (t) => String(t).replace(/ +[—·(].*$/, '').trim();
+      const same = day.blocks.filter((x) => x.doable && x.cat === block.cat && !ovr.skip[x.id] && !ovr.moved[x.id]).map((x) => head(x.title))
+        .concat(getMoveIn(d).filter((m) => m.cat === block.cat && m.srcId !== block.id).map((m) => head(m.title)));
       out.push({ iso: d, label: DAY_SHORT[i].charAt(0) + DAY_SHORT[i].slice(1).toLowerCase() + ' ' + Number(d.slice(8)),
-        clash: same.length ? 'has ' + same.join(' + ') + (block.cat === 'run' ? ' · one run log per day' : '') : '', legDrop: legDropFor(block, d) });
+        clash: same.length ? 'has ' + same.join(' + ') : '', legDrop: legDropFor(block, d) });
     }
     return out;
   }
@@ -331,7 +332,7 @@
 
     /* -- day header -- */
     const chips = [];
-    if (day.phase) chips.push('<span class="chip ' + esc(day.phase) + '">' + esc(day.phase) + '</span>');
+    if (day.phase) chips.push('<span class="chip ' + esc(day.phase) + '">' + esc(day.blockId === 'recovery' ? 'recovery' : day.phase) + '</span>');
     if (day.row && day.row.cutback) chips.push('<span class="chip mut">cutback</span>');
     if (day.row && day.row.key) chips.push('<span class="chip hot">key</span>');
     /* next decisive moment, always one glance away (§4.7 extended) */
@@ -360,7 +361,7 @@
       '<h1>' + esc(fmtDate(iso)) + '</h1>' +
       '<button class="nav" data-d="1" aria-label="Next day">›</button></div>' +
       '<div class="sub"><span>' + weekBit + '</span>' + chips.join('') +
-      '</div>' + (day.label ? '<p class="day-label"><span>Week ' + day.week + '</span> ' + esc(day.label) + '</p>' : '') + '</div>'
+      '</div>' + (day.label ? '<p class="day-label">' + (day.week != null ? '<span>Week ' + day.week + '</span> ' : '') + esc(day.label) + '</p>' : '') + '</div>'
     );
     head.querySelectorAll('.nav').forEach((btn) => btn.addEventListener('click', () => {
       state.dateISO = DB.addDays(iso, Number(btn.getAttribute('data-d')));
@@ -1207,7 +1208,8 @@
     // Distance and shoe already have dedicated fields. Split the remaining
     // source text at its own separators without rewriting any prescription.
     const prefix = kmTxt + ' km · ' + r.run.shoe + ' · ';
-    const detail = r.detail.startsWith(prefix) ? r.detail.slice(prefix.length) : r.detail;
+    let detail = r.detail.startsWith(prefix) ? r.detail.slice(prefix.length) : r.detail;
+    if (detail.startsWith(r.run.shoe + ' · ')) detail = detail.slice(r.run.shoe.length + 3);
 
     /* §4.2 wants distance, session, shoe AND pace without scrolling. Pace had
        slipped behind the Details tap. The band is already authored per run in
@@ -1266,8 +1268,12 @@
       '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : isSkipped ? 'Skipped' : isMovedOut ? 'Moved to ' + movedLabel(iso, r.id) :
         unresolved ? (iso < today ? 'Not recorded' : 'Window passed · not recorded') :
         (r.movedFrom ? 'Moved from ' + fmtShort(r.movedFrom) + ' · ' : 'Scheduled · ') + r.start) + '</span></div>' +
-      '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' +
-      (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button></div>' +
+      /* A saved log already counts as done everywhere else (week status,
+         totals, the wall), so a logged run shows that instead of offering a
+         tick that would change nothing. */
+      (e.sec > 0 && !isDone ? '<span class="h-tick on is-logged" role="status"><span aria-hidden="true">✓</span> Logged</span>'
+        : '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' +
+      (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button>') + '</div>' +
       (just === r.id && isDone ? '<i class="h-sweep" aria-hidden="true"></i><div class="completion-note" role="status">✓ Run banked</div>' : '') +
       missedHTML +
       (iso === today && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso) : '') +
@@ -1282,7 +1288,8 @@
       paceTableHTML(r.table) +
       '</section>'
     );
-    hero.querySelector('.h-tick').addEventListener('click', () => {
+    const tickBtn = hero.querySelector('button.h-tick');
+    if (tickBtn) tickBtn.addEventListener('click', () => {
       const ticking = !done[r.id];
       if (ticking) state.justTicked = r.id;   // animate on tick-on only
       if (ticking && isSkipped) setSkip(iso, r.id, false);   // done wins over skipped
@@ -1566,6 +1573,8 @@
       (opts.current ? ' <span class="nowflag">· NOW</span>' : '') + '</div>' +
       '<div class="c-title">' + esc(b.title) + '</div>' +
       '<div class="c-detail">' + detailHTML(b.detail, iso + '|' + b.id, false) + '</div>' +
+      (b.plan ? '<div class="c-cat">' + esc(b.cat) + (opts.skipped ? ' · skipped' : '') +
+        (opts.moved ? ' · moved from ' + esc(fmtShort(opts.moved.fromIso)) : '') + '</div>' : '') +
       (legDrop ? '<div class="mv-note">' + esc(PLAN.moveRules.legNote) + '</div>' : '') +
       (b.table ? paceTableHTML(b.table) : '') +
       (b.plan ? '<details class="session-plan" data-disclosure="' + esc(iso + '|' + b.id + '|plan') + '"' + (openDetails.has(iso + '|' + b.id + '|plan') ? ' open' : '') + '><summary>' + b.plan.length + ' exercises <span>View session</span></summary><div class="c-plan">' + b.plan.map((p) => {
@@ -1588,8 +1597,8 @@
           '<span class="xs">' + esc(p.sets) + '</span>' + w + '</div>';
       }).join('') + '</div></details>' : '') +
       (b.cat === 'gym' && b.plan && !opts.moved && !opts.skipped ? '<button class="session-focus-open" data-focus-id="' + esc(b.id) + '">Focus session <span aria-hidden="true">↗</span></button>' : '') +
-      '<div class="c-cat">' + esc(b.cat) + (opts.skipped ? ' · skipped' : '') +
-      (opts.moved ? ' · moved from ' + esc(fmtShort(opts.moved.fromIso)) : '') + '</div>' +
+      (b.plan ? '' : '<div class="c-cat">' + esc(b.cat) + (opts.skipped ? ' · skipped' : '') +
+        (opts.moved ? ' · moved from ' + esc(fmtShort(opts.moved.fromIso)) : '') + '</div>') +
       (opts.just && isDone && (b.cat !== 'run' || opts.moved) ? '<div class="completion-note" role="status">✓ Session banked</div>' : '') +
       (expanded ? '<div class="c-actions">' +
         (opts.skipped ? '<button data-act="unskip">Unskip</button>' : '<button data-act="skip">Skip</button>') +
@@ -1603,7 +1612,8 @@
         (state.movePick === b.id && !opts.moved ? '<div class="c-move" role="group" aria-label="Move ' + esc(b.title) + ' to">' +
           moveTargets(iso, b).map((t) => '<button data-move-to="' + t.iso + '"><b>' + esc(t.label) + '</b>' +
             (t.clash ? '<small>' + esc(t.clash) + '</small>' : '<small>free</small>') +
-            (t.legDrop ? '<small class="mv-warn">upper + core only</small>' : '') + '</button>').join('') + '</div>' : '') : '') +
+            (t.legDrop ? '<small class="mv-warn">upper + core only</small>' : '') + '</button>').join('') +
+          (b.cat === 'run' ? '<p class="mv-runlog">A day that already has a run keeps one run log between them.</p>' : '') + '</div>' : '') : '') +
       '</div>' +
       '<div class="c-side">' +
       '<button class="tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' + (isDone ? 'Mark not done: ' : 'Mark done: ') + esc(b.title) + '">✓ <span>' + (isDone ? 'Done' : 'Mark done') + '</span></button>' +
@@ -1758,7 +1768,7 @@
       }).join('') + '</span>').join('');
     const phases = journey.weeks.map((w) => '<i style="background:var(--phase-' + esc(w.phase) + ')"></i>').join('');
     return el('<section class="wall"><div class="wall-head"><h2>Every day of the block</h2><span>' +
-      ran + ' / ' + due + ' RUNS SO FAR</span></div>' +
+      ran + ' OF ' + due + ' PLANNED RUNS SO FAR</span></div>' +
       '<div class="wall-grid" role="img" aria-label="' + ran + ' of ' + due + ' planned runs so far recorded, across ' +
       journey.weeks.length + ' weeks">' +
       '<span class="wl-days" aria-hidden="true">' + DAY_SHORT.map((n) => '<b>' + n.slice(0, 1) + '</b>').join('') + '</span>' +
@@ -2006,7 +2016,8 @@
       state.view = 'today'; state.dateISO = button.dataset.date; state.expanded = null;
       window.scrollTo(0, 0); render();
     }));
-    view.insertBefore(profile, view.children[2] || null);
+    const noteEl = view.querySelector('.wk-note');
+    view.insertBefore(profile, noteEl ? noteEl.nextSibling : view.children[2] || null);
     if (day0.blockId === 'marathon') profile.after(buildJourney());
 
     const days = el('<div class="wk-days"></div>');
@@ -2050,7 +2061,8 @@
       let runHtml, barHtml = '';
       if (day.run) {
         const km = day.run.run.km;
-        cls += ' has-run' + (km === maxKm ? ' lr' : '');
+        const rc = DB.runClass(day.run);
+        cls += ' has-run' + (km === maxKm && (rc === 'long' || rc === 'race') ? ' lr' : '');
         barHtml = '<i class="d-bar' + (done[day.run.id] || runLogged ? ' done' : ovr.skip[day.run.id] || ovr.moved[day.run.id] ? ' off' : '') +
           '" style="width:' + ((km / maxKm) * 100).toFixed(1) + '%"></i>';
         runHtml = {
@@ -2060,7 +2072,7 @@
         };
       } else {
         runHtml = {
-          run: '<div class="d-run rest">No run</div><div class="d-extras">' + (extraBits(day, ovr).replace(/^ · /, '') || 'recovery') + '</div>' + statusHtml,
+          run: '<div class="d-run rest">No run</div><div class="d-extras">' + (extraBits(day, ovr).replace(/^ · /, '') || esc(dayHeadline(day))) + '</div>' + statusHtml,
           km: '—',
         };
       }
@@ -2082,9 +2094,17 @@
     view.appendChild(days);
   }
 
+  /* What a day with no run and no sessions is about: its longest free or
+     routine block that is not waking, sleeping or an open evening ("Fly to
+     Cyprus", "CHRISTMAS", "Walk"), else simply rest. */
+  function dayHeadline(day) {
+    const b = day.blocks.filter((x) => (x.cat === 'routine' || x.cat === 'free') && !/wake|lights out|sleep|wind down|evening|free/i.test(x.title))
+      .sort((a, c) => (c.endMin - c.startMin) - (a.endMin - a.startMin))[0];
+    return b ? b.title.replace(/ +[—·(].*$/, '').trim() : 'rest';
+  }
   function extraBits(day, ovr) {
     const bits = day.blocks
-      .filter((b) => b.doable && b.cat !== 'run' && b.cat !== 'reading' && b.cat !== 'study' &&
+      .filter((b) => b.doable && b.cat !== 'run' && b.cat !== 'reading' && b.cat !== 'study' && b.cat !== 'routine' &&
         !(ovr && (ovr.skip[b.id] || ovr.moved[b.id])))
       .map((b) => ({ head: b.title.replace(/ *[—·(].*$/, '').trim(), tail: (b.title.match(/—\s*(.+)$/) || [])[1] || '' }));
     /* Two sessions that share a name (Basketball — 1v1, Basketball —
@@ -2275,7 +2295,7 @@
       '<h2>Rules of the block</h2><ol class="ref-list">' +
       PLAN.rules.map((r) => '<li>' + esc(r) + '</li>').join('') + '</ol>' +
       '<h2>Weekly load budget</h2><div class="ref-note">' + esc(PLAN.loadBudget) + '</div>' +
-      '<h2>Open questions</h2><ul class="ref-list qs">' +
+      (PLAN.openQuestions.some((q) => !/ANSWERED|SHIPPED/.test(q)) ? '<h2>Open questions</h2><ul class="ref-list qs">' : '<h2>Settled questions</h2><ul class="ref-list qs settled">') +
       PLAN.openQuestions.map((q) => '<li>' + esc(q) + '</li>').join('') + '</ul>' +
       '</div>'
     ));
@@ -2371,7 +2391,7 @@
       const to = i + 1 < bands.length ? bands[i + 1].fromWk - 1 : 30;
       const span = b.fromWk === to ? 'Wk ' + b.fromWk : 'Wk ' + b.fromWk + '–' + to;
       const now = b === live;
-      return '<div class="ref-row' + (now ? ' is-now' : '') + '">' +
+      return '<div class="ref-row stack' + (now ? ' is-now' : '') + '">' +
         '<span>' + (now ? '<i class="dot" style="background:var(--accent)"></i>' : '') +
         esc(span) + '</span>' +
         '<span class="v">' + esc(b.band) + ' · good day <b>' + esc(b.good) + '</b></span></div>';
@@ -2731,7 +2751,7 @@
     const usedPct = Math.min(100, (p4.used / p4.cap) * 100);
     const planPct = Math.min(100 - usedPct, (p4.toCome / p4.cap) * 100);
     const rows = p4.outings.map((o) =>
-      '<div class="ref-row"><span>Wk ' + o.wk + ' · ' + esc(o.label) +
+      '<div class="ref-row tight"><span>Wk ' + o.wk + ' · ' + esc(o.label) +
       (o.optional ? ' (optional)' : '') + '</span>' +
       '<span class="v">' + (o.done ? '✓ ' : '') + o.km + ' km</span></div>').join('');
     return el(

@@ -169,7 +169,8 @@ async function moves() {
   const r = await open('2026-10-01', '12:00', SEED);
   await r.page.click('.day-nav [data-d="1"]'); await r.page.click('.day-nav [data-d="1"]');
   await r.page.click('.tl-card:has-text("Recovery buffer run") .more-btn'); await r.page.click('[data-act="movepick"]');
-  check(/one run log per day/.test(await text(r.page, '[data-move-to="2026-10-01"]')), 'run-on-run move warns');
+  check(/has Easy run/.test(await text(r.page, '[data-move-to="2026-10-01"]')) && /one run log/.test(await text(r.page, '.c-move .mv-runlog')),
+    'run-on-run move names the clash and warns once');
   await r.page.click('[data-move-to="2026-10-02"]');
   await r.page.click('.day-nav [data-d="-1"]');
   check(/Moved from 3 Oct/.test(await text(r.page, '.hero .h-state')), 'moved run takes the rest day’s hero');

@@ -308,6 +308,8 @@ const PLAN = {
     'Sleep is where training sticks: 22:30 lights out is part of the plan.',
     'The December tune-up settles the race pace. The target moved 4:00 → 3:45 in Aug 2026 on evidence, not ambition (§10) — the half is still what confirms or corrects it.',
     'From October, evening runs are dark runs: headtorch, hi-vis, lit routes.',
+    'Long runs are capped by time, not distance: ~3h20 maximum. Past that the injury and recovery cost climbs faster than the aerobic return, and at 6:45/km 3h20 is 30 km. If easy pace is slower on the day, cut the distance — never chase the number.',
+    'Saturday belongs to Sunday. No leg work, no calf work, no intensity on a Saturday from Wk 4 on. The buffer run is Z1 recovery or it doesn\u2019t happen.',
   ],
 
   /* ---- Weekly load budget (§5) ---------------------------------------- */
@@ -416,7 +418,7 @@ const PLAN = {
        on the Wk 26 dress rehearsal, because it is also the intervention
        most likely to hand you a GI problem you have never met before. */
     caffeine:
-      'Caffeine: 3 mg/kg about 60 min before the gun — roughly 200 mg, or ' +
+      '3 mg/kg about 60 min before the gun — roughly 200 mg, or ' +
       'two strong coffees, or one coffee plus a caffeinated gel. Worth 1–3% ' +
       '(2–7 min over 3h45). One mug is half a dose. Above ~6 mg/kg the ' +
       'returns stop and the jitters and gut trouble start. Rehearse the exact ' +

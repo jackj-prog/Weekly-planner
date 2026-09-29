@@ -1925,3 +1925,30 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .tl-now { text-shadow: 0 0 14px var(--glow-red); }
 .tl-now::before { box-shadow: 0 0 0 3px var(--glow-red-soft), 0 0 14px var(--glow-red); }
 .tl-now::after { box-shadow: 0 0 10px var(--glow-red); }
+
+/* -- v4.71.1: visual audit fixes -- */
+/* The v4.69 ring needed position:relative, which woke up an old
+   `top: 13px` and pushed the button onto the resting-HR box. */
+.hero .h-tick { top: auto; right: auto; }
+.hero .h-tick.is-logged { display: inline-flex; align-items: center; gap: 4px; cursor: default; }
+/* Long weekday names wrap as "Wednesday / 27 Jan", never "… 27 / Jan". */
+.day-head h1, .wk-head h1 { text-wrap: balance; }
+/* The billboard numeral ends above the week label, not through it. */
+.bb-num { font-size: 96px; }
+.wk-num { font-size: 92px; }
+.wk-head.key .wk-num { -webkit-text-stroke-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+/* REST fits inside its card instead of being cut at the edge. */
+.rest-wm { font-size: 88px; right: 12px; bottom: 10px; }
+/* The wall's count sits under its heading. */
+.wall-head { flex-direction: column; align-items: flex-start; gap: 6px; }
+/* One divider between the last key day and the archive, not two. */
+.journey-event:last-child { border-bottom: 0; }
+/* Reference rows: bands stack label over value; short values stay on line one. */
+.ref-row.stack { display: grid; gap: 3px; }
+.ref-row.stack .v { margin-left: 0; }
+.ref-row.tight { flex-wrap: nowrap; align-items: baseline; }
+.ref-row.tight > span:first-child { min-width: 0; }
+.ref-row.tight .v { white-space: nowrap; flex: none; }
+/* Move picker: one shared note instead of a warning in every box. */
+.c-move .mv-runlog { grid-column: 1 / -1; margin: 2px 0 0; font: 400 12px/1.4 var(--body); color: var(--t3); }
+.qs.settled li::before { content: "✓"; color: var(--t2); }

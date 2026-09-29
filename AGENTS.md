@@ -917,3 +917,37 @@ Build tests guard the motion gate on earned moments and that cinema cards
 stay aria-hidden and tap-through; tools/interactions.js checks the wall's
 210 cells and the longest-run moment. 63 browser checks, 16,170 plan
 checks, no overflow at 390 px, accessibility sweep clean.
+
+## Visual audit — v4.71.1, 29 September (Claude)
+
+The user asked for a pass over the whole app for visual oddities. Every
+view was captured at 390 px across states (the week's days, logged and
+missed runs, the TT, Christmas, race-week travel, race day, recovery,
+the standing week, Week/Plan/Reference with every section open, focus
+sessions, the logger, the card menu and move picker). Fixed:
+- Run card: "Mark done" sat 13 px low, touching the resting-HR box — the
+  v4.69 `position: relative` had woken an old `top: 13px`. A logged,
+  unticked run now shows a static "✓ Logged" instead of "Mark done".
+- Run card summary no longer repeats the shoe (TT and race day details
+  begin with it).
+- Day header: "Week null" on the standing week; recovery weeks read
+  RECOVERY, not TAPER (still the taper tone, per the data); long weekday
+  names wrap balanced; the billboard numeral no longer crosses the label.
+- Rest card: the outlined REST fits inside the card.
+- Timeline: a gym card's category tag sits after its detail, as on every
+  other card, not below the Focus button.
+- Week: the week's note sits under its dates, above the profile; only a
+  long run or race wears the week's highlight (two tied optional 3 km runs
+  in recovery were painted red like the marathon); no-run days never read
+  "Wake" and fall back to the day's main block ("Fly to Cyprus", "Walk",
+  "CHRISTMAS") instead of "recovery".
+- Move picker: session names only, and one shared note about run logs.
+- Journey: one divider after the key days, not two; the wall's count sits
+  under its heading.
+- Reference: pace bands stack label over value (the current row wrapped
+  alone); odometer km stay on line one; "Caffeine. Caffeine:" doubled
+  heading; rules 9 and 10 from CLAUDE.md §12 were missing from
+  `PLAN.rules` and are added verbatim in substance; the answered question
+  list reads "Settled questions" with a tick.
+63 browser checks, 16,170 plan checks, no overflow on eight views, and an
+accessibility sweep pass.
