@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.71.1';
+  const APP_VERSION = '4.72.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -414,6 +414,7 @@
 
     view.appendChild(el('<div class="timeline-head"><h2>Your day</h2>' +
       (day.blockId === 'marathon' ? weekRingHTML(iso) : '') + '</div>'));
+    view.appendChild(el(dayWheelHTML(day, done, iso, isToday, ovr)));
     /* -- timeline -- */
     const tl = el('<div class="tl"></div>');
     const nMin = nowMin();
@@ -1264,6 +1265,7 @@
 
     const hero = el(
       '<section class="hero cls-' + esc(DB.runClass(r)) + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (isSkipped ? ' skipped' : '') + (just === r.id ? ' just' : '') + '">' +
+      '<i class="h-art" aria-hidden="true"></i>' +
       '<div class="h-top"><div class="h-tag">' + (isRace ? 'RACE DAY' : 'TODAY’S RUN') +
       '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : isSkipped ? 'Skipped' : isMovedOut ? 'Moved to ' + movedLabel(iso, r.id) :
         unresolved ? (iso < today ? 'Not recorded' : 'Window passed · not recorded') :
@@ -1543,6 +1545,87 @@
     return card;
   }
 
+  /* ---- the day wheel (v4.72): today as a 24-hour dial ----
+     Midnight at the top. The scaffold (quiet blocks) is a thin inner ring;
+     the sessions are the thick outer ring in their category colours, the run
+     lit white when it is the long run and red when it is hard (§3). What is
+     done burns bright, what is pending sits dim, what is skipped or moved is
+     dashed. The night between lights out and waking is a dark band with a
+     few stars, and on today a red hand points at NOW. The centre counts the
+     day's sessions done. A picture with a spoken summary, not a control. */
+  function dayWheelHTML(day, done, iso, isToday, ovr) {
+    const blocks = day.blocks.filter((b) => b.endMin > b.startMin);
+    if (!blocks.length) return '<span hidden></span>';
+    const C = 150, RO = 112, RI = 90, RN = 101;
+    const ang = (m) => (m / 1440) * 2 * Math.PI - Math.PI / 2;
+    const pt = (m, r) => (C + r * Math.cos(ang(m))).toFixed(1) + ' ' + (C + r * Math.sin(ang(m))).toFixed(1);
+    const arc = (a, b, r) => {
+      if (b <= a) b += 1440;
+      return 'M' + pt(a, r) + ' A' + r + ' ' + r + ' 0 ' + (b - a > 720 ? 1 : 0) + ' 1 ' + pt(b, r);
+    };
+    const off = (b) => !!(ovr && (ovr.skip[b.id] || ovr.moved[b.id]));
+    let rings = '', total = 0, got = 0, runAt = '';
+    blocks.forEach((b) => {
+      const a = b.startMin + 3, z = Math.max(a + 2, b.endMin - 3);
+      if (b.doable) {
+        const isRun = day.run && b.id === day.run.id;
+        const rc = isRun ? DB.runClass(day.run) : '';
+        const colour = isRun ? (rc === 'quality' || rc === 'race' ? 'var(--accent)' : rc === 'long' ? 'var(--text)' : 'var(--cat-run)') : (CAT_VAR[b.cat] || 'var(--t2)');
+        const isDone = !!done[b.id] || (isRun && (getRunLogEntry(iso) || {}).sec > 0);
+        if (!off(b)) { total++; if (isDone) got++; }
+        if (isRun) runAt = b.start;
+        rings += '<path class="dw-s' + (isDone ? ' done' : '') + (off(b) ? ' off' : '') + (isRun ? ' run' : '') +
+          '" d="' + arc(a, z, RO) + '" style="stroke:' + colour + '"/>';
+      } else if (!/lights out|sleep/i.test(b.title)) {
+        rings += '<path class="dw-q" d="' + arc(a, z, RI) + '" style="stroke:' + (CAT_VAR[b.cat] || 'var(--t3)') + '"/>';
+      }
+    });
+    // the night: from the end of the last block round to the first
+    const first = blocks[0].startMin, last = blocks[blocks.length - 1].endMin;
+    const nightLen = ((first - last) + 1440) % 1440;
+    let night = '';
+    if (nightLen > 30) {
+      night = '<path class="dw-night" d="' + arc(last, first, RN) + '"/>';
+      [0.08, 0.2, 0.33, 0.47, 0.58, 0.72, 0.84, 0.94].forEach((f, i) => {
+        const m = (last + nightLen * f) % 1440, r = RN + [-9, 4, -2, 9, -6, 2, 7, -4][i];
+        const [x, y] = pt(m, r).split(' ');
+        night += '<circle class="dw-star" cx="' + x + '" cy="' + y + '" r="' + [1.4, 0.8, 1.1, 0.7, 1.6, 0.9, 1.2, 0.8][i] + '"/>';
+      });
+    }
+    let ticks = '';
+    for (let h = 0; h < 24; h++) {
+      const m = h * 60, major = h % 6 === 0;
+      ticks += '<path class="dw-tick' + (major ? ' major' : '') + '" d="M' + pt(m, 126) + ' L' + pt(m, major ? 134 : 130) + '"/>';
+      if (major) {
+        const [x, y] = pt(m, 144).split(' ');
+        ticks += '<text class="dw-hour" x="' + x + '" y="' + (Number(y) + 3).toFixed(1) + '">' + String(h).padStart(2, '0') + '</text>';
+      }
+    }
+    let hand = '';
+    if (isToday) {
+      const n = nowMin();
+      /* the day so far, swept from waking to now */
+      if (n > first && n < last) {
+        hand += '<path class="dw-sweep" d="M150 150 L' + pt(first, 122) + ' A122 122 0 ' + (n - first > 720 ? 1 : 0) + ' 1 ' + pt(n, 122) + ' Z"/>';
+      }
+      hand += '<path class="dw-hand" d="M' + pt(n, 62) + ' L' + pt(n, 134) + '"/><circle class="dw-tip" cx="' +
+        pt(n, 134).split(' ')[0] + '" cy="' + pt(n, 134).split(' ')[1] + '" r="4"/>';
+    }
+    const cats = [];
+    blocks.forEach((b) => { if (b.doable && !cats.includes(b.cat)) cats.push(b.cat); });
+    const rcl = day.run ? DB.runClass(day.run) : '';
+    const runSwatch = rcl === 'quality' || rcl === 'race' ? 'var(--accent)' : rcl === 'long' ? 'var(--text)' : CAT_VAR.run;
+    const legend = cats.map((c) => '<span><i style="background:' + (c === 'run' ? runSwatch : CAT_VAR[c] || 'var(--t2)') + '"></i>' +
+      esc(c === 'xt' ? 'cross-train' : c === 'run' && rcl === 'race' ? 'race' : c === 'run' && rcl === 'long' ? 'long run' : c === 'run' && rcl === 'quality' ? 'quality run' : c) + '</span>').join('');
+    const label = 'Your day as a 24-hour clock: ' + total + ' sessions, ' + got + ' done' + (runAt ? '; run at ' + runAt : '') + '.';
+    return '<figure class="daywheel" role="img" aria-label="' + esc(label) + '">' +
+      '<svg viewBox="0 0 300 300" aria-hidden="true"><circle class="dw-face" cx="150" cy="150" r="122"/>' +
+      night + ticks + rings + hand +
+      '<text class="dw-count" x="150" y="152">' + got + '<tspan class="dw-of">/' + total + '</tspan></text>' +
+      '<text class="dw-cap" x="150" y="174">SESSIONS DONE</text></svg>' +
+      (legend ? '<figcaption aria-hidden="true">' + legend + '</figcaption>' : '') + '</figure>';
+  }
+
   /* ---- week-progress ring: banked vs planned run km this week ---- */
   function weekRingHTML(iso) {
     const wk = DB.weekKm(getDone, mondayOf(iso), getRunLogEntry);
@@ -1691,6 +1774,71 @@
 
   /* The skyline: all 30 weeks as one shape — planned km as phase-coloured
      bars, banked km filled inside them, key days flagged, race starred. */
+  /* ---- the night sky (v4.72): every run of the block as a star ----
+     "Built one run at a time. Each one leaves a mark" — drawn literally. Left
+     to right is the calendar; each day's height is fixed by its date, so the
+     sky never reshuffles. A run that happened is a star sized by its
+     distance: easy runs grey, long runs white with a halo, hard ones red
+     (§3). Planned runs still ahead are faint points, so the sky fills in as
+     the block does. The recorded long runs are joined into one constellation,
+     a thin beam marks today, and the race is a red sun on the horizon —
+     Nicosia's sunrise comes five minutes after the gun. */
+  function skyHTML(journey) {
+    const W = 360, H = 164, HZ = 138, today = todayISO();
+    const days = journey.weeks.reduce((all, w) => all.concat(w.days), []);
+    if (!days.length) return '';
+    const n = days.length;
+    const X = (i) => 12 + (i / (n - 1)) * (W - 24);
+    const seed = (str) => { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967295; };
+    let halos = '', stars = '', spine = [], dust = '', todayX = null;
+    days.forEach((d, i) => {
+      const x = X(i);
+      if (d.iso === today) todayX = x;
+      // background dust: faint fixed points so the sky is never empty
+      if (seed(d.iso + 'd') > 0.55) dust += '<circle class="sk-dust" cx="' + x.toFixed(1) + '" cy="' + (8 + seed(d.iso + 'y') * (HZ - 16)).toFixed(1) + '" r="0.6"/>';
+      if (!d.planned && !d.recorded) return;
+      const kind = d.cls === 'quality' || d.cls === 'race' ? 'hard' : d.cls === 'long' ? 'long' : 'easy';
+      // long runs ride high, hard sessions in the middle, easy runs low — the Milky Way
+      const band = kind === 'long' ? [18, 52] : kind === 'hard' ? [44, 84] : [70, HZ - 12];
+      const y = band[0] + seed(d.iso) * (band[1] - band[0]);
+      if (d.recorded > 0) {
+        const r = Math.max(1, Math.min(4.4, Math.sqrt(d.recorded) * 0.9));
+        if (kind !== 'easy') halos += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.8).toFixed(1) + '" fill="url(#sk-h' + (kind === 'hard' ? 'r' : 'w') + ')"/>';
+        stars += '<circle class="sk-star ' + kind + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '"/>';
+        if (kind === 'long') spine.push(x.toFixed(1) + ',' + y.toFixed(1));
+      } else if (d.iso > today) {
+        stars += '<circle class="sk-ahead' + (kind === 'hard' ? ' hard' : '') + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="0.9"/>';
+      }
+    });
+    const sunX = X(n - 1);
+    let rays = '';
+    for (let k = 0; k < 9; k++) {
+      const a = Math.PI + (k + 1) * (Math.PI / 10);
+      rays += '<path class="sk-ray" d="M' + (sunX + 22 * Math.cos(a)).toFixed(1) + ' ' + (HZ + 22 * Math.sin(a)).toFixed(1) +
+        ' L' + (sunX + 40 * Math.cos(a)).toFixed(1) + ' ' + (HZ + 40 * Math.sin(a)).toFixed(1) + '"/>';
+    }
+    const ran = days.filter((d) => d.recorded > 0).length;
+    return '<figure class="sky" role="img" aria-label="The block as a night sky: ' + ran + ' runs recorded as stars, ' +
+      'long runs joined as a constellation, the race as a sunrise at the far right.">' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+      '<defs><radialGradient id="sk-dawn" cx="1" cy="1" r="0.55"><stop offset="0" class="sk-dawn-a"/><stop offset="1" class="sk-dawn-b"/></radialGradient>' +
+      '<radialGradient id="sk-glow"><stop offset="0" class="sk-glow-a"/><stop offset="1" class="sk-glow-b"/></radialGradient>' +
+      '<radialGradient id="sk-hw"><stop offset="0" class="sk-hw-a"/><stop offset="1" class="sk-hw-b"/></radialGradient>' +
+      '<radialGradient id="sk-hr"><stop offset="0" class="sk-hr-a"/><stop offset="1" class="sk-hr-b"/></radialGradient>' +
+      '<clipPath id="sk-above"><rect x="0" y="0" width="' + W + '" height="' + HZ + '"/></clipPath></defs>' +
+      '<rect class="sk-dawnfill" x="0" y="0" width="' + W + '" height="' + HZ + '" fill="url(#sk-dawn)"/>' +
+      dust + halos +
+      (spine.length > 1 ? '<polyline class="sk-spine" points="' + spine.join(' ') + '"/>' : '') + stars +
+      (todayX != null ? '<path class="sk-now" d="M' + todayX.toFixed(1) + ' 6 L' + todayX.toFixed(1) + ' ' + HZ + '"/>' +
+        '<text class="sk-now-t" x="' + (todayX + 4).toFixed(1) + '" y="12">NOW</text>' : '') +
+      '<g clip-path="url(#sk-above)"><circle class="sk-sunglow" cx="' + sunX.toFixed(1) + '" cy="' + HZ + '" r="54" fill="url(#sk-glow)"/>' +
+      rays + '<circle class="sk-sun" cx="' + sunX.toFixed(1) + '" cy="' + HZ + '" r="16"/></g>' +
+      '<path class="sk-horizon" d="M0 ' + HZ + ' L' + W + ' ' + HZ + '"/>' +
+      '<text class="sk-lab" x="12" y="' + (HZ + 16) + '">' + esc(fmtShort(days[0].iso)).toUpperCase() + '</text>' +
+      '<text class="sk-lab end" x="' + (W - 12) + '" y="' + (HZ + 16) + '">GUN · ' + esc(String(PLAN.race.gun)) + '</text>' +
+      '</svg></figure>';
+  }
+
   function buildTrainingJourney(journey) {
     const weeks = journey.weeks, block = PLAN.blocks[0], today = todayISO();
     const current = weeks.find(w=>w.start<=today && today<=w.end);
@@ -1710,6 +1858,7 @@
     const root=el('<section class="training-journey"><div class="journey-intro"><div class="journey-kicker">YOUR TRAINING JOURNEY</div>'+
       '<h1>Built one run<br>at a time.</h1><div class="journey-totals"><div><b>'+fmt(journey.recorded)+'</b><span>km recorded</span></div><div><b>'+journey.runs+'</b><span>runs recorded</span></div></div>'+
       '<p class="journey-story">'+(journey.runs ? journey.activeWeeks+' weeks with recorded runs. Each one leaves a mark.' : 'Your first recorded run starts the story. The road ahead is already here.')+'</p>'+
+      skyHTML(journey)+
       '<div class="journey-calendar"><span>'+journey.elapsedWeeks+' / '+weeks.length+' weeks elapsed</span><span>'+esc(fmtShort(PLAN.race.date))+' · '+esc(PLAN.race.city||'Race day')+'</span></div></div>'+
       '<div class="journey-landscape"><div class="journey-chart-label"><b>The shape of the block</b><span>km / week</span></div>'+
       '<svg viewBox="0 0 '+W+' 180" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Scheduled and recorded weekly kilometres on a shared scale">'+chart+'</svg>'+

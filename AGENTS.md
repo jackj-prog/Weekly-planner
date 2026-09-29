@@ -951,3 +951,32 @@ sessions, the logger, the card menu and move picker). Fixed:
   list reads "Settled questions" with a tick.
 63 browser checks, 16,170 plan checks, no overflow on eight views, and an
 accessibility sweep pass.
+
+## Art pass: day wheel, night sky, card textures — v4.72, 29 September (Claude)
+
+The user asked for more visual splendour and "maximalism tendencies"
+without breaking the app or its theme. Everything added is data drawn
+as art, in the existing tokens, with red kept for hard and white for long.
+- **Day wheel (Today, under "Your day"):** a 24-hour dial with midnight at
+  the top. Sessions are a thick outer ring in category colours (the run
+  white when long, red when hard), bright when done, dim when pending,
+  dashed when skipped or moved; the scaffold is a thin inner ring; the
+  night is a dark band with stars; on today the day so far is swept in
+  faint light and a red hand points at NOW. The centre counts sessions
+  done. `role="img"` with a spoken summary; the legend names the run's
+  class.
+- **Night sky (journey page, under the intro):** every day of the block by
+  date, left to right. Recorded runs are stars sized by distance (long
+  high and white with a halo, hard in the middle and red, easy low and
+  grey); planned runs ahead are faint points; long runs are joined into a
+  constellation; a dotted beam marks now; race day is a red sun with rays
+  on the horizon ("GUN · 06:45"). Heights are seeded by date, so the sky
+  never reshuffles.
+- **Run card textures (`.h-art`):** red speed lines streaking from the
+  red light on quality days, a white perspective road behind the stats on
+  long runs, faint contour rings on easy and recovery days. Hidden on the
+  logged recap and the race card. Never takes a tap.
+Build tests guard the text alternatives and tap-through; interactions
+check the wheel's summary and hand and the sky's stars and sun. 65 browser
+checks (including the 234-day sweep), 16,172 plan checks, no overflow,
+accessibility sweep clean.

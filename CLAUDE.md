@@ -104,6 +104,11 @@ of the installed app (the user's call, v4.69.1), never in a browser tab,
 never takes a tap, and never delays Today underneath. The same stage marks
 earned moments (v4.71) once, on the first save of a run that sets
 something: the marathon, a race, a new longest, a best, a 100 km mark.
+Art (v4.72, the user asked for maximalism over minimalism) is always data:
+the day wheel is today's plan on a 24-hour dial, the night sky is every run
+of the block as a star with race day as a red sunrise, and the run card's
+texture follows the class of run (red speed lines when hard, a white road
+when long, contour rings when easy). Same tokens, same meanings.
 
 ## 4. Product intent (UX is yours to design)
 

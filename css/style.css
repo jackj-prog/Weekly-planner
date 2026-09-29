@@ -1952,3 +1952,94 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 /* Move picker: one shared note instead of a warning in every box. */
 .c-move .mv-runlog { grid-column: 1 / -1; margin: 2px 0 0; font: 400 12px/1.4 var(--body); color: var(--t3); }
 .qs.settled li::before { content: "✓"; color: var(--t2); }
+
+/* ================= ART (v4.72) =================================
+   Maximal, but every flourish is data: the day wheel is today's plan, the
+   night sky is the block's runs, the card textures follow the class of run.
+   Tokens only; red stays hard, white stays long. */
+
+/* -- the day wheel -- */
+.daywheel { margin: -4px 0 20px; display: grid; justify-items: center; gap: 12px; }
+.daywheel svg { width: min(300px, 84vw); height: auto; overflow: visible; }
+.dw-face { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+.dw-night { fill: none; stroke: var(--paper); stroke-width: 30; }
+.dw-sweep { fill: var(--glow-white-soft); }
+.dw-star { fill: var(--text); opacity: .75; }
+.dw-tick { stroke: var(--line); stroke-width: 1; }
+.dw-tick.major { stroke: var(--t3); stroke-width: 1.6; }
+.dw-hour { fill: var(--t3); font: 400 9px var(--mono); text-anchor: middle; letter-spacing: .06em; }
+.dw-q { fill: none; stroke-width: 5; opacity: .5; }
+.dw-s { fill: none; stroke-width: 15; opacity: .32; }
+.dw-s.run { opacity: .6; }
+.dw-s.done { opacity: 1; filter: drop-shadow(0 0 5px var(--glow-white)); }
+.dw-s.run.done { filter: drop-shadow(0 0 8px var(--glow-white)); }
+.dw-s.off { opacity: .22; stroke-dasharray: 2 5; }
+.dw-hand { stroke: var(--accent); stroke-width: 2.2; stroke-linecap: round; filter: drop-shadow(0 0 6px var(--glow-red)); }
+.dw-tip { fill: var(--accent); filter: drop-shadow(0 0 8px var(--glow-red)); }
+.dw-count { fill: var(--text); font: 900 48px var(--display); text-anchor: middle; letter-spacing: -.03em; }
+.dw-of { fill: var(--t3); font-size: 24px; }
+.dw-cap { fill: var(--t3); font: 400 8.5px var(--mono); letter-spacing: .22em; text-anchor: middle; }
+.daywheel figcaption { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; font: 400 11px var(--mono); color: var(--t2); }
+.daywheel figcaption i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+
+/* -- the night sky -- */
+.sky { margin: 16px -6px 6px; }
+.sky svg { display: block; width: 100%; height: auto; }
+.sk-dawn-a { stop-color: var(--accent-fill); stop-opacity: .2; }
+.sk-dawn-b { stop-color: var(--accent-fill); stop-opacity: 0; }
+.sk-glow-a { stop-color: var(--accent); stop-opacity: .6; }
+.sk-glow-b { stop-color: var(--accent); stop-opacity: 0; }
+.sk-hw-a { stop-color: var(--text); stop-opacity: .26; }
+.sk-hw-b { stop-color: var(--text); stop-opacity: 0; }
+.sk-hr-a { stop-color: var(--accent); stop-opacity: .45; }
+.sk-hr-b { stop-color: var(--accent); stop-opacity: 0; }
+.sk-dust { fill: var(--t3); opacity: .45; }
+.sk-star.easy { fill: var(--t2); }
+.sk-star.long { fill: var(--text); }
+.sk-star.hard { fill: var(--accent); }
+.sk-ahead { fill: var(--t3); opacity: .45; }
+.sk-ahead.hard { fill: var(--accent); opacity: .4; }
+.sk-spine { fill: none; stroke: var(--glow-white); stroke-width: .9; stroke-dasharray: 2 3; }
+.sk-now { stroke: var(--t2); stroke-width: .8; stroke-dasharray: 1 3; }
+.sk-now-t { fill: var(--t2); font: 700 7px var(--mono); letter-spacing: .16em; }
+.sk-sun { fill: var(--accent-fill); }
+.sk-ray { stroke: var(--accent); stroke-width: 1.4; stroke-linecap: round; opacity: .75; }
+.sk-horizon { stroke: var(--t3); stroke-width: .8; }
+.sk-lab { fill: var(--t3); font: 400 8px var(--mono); letter-spacing: .12em; }
+.sk-lab.end { text-anchor: end; }
+
+/* -- the run card's texture, by class of run -- */
+.hero .h-art { position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; overflow: hidden; }
+.hero.has-recap .h-art, .hero.race .h-art { display: none; }
+/* hard: speed lines streaking out of the red light */
+.hero.cls-quality .h-art {
+  background: repeating-linear-gradient(118deg, transparent 0 15px, color-mix(in srgb, var(--accent) 26%, transparent) 15px 16.5px);
+  -webkit-mask-image: radial-gradient(130% 95% at 100% 0%, #000 0%, transparent 62%);
+  mask-image: radial-gradient(130% 95% at 100% 0%, #000 0%, transparent 62%);
+}
+/* long: the long road — a floor grid running away to a horizon */
+.hero.cls-long .h-art::before {
+  content: ''; position: absolute; left: -60%; right: -60%; top: 150px; height: 300px;
+  background:
+    repeating-linear-gradient(90deg, var(--glow-white) 0 1px, transparent 1px 36px),
+    repeating-linear-gradient(0deg, var(--glow-white) 0 1px, transparent 1px 28px);
+  transform: perspective(260px) rotateX(58deg); transform-origin: 50% 100%;
+  -webkit-mask-image: linear-gradient(to top, transparent 0%, #000 35%, #000 55%, transparent 96%);
+  mask-image: linear-gradient(to top, transparent 0%, #000 35%, #000 55%, transparent 96%);
+}
+/* easy and recovery: contour rings, a map of ground covered */
+.hero.cls-easy .h-art, .hero.cls-recovery .h-art {
+  background: repeating-radial-gradient(circle at 90% 8%, transparent 0 15px, var(--glow-white-soft) 15px 16px);
+  -webkit-mask-image: radial-gradient(95% 75% at 90% 8%, #000, transparent 72%);
+  mask-image: radial-gradient(95% 75% at 90% 8%, #000, transparent 72%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* the wheel's sessions draw round the dial on arrival, the sky twinkles in */
+  .view.anim .dw-s, .view.anim .dw-q { animation: dw-in .9s cubic-bezier(.2,.8,.2,1) backwards; }
+  @keyframes dw-in { from { opacity: 0; } }
+  .view.anim .dw-hand, .view.anim .dw-tip { animation: dw-in .6s ease-out .5s backwards; }
+  .view.anim .sk-star, .view.anim .sk-ahead { animation: dw-in 1.2s ease-out backwards; }
+  .view.anim .sk-sun, .view.anim .sk-ray { animation: sk-rise 1.4s cubic-bezier(.2,.8,.2,1) .3s backwards; }
+  @keyframes sk-rise { from { opacity: 0; transform: translateY(14px); } }
+}

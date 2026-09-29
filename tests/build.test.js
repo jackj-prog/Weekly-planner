@@ -1351,6 +1351,10 @@ section('palette contrast (WCAG AA)');
       'cinema cards never take a tap and stay out of the accessibility tree');
     ok(!/localStorage/.test(tcFn), 'title card plays on every launch — no once-a-day gate (user’s call, v4.69.1)');
     ok(/\.titlecard\s*\{[^}]*pointer-events:\s*none/.test(css), 'title card never takes a tap');
+    /* Art (v4.72): the wheel and the sky are pictures with a spoken summary. */
+    ok(/<figure class="daywheel" role="img" aria-label=/.test(appSrc) && /<figure class="sky" role="img" aria-label=/.test(appSrc),
+      'the day wheel and the night sky carry text alternatives');
+    ok(/\.hero \.h-art \{[^}]*pointer-events:\s*none/.test(css), 'run card textures never take a tap');
 
     /* Zoom must stay available. `user-scalable=no` / `maximum-scale=1` is a
        WCAG 1.4.4 failure, and it is not even the thing that gives the app its
