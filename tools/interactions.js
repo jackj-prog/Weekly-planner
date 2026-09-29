@@ -340,6 +340,24 @@ async function cinema() {
   t = await open('2026-09-22', '12:00', SEED);
   check(!(await t.page.$('.previously')), 'Previously is a Monday card only');
   await t.ctx.close();
+  // v4.74: the Roman date, the rose window, the seal, red-letter days
+  t = await open('2026-10-07', '12:00', SEED);
+  check(/Feria quarta · Non\. Oct\. · MMXXVI/.test(await text(t.page, '.hodie')), 'the Nones of October fall on the 7th');
+  for (let k = 0; k < 7; k++) await t.page.click('.day-head [data-d="1"]');
+  check(/pridie Id\. Oct\./.test(await text(t.page, '.hodie')), '14 October is the day before the Ides');
+  await t.ctx.close();
+  t = await open('2027-01-20', '12:00', SEED);
+  check(/a\.d\. XIII Kal\. Feb\./.test(await text(t.page, '.hodie')) && /Sebastian/.test(await text(t.page, '.hodie .feast')), 'race-week Wednesday: XIII Kal. Feb., St Sebastian');
+  await t.ctx.close();
+  t = await open('2026-09-21', '12:00', SEED);
+  check(!(await t.page.$('.previously .seal')), 'a week with a missed run is not sealed');
+  await t.ctx.close();
+  t = await open('2026-09-21', '12:00', Object.assign({}, SEED, { 'runlog-2026-09-16': { sec: 2300, hr: 160, km: 7 } }));
+  check(!!(await t.page.$('.previously .seal')) && /sealed/.test(await t.page.getAttribute('.previously .seal', 'aria-label')), 'a week with every run done is sealed');
+  await t.ctx.close();
+  t = await open('2026-10-24', '07:00', SEED);
+  check(/red-letter/.test(await t.page.getAttribute('.hero', 'class')) && /RED-LETTER DAY/.test(await text(t.page, '.hero .h-tag')), 'the parkrun is a red-letter day');
+  await t.ctx.close();
   t = await open('2026-09-20', '20:00', SEED);
   await t.page.click('.recap-share');
   await t.page.waitForSelector('.card-ov[open] img', { timeout: 5000 });

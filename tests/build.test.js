@@ -1352,7 +1352,7 @@ section('palette contrast (WCAG AA)');
     ok(!/localStorage/.test(tcFn), 'title card plays on every launch — no once-a-day gate (user’s call, v4.69.1)');
     ok(/\.titlecard\s*\{[^}]*pointer-events:\s*none/.test(css), 'title card never takes a tap');
     /* Art (v4.72): the wheel and the sky are pictures with a spoken summary. */
-    ok(/<figure class="daywheel" role="img" aria-label=/.test(appSrc) && /<figure class="sky" role="img" aria-label=/.test(appSrc),
+    ok(/<figure class="daywheel[^"]*' \+ [^;]*role="img" aria-label=|<figure class="daywheel" role="img" aria-label=/.test(appSrc) && /<figure class="sky" role="img" aria-label=/.test(appSrc),
       'the day wheel and the night sky carry text alternatives');
     ok(/\.hero \.h-art \{[^}]*pointer-events:\s*none/.test(css), 'run card textures never take a tap');
     /* Book of Hours (v4.73): the Latin is plan content and lives in plan.js;
@@ -1362,6 +1362,8 @@ section('palette contrast (WCAG AA)');
       'every phase and block has a motto with its translation');
     ok(['marathon', 'race', 'longest', 'best', 'milestone'].every((k) => Array.isArray(H.earned && H.earned[k])), 'every earned moment has an inscription');
     ok((H.canonical || []).length === 8, 'the eight canonical hours mark the dial');
+    ok(H.calendar && H.calendar.weekdays.length === 7 && H.calendar.months.length === 12 && H.mottos.longRun && H.seal,
+      'the Roman calendar, the Sunday motto and the seal legend are plan content');
     ok(!/Per aspera|Festina lente|Plus ultra|Nulla dies/.test(appSrc), 'no Latin lives in app.js (§2: rendering code carries no content)');
     ok(/--serif:/.test(rootSrc) && !/@font-face[^}]*Baskerville/.test(css), 'the serif is a system stack, no new font download');
 

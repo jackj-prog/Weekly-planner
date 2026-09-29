@@ -524,16 +524,19 @@ const PLAN = {
       race: ['Alea iacta est', 'the die is cast'],
       recovery: ['Solvitur ambulando', 'it is solved by walking'],
       standing: ['Ora et labora', 'pray and work'],
+      /* Sundays' long runs take St Paul, who used the race as his image:
+         1 Cor 9:24, Vulgate, Douay-Rheims translation. */
+      longRun: ['Sic currite ut comprehendatis', 'so run that you may obtain'],
     },
     /* The canonical hours, as the day wheel's dial marks (every 3 hours). */
     canonical: [
       [0, 'Matins'], [3, 'Lauds'], [6, 'Prime'], [9, 'Terce'],
       [12, 'Sext'], [15, 'None'], [18, 'Vespers'], [21, 'Compline'],
     ],
-    /* Inscriptions on earned moments. The marathon closes the Build motto:
-       per aspera, ad astra. */
+    /* Inscriptions on earned moments. The marathon's is St Paul's: bonum
+       certamen certavi, cursum consummavi, fidem servavi. */
     earned: {
-      marathon: ['Ad astra', 'to the stars'],
+      marathon: ['Cursum consummavi', 'I have finished my course'],   // 2 Tim 4:7
       race: ['Veni, vidi, vici', 'I came, I saw, I conquered'],
       longest: ['Plus ultra', 'further beyond'],
       best: ['Citius', 'faster'],
@@ -542,6 +545,26 @@ const PLAN = {
     /* Epigraph for the journey page: Pliny on the painter Apelles, who let
        no day pass without drawing at least one line. */
     epigraph: ['Nulla dies sine linea', 'No day without a line. Pliny, on Apelles.'],
+    /* The date as a Book of Hours gives it: the ecclesiastical weekday and
+       the Roman reckoning from the Kalends, Nones and Ides (the Nones fall
+       on the 7th and the Ides on the 15th in March, May, July, October). */
+    calendar: {
+      weekdays: ['Feria secunda', 'Feria tertia', 'Feria quarta', 'Feria quinta', 'Feria sexta', 'Sabbatum', 'Dominica'],
+      months: ['Ian.', 'Feb.', 'Mart.', 'Apr.', 'Mai.', 'Iun.', 'Iul.', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'],
+      longNones: [3, 5, 7, 10],
+    },
+    /* Red-letter feasts that fall inside the block, by MM-DD. St Sebastian,
+       patron of athletes, keeps the Wednesday of race week. */
+    feasts: {
+      '11-01': 'All Saints',
+      '12-25': 'Christmas Day',
+      '01-06': 'Epiphany',
+      '01-20': 'St Sebastian, patron of athletes',
+    },
+    /* A week is sealed when every planned run happened at a real share of
+       its distance (shapeRule.shortPct), a dropped Saturday buffer excepted
+       (rule 10). The seal's legend reads round its rim. */
+    seal: 'Sigillum hebdomadis',
   },
 
   /* The prescription on a long run that carries marathon-pace work (\u00a710).

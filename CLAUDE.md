@@ -121,7 +121,12 @@ key days take Roman numerals; completed days in the distance profile are lit
 candles; Reference notes open with illuminated initials; figures are
 captioned "Fig. I–III". The serif is the system stack `--serif` (Baskerville,
 Didot: the Enlightenment's own faces, bundled with iOS) and is never used for
-data.
+data. v4.74 adds the date in Roman reckoning over "Your day" (Feria tertia ·
+a.d. III Kal. Oct.), red-letter feasts from `PLAN.hours.feasts`, a rose
+window whose twelve lights fill as the day's sessions are done, a red wax
+seal on any week where every planned run happened (the Saturday buffer
+excepted, rule 10), and red-letter days: the key days' run card is ruled
+like a manuscript page.
 
 ## 4. Product intent (UX is yours to design)
 

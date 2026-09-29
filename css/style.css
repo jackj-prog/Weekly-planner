@@ -2129,3 +2129,52 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   font: 400 3.1em/.8 var(--serif); color: var(--accent);
   border: 1px solid var(--line); border-radius: 3px; background: var(--surface);
 }
+
+/* ---- Book of Hours II (v4.74) ---------------------------------------- */
+/* the day in the Church's reckoning, over the hours of the day */
+.hodie { margin: 26px 2px -12px; font: italic 400 16px/1.4 var(--serif); color: var(--t2); letter-spacing: .01em; }
+.hodie .rub { font-size: 1.35em; font-weight: 700; line-height: 0; }
+.hodie .feast { display: block; margin-top: 2px; font: 400 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+
+/* the rose window fills with light as the day's sessions are done */
+.dw-rose.lit { fill: var(--glow-white); stroke: var(--t2); }
+.daywheel.complete .dw-rose.lit { fill: var(--glow-white-hot); filter: drop-shadow(0 0 6px var(--glow-white)); }
+.daywheel.complete .dw-face { stroke: var(--t2); filter: drop-shadow(0 0 18px var(--glow-white-soft)); }
+
+/* the wax seal */
+.week-profile, .previously { position: relative; }
+.seal { position: absolute; z-index: 2; width: 78px; height: 78px; pointer-events: none; transform: rotate(-14deg); }
+.week-profile > .seal { top: -18px; right: -10px; }
+.previously > .seal { top: 10px; right: 10px; width: 74px; height: 74px; }
+.seal svg { width: 100%; height: 100%; overflow: visible; }
+.sl-wax { fill: var(--accent-fill); filter: drop-shadow(0 4px 8px var(--shade)); }
+.sl-ring { fill: none; stroke: var(--glow-white-hot); stroke-width: .8; }
+.sl-legend { fill: var(--text); font: 700 7.2px var(--serif); letter-spacing: .1em; }
+.sl-num { fill: var(--text); font: 700 21px var(--serif); text-anchor: middle; }
+
+/* red-letter days: the key days' card is ruled like a manuscript page */
+.hero.red-letter .h-art { display: block; }
+.hero.red-letter .h-art::after {
+  content: ''; position: absolute; inset: 7px; border-radius: 13px; pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  box-shadow: inset 0 0 0 3px var(--hero-bg), inset 0 0 0 4px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+.hero.red-letter .h-tag { color: var(--accent); }
+/* races that are not the marathon get the hard session's light and lines */
+.hero.cls-race:not(.race) {
+  background-image: var(--grain),
+    radial-gradient(110% 70% at 100% 0%, var(--glow-red), transparent 60%),
+    radial-gradient(90% 55% at 0% 100%, var(--glow-red-soft), transparent 70%),
+    var(--hero-base);
+}
+.hero.cls-race:not(.race) .h-art {
+  background: repeating-linear-gradient(118deg, transparent 0 15px, color-mix(in srgb, var(--accent) 26%, transparent) 15px 16.5px);
+  -webkit-mask-image: radial-gradient(130% 95% at 100% 0%, #000 0%, transparent 62%);
+  mask-image: radial-gradient(130% 95% at 100% 0%, #000 0%, transparent 62%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* the seal is pressed on arrival */
+  .view.anim .seal { animation: seal-press .55s cubic-bezier(.3,1.5,.5,1) .35s backwards; }
+  @keyframes seal-press { from { opacity: 0; transform: rotate(-30deg) scale(1.8); } }
+}

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.73.0';
+  const APP_VERSION = '4.74.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -411,6 +411,10 @@
 
     const previously = buildPreviously(iso, day);
     if (previously) view.appendChild(previously);
+
+    const ld = latinDate(iso);
+    if (ld) view.appendChild(el('<p class="hodie"><span class="rub">' + esc(ld.weekday.charAt(0)) + '</span>' + esc(ld.weekday.slice(1)) +
+      ' · ' + esc(ld.day) + ' · ' + esc(ld.year) + (ld.feast ? '<span class="feast">' + esc(ld.feast) + '</span>' : '') + '</p>'));
 
     view.appendChild(el('<div class="timeline-head"><h2>Your day</h2>' +
       (day.blockId === 'marathon' ? weekRingHTML(iso) : '') + '</div>'));
@@ -1263,10 +1267,14 @@
       ? '<button class="h-zoneset" data-goto="ref">Zones not set — add your resting and max HR</button>'
       : '';
 
+    /* Red-letter days: a Book of Hours printed its feasts in red, which is
+       where the phrase comes from. The block's key days are its feasts. */
+    const redLetter = !isRace && !r.movedFrom && (PLAN.keyEvents || []).some((k) =>
+      DB.addDays(PLAN.blocks[0].start, (k.wk - 1) * 7 + k.di) === iso);
     const hero = el(
-      '<section class="hero cls-' + esc(DB.runClass(r)) + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (isSkipped ? ' skipped' : '') + (just === r.id ? ' just' : '') + '">' +
+      '<section class="hero cls-' + esc(DB.runClass(r)) + (isRace ? ' race' : '') + (redLetter ? ' red-letter' : '') + (isDone ? ' done' : '') + (isSkipped ? ' skipped' : '') + (just === r.id ? ' just' : '') + '">' +
       '<i class="h-art" aria-hidden="true"></i>' +
-      '<div class="h-top"><div class="h-tag">' + (isRace ? 'RACE DAY' : 'TODAY’S RUN') +
+      '<div class="h-top"><div class="h-tag">' + (isRace ? 'RACE DAY' : redLetter ? 'RED-LETTER DAY' : 'TODAY’S RUN') +
       '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : isSkipped ? 'Skipped' : isMovedOut ? 'Moved to ' + movedLabel(iso, r.id) :
         unresolved ? (iso < today ? 'Not recorded' : 'Window passed · not recorded') :
         (r.movedFrom ? 'Moved from ' + fmtShort(r.movedFrom) + ' · ' : 'Scheduled · ') + r.start) + '</span></div>' +
@@ -1497,6 +1505,41 @@
     ov.showModal();
   }
 
+  /* ---- the wax seal (v4.74): a week where every planned run happened ----
+     Each planned run recorded at a real share of its distance
+     (shapeRule.shortPct); a dropped Saturday buffer is rule 10, not a miss.
+     Only for weeks that have ended or whose runs are all done. */
+  function weekSealed(anchor) {
+    const d0 = DB.buildDay(anchor);
+    if (d0.blockId !== 'marathon') return false;
+    const r = PLAN.shapeRule || {}, exempt = r.shortExempt || [], today = todayISO();
+    let runs = 0;
+    for (let i = 0; i < 7; i++) {
+      const iso = DB.addDays(anchor, i), day = DB.buildDay(iso);
+      if (!day.run) continue;
+      if (i === 5 && exempt.includes('sat')) continue;
+      const plan = day.run.run.km, got = iso <= today ? DB.recordedKm(day, getDone(iso), getRunLogEntry(iso)) : 0;
+      if (!(got >= plan * (r.shortPct || 0.6))) return false;
+      runs++;
+    }
+    return runs > 0;
+  }
+  function sealHTML(week) {
+    const legend = (PLAN.hours && PLAN.hours.seal) || '';
+    // a wax edge: a circle pushed in and out a little, the same way every time
+    let edge = '';
+    for (let k = 0; k <= 36; k++) {
+      const a = (k / 36) * Math.PI * 2, rr = 44 + (k % 3 === 0 ? 2.4 : k % 2 ? -1.2 : 0.6);
+      edge += (k ? ' L' : 'M') + (50 + rr * Math.cos(a)).toFixed(1) + ' ' + (50 + rr * Math.sin(a)).toFixed(1);
+    }
+    return '<span class="seal" role="img" aria-label="Week ' + week + ' sealed: every planned run happened">' +
+      '<svg viewBox="0 0 100 100" aria-hidden="true"><path class="sl-wax" d="' + edge + ' Z"/>' +
+      '<circle class="sl-ring" cx="50" cy="50" r="35"/><circle class="sl-ring" cx="50" cy="50" r="24"/>' +
+      '<path id="sl-arc-' + week + '" d="M50 20 A30 30 0 1 1 49.9 20" fill="none"/>' +
+      '<text class="sl-legend"><textPath href="#sl-arc-' + week + '" textLength="186" lengthAdjust="spacing">' + esc(legend.toUpperCase().replace(/U/g, 'V')) + ' · ' + roman(week) + ' ·</textPath></text>' +
+      '<text class="sl-num" x="50" y="58">' + roman(week) + '</text></svg></span>';
+  }
+
   /* ---- "Previously": Monday opens with last week in one card ----
      Planned against recorded, day by day, drawn as ghost bars (the plan)
      with the recorded distance filled in, in the distance profile's
@@ -1532,7 +1575,7 @@
       (d.got ? '<i class="pv-got" style="height:' + (Math.min(d.got, top) / top * 100).toFixed(1) + '%"></i>' : '') +
       '</span><b>' + DAY_SHORT[i].slice(0, 1) + '</b></span>').join('');
     const card = el('<section class="previously' + (all ? ' full' : '') + '" aria-label="Last week">' +
-      '<span class="pv-num" aria-hidden="true">' + roman(d0.week) + '</span>' +
+      (weekSealed(anchor) ? sealHTML(d0.week) : '<span class="pv-num" aria-hidden="true">' + roman(d0.week) + '</span>') +
       '<div class="pv-kicker">PREVIOUSLY · WEEK ' + d0.week + '</div>' +
       '<div class="pv-km"><b>' + fmt(recorded) + '</b> of ' + fmt(planned) + ' km</div>' +
       '<div class="pv-line">' + ran + ' of ' + runs + ' runs · ' +
@@ -1567,7 +1610,28 @@
     if (day.run && DB.runClass(day.run) === 'race' && /MARATHON/.test(day.run.title)) return m.race;
     if (day.blockId === 'recovery') return m.recovery;
     if (day.blockId !== 'marathon') return m.standing;
+    if (day.run && DB.runClass(day.run) === 'long' && m.longRun) return m.longRun;
     return m[day.phase] || null;
+  }
+  /* The date as a Book of Hours gives it: "Feria tertia · a.d. III Kal.
+     Oct. · MMXXVI", counted inclusively back from the Kalends, Nones or Ides,
+     with a red-letter feast when one falls (PLAN.hours). */
+  function latinDate(iso) {
+    const c = PLAN.hours && PLAN.hours.calendar;
+    if (!c) return null;
+    const [y, mo, d] = iso.split('-').map(Number);
+    const M = (k) => c.months[(k + 12) % 12];
+    const nones = c.longNones.includes(mo) ? 7 : 5, ides = nones + 8;
+    const before = (n, mark, k) => (n === 2 ? 'pridie ' : 'a.d. ' + roman(n) + ' ') + mark + ' ' + M(k);
+    let day;
+    if (d === 1) day = 'Kal. ' + M(mo - 1);
+    else if (d < nones) day = before(nones - d + 1, 'Non.', mo - 1);
+    else if (d === nones) day = 'Non. ' + M(mo - 1);
+    else if (d < ides) day = before(ides - d + 1, 'Id.', mo - 1);
+    else if (d === ides) day = 'Id. ' + M(mo - 1);
+    else day = before(new Date(y, mo, 0).getDate() - d + 2, 'Kal.', mo);
+    const feast = (PLAN.hours.feasts || {})[iso.slice(5)];
+    return { weekday: c.weekdays[DB.dayIndex(iso)], day, year: roman(y), feast: feast || '' };
   }
   function dayWheelHTML(day, done, iso, isToday, ovr) {
     const blocks = day.blocks.filter((b) => b.endMin > b.startMin);
@@ -1623,12 +1687,15 @@
         ticks += name + '<text class="dw-hour" x="' + x + '" y="' + (lower ? y - 2 : y + 9).toFixed(1) + '">' + String(h).padStart(2, '0') + '</text>';
       }
     }
+    /* The rose window: twelve lights that fill clockwise as the day's
+       sessions are done, all twelve when the day is complete. */
+    const litPetals = total ? Math.round(12 * got / total) : 0;
     let rose = '<circle class="dw-rose" cx="' + C + '" cy="' + C + '" r="56"/>';
     for (let k = 0; k < 12; k++) {
       const m = k * 120;
       rose += '<path class="dw-rose" d="M' + pt(m, 56) + ' L' + pt(m, 84) + '"/>';
       const [px, py] = pt(m + 60, 70).split(' ');
-      rose += '<circle class="dw-rose" cx="' + px + '" cy="' + py + '" r="10"/>';
+      rose += '<circle class="dw-rose' + (k < litPetals ? ' lit' : '') + '" cx="' + px + '" cy="' + py + '" r="10"/>';
     }
     const mt = mottoFor(day);
     const motto = mt ? '<path id="dw-arc" d="M' + pt(1440 * 0.625, 176) + ' A176 176 0 0 0 ' + pt(1440 * 0.375, 176) + '" fill="none"/>' +
@@ -1651,7 +1718,7 @@
     const legend = cats.map((c) => '<span><i style="background:' + (c === 'run' ? runSwatch : CAT_VAR[c] || 'var(--t2)') + '"></i>' +
       esc(c === 'xt' ? 'cross-train' : c === 'run' && rcl === 'race' ? 'race' : c === 'run' && rcl === 'long' ? 'long run' : c === 'run' && rcl === 'quality' ? 'quality run' : c) + '</span>').join('');
     const label = 'Your day as a 24-hour clock: ' + total + ' sessions, ' + got + ' done' + (runAt ? '; run at ' + runAt : '') + '.';
-    return '<figure class="daywheel" role="img" aria-label="' + esc(label) + '">' +
+    return '<figure class="daywheel' + (total && got === total ? ' complete' : '') + '" role="img" aria-label="' + esc(label) + '">' +
       '<svg viewBox="-12 0 364 362" aria-hidden="true"><circle class="dw-face" cx="' + C + '" cy="' + C + '" r="122"/>' +
       rose + night + ticks + rings + hand + motto +
       '<text class="dw-count" x="' + C + '" y="' + (C + 2) + '">' + got + '<tspan class="dw-of">/' + total + '</tspan></text>' +
@@ -1962,7 +2029,7 @@
   function buildLandmarks(journey) {
     const today=todayISO();
     let nextMarked=false;   // the first key day still ahead is lit; the rest stay outlined
-    const root=el('<section class="journey-landmarks"><div class="journey-section-title"><h2>The days that count</h2><span>KEY DAYS</span></div>'+ (PLAN.keyEvents||[]).map((e,i)=>{
+    const root=el('<section class="journey-landmarks"><div class="journey-section-title"><h2>The days that count</h2><span>RED-LETTER DAYS</span></div>'+ (PLAN.keyEvents||[]).map((e,i)=>{
       const week=journey.weeks[e.wk-1], day=week.days[e.di], delta=DB.daysBetween(today,day.iso);
       const status=day.recorded>0?'Recorded':delta<0?'Past · not recorded':delta===0?'Today':delta+' days away';
       const next=delta>=0&&!nextMarked; if(next)nextMarked=true;
@@ -2204,6 +2271,7 @@
     }));
     const after = view.querySelector('.wk-note') || view.querySelector('.wk-motto') || view.querySelector('.wk-sub');
     view.insertBefore(profile, after ? after.nextSibling : null);
+    if (weekSealed(anchor)) profile.insertAdjacentHTML('afterbegin', sealHTML(day0.week));
     if (day0.blockId === 'marathon') profile.after(buildJourney());
 
     const days = el('<div class="wk-days"></div>');

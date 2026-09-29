@@ -1014,3 +1014,29 @@ app's one red). 90s left out to keep it coherent.
 Build tests: every motto/inscription present, eight hours, no Latin in
 app.js, no serif webfont. Interactions: the dial's hours and motto, Roman
 key days. 67 browser checks, 16,177 plan checks, no overflow, a11y clean.
+
+## Book of Hours II: Roman dates, rose window, wax seals, red-letter days — v4.74, 29 September (Claude)
+
+- **Roman date over "Your day"** (`latinDate`): ecclesiastical weekday
+  (Feria secunda … Sabbatum, Dominica) and the inclusive count to the
+  Kalends/Nones/Ides (Nones on the 7th and Ides on the 15th in March, May,
+  July, October), year in Roman numerals, and a red-letter feast from
+  `PLAN.hours.feasts` (All Saints, Christmas, Epiphany, St Sebastian —
+  patron of athletes — on the Wednesday of race week). Vocabulary is plan
+  content (`PLAN.hours.calendar`).
+- **Rose window lights:** the dial's twelve petals fill clockwise in
+  proportion to sessions done; a complete day glows.
+- **Wax seal** (`weekSealed`, `sealHTML`): every planned run of a week
+  recorded at ≥ `shapeRule.shortPct` of its distance, the Saturday buffer
+  exempt. Stamped on the Week view's distance profile and replaces the
+  numeral on Monday's Previously card; legend SIGILLVM HEBDOMADIS · XII
+  round the rim, pressed on arrival. Real Wk 12 seals; Wks 10, 11, 13 do not.
+- **Red-letter days:** the five key days' run card reads RED-LETTER DAY in
+  red inside a ruled double frame; the key days list is headed RED-LETTER
+  DAYS. Non-marathon races (TT, parkrun, half) now get the hard session's
+  red light and speed lines, which they had lacked.
+- **Mottos:** Sunday long runs take 1 Cor 9:24, "Sic currite ut
+  comprehendatis" (so run that you may obtain); the marathon's earned
+  inscription is 2 Tim 4:7, "Cursum consummavi" (I have finished my course).
+Interactions check the Nones/Ides reckoning, St Sebastian, sealing both
+ways and the red-letter parkrun. 73 browser checks, 16,178 plan checks.
