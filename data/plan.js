@@ -459,6 +459,24 @@ const PLAN = {
       'for a niggle is rule 5 working, not adherence failing. What this ' +
       'panel measures is where the kilometres went, not whether the ' +
       'decisions were right.',
+    /* Saturday's buffer is Z1 recovery or it does not happen (rule 10), and
+       it is the first thing the plan says to drop. A short Saturday is the
+       rule working, so only an over-long one is flagged — that is Sunday's
+       legs spent a day early. Wk 12 (43.3 of 43 km, every weekday run in
+       full) was reported as a badly shaped week over a 1.7 km Saturday. */
+    shortExempt: ['sat'],
+    /* When the long run held its share, the week kept its shape; the
+       skew note above would then describe something that did not happen. */
+    offNote:
+      'The long run held its planned share, so the week kept its shape. ' +
+      'The flagged session is worth a look on its own: one short run is ' +
+      'noise, the same session short week after week is a pattern.',
+    /* The long run itself short or missing is its own case: the share is
+       under plan, not over, and neither note above describes it. */
+    lrShortNote:
+      'The long run is the session the week is built around, and it is the ' +
+      'one that came in short. Its kilometres are gone, not owed: next ' +
+      'Sunday runs the plan’s number, not that number plus the gap.',
   },
 
   /* The moment of decision is the long-run morning, not the following

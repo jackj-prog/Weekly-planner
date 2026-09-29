@@ -267,6 +267,36 @@ async function marathonPace() {
   await t.ctx.close();
 }
 
+async function weekShape() {
+  console.log('· week shape panel');
+  // Wk 12 (14–20 Sep, 43 km: Tue 7 · Wed 7 · Thu 5 · Sat 3 · Long 21), invented logs.
+  const wk = (extra) => Object.assign({}, SEED, { 'runlog-2026-09-16': { sec: 2300, hr: 160, km: 7 } }, extra);
+  const openWk12 = async (seed) => {
+    const t = await open('2026-09-21', '12:00', seed, 'week');
+    await t.page.click('[aria-label*="revious week"]'); await t.page.waitForTimeout(150);
+    return t;
+  };
+  let t = await openWk12(wk({ 'runlog-2026-09-19': { sec: 700, hr: 130, km: 1.5 } }));
+  check(!(await t.page.$('.wk-shape')), 'a short Saturday buffer alone raises no shape panel (rule 10)');
+  await t.ctx.close();
+  t = await openWk12(wk({ 'runlog-2026-09-17': { sec: 800, hr: 140, km: 2 } }));
+  check(/held/.test(await t.page.getAttribute('.wk-shape', 'class')) && /held its planned share/.test(await text(t.page, '.wk-shape')),
+    'one short weekday with the long run on share → quiet panel, no skew story');
+  await t.ctx.close();
+  t = await openWk12(wk({ 'runlog-2026-09-15': { sec: 600, hr: 140, km: 1.5 }, 'runlog-2026-09-16': { sec: 600, hr: 150, km: 2 }, 'runlog-2026-09-20': { sec: 9000, hr: 150, km: 26 } }));
+  check(!/held/.test(await t.page.getAttribute('.wk-shape', 'class')) && /but the long run took/.test(await text(t.page, '.wk-shape')),
+    'a long run carrying the week keeps the skew panel');
+  noErrors(t, 'week shape');
+  await t.ctx.close();
+  const noLong = wk({});
+  delete noLong['runlog-2026-09-20'];
+  t = await openWk12(noLong);
+  const lrText = await text(t.page, '.wk-shape');
+  check(!/held/.test(await t.page.getAttribute('.wk-shape', 'class')) && /long run came in at 0 of 21 km/.test(lrText) && !/held its planned share/.test(lrText),
+    'a missing long run gets its own note, never "held its share"');
+  await t.ctx.close();
+}
+
 async function sweep() {
   if (QUICK) { console.log('· render sweep skipped (--quick)'); return; }
   console.log('· render sweep: 234 days, 34 weeks, Plan, Reference');
@@ -302,7 +332,7 @@ async function offline() {
   browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
   server = await serve();
   try {
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, sweep, offline]) await run();
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, sweep, offline]) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');

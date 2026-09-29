@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.68.0';
+  const APP_VERSION = '4.68.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1636,12 +1636,14 @@
     if (DB.addDays(anchor, 6) > todayISO()) return null;      // week still running
     const split = DB.distancesForWeek(day0.row);
     const slots = [
-      { di: 1, name: 'Tue', plan: split.tue },
-      { di: 2, name: 'Wed', plan: split.wed },
-      { di: 3, name: 'Thu', plan: split.thu },
-      { di: 5, name: 'Sat', plan: split.sat },
-      { di: 6, name: 'Long', plan: split.long },
+      { di: 1, key: 'tue', name: 'Tue', plan: split.tue },
+      { di: 2, key: 'wed', name: 'Wed', plan: split.wed },
+      { di: 3, key: 'thu', name: 'Thu', plan: split.thu },
+      { di: 5, key: 'sat', name: 'Sat', plan: split.sat },
+      { di: 6, key: 'long', name: 'Long', plan: split.long },
     ].filter((s) => s.plan > 0);
+    const exempt = r.shortExempt || [];
+    const isShort = (s) => s.pct < r.shortPct && !exempt.includes(s.key);
     let ranTotal = 0, planTotal = 0, lrRan = 0;
     slots.forEach((s) => {
       const iso = DB.addDays(anchor, s.di);
@@ -1656,21 +1658,30 @@
     const shareRan = (lrRan / ranTotal) * 100;
     const sharePlan = (split.long / planTotal) * 100;
     const skewed = shareRan - sharePlan >= r.lrShareOverPts;
-    const off = slots.filter((s) => s.pct < r.shortPct || s.pct > r.overPct);
+    const off = slots.filter((s) => isShort(s) || s.pct > r.overPct);
     if (!skewed && !off.length) return null;
 
     const chips = slots.map((s) => {
-      const cls = s.pct < r.shortPct ? ' short' : s.pct > r.overPct ? ' over' : '';
+      const cls = isShort(s) ? ' short' : s.pct > r.overPct ? ' over' : '';
       return '<span class="shp' + cls + '"><i>' + s.name + '</i>' +
         (Math.round(s.ran * 10) / 10) + '<small>/' + s.plan + '</small></span>';
     }).join('');
+    /* Three different weeks: the long run carried it (skewed), the long run
+       itself came in short, or the shape held and one session was off.
+       Red is for the first two; the third is a quieter note. */
+    const lr = slots.find((s) => s.key === 'long');
+    const lrShort = !skewed && lr && isShort(lr) && r.lrShortNote;
+    const held = !skewed && !lrShort && r.offNote;
+    const fmt = (n) => Math.round(n * 10) / 10;
     return el(
-      '<div class="wk-shape"><b>Recorded week shape.</b> ' +
-      (Math.round(ranTotal * 10) / 10) + ' of ' + planTotal + ' km banked' +
+      '<div class="wk-shape' + (held ? ' held' : '') + '"><b>Recorded week shape.</b> ' +
+      fmt(ranTotal) + ' of ' + planTotal + ' km banked' +
       (skewed ? ', but the long run took <b>' + Math.round(shareRan) +
-        '%</b> of the week against a planned ' + Math.round(sharePlan) + '%' : '') + '.' +
+          '%</b> of the week against a planned ' + Math.round(sharePlan) + '%'
+        : lrShort ? '; the long run came in at <b>' + fmt(lr.ran) + ' of ' + lr.plan + ' km</b>'
+        : held ? '; the long run took ' + Math.round(shareRan) + '% against a planned ' + Math.round(sharePlan) + '%' : '') + '.' +
       '<div class="shp-row">' + chips + '</div>' +
-      '<div class="shp-note">' + esc(r.note) + '</div>' +
+      '<div class="shp-note">' + esc(lrShort ? r.lrShortNote : held ? r.offNote : r.note) + '</div>' +
       (r.caveat ? '<div class="shp-note shp-caveat">' + esc(r.caveat) + '</div>' : '') +
       '</div>'
     );

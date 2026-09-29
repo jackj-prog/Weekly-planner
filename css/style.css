@@ -345,6 +345,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border-radius: 8px;
 }
 .wk-shape b { font-weight: 700; }
+.wk-shape.held { border-left-color: var(--t3); }   /* shape kept; one session off */
 .shp-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 9px 0 8px; }
 .shp {
   display: inline-flex; align-items: baseline; gap: 4px;
