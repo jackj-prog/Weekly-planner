@@ -750,3 +750,15 @@ as a tick, and dims for a skipped or moved one. The done/due count now treats
 a logged run as done, drops skipped and moved-out sessions and includes
 moved-in ones. Moved or skipped sessions leave the plan line. No storage or
 plan changes; checked against a reconstruction of the real Week 13.
+
+## Moved runs take the run card — v4.66, 29 September (Claude)
+
+A run moved onto a day with no planned run now takes that day's hero
+("Moved from 3 Oct · 08:30"), with the usual tick, missed-run question and
+logger, instead of the day reading "No run. Still on plan." The moved-in item
+now also stores the block's `run`, `table`, `start` and `end`; items moved
+before v4.66 lack them and stay timeline cards. The hero tick and the
+timeline card share the moved item's id, so they agree. Moving a run onto a
+day that already has one warns "one run log per day" in the picker, because
+the log keeps one entry per date. Browser-checked: move Sat → Fri, hero,
+tick, week cards on both days; the earlier regression pass still passes.

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.65.0';
+  const APP_VERSION = '4.66.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -107,8 +107,19 @@
     fresh.moved[block.id] = target;
     writeJSON(ovrKey(iso), fresh);
     const list = getMoveIn(target).filter((m) => !(m.srcId === block.id && m.fromIso === iso));
-    list.push({ id: 'mv-' + iso + '-' + block.id, srcId: block.id, fromIso: iso, title: block.title, detail: block.detail, plan: block.plan || null, cat: block.cat });
+    list.push({ id: 'mv-' + iso + '-' + block.id, srcId: block.id, fromIso: iso, title: block.title, detail: block.detail, plan: block.plan || null, cat: block.cat,
+      run: block.run || null, table: block.table || null, start: block.start || null, end: block.end || null });
     writeJSON(moveKey(target), list);
+  }
+  /* A run moved onto a day with no planned run takes that day's hero, so the
+     day reads as a run day rather than "No run". Built only from the moved
+     item's own facts; items moved before v4.66 carry no run facts and stay
+     timeline cards. */
+  function movedInRun(iso) {
+    const m = getMoveIn(iso).find((x) => x.cat === 'run' && x.run && x.run.km > 0 && x.start && x.end);
+    if (!m) return null;
+    return { id: m.id, title: m.title, detail: m.detail || '', cat: 'run', doable: true, run: m.run, table: m.table || null,
+      start: m.start, end: m.end, startMin: DB.parseHM(m.start), endMin: DB.parseHM(m.end), movedFrom: m.fromIso };
   }
   function undoMove(iso, id) {
     const o = getOvr(iso);
@@ -139,7 +150,7 @@
       const same = day.blocks.filter((x) => x.doable && x.cat === block.cat && !ovr.skip[x.id] && !ovr.moved[x.id]).map((x) => x.title)
         .concat(getMoveIn(d).filter((m) => m.cat === block.cat && m.srcId !== block.id).map((m) => m.title));
       out.push({ iso: d, label: DAY_SHORT[i].charAt(0) + DAY_SHORT[i].slice(1).toLowerCase() + ' ' + Number(d.slice(8)),
-        clash: same.length ? 'has ' + same.join(' + ') : '', legDrop: legDropFor(block, d) });
+        clash: same.length ? 'has ' + same.join(' + ') + (block.cat === 'run' ? ' · one run log per day' : '') : '', legDrop: legDropFor(block, d) });
     }
     return out;
   }
@@ -349,8 +360,9 @@
     if (isToday) view.appendChild(buildNowNext(day));
 
     /* -- run hero -- */
-    if (day.run) {
-      view.appendChild(buildHero(day, done, iso, just));
+    const movedRun = day.run ? null : movedInRun(iso);
+    if (day.run || movedRun) {
+      view.appendChild(buildHero(movedRun ? { ...day, run: movedRun } : day, done, iso, just));
     } else {
       const restBlock = day.blocks.find((b) => /no run|rest/i.test(b.title));
       let nextRun = null;
@@ -1205,7 +1217,8 @@
       '<section class="hero' + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (isSkipped ? ' skipped' : '') + (just === r.id ? ' just' : '') + '">' +
       '<div class="h-top"><div class="h-tag">' + (isRace ? 'RACE DAY' : 'TODAY’S RUN') +
       '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : isSkipped ? 'Skipped' : isMovedOut ? 'Moved to ' + movedLabel(iso, r.id) :
-        unresolved ? (iso < today ? 'Not recorded' : 'Window passed · not recorded') : 'Scheduled · ' + r.start) + '</span></div>' +
+        unresolved ? (iso < today ? 'Not recorded' : 'Window passed · not recorded') :
+        (r.movedFrom ? 'Moved from ' + fmtShort(r.movedFrom) + ' · ' : 'Scheduled · ') + r.start) + '</span></div>' +
       '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' +
       (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button></div>' +
       (just === r.id && isDone ? '<div class="completion-note" role="status">✓ Run banked</div>' : '') +
