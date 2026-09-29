@@ -475,6 +475,15 @@ const PLAN = {
       'one most likely to injure you. A short week stays short.',
   },
 
+  /* Shown on the run card once a run is marked as not having happened. It
+     restates the long-run guard and return rule at the moment of the
+     decision; it adds no new rule. */
+  missedRun: {
+    note:
+      'Its kilometres are gone, not owed. Do not add them to another ' +
+      'day, least of all the long run. A short week stays short.',
+  },
+
   /* One lost week is not the problem. The week AFTER is: the plan's number
      is unchanged while the body's recent history is not, so a 23 km week
      run as 9 km is followed by a 34 km week the legs have no basis for.

@@ -634,3 +634,17 @@ exact-distance save, edit/delete, first/unplanned/legacy states, 9.999 km
 precision, and denied-storage startup. Captures were inspected, including
 Reference → App showing matching 4.56.0 app/cache. Native iPhone sharing and
 physical Safari remain device checks; browser captures use synthetic logs.
+
+## Missed and skipped runs on the hero — v4.57, 29 September (Claude)
+
+An hour after a run's window closes with no tick, log, skip or move, the
+hero stops saying "Scheduled · 08:30" and asks "Did it happen?" with Log it,
+Ran as planned and Didn't happen. Past days ask the same question. A skipped
+run is now a visible hero state (muted numbers, "Skipped") with the plan's
+own reason the km are not owed (`PLAN.missedRun`, a restatement of the long-
+run guard and return rule, not a new rule) and an Undo. Marking a skipped run
+done clears the skip. The minute clock re-renders when the grace hour passes.
+Prompted by a real Sunday where the long run was abandoned and the card still
+read as scheduled at 18:00. No storage keys changed (`ovr-ISO.skip`).
+Suite passes; captures at 390px of the passed-window and skipped states were
+inspected. Chromium mobile viewport, not a physical iPhone.

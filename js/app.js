@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.56.0';
+  const APP_VERSION = '4.57.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -51,6 +51,9 @@
     return (h ? h + 'h' + (m ? ' ' + m + 'm' : '') : m + 'm') + ' open';
   }
 
+  /* Minutes after a run's window closes before the hero stops calling it
+     scheduled and asks whether it happened. */
+  const MISSED_GRACE_MIN = 60;
   function todayISO() { return DB.toISO(new Date()); }
   function nowMin() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
   function mondayOf(iso) { return DB.addDays(iso, -DB.dayIndex(iso)); }
@@ -414,7 +417,8 @@
     const nMin = nowMin();
     const cur = day.blocks.find((b) => nMin >= b.startMin && nMin < b.endMin);
     const next = day.blocks.filter((b) => b.startMin > nMin).slice(0, 2);
-    nowKey = day.iso + '|' + (cur ? cur.id : '-') + '|' + (next[0] ? next[0].id : '-');
+    nowKey = day.iso + '|' + (cur ? cur.id : '-') + '|' + (next[0] ? next[0].id : '-') +
+      (day.run && nMin > day.run.endMin + MISSED_GRACE_MIN ? '|late' : '');
     let html = '<section class="nownext" aria-label="Now and next"><div class="nn-current">' +
       '<div class="nn-clock"><span>NOW</span><time class="live-clock">' + DB.fmtHM(nMin) + '</time></div><div class="nn-main">';
     if (cur) {
@@ -1028,18 +1032,42 @@
        install — which includes every Home Screen install, since those get
        their own storage container — the hero can only say a bare "Z2". Route
        there from the one screen where the number is missed. */
+    /* A run whose window has passed with nothing recorded is a question, not
+       a schedule. Left alone, the card said "Scheduled · 08:30" at 18:00 and
+       offered only "Mark done", so the honest answer (it did not happen) took
+       a trip to the timeline's ⋯ menu. Ask directly, and make "skipped" a
+       visible state with the plan's own reason why the km are not owed. */
+    const ovrHero = getOvr(iso);
+    const isSkipped = !!ovrHero.skip[r.id];
+    const isMovedOut = !!ovrHero.moved[r.id];
+    const today = todayISO();
+    const windowPassed = iso < today || (iso === today && nowMin() > r.endMin + MISSED_GRACE_MIN);
+    const unresolved = !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut && windowPassed;
+    const missedNote = (PLAN.missedRun && PLAN.missedRun.note) || '';
+    const missedHTML = unresolved
+      ? '<div class="h-missed" role="group" aria-label="Did this run happen?"><p><b>Did it happen?</b> ' +
+        (iso < today ? 'Nothing is recorded for this run.' : 'The ' + esc(r.start) + ' window has passed and nothing is recorded yet.') +
+        '</p><div class="h-missed-acts"><button data-missed="log">Log it</button>' +
+        '<button data-missed="done">Ran as planned</button><button data-missed="skip">Didn’t happen</button></div></div>'
+      : isSkipped
+        ? '<div class="h-missed is-skipped" role="status"><p><b>Skipped.</b> ' + esc(missedNote) + '</p>' +
+          '<div class="h-missed-acts"><button data-missed="unskip">Undo skip</button></div></div>'
+        : '';
+
     const hrSet = (() => { const h = readJSON('hr', null); return !!(h && h.rest && h.max); })();
     const zonePrompt = (!hrSet && /\bZ[1-5]\b/.test(r.detail))
       ? '<button class="h-zoneset" data-goto="ref">Zones not set — add your resting and max HR</button>'
       : '';
 
     const hero = el(
-      '<section class="hero' + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (just === r.id ? ' just' : '') + '">' +
+      '<section class="hero' + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (isSkipped ? ' skipped' : '') + (just === r.id ? ' just' : '') + '">' +
       '<div class="h-top"><div class="h-tag">' + (isRace ? 'RACE DAY' : 'TODAY’S RUN') +
-      '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : iso < todayISO() ? 'Not marked done' : 'Scheduled · ' + r.start) + '</span></div>' +
+      '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : isSkipped ? 'Skipped' : isMovedOut ? 'Moved to another day' :
+        unresolved ? (iso < today ? 'Not recorded' : 'Window passed · not recorded') : 'Scheduled · ' + r.start) + '</span></div>' +
       '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' +
       (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button></div>' +
       (just === r.id && isDone ? '<div class="completion-note" role="status">✓ Run banked</div>' : '') +
+      missedHTML +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
       '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span>' + paceCell +
@@ -1053,9 +1081,18 @@
     );
     hero.querySelector('.h-tick').addEventListener('click', () => {
       if (!done[r.id]) state.justTicked = r.id;   // animate on tick-on only
+      if (!done[r.id] && isSkipped) setSkip(iso, r.id, false);   // done wins over skipped
       toggleDone(iso, r.id);
       render();
     });
+    hero.querySelectorAll('[data-missed]').forEach((btn) => btn.addEventListener('click', () => {
+      const act = btn.getAttribute('data-missed');
+      if (act === 'log') { const logBtn = hero.querySelector('.runlogger .h-log'); if (logBtn) logBtn.click(); return; }
+      if (act === 'done') { state.justTicked = r.id; toggleDone(iso, r.id); }
+      if (act === 'skip') setSkip(iso, r.id, true);
+      if (act === 'unskip') setSkip(iso, r.id, false);
+      render();
+    }));
     const zoneBtn = hero.querySelector('[data-goto="ref"]');
     if (zoneBtn) zoneBtn.addEventListener('click', () => {
       state.view = 'ref';
@@ -2498,7 +2535,8 @@
     const n = nowMin();
     const cur = day.blocks.find((b) => n >= b.startMin && n < b.endMin);
     const nxt = day.blocks.find((b) => b.startMin > n);
-    const key = iso + '|' + (cur ? cur.id : '-') + '|' + (nxt ? nxt.id : '-');
+    const late = day.run && n > day.run.endMin + MISSED_GRACE_MIN ? '|late' : '';
+    const key = iso + '|' + (cur ? cur.id : '-') + '|' + (nxt ? nxt.id : '-') + late;
     if (key !== nowKey) { render(); return; }
     /* same block — just move the needle */
     const bar = document.querySelector('.nn-bar i');

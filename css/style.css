@@ -1046,6 +1046,17 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hero .rl-save { background: var(--paper); color: var(--text); }
 .hero .h-tick:focus-visible, .hero .h-log:focus-visible, .hero .st-b:focus-visible { outline-color: #fff; }
 .hero .h-guard { font-size: 14px; }
+/* A run whose window has passed asks whether it happened; a skipped run
+   says so, with the plan's reason the km are not owed. */
+.h-missed { margin-top: 14px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,.12); border-left: 3px solid var(--accent); font-size: 14px; line-height: 1.45; }
+.h-missed p { margin: 0; }
+.h-missed b { font-weight: 700; }
+.h-missed.is-skipped { border-left-color: rgba(255,255,255,.55); }
+.h-missed-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.h-missed-acts button { flex: 1 1 auto; min-height: 44px; padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.45); background: rgba(255,255,255,.08); color: #fff; font-family: var(--body); font-size: 14px; font-weight: 600; cursor: pointer; }
+.h-missed-acts button:first-child { background: var(--paper); color: var(--text); border-color: transparent; }
+.hero .h-missed-acts button:focus-visible { outline-color: #fff; }
+.hero.skipped .h-row, .hero.skipped .h-meta { opacity: .55; }
 .resthero { border-style: solid; border-left: 4px solid var(--phase-base); padding: 18px; font-size: 15px; }
 .resthero b { font-size: 20px; margin-bottom: 4px; }
 .hero .h-detail p { font-weight: 600; }
