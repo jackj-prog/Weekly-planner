@@ -738,3 +738,15 @@ trend only through the easy part (`DB.easyPartEf`), and they are compared in
 `mpPaceSec`, `mpHr` sit on the existing `runlog-ISO` value. Tests cover every
 MP title in the plan, the zone verdicts, the easy-part EF and the track tail;
 a browser pass covered manual entry, TCX import and the log list.
+
+## Week cards say what happened — v4.65, 29 September (Claude)
+
+Each day card on the Week view now carries a status line alongside the plan:
+"✓ 6.1 km" for a logged or ticked run (logged km preferred), "skipped",
+"→ Thu" for a run moved out, "not recorded" for a past run with nothing, "✓
+2.8 km unplanned" on a no-run day, plus moved and skipped non-run sessions
+("Gym → Fri", "+ Gym from Mon"). The load bar fills for a logged run as well
+as a tick, and dims for a skipped or moved one. The done/due count now treats
+a logged run as done, drops skipped and moved-out sessions and includes
+moved-in ones. Moved or skipped sessions leave the plan line. No storage or
+plan changes; checked against a reconstruction of the real Week 13.

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.64.0';
+  const APP_VERSION = '4.65.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1787,25 +1787,53 @@
       const iso = DB.addDays(anchor, i);
       const day = week7[i];
       const done = getDone(iso);
-      const doables = day.blocks.filter((b) => b.doable);
-      const doneCount = doables.filter((b) => done[b.id]).length;
+      /* What actually happened, not just the plan: a logged run counts as
+         done, skipped and moved-out sessions leave the count, moved-in ones
+         join it. */
+      const ovr = getOvr(iso), log = getRunLogEntry(iso), movedIn = getMoveIn(iso);
+      const runLogged = !!(log && log.sec > 0);
+      const doables = day.blocks.filter((b) => b.doable && !ovr.skip[b.id] && !ovr.moved[b.id]);
+      const isDoneBlock = (b) => !!done[b.id] || (day.run && b.id === day.run.id && runLogged);
+      const doneCount = doables.filter(isDoneBlock).length + movedIn.filter((m) => done[m.id]).length;
+      const dueCount = doables.length + movedIn.length;
       const d = DB.parseLocalDate(iso);
+      const fmtKmS = (k) => (Math.round(k * 10) / 10).toString();
+      const st = [];
+      if (day.run) {
+        const rid = day.run.id;
+        if (runLogged || done[rid]) st.push('<span class="d-st ok">✓ ' + fmtKmS(DB.recordedKm(day, done, log)) + ' km' + (runLogged ? '' : ' · ticked') + '</span>');
+        else if (ovr.skip[rid]) st.push('<span class="d-st off">skipped</span>');
+        else if (ovr.moved[rid]) st.push('<span class="d-st mv">→ ' + esc(movedLabel(iso, rid)) + '</span>');
+        else if (iso < real) st.push('<span class="d-st off">not recorded</span>');
+      } else if (runLogged) {
+        st.push('<span class="d-st ok">✓ ' + fmtKmS(DB.recordedKm(day, done, log)) + ' km unplanned</span>');
+      }
+      day.blocks.filter((b) => b.doable && b.cat !== 'run' && (ovr.skip[b.id] || ovr.moved[b.id])).forEach((b) => {
+        const head = esc(b.title.replace(/ *[—·(].*$/, '').trim());
+        st.push(ovr.moved[b.id] ? '<span class="d-st mv">' + head + ' → ' + esc(movedLabel(iso, b.id).replace(/ \d+ \w+$/, '')) + '</span>'
+          : '<span class="d-st off">' + head + ' skipped</span>');
+      });
+      movedIn.forEach((m) => {
+        const from = DB.dayIndex(m.fromIso);
+        st.push('<span class="d-st mv">+ ' + esc(m.title.replace(/ *[—·(].*$/, '').trim()) + ' from ' + DAY_SHORT[from].charAt(0) + DAY_SHORT[from].slice(1).toLowerCase() + '</span>');
+      });
+      const statusHtml = st.length ? '<div class="d-status">' + st.join('') + '</div>' : '';
 
       let cls = 'wk-day' + (iso === real ? ' today' : iso < real ? ' past' : '');
       let runHtml, barHtml = '';
       if (day.run) {
         const km = day.run.run.km;
         cls += ' has-run' + (km === maxKm ? ' lr' : '');
-        barHtml = '<i class="d-bar' + (done[day.run.id] ? ' done' : '') +
+        barHtml = '<i class="d-bar' + (done[day.run.id] || runLogged ? ' done' : ovr.skip[day.run.id] || ovr.moved[day.run.id] ? ' off' : '') +
           '" style="width:' + ((km / maxKm) * 100).toFixed(1) + '%"></i>';
         runHtml = {
           run: '<div class="d-run">' + esc(day.run.title) + '</div>' +
-            '<div class="d-extras">' + esc(day.run.run.shoe) + extraBits(day) + '</div>',
+            '<div class="d-extras">' + esc(day.run.run.shoe) + extraBits(day, ovr) + '</div>' + statusHtml,
           km: (km === Math.round(km) ? km : km.toFixed(1)) + '<small>km</small>',
         };
       } else {
         runHtml = {
-          run: '<div class="d-run rest">No run</div><div class="d-extras">' + (extraBits(day).replace(/^ · /, '') || 'recovery') + '</div>',
+          run: '<div class="d-run rest">No run</div><div class="d-extras">' + (extraBits(day, ovr).replace(/^ · /, '') || 'recovery') + '</div>' + statusHtml,
           km: '—',
         };
       }
@@ -1815,8 +1843,8 @@
         '<span class="d-date"><b>' + DAY_SHORT[i] + '</b><span>' + d.getDate() + '</span></span>' +
         '<span class="d-main">' + runHtml.run + '</span>' +
         '<span class="d-right"><span class="d-km">' + runHtml.km + '</span>' +
-        '<span class="d-done' + (doables.length && doneCount === doables.length ? ' all' : '') + '">' +
-        (iso <= real && doables.length ? '<br>' + doneCount + '/' + doables.length : '') + '</span></span>' +
+        '<span class="d-done' + (dueCount && doneCount === dueCount ? ' all' : '') + '">' +
+        (iso <= real && dueCount ? '<br>' + doneCount + '/' + dueCount : '') + '</span></span>' +
         barHtml +
         '</button>'
       );
@@ -1827,9 +1855,10 @@
     view.appendChild(days);
   }
 
-  function extraBits(day) {
+  function extraBits(day, ovr) {
     const bits = day.blocks
-      .filter((b) => b.doable && b.cat !== 'run' && b.cat !== 'reading' && b.cat !== 'study')
+      .filter((b) => b.doable && b.cat !== 'run' && b.cat !== 'reading' && b.cat !== 'study' &&
+        !(ovr && (ovr.skip[b.id] || ovr.moved[b.id])))
       .map((b) => ({ head: b.title.replace(/ *[—·(].*$/, '').trim(), tail: (b.title.match(/—\s*(.+)$/) || [])[1] || '' }));
     /* Two sessions that share a name (Basketball — 1v1, Basketball —
        shooting) read as one line with both halves, not a duplicate. */

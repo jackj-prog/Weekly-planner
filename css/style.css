@@ -1220,6 +1220,12 @@ body { font-size: var(--type-body); line-height: var(--leading-body); }
    one-handed between sets. */
 .tab { min-height: 44px; display: flex; align-items: center; justify-content: center; }
 .tl-card .c-actions button { min-height: 44px; padding-inline: 12px; }
+/* Week view: what actually happened on each day. */
+.d-status { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 5px; font-family: var(--mono); font-size: 11px; letter-spacing: .02em; }
+.d-st.ok { color: var(--text); }
+.d-st.off { color: var(--t3); }
+.d-st.mv { color: var(--t2); }
+.d-bar.off { opacity: .35; }
 /* Move to any day this week: each target says what is already there. */
 .c-move { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; margin-top: 8px; }
 .c-move button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 52px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); text-align: left; cursor: pointer; font-family: var(--body); }
