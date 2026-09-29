@@ -462,8 +462,8 @@ const PLAN = {
     /* Saturday's buffer is Z1 recovery or it does not happen (rule 10), and
        it is the first thing the plan says to drop. A short Saturday is the
        rule working, so only an over-long one is flagged — that is Sunday's
-       legs spent a day early. Wk 12 (43.3 of 43 km, every weekday run in
-       full) was reported as a badly shaped week over a 1.7 km Saturday. */
+       legs spent a day early. A full-volume week with every weekday run
+       done had been reported as badly shaped over a short Saturday. */
     shortExempt: ['sat'],
     /* When the long run held its share, the week kept its shape; the
        skew note above would then describe something that did not happen. */

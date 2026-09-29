@@ -813,17 +813,17 @@ except white and black. 16,159 plan checks and 41 browser checks pass.
 
 The Week view's "Recorded week shape" panel fired on any session under 60%
 or over 140% of plan, then always explained the long run carrying the week.
-Wk 12 (43.3 of 43 km, every weekday run in full, long run at 52% against a
-planned 49%) was reported that way over a 1.7 km Saturday. Now:
+A full-volume week with every weekday run done and the long run on its
+planned share was reported that way over a short Saturday. Now:
 - A short Saturday buffer never triggers it: rule 10 says it is Z1 or it
   does not happen, and it is the first thing to drop (`shapeRule.shortExempt`).
   An over-long Saturday still does.
 - Long run over its share (the Wk 10 case) keeps the red panel and note.
 - Long run itself short or missing gets `shapeRule.lrShortNote` and the
-  headline "the long run came in at N of M km", still red. Wk 13 had read
-  "the long run held its planned share" in a first draft of this fix.
+  headline "the long run came in at N of M km", still red. A first draft
+  of this fix had told a missed long run it "held its planned share".
 - Otherwise the shape held and one session was off: a grey-bordered panel
   with `shapeRule.offNote`.
-Checked against the real Wks 10–13 locally (not committed) and by a new
+Checked against real weeks locally (data not committed) and by a new
 `weekShape` scenario in tools/interactions.js with invented logs; 46
 browser checks and 16,159 plan checks pass.
