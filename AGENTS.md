@@ -762,3 +762,14 @@ timeline card share the moved item's id, so they agree. Moving a run onto a
 day that already has one warns "one run log per day" in the picker, because
 the log keeps one entry per date. Browser-checked: move Sat → Fri, hero,
 tick, week cards on both days; the earlier regression pass still passes.
+
+## Resting-HR trend and zones update — v4.67, 29 September (Claude)
+
+Reference → Heart-rate zones shows the morning resting-HR readings from the
+run card (`rhr-ISO`) over the last 28 days, the current usual (median of the
+last 14 days) and the resting HR the zones use. When they differ by 2 bpm or
+more it offers "Use N as resting HR", which rewrites `hr.rest` (max kept,
+`at` set to today). Nothing changes without that tap. Motivation: resting HR
+is falling (fitness and a dropped habit), and every Karvonen zone moves with
+it. The run card's resting-HR stepper buttons gained full aria labels.
+Browser-checked: header, usual, offer threshold both ways, and the write.

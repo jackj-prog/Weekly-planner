@@ -1220,6 +1220,16 @@ body { font-size: var(--type-body); line-height: var(--leading-body); }
    one-handed between sets. */
 .tab { min-height: 44px; display: flex; align-items: center; justify-content: center; }
 .tl-card .c-actions button { min-height: 44px; padding-inline: 12px; }
+/* Morning resting HR trend on Reference → HR zones. */
+.rhr-trend { margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; gap: 8px; }
+.rhr-h { display: flex; flex-direction: column; gap: 2px; font-size: var(--type-note); }
+.rhr-h span { font-family: var(--mono); font-size: 11px; color: var(--t3); }
+.rhr-trend svg { width: 100%; height: auto; display: block; }
+.rhr-trend polyline { fill: none; stroke: var(--t2); stroke-width: 1.5; }
+.rhr-trend circle { fill: var(--text); stroke: var(--surface); stroke-width: 2; }
+.rhr-trend p { margin: 0; font-size: var(--type-note); color: var(--t2); }
+.rhr-trend p b { color: var(--text); font-family: var(--mono); }
+.rhr-trend .zedit { align-self: flex-start; }
 /* Week view: what actually happened on each day. */
 .d-status { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 5px; font-family: var(--mono); font-size: 11px; letter-spacing: .02em; }
 .d-st.ok { color: var(--text); }

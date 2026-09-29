@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.66.0';
+  const APP_VERSION = '4.67.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1144,8 +1144,8 @@
     const bpm = rhrReading(iso), usual = rhrUsual(iso);
     if (state.rhrDraft != null) {
       return '<div class="h-rhr editing" role="group" aria-label="Morning resting heart rate"><span class="h-rhr-l">Morning resting HR</span>' +
-        '<span class="h-rhr-ctl"><button data-rhr="-1" aria-label="Lower">−</button><b>' + state.rhrDraft + '</b><small>bpm</small>' +
-        '<button data-rhr="1" aria-label="Higher">+</button></span><button class="h-rhr-save" data-rhr="save">Save</button></div>';
+        '<span class="h-rhr-ctl"><button data-rhr="-1" aria-label="Lower resting HR">−</button><b>' + state.rhrDraft + '</b><small>bpm</small>' +
+        '<button data-rhr="1" aria-label="Higher resting HR">+</button></span><button class="h-rhr-save" data-rhr="save">Save</button></div>';
     }
     if (bpm == null) return '<button class="h-rhr add" data-rhr="open">Add this morning’s resting HR <small>optional · compares it with your usual</small></button>';
     const delta = usual == null ? null : bpm - usual;
@@ -2454,6 +2454,28 @@
       }
     }
 
+    /* Morning resting HR trend (rhr-ISO, from the run card). Zones are only
+       as current as the resting HR they use, and a falling resting HR (more
+       fitness, a habit dropped) quietly shifts every zone. Offer the update;
+       never make it silently. */
+    let rhrBlock = '';
+    const series = [];
+    for (let i = 27; i >= 0; i--) { const d = DB.addDays(todayISO(), -i), v = rhrReading(d); if (v != null) series.push({ i: 27 - i, iso: d, bpm: v }); }
+    const recentVals = series.filter((p) => p.i >= 14).map((p) => p.bpm).sort((a, b) => a - b);
+    if (series.length >= PLAN.readiness.minReadings && !editing) {
+      const usual = recentVals.length >= PLAN.readiness.minReadings ? recentVals[Math.floor(recentVals.length / 2)] : null;
+      const lo = Math.min(...series.map((p) => p.bpm)) - 2, hi = Math.max(...series.map((p) => p.bpm)) + 2;
+      const X = (i) => 8 + i * (284 / 27), Y = (b) => 52 - (b - lo) / (hi - lo) * 44;
+      rhrBlock = '<div class="rhr-trend"><div class="rhr-h"><b>Morning resting HR</b><span>last 28 days · ' + series.length + ' readings · ' + Math.min(...series.map((p) => p.bpm)) + '–' + Math.max(...series.map((p) => p.bpm)) + ' bpm</span></div>' +
+        '<svg viewBox="0 0 300 60" role="img" aria-label="Morning resting heart rate, ' + series.length + ' readings from ' + series[0].bpm + ' to ' + series[series.length - 1].bpm + ' bpm">' +
+        '<polyline points="' + series.map((p) => X(p.i).toFixed(1) + ',' + Y(p.bpm).toFixed(1)).join(' ') + '"/>' +
+        series.map((p) => '<circle cx="' + X(p.i).toFixed(1) + '" cy="' + Y(p.bpm).toFixed(1) + '" r="3"><title>' + p.iso + ': ' + p.bpm + ' bpm</title></circle>').join('') +
+        '</svg>' +
+        (usual != null ? '<p>Your usual now: <b>' + usual + '</b> (median of the last 14 days). Zones use <b>' + (hr ? hr.rest : '—') + '</b>.</p>' : '') +
+        (usual != null && hr && hr.max && Math.abs(usual - hr.rest) >= 2
+          ? '<button class="zedit" data-hz="rhr" data-v="' + usual + '">Use ' + usual + ' as resting HR</button>' : '') + '</div>';
+    }
+
     const wrap = el(
       '<div class="ref"><h2>Heart-rate zones</h2>' +
       (editing
@@ -2464,7 +2486,7 @@
           ' · HRR ' + (max - rest) + '</span>' +
           '<span class="v"><button class="zedit" data-hz="edit">Edit</button></span></div>') +
       '<div class="ref-card ztable">' + rows + '</div>' +
-      recent +
+      recent + rhrBlock +
       '<div class="ref-note">' + esc(PLAN.zoneModel.method) + '. ' +
       esc(PLAN.zoneModel.note) + (hr && hr.at ? ' Set ' + esc(fmtShort(hr.at)) + '.' : '') +
       '</div>' +
@@ -2474,6 +2496,7 @@
       const k = btn.getAttribute('data-hz');
       if (k === 'edit') { state.hrEdit = true; state.hrDraft = { rest: rest || 50, max: max || 195 }; }
       else if (k === 'cancel') { state.hrEdit = false; state.hrDraft = null; }
+      else if (k === 'rhr') { writeJSON('hr', { rest: Number(btn.getAttribute('data-v')), max: hr.max, at: todayISO() }); }
       else if (k === 'save') {
         writeJSON('hr', { rest: state.hrDraft.rest, max: state.hrDraft.max, at: todayISO() });
         state.hrEdit = false; state.hrDraft = null;
