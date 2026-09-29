@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.59.0';
+  const APP_VERSION = '4.60.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1736,8 +1736,17 @@
   function extraBits(day) {
     const bits = day.blocks
       .filter((b) => b.doable && b.cat !== 'run' && b.cat !== 'reading' && b.cat !== 'study')
-      .map((b) => b.title.replace(/ *[—·(].*$/, '').trim());
-    return bits.length ? ' · ' + esc(bits.join(' · ')) : '';
+      .map((b) => ({ head: b.title.replace(/ *[—·(].*$/, '').trim(), tail: (b.title.match(/—\s*(.+)$/) || [])[1] || '' }));
+    /* Two sessions that share a name (Basketball — 1v1, Basketball —
+       shooting) read as one line with both halves, not a duplicate. */
+    const out = [];
+    bits.forEach((x) => {
+      const same = bits.filter((y) => y.head === x.head);
+      if (same.length < 2) { out.push(x.head); return; }
+      if (same[0] !== x) return;
+      out.push((x.head + ' ' + same.map((y) => y.tail).filter(Boolean).join(' + ')).trim());
+    });
+    return out.length ? ' · ' + esc(out.join(' · ')) : '';
   }
 
   /* ================= plan view ================= */

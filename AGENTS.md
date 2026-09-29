@@ -674,3 +674,14 @@ long-run share, and `PLAN.longRunOver.note`. The existing week-shape panel
 still reports the composition once the week ends; this moves the message to
 the moment it can change next Sunday. Plan-estimated distances never trigger
 it. Checked against the real Wk 10 case (27.3 km vs 18 planned).
+
+## Week label and a privacy pass — v4.60, 29 September (Claude)
+
+The week list collapsed "Basketball — 1v1" and "Basketball — shooting" into
+"Basketball · Basketball"; sessions sharing a name now read as one entry with
+both halves ("Basketball 1v1 + shooting"). Privacy: the last absolute
+heart-rate values in tracked text were removed (an HR in CLAUDE.md §10, a
+resting-HR range in a plan.js comment, one run's average in a plan.js comment
+and three places in docs/AUDIT-2026-09.md). Meaning is kept through %HRR or
+"an odd value". Earlier commits still contain them; rewriting public history
+was not done.

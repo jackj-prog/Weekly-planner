@@ -573,7 +573,7 @@ const PLAN = {
   /* Heart-rate zone MODEL only — generic training science, safe in the
      repo. The athlete's own resting/max HR are personal health data and
      live in localStorage (`hr` key), never here (§1 privacy). Karvonen
-     %HRR rather than %max: with a resting HR in the 40s, %max badly
+     %HRR rather than %max: with a low resting HR, %max badly
      overstates true intensity at the easy end. */
   zoneModel: {
     method: '% of heart-rate reserve (Karvonen) — max minus rest, not % of max',
@@ -613,7 +613,7 @@ const PLAN = {
        logging a rounded guess. */
     paceStep: 5,  paceSpan: 60,     // ± seconds/km around the estimate
     /* hrStep was 2, which meant ODD heart rates did not exist: from an even
-       centre only even values are reachable, so a run averaging 151 bpm was
+       centre only even values are reachable, so a run averaging an odd bpm was
        unloggable. Not merely imprecise — EF is (m/min) ÷ HR, so 2 bpm of
        quantisation on ~150 injects up to ~1.3% error into a number whose
        real signal across a four-week block is a few percent. */

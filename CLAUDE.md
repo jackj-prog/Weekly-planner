@@ -632,8 +632,8 @@ final call; this just means December is not the first time we look.
 
 **Quality runs are prescribed by heart rate, not pace (Aug 2026).** The
 5:05–5:20 threshold band was derived from the old 4:00 goal, and the first
-tempo (12 Aug) showed it sits a full zone low: 4:56/km returned HR 164
-(77% HRR — Z3 steady), so the prescribed band would have delivered no
+tempo (12 Aug) showed it sits a full zone low: 4:56/km returned 77% HRR
+(Z3 steady), so the prescribed band would have delivered no
 threshold stimulus at all. **The readout is now MEASURED, and measured with its
 CONDITIONS attached.** The first tempo genuinely run in Z4 (26 Aug, 83%
 HRR) returned **4:44/km raw at feels-like 25 °C = 4:28/km corrected**, so
