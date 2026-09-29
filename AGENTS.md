@@ -1040,3 +1040,41 @@ key days. 67 browser checks, 16,177 plan checks, no overflow, a11y clean.
   inscription is 2 Tim 4:7, "Cursum consummavi" (I have finished my course).
 Interactions check the Nones/Ides reckoning, St Sebastian, sealing both
 ways and the red-letter parkrun. 73 browser checks, 16,178 plan checks.
+
+## The real sky, less Latin, more motion — v4.75, 29 September (Claude)
+
+User feedback: the clock and the night sky are the favourites; the numerals
+are loved; there were too many Latin phrases (they don't read Latin — a
+little is fine where it adds value, never the focal point); more visual
+art and more animation are wanted.
+- **Latin trimmed.** Kept: canonical hours on the dial, the phase motto
+  under the Week header (with English), a smaller earned-moment
+  inscription (with English), the seal's rim. Removed: the Roman-reckoning
+  date line (feast days keep one English "Red-letter day · …" line), the
+  title-card motto, the Sunday motto, the Pliny epigraph, the motto on the
+  dial's rim (now the date in Roman numerals, e.g. XXIX · IX · MMXXVI).
+  `PLAN.hours.calendar`, `.epigraph`, `.mottos.longRun` retired; a build
+  test keeps them retired.
+- **The real sky on the dial.** `DB.sunTimes` (sunrise equation, civil
+  twilight), `DB.moonPhase` (synodic month from a known new moon),
+  `DB.skyPlace` (generic central-England home, or Nicosia in Cyprus time
+  from 22 to 24 Jan via `PLAN.sky.away`). The dial draws day, twilight and
+  night; stars scattered in the dark; sun marks at sunrise and sunset; the
+  moon at its phase mid-night; "sunrise 07:03 · sunset 18:49" beneath. The
+  old sleep-based night band and the elapsed sweep are gone. Tested: race
+  sunrise 06:51 against the plan's 06:50; midwinter sunset before the
+  17:10 run; full moon on 22 Jan 2027.
+- **The night sky page.** Full moons (discs) and new moons (rings) across
+  the top at their dates; a Milky Way band thick with dust; a comet tail on
+  every run that went further than any before it; race morning's waning
+  moon beside the red sunrise.
+- **Motion.** The dial's arcs draw themselves in time order and the hand
+  sweeps from midnight to now; the sky fades up; rose petals light one by
+  one; comets streak in; key-day numerals step in. Stars twinkle and the
+  candles flicker (the only loops, art only). Below-the-fold art waits for
+  an IntersectionObserver reveal, and a re-render with the same view no
+  longer keeps `.view.anim`, so ticking never replays arrivals. The
+  minute clock moves the hand in place (`handSVG`).
+- `artSeed()` (FNV-1a + murmur finaliser) replaces the ad-hoc seeds; the
+  old one clumped stars into strokes.
+74 browser checks, 16,183 plan checks, no overflow, a11y clean.

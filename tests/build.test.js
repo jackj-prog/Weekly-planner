@@ -1362,8 +1362,17 @@ section('palette contrast (WCAG AA)');
       'every phase and block has a motto with its translation');
     ok(['marathon', 'race', 'longest', 'best', 'milestone'].every((k) => Array.isArray(H.earned && H.earned[k])), 'every earned moment has an inscription');
     ok((H.canonical || []).length === 8, 'the eight canonical hours mark the dial');
-    ok(H.calendar && H.calendar.weekdays.length === 7 && H.calendar.months.length === 12 && H.mottos.longRun && H.seal,
-      'the Roman calendar, the Sunday motto and the seal legend are plan content');
+    ok(H.feasts && H.seal, 'the red-letter feasts and the seal legend are plan content');
+    /* The user's steer (v4.75): a little Latin, never the focal point. */
+    ok(!H.calendar && !H.epigraph && !(H.mottos && H.mottos.longRun), 'the Latin date, the epigraph and the Sunday motto stay retired');
+    /* The real sky (v4.75): Nicosia's sun rises five minutes after the gun,
+       and a winter sunset at home falls before the 17:10 run. */
+    const race = DB.skyPlace(PLAN.race.date), rt = DB.sunTimes(PLAN.race.date, race.lat, race.lon, race.offsetMin);
+    ok(race.away && Math.abs(rt.rise - DB.parseHM(PLAN.race.sunrise)) <= 4, 'race-morning sunrise in Nicosia time matches the plan (' + DB.fmtHM(rt.rise) + ')');
+    const dec = DB.skyPlace('2026-12-21'), dt = DB.sunTimes('2026-12-21', dec.lat, dec.lon, dec.offsetMin);
+    ok(dt.set < DB.parseHM('17:10') && dt.rise > DB.parseHM('07:30'), 'midwinter at home: sunset before the evening run (' + DB.fmtHM(dt.set) + ')');
+    ok(Math.abs(DB.moonPhase('2027-01-22').phase - 0.5) < 0.03, 'full moon two nights before the race (22 Jan 2027)');
+    ok(Math.abs(PLAN.sky.home.lat - 52) < 1 && Math.abs(PLAN.sky.home.lon + 1.5) < 1, 'home sky stays a generic point (§1)');
     ok(!/Per aspera|Festina lente|Plus ultra|Nulla dies/.test(appSrc), 'no Latin lives in app.js (§2: rendering code carries no content)');
     ok(/--serif:/.test(rootSrc) && !/@font-face[^}]*Baskerville/.test(css), 'the serif is a system stack, no new font download');
 

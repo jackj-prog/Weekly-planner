@@ -98,8 +98,8 @@ grain are the one red and white as low-alpha tokens (`--glow-*`, `--grain`),
 and they follow the same semantics: red light only on the quality session,
 the race and key days; white light for the long run; easy days stay grey.
 Giant outlined numerals (the Today countdown, the week number, the key days)
-are decorative and aria-hidden. Motion runs once, never loops, and sits
-behind `prefers-reduced-motion`; the launch title card plays on every load
+are decorative and aria-hidden. Motion follows the rule below (v4.75)
+and sits behind `prefers-reduced-motion`; the launch title card plays on every load
 of the installed app (the user's call, v4.69.1), never in a browser tab,
 never takes a tap, and never delays Today underneath. The same stage marks
 earned moments (v4.71) once, on the first save of a run that sets
@@ -110,23 +110,33 @@ of the block as a star with race day as a red sunrise, and the run card's
 texture follows the class of run (red speed lines when hard, a white road
 when long, contour rings when easy). Same tokens, same meanings.
 
-**The Book of Hours (v4.73).** The user likes an enlightenment and
+**The Book of Hours (v4.73–v4.75).** The user likes an enlightenment and
 traditional Catholic aesthetic; the illuminated Book of Hours is both, and a
 book organised by the hours of the day. Its red ink (rubrication) is the
-app's one red, so in this layer red marks initials only. The day wheel is an
-astronomical clock with the eight canonical hours and rose-window tracery;
-Latin mottos by phase, inscriptions on earned moments and the journey
-epigraph live in `PLAN.hours` (content, never in app.js); week numbers and
-key days take Roman numerals; completed days in the distance profile are lit
-candles; Reference notes open with illuminated initials; figures are
-captioned "Fig. I–III". The serif is the system stack `--serif` (Baskerville,
-Didot: the Enlightenment's own faces, bundled with iOS) and is never used for
-data. v4.74 adds the date in Roman reckoning over "Your day" (Feria tertia ·
-a.d. III Kal. Oct.), red-letter feasts from `PLAN.hours.feasts`, a rose
-window whose twelve lights fill as the day's sessions are done, a red wax
-seal on any week where every planned run happened (the Saturday buffer
-excepted, rule 10), and red-letter days: the key days' run card is ruled
-like a manuscript page.
+app's one red, so in this layer red marks initials only. **Latin is a light
+touch, never the focal point** (the user's steer, v4.75: they like the look,
+they don't read Latin): the canonical hour names on the dial, one phase motto
+under the Week header always with its English, a small inscription on earned
+moments, and the seal's rim. Everything else is English or numerals. Roman
+numerals are welcome (weeks, key days, the date engraved on the dial's rim).
+The day wheel is an astronomical clock: canonical hours, rose-window petals
+that light as the day's sessions are done, and the **real sky** for the date
+and place (`PLAN.sky`, `DB.sunTimes`, `DB.moonPhase`) — daylight, twilight,
+night with stars, sun marks at sunrise and sunset, the moon at its phase;
+Nicosia's sky in Cyprus time for the race trip. Home is a generic
+central-England point by design (§1). The night sky page carries every run
+as a star, comet tails on each new longest run, the block's full and new
+moons, a Milky Way, and race morning's waning moon over the red sunrise.
+Red-letter days (the key days) have a ruled run card; a week with every
+planned run done is stamped with a red wax seal; completed days in the
+distance profile are lit candles. The serif is the system stack `--serif`
+(Baskerville, Didot) and is never used for data.
+
+**Motion (v4.75).** Arrivals run once, on real navigation, and art below the
+fold starts when it scrolls into view (the dial draws itself round the clock
+and the hand sweeps to now); a tick or a minute's re-render never replays
+them. Ambient loops are allowed only in the art — stars twinkle, candles
+flicker — and never on data. All of it sits behind `prefers-reduced-motion`.
 
 ## 4. Product intent (UX is yours to design)
 

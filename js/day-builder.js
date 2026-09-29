@@ -886,13 +886,57 @@
     return out;
   }
 
+  /* ---- the real sky (v4.75) — pure, offline ----
+     Sunrise, sunset and civil twilight by the sunrise equation (the
+     "Almanac for Computers" method, good to a couple of minutes), and the
+     moon's phase as the fraction of the synodic month since a known new
+     moon (6 Jan 2000, 18:14 UTC). Minutes are local to offsetMin. */
+  function sunEvent(iso, lat, lon, offsetMin, zenith, rising) {
+    const [y, m, d] = iso.split('-').map(Number);
+    const N = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 0)) / 864e5);
+    const rad = Math.PI / 180, lngHour = lon / 15;
+    const t = N + ((rising ? 6 : 18) - lngHour) / 24;
+    const M = 0.9856 * t - 3.289;
+    let L = M + 1.916 * Math.sin(M * rad) + 0.020 * Math.sin(2 * M * rad) + 282.634;
+    L = ((L % 360) + 360) % 360;
+    let RA = Math.atan(0.91764 * Math.tan(L * rad)) / rad;
+    RA = ((RA % 360) + 360) % 360;
+    RA = (RA + Math.floor(L / 90) * 90 - Math.floor(RA / 90) * 90) / 15;
+    const sinDec = 0.39782 * Math.sin(L * rad), cosDec = Math.cos(Math.asin(sinDec));
+    const cosH = (Math.cos(zenith * rad) - sinDec * Math.sin(lat * rad)) / (cosDec * Math.cos(lat * rad));
+    if (cosH > 1 || cosH < -1) return null;
+    const H = (rising ? 360 - Math.acos(cosH) / rad : Math.acos(cosH) / rad) / 15;
+    const T = H + RA - 0.06571 * t - 6.622;
+    const UT = ((T - lngHour) % 24 + 24) % 24;
+    return Math.round((UT * 60 + offsetMin + 1440) % 1440);
+  }
+  function sunTimes(iso, lat, lon, offsetMin) {
+    const ev = (z, r) => sunEvent(iso, lat, lon, offsetMin, z, r);
+    return { dawn: ev(96, true), rise: ev(90.833, true), set: ev(90.833, false), dusk: ev(96, false) };
+  }
+  function moonPhase(iso) {
+    const t = Date.parse(iso + 'T12:00:00Z'), ref = Date.UTC(2000, 0, 6, 18, 14);
+    const p = ((((t - ref) / 864e5) / 29.530588853) % 1 + 1) % 1;
+    return { phase: p, lit: (1 - Math.cos(2 * Math.PI * p)) / 2, waxing: p < 0.5 };
+  }
+  /* Where the sky is drawn from on a date: the plan's generic home, or the
+     race city for the days spent there, with its own UTC offset. */
+  function skyPlace(iso) {
+    const s = PLAN.sky;
+    if (!s) return null;
+    const away = (s.away || []).find((a) => iso >= a.from && iso <= a.to);
+    if (away) return { lat: away.lat, lon: away.lon, offsetMin: away.utcOffsetMin, away: true };
+    const [y, m, d] = iso.split('-').map(Number);
+    return { lat: s.home.lat, lon: s.home.lon, offsetMin: -new Date(y, m - 1, d, 12).getTimezoneOffset(), away: false };
+  }
+
   return {
     buildDay, resolveBlock, weekNumber, dayIndex, distancesForWeek,
     weekRow, weekDates, raceCountdown, adherence, weekKm, recordedKm, buildICS,
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
-    isMpSession, mpSegmentKm, mpTailKm, mpShape, mpVerdict, easyPartEf,
+    isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

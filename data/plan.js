@@ -510,12 +510,25 @@ const PLAN = {
     capNote: 'Past rule 9\u2019s 3h20 cap: beyond that the recovery cost climbs faster than the aerobic return.',
   },
 
+  /* The real sky on the day wheel and the night sky (v4.75). Home is a
+     generic central-England point on purpose — the repo describes a
+     schedule, not a person (§1) — so sunrise and sunset read to within a
+     few minutes anywhere in the south of the UK. The race trip draws
+     Nicosia's sky in Cyprus time: there the sun rises five minutes after
+     the gun. */
+  sky: {
+    home: { lat: 52.0, lon: -1.5 },
+    away: [{ from: '2027-01-22', to: '2027-01-24', lat: 35.17, lon: 33.36, utcOffsetMin: 120 }],
+  },
+
   /* The Book of Hours (v4.73). The user asked for an enlightenment and
      traditional Catholic aesthetic; a medieval Book of Hours is both, and it
      is literally a book organised by the hours of the day, rubricated in red
      ink, which is what the app's one red already is. All genuine Latin.
-     Mottos by phase (and the two days that are their own thing) sit on the
-     day wheel's rim, the Week header and the launch title card. */
+     The user's steer (v4.75): a little Latin where it adds something, never
+     the focal point. What remains: the canonical hours on the dial, one
+     motto per phase under the Week header (always with its English), a
+     small inscription on earned moments, and the seal's rim. */
   hours: {
     mottos: {
       base: ['Festina lente', 'make haste slowly'],
@@ -524,9 +537,6 @@ const PLAN = {
       race: ['Alea iacta est', 'the die is cast'],
       recovery: ['Solvitur ambulando', 'it is solved by walking'],
       standing: ['Ora et labora', 'pray and work'],
-      /* Sundays' long runs take St Paul, who used the race as his image:
-         1 Cor 9:24, Vulgate, Douay-Rheims translation. */
-      longRun: ['Sic currite ut comprehendatis', 'so run that you may obtain'],
     },
     /* The canonical hours, as the day wheel's dial marks (every 3 hours). */
     canonical: [
@@ -541,17 +551,6 @@ const PLAN = {
       longest: ['Plus ultra', 'further beyond'],
       best: ['Citius', 'faster'],
       milestone: ['Nulla dies sine linea', 'no day without a line'],
-    },
-    /* Epigraph for the journey page: Pliny on the painter Apelles, who let
-       no day pass without drawing at least one line. */
-    epigraph: ['Nulla dies sine linea', 'No day without a line. Pliny, on Apelles.'],
-    /* The date as a Book of Hours gives it: the ecclesiastical weekday and
-       the Roman reckoning from the Kalends, Nones and Ides (the Nones fall
-       on the 7th and the Ides on the 15th in March, May, July, October). */
-    calendar: {
-      weekdays: ['Feria secunda', 'Feria tertia', 'Feria quarta', 'Feria quinta', 'Feria sexta', 'Sabbatum', 'Dominica'],
-      months: ['Ian.', 'Feb.', 'Mart.', 'Apr.', 'Mai.', 'Iun.', 'Iul.', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'],
-      longNones: [3, 5, 7, 10],
     },
     /* Red-letter feasts that fall inside the block, by MM-DD. St Sebastian,
        patron of athletes, keeps the Wednesday of race week. */

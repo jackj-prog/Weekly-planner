@@ -328,8 +328,10 @@ async function cinema() {
   check((await text(t.page, '.nn-in')) === 'in 20 min', 'NEXT line counts down to the run');
   check(/sessions, 0 done; run at 17:10/.test(await t.page.getAttribute('.daywheel', 'aria-label')) && !!(await t.page.$('.daywheel .dw-hand')),
     'the day wheel summarises the day and points at now');
-  check((await t.page.$$('.daywheel .dw-canon')).length === 8 && /Per aspera ad astra/.test((await t.page.textContent('.daywheel .dw-motto')) || ''),
-    'the dial carries the canonical hours and the Build motto');
+  check((await t.page.$$('.daywheel .dw-canon')).length === 8 && /XXIX · IX · MMXXVI/.test((await t.page.textContent('.daywheel .dw-motto')) || ''),
+    'the dial carries the canonical hours and the date in numerals');
+  check(/sunrise 07:0\d · sunset 18:[45]\d/.test(await text(t.page, '.dw-sunline')) && (await t.page.$$('.daywheel .dw-sun')).length === 2 &&
+    !!(await t.page.$('.daywheel .dw-moon')) && (await t.page.$$('.daywheel .dw-star')).length > 8, 'the dial draws the real sky: sun, moon, stars');
   await t.ctx.close();
   t = await open('2026-09-21', '12:00', SEED);
   const prev = await text(t.page, '.previously');
@@ -340,14 +342,15 @@ async function cinema() {
   t = await open('2026-09-22', '12:00', SEED);
   check(!(await t.page.$('.previously')), 'Previously is a Monday card only');
   await t.ctx.close();
-  // v4.74: the Roman date, the rose window, the seal, red-letter days
+  // v4.74–75: feasts, the rose window, the seal, red-letter days, the race-morning sky
   t = await open('2026-10-07', '12:00', SEED);
-  check(/Feria quarta · Non\. Oct\. · MMXXVI/.test(await text(t.page, '.hodie')), 'the Nones of October fall on the 7th');
-  for (let k = 0; k < 7; k++) await t.page.click('.day-head [data-d="1"]');
-  check(/pridie Id\. Oct\./.test(await text(t.page, '.hodie')), '14 October is the day before the Ides');
+  check(!(await t.page.$('.hodie')), 'an ordinary day carries no feast line');
   await t.ctx.close();
   t = await open('2027-01-20', '12:00', SEED);
-  check(/a\.d\. XIII Kal\. Feb\./.test(await text(t.page, '.hodie')) && /Sebastian/.test(await text(t.page, '.hodie .feast')), 'race-week Wednesday: XIII Kal. Feb., St Sebastian');
+  check(/Red-letter day · St Sebastian/.test(await text(t.page, '.hodie .feast')), 'race-week Wednesday: St Sebastian, in English');
+  await t.ctx.close();
+  t = await open('2027-01-24', '05:30', SEED);
+  check(/sunrise 06:5\d .* Nicosia time/.test(await text(t.page, '.dw-sunline')), 'race morning is drawn in Nicosia time, sunrise just after the gun');
   await t.ctx.close();
   t = await open('2026-09-21', '12:00', SEED);
   check(!(await t.page.$('.previously .seal')), 'a week with a missed run is not sealed');
