@@ -99,8 +99,9 @@ and they follow the same semantics: red light only on the quality session,
 the race and key days; white light for the long run; easy days stay grey.
 Giant outlined numerals (the Today countdown, the week number, the key days)
 are decorative and aria-hidden. Motion runs once, never loops, and sits
-behind `prefers-reduced-motion`; the daily launch title card plays only in
-the installed app, never takes a tap, and never delays Today underneath.
+behind `prefers-reduced-motion`; the launch title card plays on every load
+of the installed app (the user's call, v4.69.1), never in a browser tab,
+never takes a tap, and never delays Today underneath.
 
 ## 4. Product intent (UX is yours to design)
 

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.69.0';
+  const APP_VERSION = '4.69.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -2968,21 +2968,17 @@
     });
   }
 
-  /* ---- title card: the installed app's launch, once a day ----
-     A second of cinema on the first Home Screen open of the day: the
-     wordmark, the week, the days to the gun. It never blocks — taps pass
-     straight through to Today underneath, which is already drawn — and it
-     is skipped in a browser tab and whenever the system asks for reduced
-     motion. `titlecard-at` is a per-device convenience, like `backup-at`. */
+  /* ---- title card: every launch of the installed app ----
+     A second of cinema each time the Home Screen app loads (the user's
+     call, v4.69.1 — it had been once a day): the wordmark, the week, the
+     days to the gun. It never blocks — taps pass straight through to Today
+     underneath, which is already drawn — and it is skipped in a browser tab
+     and whenever the system asks for reduced motion. */
   function titleCard() {
     const mm = (q) => !!(window.matchMedia && window.matchMedia(q).matches);
     const standalone = navigator.standalone === true || mm('(display-mode: standalone)');
     if (!standalone || !mm('(prefers-reduced-motion: no-preference)')) return;
     const today = todayISO();
-    try {
-      if (localStorage.getItem('titlecard-at') === today) return;
-      localStorage.setItem('titlecard-at', today);
-    } catch (e) { return; }
     const day = DB.buildDay(today), cd = DB.raceCountdown(today);
     const line = day.blockId === 'marathon'
       ? 'WEEK ' + day.week + ' · ' + (cd.days === 0 ? 'RACE DAY' : cd.days + (cd.days === 1 ? ' DAY' : ' DAYS') + ' TO THE GUN')

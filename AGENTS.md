@@ -857,3 +857,14 @@ background layers and its own `.h-sweep` element instead. Build tests
 guard the tokens, the token-only cinema layer and the title-card gate;
 tools/interactions.js gained a `cinema` scenario. Checked at 390 px for
 horizontal overflow on eight views, plus an accessibility sweep.
+
+## Title card on every launch — v4.69.1, 29 September (Claude)
+
+The user loved the launch title card and asked for it every time the app
+loads. The once-a-day `titlecard-at` gate is gone; the card now plays on
+every load of the installed (Home Screen) app. Unchanged: never in a
+browser tab, never under reduced motion, `pointer-events: none`, removed
+after 1.85 s. iOS resuming the app from the background is not a load, so
+it plays on cold launches and reloads (including the update toast).
+Any `titlecard-at` key left on a device is inert. The build test now
+fails if the card regains a storage gate.
