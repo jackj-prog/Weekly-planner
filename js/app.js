@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.67.1';
+  const APP_VERSION = '4.68.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1181,6 +1181,15 @@
                      r.detail.match(/\d{1,2}:\d{2}\s*\/\s*km/) || [])[0];
     const paceCell = paceTxt
       ? '<span><b>PACE</b>' + esc(paceTxt.replace(/\s*\/\s*km/, '')) + '</span>' : '';
+    /* A long run with marathon-pace work has two paces, and the second one
+       comes with a place: "last 6" of 22 is km 17 onward. Worked out from
+       the title so the switch point is on the card, not arithmetic at km 15. */
+    const mp = DB.mpShape(r.title, km);
+    const mpWhere = !mp ? ''
+      : mp.kind === 'reps' ? mp.reps + ' × ' + mp.repKm + ' km'
+      : mp.kind === 'tail' ? (mp.from === mp.fromLate ? 'km ' + mp.from + '–' + kmTxt : 'from km ' + mp.from + '–' + mp.fromLate)
+      : (mp.lo === mp.hi ? mp.lo : mp.lo + '–' + mp.hi) + ' km';
+    const mpCell = mp ? '<span class="h-mp"><b>MARATHON PACE</b>' + esc(mp.pace + ' · ' + mpWhere) + '</span>' : '';
 
     /* Zones are the plan's whole prescription mechanism, and on a fresh
        install — which includes every Home Screen install, since those get
@@ -1226,7 +1235,7 @@
       (iso === today && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso) : '') +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
-      '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span>' + paceCell +
+      '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span>' + paceCell + mpCell +
       '<span><b>WINDOW</b>' + r.start + '–' + r.end + '</span></div>' +
       '<div class="h-detail">' + detailHTML(detail, iso + '|hero', false) + '</div>' +
       zonePrompt +

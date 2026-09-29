@@ -788,3 +788,23 @@ DENY rule as shoot.js, and tests/build.test.js now asserts both, plus that
 its fixture pairs stay fixtures. Run it before shipping interaction changes:
 `NODE_PATH=<dir>/node_modules node tools/interactions.js [--quick]`.
 Version 4.67.1 only reflects the docs line in CLAUDE.md §14 ("Move to…").
+
+## Marathon pace on the run card; palette leftovers — v4.68, 29 September (Claude)
+
+Long runs with marathon-pace work now show a MARATHON PACE cell beside the
+shoe and pace: goal pace plus where the work sits, read from the title
+(`DB.mpShape`): "5:20 · km 17–22" for last 6 of 22, "from km 11–13" for the
+dress rehearsal's last 14–16, "2 × 5 km" for reps, "12 km" / "6–8 km" for a
+block with no fixed start. The MP prescription text moved out of
+day-builder.js into `PLAN.mpLongText` ({band}, {mp} = race goal pace). It
+now attaches only to titles with an "@ MP" segment: the old
+/MP|REHEARSAL|PEAK/ test gave the Wk 27 easy/steady peak 30 km an "MP
+segments 5:20/km" instruction it does not have (§7); that run now carries
+the easy-run prescription. The hardcoded '5:05–5:20' tempo fallback in the
+log stepper went too. Six colours left over from the retired palettes
+(forest cream on the run card's state and log text, a teal-era blue-grey
+on its labels, a warm near-black in a gradient, and the verdict
+green/ochre/rose) became tokens (`--good`, `--caution`, `--poor`, `--best`,
+or existing `--t2`/`--ink`). The build test holds the verdict tokens to AA
+on the run card and cards, and fails any literal colour outside :root
+except white and black. 16,159 plan checks and 41 browser checks pass.

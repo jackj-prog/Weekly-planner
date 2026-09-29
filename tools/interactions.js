@@ -243,6 +243,7 @@ function tcx() {
 async function marathonPace() {
   console.log('· marathon-pace check');
   let t = await open('2026-10-04', '13:00', SEED);
+  check(/5:20 · km 17–22/.test(await text(t.page, '.hero .h-mp')), 'run card shows where the MP finish starts');
   await t.page.click('.runlogger .h-log');
   check(await t.page.isVisible('[data-log-field="mpPaceSec"]'), 'MP fields on an MP day');
   check((await t.page.inputValue('[data-log-field="mpKm"]')) === '6', 'MP km from the session title');

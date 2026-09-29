@@ -490,6 +490,15 @@ const PLAN = {
     capNote: 'Past rule 9\u2019s 3h20 cap: beyond that the recovery cost climbs faster than the aerobic return.',
   },
 
+  /* The prescription on a long run that carries marathon-pace work (\u00a710).
+     {band} is the phase's easy band, {mp} the race goal pace. Only titles
+     with an "@ MP" segment get it: the Wk 27 peak is easy/steady and is
+     prescribed like any other easy long run. */
+  mpLongText:
+    'Long-run base {band}/km \u00b7 MP segments {mp} \u2014 these should sit in Z3. ' +
+    'If MP reads below Z3 the pace is too slow and that is evidence, months ' +
+    'before December',
+
   /* §10: "MP has an HR correlate, and it is a live recalibration signal."
      From Wk 14 the MP segment of a long run is logged on its own (pace, HR,
      km) and placed in the zones: below Z3 the prescribed pace is still too

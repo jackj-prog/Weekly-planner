@@ -121,10 +121,9 @@
       const spec = {
         km, title: row.sun || 'Long run', shoe: row.lrShoe || 'Ghost',
         paceMin: pace.long,
-        detail: /MP|REHEARSAL|PEAK/i.test(row.sun || '') ?
-          'Long-run base ' + easyBand(week).band + '/km · MP segments 5:20/km — ' +
-            'these should sit in Z3. If MP reads below Z3 the pace is too ' +
-            'slow and that is evidence, months before December' : easyPaceText(week),
+        detail: isMpSession(row.sun) && PLAN.mpLongText ?
+          PLAN.mpLongText.replace('{band}', easyBand(week).band)
+            .replace('{mp}', PLAN.race.goalPace) : easyPaceText(week),
         hard: true,
       };
       if (PLAN.longRunNote) spec.detail += ' · ' + PLAN.longRunNote;
@@ -236,7 +235,7 @@
     let paceSec = day.run.run.estPace ? parsePace(day.run.run.estPace) : med(like.map((h) => h.paceSec));
     if (!paceSec) {
       if (cls === 'quality') {
-        const tempo = (PLAN.paces.find((p) => /tempo/i.test(p.type)) || {}).pace || '5:05–5:20';
+        const tempo = (PLAN.paces.find((p) => /tempo/i.test(p.type)) || {}).pace || '';
         const mm = tempo.match(/(\d+:\d{2})–(\d+:\d{2})/);
         paceSec = mm ? Math.round((parsePace(mm[1]) + parsePace(mm[2])) / 2) : 315;
       } else {
@@ -372,6 +371,25 @@
     const m = PLAN.mpCheck;
     const hit = m && String(title || '').match(new RegExp(m.tailPattern));
     return hit ? Number(hit[1]) : null;
+  }
+  /* Where the MP work sits in a long run, for the run card: a finish
+     ("last 6" of 22 starts at km 17; "last 14–16" of 26 at km 11–13),
+     reps ("2×5"), or a block with no fixed place ("12", "mid 6–8").
+     The pace is the race goal pace; all of it is read from the title. */
+  function mpShape(title, km) {
+    const m = PLAN.mpCheck, t = String(title || '');
+    if (!m || !isMpSession(t) || !(km > 0)) return null;
+    const pace = String(PLAN.race.goalPace).replace(/\s*\/\s*km$/, '');
+    const reps = t.match(new RegExp(m.repsPattern));
+    if (reps) return { pace, kind: 'reps', reps: Number(reps[1]), repKm: Number(reps[2]) };
+    const seg = t.match(new RegExp(m.kmPattern));
+    if (!seg) return null;
+    const [lo, hi = lo] = seg[0].match(/\d+/g).map(Number);
+    if (!(hi < km)) return null;
+    const tail = new RegExp(m.tailPattern).test(t);
+    return tail
+      ? { pace, kind: 'tail', lo, hi, from: km - hi + 1, fromLate: km - lo + 1 }
+      : { pace, kind: 'block', lo, hi };
   }
   function mpVerdict(hr, rest, max) {
     const z = zoneOf(hr, rest, max);
@@ -874,7 +892,7 @@
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
-    isMpSession, mpSegmentKm, mpTailKm, mpVerdict, easyPartEf,
+    isMpSession, mpSegmentKm, mpTailKm, mpShape, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

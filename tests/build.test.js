@@ -1285,6 +1285,12 @@ section('palette contrast (WCAG AA)');
       const r = ratio(set[f], set[b]);
       ok(r >= AA, name + ' ' + f + ' on ' + b + ' is ' + r.toFixed(2) + ':1 (needs ' + AA + ')');
     });
+    /* Verdict colours are read on the raised run card and on cards. */
+    ['--good', '--caution', '--poor', '--best'].forEach((f) => ['--hero-bg', '--surface'].forEach((b) => {
+      if (!set[f]) return ok(false, name + ' palette is missing ' + f);
+      const r = ratio(set[f], set[b]);
+      ok(r >= AA, name + ' ' + f + ' on ' + b + ' is ' + r.toFixed(2) + ':1 (needs ' + AA + ')');
+    }));
     /* Surfaces that paint white type on a filled ground. */
     ['--hero-bg', '--accent-fill'].forEach((b) => {
       const r = ratio('#ffffff', set[b]);
@@ -1319,6 +1325,14 @@ section('palette contrast (WCAG AA)');
       'manifest theme_color ' + mani.theme_color + ' is a current palette token');
     ok(live.has(String(mani.background_color).toLowerCase()),
       'manifest background_color ' + mani.background_color + ' is current — it is the launch splash');
+
+    /* Hex written straight into a rule outlives the repaint that retired it:
+       v4.68 still found a forest-era cream and a teal-era blue-grey on the
+       run card. Outside :root only plain white and black may be literal. */
+    const outside = css.slice(0, css.indexOf(':root {')) + css.slice(css.indexOf('}', css.indexOf(':root {')));
+    const stray = [...new Set((outside.match(/#[0-9a-fA-F]{3,8}\b/g) || [])
+      .filter((h) => !/^#(?:fff|ffffff|000|000000)$/i.test(h)))];
+    ok(stray.length === 0, 'no colour lives outside :root in style.css' + (stray.length ? ' — found ' + stray.join(', ') : ''));
 
     /* Zoom must stay available. `user-scalable=no` / `maximum-scale=1` is a
        WCAG 1.4.4 failure, and it is not even the thing that gives the app its
@@ -1491,6 +1505,26 @@ section('marathon-pace check (§10)');
  const whole = DB.ef(22, 7800, 148), easy = DB.easyPartEf(22, 7800, 148, 6, 1740, 152);
  ok(easy > 0 && easy < whole, 'easy-part EF excludes the faster MP segment');
  ok(DB.easyPartEf(22, 7800, 148, 21.8, 7700, 152) === null, 'a segment covering nearly the whole run yields no easy part');
+ // Where the MP work sits, for the run card (read from the title, paced at the goal).
+ const goal = String(PLAN.race.goalPace).replace(/\s*\/\s*km$/, '');
+ const s1 = DB.mpShape('Long 22 — last 6 @ MP', 22);
+ ok(s1 && s1.kind === 'tail' && s1.from === 17 && s1.fromLate === 17 && s1.pace === goal, 'last 6 of 22 starts at km 17 at goal pace');
+ const s2 = DB.mpShape('DRESS REHEARSAL 26 km — last 14–16 @ MP (Pro 4)', 26);
+ ok(s2 && s2.kind === 'tail' && s2.from === 11 && s2.fromLate === 13, 'last 14–16 of 26 starts at km 11–13');
+ const s3 = DB.mpShape('Long 26 — 2×5 @ MP', 26);
+ ok(s3 && s3.kind === 'reps' && s3.reps === 2 && s3.repKm === 5, '2×5 @ MP reads as reps');
+ const s4 = DB.mpShape('Long 18 — mid 6–8 @ MP (Pro 4 sharpener)', 18);
+ ok(s4 && s4.kind === 'block' && s4.lo === 6 && s4.hi === 8, 'mid 6–8 is a block with no fixed start');
+ ok(DB.mpShape('Long 22 easy', 22) === null && DB.mpShape('Quality run — 5×3 min @ MP', 6) === null, 'no shape for easy runs or minute reps');
+ // The MP prescription is data, and only titles with an MP segment carry it.
+ for (let w = 14; w <= 29; w++) {
+  const d = DB.buildDay(DB.addDays(START, (w - 1) * 7 + 6));
+  if (!d.run || !/^Long|REHEARSAL|PEAK/.test(d.run.title)) continue;
+  const mpText = /MP segments/.test(d.run.detail);
+  ok(mpText === DB.isMpSession(d.run.title), 'Wk ' + w + ' ' + d.run.title + ': MP text ' + (mpText ? 'present' : 'absent'));
+  if (mpText) ok(d.run.detail.includes('MP segments ' + PLAN.race.goalPace), 'Wk ' + w + ' MP text carries the goal pace');
+ }
+ ok(!/MP segments|5:20\/km/.test(require('fs').readFileSync(path.join(__dirname, '..', 'js', 'day-builder.js'), 'utf8')), 'day-builder.js carries no marathon pace of its own (§2)');
 }
 /* ---- result ---- */
 // Chart geometry is part of correctness, not just appearance.
