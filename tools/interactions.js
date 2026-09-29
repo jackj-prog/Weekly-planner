@@ -252,6 +252,7 @@ async function marathonPace() {
   await t.page.click('.rl-save');
   const e = await t.json('runlog-2026-10-04');
   check(e.mpKm === 6 && e.mpPaceSec === 285 && e.mpHr === 156, 'MP fields saved');
+  check(/NEW LONGEST RUN/.test(await text(t.page, '.titlecard.earned')), 'a new longest run earns its moment on first save');
   check(/Z3/.test(await text(t.page, '.h-dc.mp')), 'readback places MP HR in Z3');
   check(!(await t.page.isVisible('.h-dc:has-text("decoupling")')), 'no decoupling on an MP run');
   noErrors(t, 'MP manual');
@@ -313,6 +314,8 @@ async function cinema() {
   await t.ctx.close();
   t = await open('2026-09-29', '12:00', SEED);
   await t.page.click('[data-nav="more"]'); await t.page.click('[data-nav="plan"]'); await t.page.waitForTimeout(150);
+  check((await t.page.$$('.wall .wl-cols .wl')).length === 210, 'the wall draws all 210 days');
+  check(/RUNS SO FAR/.test(await text(t.page, '.wall-head')), 'the wall counts runs so far');
   const next = await t.page.$$('.journey-event.next');
   check(next.length === 1 && /PARKRUN/.test(await next[0].textContent()), 'exactly one key day lit: the next one');
   noErrors(t, 'cinema');

@@ -892,3 +892,28 @@ reduced-motion).
 tools/interactions.js checks the countdown, the Monday card and its link,
 that it is Monday-only, and that the poster renders; 60 browser checks
 and 16,168 plan checks pass, with no overflow at 390 px.
+
+## Earned moments and the block wall — v4.71, 29 September (Claude)
+
+"Mega sick", same rules (tokens only, red means hard, one-shot motion
+behind reduced-motion, nothing takes a tap).
+- **One stage:** `cinemaCard()` now draws both the launch title card and
+  earned moments; `motionOK()` gates both.
+- **Earned moments:** on the FIRST save of a run log (never on edits), the
+  stage plays what it set, in priority order: MARATHONER (finish time,
+  pace, city; also on ticking the marathon done without a log), RACED ·
+  <race> (time and pace) for the TT, parkrun and tune-up half, NEW LONGEST
+  RUN, NEW BEST at a distance, and each 100 km logged. Facts come from
+  `RunProgress.debrief`, the same source as the recap underneath.
+- **The block wall (journey page):** all 210 days as a 30×7 grid. Runs that
+  happened are lit grey/white/red by class, planned-but-missed are dim
+  outlines, a dropped Saturday buffer is drawn fainter than a miss, runs
+  ahead are faint outlines (red-tinted when hard), today has a ring, the
+  current week an outline; a phase strip runs underneath and the header
+  counts runs so far. A picture (role=img with a summary label), not a
+  control. Columns light up left to right on arrival.
+- **NOW line** on the timeline glows like the Now/Next bar.
+Build tests guard the motion gate on earned moments and that cinema cards
+stay aria-hidden and tap-through; tools/interactions.js checks the wall's
+210 cells and the longest-run moment. 63 browser checks, 16,170 plan
+checks, no overflow at 390 px, accessibility sweep clean.

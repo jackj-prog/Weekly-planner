@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.70.0';
+  const APP_VERSION = '4.71.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -971,6 +971,7 @@
       try { localStorage.setItem(logKey(iso), JSON.stringify(entry)); }
       catch (e) { wrap.querySelector('.log-error').textContent = 'Could not save on this device. Keep this form open and free some storage, then try again.'; return; }
       state.runLogEdit = null; state.runLogDraft = null; render();
+      if (!saved || !(saved.sec > 0)) celebrate(iso, day);   // first save only, never on edits
       const recapHeading = view.querySelector('.run-recap h2');
       if (recapHeading) { recapHeading.focus({ preventScroll: true }); recapHeading.scrollIntoView({ block: 'start' }); }
     });
@@ -1282,10 +1283,12 @@
       '</section>'
     );
     hero.querySelector('.h-tick').addEventListener('click', () => {
-      if (!done[r.id]) state.justTicked = r.id;   // animate on tick-on only
-      if (!done[r.id] && isSkipped) setSkip(iso, r.id, false);   // done wins over skipped
+      const ticking = !done[r.id];
+      if (ticking) state.justTicked = r.id;   // animate on tick-on only
+      if (ticking && isSkipped) setSkip(iso, r.id, false);   // done wins over skipped
       toggleDone(iso, r.id);
       render();
+      if (ticking && isRace && /MARATHON/.test(r.title) && !(e.sec > 0)) celebrate(iso, day);
     });
     hero.querySelectorAll('[data-rhr]').forEach((btn) => btn.addEventListener('click', () => {
       const act = btn.getAttribute('data-rhr');
@@ -1731,6 +1734,39 @@
     paint(initial); return root;
   }
 
+  /* ---- the block wall (v4.71): all 210 days on one grid ----
+     Columns are weeks, rows run Monday to Sunday. A run that happened is
+     lit in the distance profile's colours (grey easy, white long, red hard,
+     §3); a planned run that did not is a dim outline, one still ahead a
+     faint one; rest days sit dark; today wears a ring. A dropped Saturday
+     buffer is rule 10 working and is not drawn as a miss. It is a picture
+     of the block, not a control: the explorer above opens weeks. */
+  function buildWall(journey) {
+    const today = todayISO();
+    const exempt = ((PLAN.shapeRule && PLAN.shapeRule.shortExempt) || []).includes('sat');
+    let ran = 0, due = 0;
+    const cols = journey.weeks.map((w, c) => '<span class="wl-col' + (w.start <= today && today <= w.end ? ' now' : '') +
+      '" style="--c:' + c + '">' + w.days.map((d, i) => {
+        const kind = d.cls === 'quality' || d.cls === 'race' ? 'hard' : d.cls === 'long' ? 'long' : 'easy';
+        const past = d.iso < today;
+        if (d.planned && past) { due++; if (d.recorded > 0) ran++; }
+        const st = d.recorded > 0 ? 'ran ' + (d.planned ? kind : 'extra')
+          : !d.planned ? 'rest'
+          : past ? (exempt && i === 5 ? 'drop' : 'miss')
+          : 'ahead ' + kind;
+        return '<i class="wl ' + st + (d.iso === today ? ' today' : '') + '"></i>';
+      }).join('') + '</span>').join('');
+    const phases = journey.weeks.map((w) => '<i style="background:var(--phase-' + esc(w.phase) + ')"></i>').join('');
+    return el('<section class="wall"><div class="wall-head"><h2>Every day of the block</h2><span>' +
+      ran + ' / ' + due + ' RUNS SO FAR</span></div>' +
+      '<div class="wall-grid" role="img" aria-label="' + ran + ' of ' + due + ' planned runs so far recorded, across ' +
+      journey.weeks.length + ' weeks">' +
+      '<span class="wl-days" aria-hidden="true">' + DAY_SHORT.map((n) => '<b>' + n.slice(0, 1) + '</b>').join('') + '</span>' +
+      '<span class="wl-cols">' + cols + '</span><span></span><span class="wl-phases">' + phases + '</span></div>' +
+      '<div class="wall-key"><span><i class="wl ran easy"></i>Easy</span><span><i class="wl ran long"></i>Long</span>' +
+      '<span><i class="wl ran hard"></i>Hard</span><span><i class="wl miss"></i>Missed</span><span><i class="wl ahead easy"></i>Ahead</span></div></section>');
+  }
+
   function buildLandmarks(journey) {
     const today=todayISO();
     let nextMarked=false;   // the first key day still ahead is lit; the rest stay outlined
@@ -2075,6 +2111,7 @@
     const adh = {weekKmDone:Object.fromEntries(journey.weeks.map(w=>[w.wk,w.recorded]))};
     const fmt = n => Number(n.toFixed(1));
     view.appendChild(buildTrainingJourney(journey));
+    view.appendChild(buildWall(journey));
     view.appendChild(buildLandmarks(journey));
 
     const rows = el('<div class="plan-rows"></div>');
@@ -3101,27 +3138,70 @@
     });
   }
 
+  /* ---- cinema cards: one stage for the launch title and earned moments ----
+     Black, red ribbons, a line of type. Never takes a tap (pointer-events:
+     none), removes itself on animationend with a fallback timer, and is
+     aria-hidden because the same facts are on the page underneath. */
+  const motionOK = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: no-preference)').matches);
+  function cinemaCard(kicker, markHTML, line, extra) {
+    const card = el('<div class="titlecard' + (extra ? ' ' + extra : '') + '" aria-hidden="true"><div class="tc-ribbons">' + '<i></i>'.repeat(9) +
+      '</div>' + (kicker ? '<div class="tc-kicker">' + esc(kicker) + '</div>' : '') +
+      '<div class="tc-mark">' + markHTML + '</div><div class="tc-line">' + esc(line) + '</div></div>');
+    document.body.appendChild(card);
+    const bye = () => card.remove();
+    card.addEventListener('animationend', (e) => { if (e.target === card) bye(); });
+    setTimeout(bye, 3400);   // in case the animation never runs
+  }
+
   /* ---- title card: every launch of the installed app ----
      A second of cinema each time the Home Screen app loads (the user's
      call, v4.69.1 — it had been once a day): the wordmark, the week, the
-     days to the gun. It never blocks — taps pass straight through to Today
-     underneath, which is already drawn — and it is skipped in a browser tab
-     and whenever the system asks for reduced motion. */
+     days to the gun. Taps pass straight through to Today underneath, which
+     is already drawn; skipped in a browser tab and under reduced motion. */
   function titleCard() {
-    const mm = (q) => !!(window.matchMedia && window.matchMedia(q).matches);
-    const standalone = navigator.standalone === true || mm('(display-mode: standalone)');
-    if (!standalone || !mm('(prefers-reduced-motion: no-preference)')) return;
+    const standalone = navigator.standalone === true ||
+      !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    if (!standalone || !motionOK()) return;
     const today = todayISO();
     const day = DB.buildDay(today), cd = DB.raceCountdown(today);
     const line = day.blockId === 'marathon'
       ? 'WEEK ' + day.week + ' · ' + (cd.days === 0 ? 'RACE DAY' : cd.days + (cd.days === 1 ? ' DAY' : ' DAYS') + ' TO THE GUN')
       : day.blockId === 'recovery' ? 'RECOVERY · WEEK ' + day.week : 'STANDING WEEK';
-    const card = el('<div class="titlecard" aria-hidden="true"><div class="tc-ribbons">' + '<i></i>'.repeat(9) +
-      '</div><div class="tc-mark">WEEK<b>OS</b></div><div class="tc-line">' + esc(line) + '</div></div>');
-    document.body.appendChild(card);
-    const bye = () => card.remove();
-    card.addEventListener('animationend', (e) => { if (e.target === card) bye(); });
-    setTimeout(bye, 2400);   // in case the animation never runs
+    cinemaCard('', 'WEEK<b>OS</b>', line);
+  }
+
+  /* ---- earned moments (v4.71) ----
+     When a newly saved run sets something — the marathon, a race, the
+     longest run, a best at a distance, a 100 km milestone — the stage says
+     so, once, at the moment of saving. The recap underneath carries the
+     same facts for anyone who skips motion. */
+  function celebrate(iso, day) {
+    if (!motionOK()) return;
+    const r = day.run;
+    const report = window.RunProgress.debrief(runLogHistory(), iso, todayISO());
+    const e = report && report.current;
+    const km = (n) => esc(loggedDistance(n)) + '<small>KM</small>';
+    if (r && DB.runClass(r) === 'race' && /MARATHON/.test(r.title)) {
+      return cinemaCard('MARATHONER', e ? esc(recordTime(e.sec)) : km(r.run.km),
+        (e ? loggedDistance(e.km) + ' km · ' + DB.paceOf(e.km, e.sec) + '/km · ' : '') + String(PLAN.race.city).split(',')[0], 'earned race');
+    }
+    if (!e) return;
+    if (r && DB.runClass(r) === 'race') {
+      return cinemaCard('RACED · ' + String(r.title).split(/\s+[—-]\s+|\s+all-out/)[0], esc(recordTime(e.sec)),
+        loggedDistance(e.km) + ' km · ' + DB.paceOf(e.km, e.sec) + '/km', 'earned');
+    }
+    if (report.longest) {
+      return cinemaCard('NEW LONGEST RUN', km(e.km),
+        '+' + loggedDistance(Number(report.longest.gainKm.toPrecision(3))) + ' km beyond your previous longest', 'earned');
+    }
+    if (report.best) {
+      return cinemaCard('NEW BEST · ' + loggedDistance(e.km) + ' KM', esc(recordTime(e.sec)),
+        recordTime(report.best.gainSec) + ' quicker than your previous best', 'earned');
+    }
+    if (report.milestone) {
+      return cinemaCard(report.milestone + ' KM LOGGED', esc(String(report.milestone)) + '<small>KM</small>',
+        'across ' + report.runCount + ' saved runs', 'earned');
+    }
   }
 
   render();

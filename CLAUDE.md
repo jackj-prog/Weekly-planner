@@ -101,7 +101,9 @@ Giant outlined numerals (the Today countdown, the week number, the key days)
 are decorative and aria-hidden. Motion runs once, never loops, and sits
 behind `prefers-reduced-motion`; the launch title card plays on every load
 of the installed app (the user's call, v4.69.1), never in a browser tab,
-never takes a tap, and never delays Today underneath.
+never takes a tap, and never delays Today underneath. The same stage marks
+earned moments (v4.71) once, on the first save of a run that sets
+something: the marathon, a race, a new longest, a best, a 100 km mark.
 
 ## 4. Product intent (UX is yours to design)
 

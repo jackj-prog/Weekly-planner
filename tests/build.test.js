@@ -1342,8 +1342,13 @@ section('palette contrast (WCAG AA)');
     const cinema = css.slice(css.indexOf('CINEMA (v4.69)'));
     ok(cinema.length > 100 && !/rgba?\(/.test(cinema), 'the cinema layer paints only with tokens');
     const tcFn = appSrc.slice(appSrc.indexOf('function titleCard'), appSrc.indexOf('function titleCard') + 1400);
-    ok(/display-mode: standalone/.test(tcFn) && /prefers-reduced-motion: no-preference/.test(tcFn),
+    const motionFn = (appSrc.match(/const motionOK = [^;]+;/) || [''])[0];
+    ok(/display-mode: standalone/.test(tcFn) && /motionOK\(\)/.test(tcFn) && /prefers-reduced-motion: no-preference/.test(motionFn),
       'title card is gated to the installed app with motion allowed');
+    const celebrateFn = appSrc.slice(appSrc.indexOf('function celebrate'), appSrc.indexOf('function celebrate') + 400);
+    ok(/if \(!motionOK\(\)\) return;/.test(celebrateFn), 'earned moments never play under reduced motion');
+    ok(/\.titlecard\s*\{[^}]*pointer-events:\s*none/.test(css) && /aria-hidden="true"/.test(appSrc.slice(appSrc.indexOf('function cinemaCard'), appSrc.indexOf('function cinemaCard') + 300)),
+      'cinema cards never take a tap and stay out of the accessibility tree');
     ok(!/localStorage/.test(tcFn), 'title card plays on every launch — no once-a-day gate (user’s call, v4.69.1)');
     ok(/\.titlecard\s*\{[^}]*pointer-events:\s*none/.test(css), 'title card never takes a tap');
 
