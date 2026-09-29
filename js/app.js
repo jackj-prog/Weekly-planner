@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.63.0';
+  const APP_VERSION = '4.64.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -511,6 +511,28 @@
   const logKey = (iso) => 'runlog-' + iso;
   const getRunLogEntry = (iso) => readJSON(logKey(iso), null);
   function saveRunLogEntry(iso, entry) { writeJSON(logKey(iso), entry); }
+  /* EF that is comparable across a class. A long run with an MP segment
+     (PLAN.mpCheck) is only comparable through its easy part; without the
+     segment logged its whole-run EF is not, so it is left out (null). */
+  function trendEf(day, km, e) {
+    if (!e.hr) return null;
+    if (!(day.run && DB.isMpSession(day.run.title))) return DB.ef(km, e.sec, e.hr);
+    const mpKm = e.mpKm || DB.mpSegmentKm(day.run.title);
+    return e.mpPaceSec && e.mpHr && mpKm ? DB.easyPartEf(km, e.sec, e.hr, mpKm, e.mpPaceSec * mpKm, e.mpHr) : null;
+  }
+  function mpCheckHTML(day, e) {
+    if (!day.run || !DB.isMpSession(day.run.title) || !(e.mpHr > 0) || !(e.mpPaceSec > 0)) return '';
+    const h = readJSON('hr', null);
+    const v = h ? DB.mpVerdict(e.mpHr, h.rest, h.max) : null;
+    const goal = DB.parsePace(String(PLAN.race.goalPace).replace(/\/km$/, ''));
+    const diff = goal ? Math.round(e.mpPaceSec - goal) : null;
+    const km = e.mpKm || DB.mpSegmentKm(day.run.title);
+    const band = !v ? 'mpb' : v.key === 'on' ? 'good' : v.key === 'below' ? 'mpb' : 'poor';
+    return '<div class="h-dc mp ' + band + '"><b>' + (v ? 'Z' + v.z : 'MP') + '</b> marathon pace' + (km ? ' · ' + km + ' km' : '') +
+      ' at ' + DB.fmtPaceSec(Math.round(e.mpPaceSec)) + '/km · ' + e.mpHr + ' bpm' +
+      (diff != null && Math.abs(diff) >= 3 ? ' · ' + Math.abs(diff) + ' s/km ' + (diff < 0 ? 'faster' : 'slower') + ' than the prescribed ' + esc(PLAN.race.goalPace) : '') +
+      '<span>' + esc(v ? v.text : 'Set your HR zones on Reference to place this in a zone.') + ' ' + esc(PLAN.mpCheck.note) + '</span></div>';
+  }
   /* History feed for the estimate model: every logged run, classified. */
   function runLogHistory() {
     const out = [];
@@ -526,7 +548,8 @@
       if (!(km > 0)) continue;
       out.push({
         iso: m[1], km, sec: e.sec, estimatedKm: !(Number.isFinite(e.km) && e.km > 0), cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'), paceSec: Math.round(e.sec / km),
-        hr: e.hr || null, ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
+        hr: e.hr || null, ef: trendEf(day, km, e),
+        mp: !!(day.run && DB.isMpSession(day.run.title)),
         temp: e.temp == null ? null : e.temp, x: e.x === true,
       });
     }
@@ -711,11 +734,13 @@
       }
       const dec = e.stream ? (Number.isFinite(e.stream.decPct) ? {pct:e.stream.decPct} : null) : DB.decoupling(e.km || km, e.sec, e.hr, e.halfPaceSec, e.hr2);
       const dv = dec ? DB.decoupleVerdict(dec.pct) : null;
-      if (dv && (e.cls || (r ? DB.runClass(r) : 'unclassified')) === 'long') {
+      logHTML += mpCheckHTML(day, e);
+      if (dv && (e.cls || (r ? DB.runClass(r) : 'unclassified')) === 'long' && !(r && DB.isMpSession(r.title))) {
         logHTML += '<div class="h-dc ' + dv.band + '"><b>' + dec.pct.toFixed(1) +
           '%</b> decoupling · ' + esc(dv.text) + '</div>';
       }
-      const v = (e.cls || (r ? DB.runClass(r) : 'unclassified')) === 'unclassified' ? null : DB.logVerdict(runLogHistory().filter(run => run.iso <= iso && (!run.x || run.iso === iso)), iso);
+      const v = (e.cls || (r ? DB.runClass(r) : 'unclassified')) === 'unclassified' ? null : DB.logVerdict(runLogHistory().filter(run => run.iso <= iso && (!run.x || run.iso === iso) &&
+        (run.iso === iso || run.mp === !!(r && DB.isMpSession(r.title)))), iso);
       if (v) {
         const cls = e.cls || (r ? DB.runClass(r) : 'unclassified');
         let line;
@@ -762,6 +787,7 @@
           temp: e.temp == null ? null : e.temp, gels: e.gels == null ? null : e.gels,
           halfPaceSec: e.halfPaceSec || null, hr2: e.hr2 || null,
           cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'), stream: e.stream || null, x: e.x === true,
+          mpKm: e.mpKm || (day.run ? DB.mpSegmentKm(day.run.title) : null), mpPaceSec: e.mpPaceSec || null, mpHr: e.mpHr || null,
           paste: '', preview: null, note: saved ? 'Saved values. Change only what needs correcting.' :
             plannedKm ? 'Distance and time start from the plan. Replace them with your actual run.' : 'Enter actual distance and time. HR and conditions are optional.',
         };
@@ -778,6 +804,7 @@
       '<small>' + unit + '</small>' + (step ? '<button type="button" data-log-step="' + key + '" data-dir="1" aria-label="Increase ' + label + '">+</button>' : '') + '</span></label>';
     const clock = n => n ? recordTime(n) : '';
     const classes = ['unclassified', 'recovery', 'easy', 'long', 'quality', 'race'];
+    const isMpDay = !!(day.run && DB.isMpSession(day.run.title));
     const p = d.preview;
     const found = p && p.values;
     wrap.innerHTML = '<div class="h-log form"><div class="log-heading"><h3>Log your run</h3><button class="rl-x" aria-label="Cancel run edit">✕</button></div>' +
@@ -790,7 +817,7 @@
       (p ? '<div class="log-preview" role="status"><b>Found' + (p.date ? ' · ' + esc(p.date) : '') + '</b><p>' +
         [found.km ? Number(found.km.toFixed(3)) + ' km' : 'No distance', found.sec ? clock(found.sec) : 'No time',
           found.hr ? found.hr + ' bpm' : 'No HR', found.temp != null ? found.temp + '°C' : 'No temperature'].map(esc).join(' · ') +
-        '</p>' + p.warnings.map(w => '<p>' + esc(w) + '</p>').join('') +
+        '</p>' + (found.mpPaceSec ? '<p>Marathon-pace finish · ' + esc(found.mpKm + ' km · ' + DB.fmtPaceSec(found.mpPaceSec) + '/km · ' + found.mpHr + ' bpm') + '</p>' : '') + p.warnings.map(w => '<p>' + esc(w) + '</p>').join('') +
         (p.date && p.date !== iso ? '<p>Open ' + esc(p.date) + ' before importing this activity. No values have been saved.</p>' : Object.keys(found).length ? '<button class="log-use">Use these values</button>' : '') + '</div>' : '') + '</details>' +
       field('km', 'Distance', d.km, 'decimal', 'km', true) +
       field('sec', d.stream ? 'Track time' : 'Moving time', clock(d.sec), 'text', 'h:mm:ss', false) +
@@ -798,12 +825,16 @@
       field('hr', 'Average HR', d.hr, 'numeric', 'bpm', true) +
       '<label class="log-field">Run type<select class="log-class" aria-label="Run type">' + classes.map(c =>
         '<option value="' + c + '"' + (c === d.cls ? ' selected' : '') + '>' + (c === 'unclassified' ? 'Not classified' : c[0].toUpperCase() + c.slice(1)) + '</option>').join('') + '</select></label>' +
-      '<details class="log-extra"' + (d.extraOpen ? ' open' : '') + '><summary>Conditions &amp; optional measurements</summary>' +
+      '<details class="log-extra"' + (d.extraOpen || (isMpDay && d.extraOpen !== false) ? ' open' : '') + '><summary>' + (isMpDay ? 'Marathon-pace segment, conditions &amp; more' : 'Conditions &amp; optional measurements') + '</summary>' +
       field('temp', 'Feels like', d.temp, 'decimal', '°C', true) + field('gels', 'Gels taken', d.gels, 'numeric', 'gels', true) +
+      (isMpDay ? '<p class="log-note">Marathon-pace segment: its distance, pace and average HR only. The app places the HR in your zones (§10). A track import fills a “last N @ MP” finish for you.</p>' +
+        field('mpKm', 'MP distance', d.mpKm, 'decimal', 'km', true) +
+        field('mpPaceSec', 'MP pace', clock(d.mpPaceSec), 'text', '/km', true) +
+        field('mpHr', 'MP average HR', d.mpHr, 'numeric', 'bpm', true) :
       '<p class="log-note">For a decoupling estimate, enter measured first-half pace and second-half HR. Leave blank if unavailable.</p>' +
       (d.stream ? '<p class="log-note">Half-run analysis uses the imported track when coverage permits. Gaps leave it unavailable.</p>' :
       field('halfPaceSec', 'First-half pace', clock(d.halfPaceSec), 'text', '/km', true) +
-      field('hr2', 'Second-half HR', d.hr2, 'numeric', 'bpm', true)) +
+      field('hr2', 'Second-half HR', d.hr2, 'numeric', 'bpm', true))) +
       '<label class="log-exclude"><input type="checkbox" class="log-x"' + (d.x ? ' checked' : '') + '>' +
       '<span><b>Leave out of trends</b><small>Lost, hilly, ill, hungover or a different route. The run still counts for distance; it just isn\u2019t compared.</small></span></label>' +
       '</details>' +
@@ -847,8 +878,18 @@
       remember();
       const key = btn.dataset.logStep, dir = +btn.dataset.dir;
       const steps = { km: .1, paceSec: PLAN.logModel.paceStep, hr: PLAN.logModel.hrStep,
-        halfPaceSec: PLAN.logModel.halfPaceStep, hr2: PLAN.logModel.hrStep, temp: PLAN.logModel.tempStep, gels: 1 };
-      const current = d[key] == null ? (key === 'temp' ? PLAN.logModel.tempDefault : key === 'hr' || key === 'hr2' ? (DB.logEstimate(day, runLogHistory().filter(run => !run.x)) || {}).hr || 1 : 0) : d[key];
+        halfPaceSec: PLAN.logModel.halfPaceStep, hr2: PLAN.logModel.hrStep, temp: PLAN.logModel.tempStep, gels: 1,
+        mpKm: .5, mpPaceSec: PLAN.logModel.halfPaceStep, mpHr: PLAN.logModel.hrStep };
+      /* An empty stepper starts from something sensible, never from zero:
+         a pace field from the run's own pace (MP from the prescribed MP),
+         an HR field from the run's HR or the estimate. */
+      const goalPace = DB.parsePace(String(PLAN.race.goalPace).replace(/\/km$/, ''));
+      const estHr = () => d.hr || (DB.logEstimate(day, runLogHistory().filter(run => !run.x)) || {}).hr || 1;
+      const current = d[key] != null ? d[key] : key === 'temp' ? PLAN.logModel.tempDefault
+        : key === 'hr' || key === 'hr2' || key === 'mpHr' ? estHr()
+        : key === 'halfPaceSec' ? Math.round(d.paceSec || 0)
+        : key === 'mpPaceSec' ? goalPace || Math.round(d.paceSec || 0)
+        : key === 'mpKm' ? (day.run ? DB.mpSegmentKm(day.run.title) : 0) || 0 : 0;
       const value = Math.round((current + dir * steps[key]) * 1000) / 1000;
       setField(key, Math.max(key === 'temp' ? -60 : key === 'gels' ? 0 : steps[key], value));
       render();
@@ -862,7 +903,7 @@
       wrap.querySelector('.log-note').textContent = d.note;
       try {
         if (file.size > 20*1024*1024) throw new Error('Choose an activity file smaller than 20 MB.');
-        const parsed = window.RunStream.parseXML(await file.text());
+        const parsed = window.RunStream.parseXML(await file.text(), { tailKm: day.run ? DB.mpTailKm(day.run.title) : null });
         if (state.runLogDraft !== d || state.runLogEdit !== iso) return;
         d.preview = parsed;
         d.note = 'File read locally. Review the date and measurements before using them.';
@@ -879,19 +920,24 @@
       d.km = v.km || null; d.sec = v.sec || null; d.paceSec = v.paceSec || null;
       d.hr = v.hr || null; d.temp = v.temp == null ? null : v.temp;
       d.halfPaceSec = d.hr2 = null; d.stream = d.preview.stream || null;
+      if (v.mpPaceSec) { d.mpKm = v.mpKm; d.mpPaceSec = v.mpPaceSec; d.mpHr = v.mpHr; }
       d.preview = null; d.paste = ''; d.note = 'Imported into the form. Check the numbers, then Save run.';
       render();
     });
     wrap.querySelector('.rl-x').addEventListener('click', () => { state.runLogEdit = null; state.runLogDraft = null; render(); });
     wrap.querySelector('.rl-save').addEventListener('click', () => {
       if (wrap.querySelector('input:invalid') || d.error || !(d.km > 0 && d.km <= 1000 && d.sec > 0 && d.sec <= 604800) ||
-          (d.hr != null && (d.hr < 1 || d.hr > 300)) || (d.temp != null && (d.temp < -60 || d.temp > 65))) {
+          (d.hr != null && (d.hr < 1 || d.hr > 300)) || (d.temp != null && (d.temp < -60 || d.temp > 65)) ||
+          (d.mpHr != null && (d.mpHr < 1 || d.mpHr > 300)) || (d.mpPaceSec != null && (d.mpPaceSec < 120 || d.mpPaceSec > 900)) ||
+          (d.mpKm != null && d.mpPaceSec != null && !(d.mpKm > 0 && d.mpKm < d.km))) {
         wrap.querySelector('.log-error').textContent = d.error || 'Enter a valid distance and moving time; check HR and temperature if supplied.'; return;
       }
       const entry = { ...(saved || {}), sec: d.sec, hr: d.hr == null ? null : Math.round(d.hr),
         km: d.km, temp: d.temp, cls: d.cls,
         halfPaceSec: d.halfPaceSec, hr2: d.hr2, gels: d.gels, stream: d.stream || null };
       if (d.x) entry.x = true; else delete entry.x;
+      if (isMpDay && d.mpPaceSec && d.mpHr) { entry.mpKm = d.mpKm; entry.mpPaceSec = Math.round(d.mpPaceSec); entry.mpHr = Math.round(d.mpHr); }
+      else { delete entry.mpKm; delete entry.mpPaceSec; delete entry.mpHr; }
       try { localStorage.setItem(logKey(iso), JSON.stringify(entry)); }
       catch (e) { wrap.querySelector('.log-error').textContent = 'Could not save on this device. Keep this form open and free some storage, then try again.'; return; }
       state.runLogEdit = null; state.runLogDraft = null; render();
@@ -2141,12 +2187,17 @@
       const km = e.km || (day.run ? day.run.run.km : 0);
       if (!(km > 0)) continue;
       const cls = e.cls || (day.run ? DB.runClass(day.run) : 'unclassified');
-      const dec = e.stream ? (Number.isFinite(e.stream.decPct) ? {pct:e.stream.decPct} : null) : DB.decoupling(km, e.sec, e.hr, e.halfPaceSec, e.hr2);
+      const isMp = !!(day.run && DB.isMpSession(day.run.title));
+      /* A fast finish makes second-half EF meaningless, so MP runs report
+         the MP check instead of decoupling (PLAN.mpCheck). */
+      const dec = isMp ? null : e.stream ? (Number.isFinite(e.stream.decPct) ? {pct:e.stream.decPct} : null) : DB.decoupling(km, e.sec, e.hr, e.halfPaceSec, e.hr2);
       entries.push({
         iso: m[1], km, cls, sec: e.sec, dec: dec ? dec.pct : null, stream: e.stream || null,
         pace: DB.paceOf(km, e.sec),
         hr: e.hr || null,
         ef: e.hr ? DB.ef(km, e.sec, e.hr) : null,
+        efTrend: trendEf(day, km, e), mp: isMp, day,
+        mpKm: e.mpKm || null, mpPaceSec: e.mpPaceSec || null, mpHr: e.mpHr || null,
         hard: cls === 'quality' || cls === 'race',
         temp: e.temp == null ? null : e.temp,
         tooHot: e.temp != null && e.temp >= PLAN.benchmark.tempInvalid,
@@ -2187,7 +2238,8 @@
         '/km</b> across these runs, read off the fitted line.</p>';
     }
     function sparkFor(cls, label) {
-      const eligible = entries.filter(e => e.cls === cls && !e.tooHot && !e.x && e.iso <= todayISO());
+      const eligible = entries.filter(e => e.cls === cls && !e.tooHot && !e.x && e.iso <= todayISO() && e.efTrend != null)
+        .map(e => ({ ...e, ef: e.efTrend }));
       const chart = window.EFChart.chart(eligible);
       if (!chart) return '';
       const signed = n => (n > 0 ? '+' : '') + n.toFixed(1) + '%';
@@ -2270,12 +2322,26 @@
         }).join('') +
         '<div class="dc-k">under ' + m.good + '% sound · to ' + m.ok + '% at the edge · over that, read the day</div></div>';
     }
+    const mpPts = entries.filter((e) => e.mp && e.mpHr && e.mpPaceSec && e.iso <= todayISO()).slice(-6);
+    if (mpPts.length) {
+      const h = readJSON('hr', null);
+      spark += '<div class="dc-list mp-list"><div class="dc-h">Marathon-pace checks · §10</div>' +
+        mpPts.slice().reverse().map((p) => {
+          const v = h ? DB.mpVerdict(p.mpHr, h.rest, h.max) : null;
+          const band = !v ? 'mpb' : v.key === 'on' ? 'good' : v.key === 'below' ? 'mpb' : 'poor';
+          return '<div class="dc-r"><span>' + fmtShort(p.iso) + ' · ' + (p.mpKm || '') + (p.mpKm ? ' km · ' : '') +
+            DB.fmtPaceSec(Math.round(p.mpPaceSec)) + '/km · ' + p.mpHr + ' bpm</span>' +
+            '<b class="dc ' + band + '">' + (v ? 'Z' + v.z : '—') + '</b></div>';
+        }).join('') +
+        '<div class="dc-k">below Z3: the prescribed pace is too slow · Z3: it fits · Z4: too fast for this stage</div></div>';
+    }
     const rows = entries.slice(-10).reverse().map((e) =>
       '<article class="run-entry"><div class="run-entry-head"><b>' + esc(fmtShort(e.iso)) +
       (e.hard ? ' <i class="dot" style="background:var(--accent)" title="hard session"></i>' : '') +
       '</b><span>' + e.km + ' km</span>' +
       (e.temp != null ? ' <i class="tmp' + (e.tooHot ? ' hot' : '') + '">' + e.temp + '°</i>' : '') +
       (e.x ? ' <i class="tmp xout">not in trends</i>' : '') +
+      (e.mp ? ' <i class="tmp xout">MP' + (e.mpHr ? ' logged' : ' · easy part not logged') + '</i>' : '') +
       '</div><div class="run-entry-metrics"><span><small>Pace /km</small>' + esc(e.pace || '—') +
       (e.adj ? '<i class="adj">→ ' + esc(e.adj) + '</i>' : '') + '</span>' +
       '<span><small>Avg HR</small>' + (e.hr || '—') + '</span>' +

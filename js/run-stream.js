@@ -8,7 +8,7 @@
     const h = Math.sin(dy/2)**2 + Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dx/2)**2;
     return 6371000 * 2 * Math.asin(Math.sqrt(Math.min(1,h)));
   }
-  function summarize(segments, source) {
+  function summarize(segments, source, opts) {
     const intervals = [], warnings = [];
     let sec = 0, distance = 0, gaps = 0, missingHR = 0;
     const histogram = new Map();
@@ -38,15 +38,32 @@
     const ef = halves.map(h=>h.beats ? h.metres*60/h.beats : null);
     const decPct = complete && ef[0] && ef[1] ? (1-ef[1]/ef[0])*100 : null;
     const splitSec = !gaps && segments.length === 1 ? halves[1].sec-halves[0].sec : null;
+    /* The final N km, for a "last N @ MP" long run (PLAN.mpCheck). Only on a
+       clean single track: a pause or gap makes "the last N km" ambiguous. */
+    let tail = null;
+    const tailKm = opts && opts.tailKm;
+    if (tailKm > 0 && !gaps && segments.length === 1 && distance > tailKm * 1000 + 500) {
+      let m = 0, s = 0, beats = 0, hrSec = 0;
+      for (let k = intervals.length - 1; k >= 0 && m < tailKm * 1000; k--) {
+        const iv = intervals[k], need = tailKm * 1000 - m;
+        const f = iv.metres > need ? need / iv.metres : 1;
+        m += iv.metres * f; s += iv.sec * f;
+        if (iv.hr) { beats += iv.hr * iv.sec * f; hrSec += iv.sec * f; }
+      }
+      if (s > 0 && hrSec >= s * 0.95) tail = { km: m / 1000, sec: s, hr: beats / hrSec, paceSec: s / (m / 1000) };
+    }
+    if (tailKm > 0 && !tail) warnings.push('The final ' + tailKm + ' km could not be read cleanly from this track; enter the MP segment by hand if you have it.');
     if (source === 'GPX') warnings.push('Distance is estimated from GPS points; it may differ from your watch.');
     warnings.push('Track time includes recorded stops within each segment. Check it against your moving time; editing distance, time or HR removes stream analysis.');
     if (gaps) warnings.push('Gaps or invalid samples found. No half-run comparison is reported.');
     if (segments.length > 1) warnings.push('Separate tracks are not joined across pauses; no half-run comparison is reported.');
     if (missingHR) warnings.push(Math.round(missingHR) + ' seconds have no usable HR. Missing time is excluded from measured zones.');
-    return { values: {km: Math.round(distance)/1000,sec,paceSec:sec/(distance/1000),hr:complete ? Math.round(avg) : null},
+    const values = {km: Math.round(distance)/1000,sec,paceSec:sec/(distance/1000),hr:complete ? Math.round(avg) : null};
+    if (tail) { values.mpKm = Math.round(tail.km * 100) / 100; values.mpPaceSec = Math.round(tail.paceSec); values.mpHr = Math.round(tail.hr); }
+    return { values,
       stream: {source,hrSeconds,coveredSec:hrTime,sec,decPct,splitSec,halves:halves.map(h=>({sec:h.sec,km:h.metres/1000,hr:h.sec?h.beats/h.sec:null}))}, warnings };
   }
-  function parseXML(text) {
+  function parseXML(text, opts) {
     if (text.length > 20*1024*1024) throw new Error('Choose an activity file smaller than 20 MB.');
     if (/<!DOCTYPE|<!ENTITY/i.test(text)) throw new Error('This XML contains an unsupported document declaration.');
     const doc = new DOMParser().parseFromString(text,'application/xml');
@@ -71,7 +88,7 @@
         lon:num(source==='GPX'?p.getAttribute('lon'):val(p,'LongitudeDegrees')),
         hr:num(source==='GPX'?val(p,'hr'):hrNode?val(hrNode,'Value'):null) };
     }));
-    const result=summarize(segments,source);
+    const result=summarize(segments,source,opts);
     if (firstTime!==null) {const d=new Date(firstTime);result.date=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
     return result;
   }

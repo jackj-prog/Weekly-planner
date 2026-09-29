@@ -1466,6 +1466,25 @@ section('move rules and missed runs');
  ok(PLAN.longRunOver.overPct > 1 && PLAN.longRunOver.capMin === 200, 'long-run overshoot flags >10% over plan and the 3h20 cap (rule 9)');
  ok(PLAN.readiness.skipDelta >= 5 && PLAN.readiness.minReadings >= 3 && !/\b(4\d|5\d|6\d)\s*bpm/.test(PLAN.readiness.note), 'readiness rule is relative to your own usual and carries no personal HR');
 }
+section('marathon-pace check (§10)');
+{
+ const titles = {};
+ for (let i = 0; i < 210; i++) { const d = DB.buildDay(DB.addDays(START, i)); if (d.run && DB.isMpSession(d.run.title)) titles[d.run.title] = d.week; }
+ ok(Object.keys(titles).length >= 8, 'MP sessions found in the plan: ' + Object.keys(titles).length);
+ const want = { 'Long 22 — last 6 @ MP': [6, 6], 'Long 26 — 2×5 @ MP': [10, null], 'Long 30 — 12 @ MP': [12, null],
+   'DRESS REHEARSAL 26 km — last 14–16 @ MP (Pro 4)': [14, 14], 'Quality run — 5×3 min @ MP': [null, null] };
+ for (const [t, [km, tail]] of Object.entries(want)) {
+  ok(t in titles, 'plan still has "' + t + '"');
+  ok(DB.mpSegmentKm(t) === km, t + ' → segment ' + km + ' km, got ' + DB.mpSegmentKm(t));
+  ok(DB.mpTailKm(t) === tail, t + ' → tail ' + tail + ', got ' + DB.mpTailKm(t));
+ }
+ ok(!DB.isMpSession('Long 22 easy') && DB.mpSegmentKm('Long 22 easy') === null, 'easy long runs are not MP sessions');
+ // Generic fixture zones (rest 50, max 190): Z3 is 72–80% HRR = 151–162.
+ ok(DB.mpVerdict(140, 50, 190).key === 'below' && DB.mpVerdict(155, 50, 190).key === 'on' && DB.mpVerdict(170, 50, 190).key === 'above', 'zone verdicts follow §10');
+ const whole = DB.ef(22, 7800, 148), easy = DB.easyPartEf(22, 7800, 148, 6, 1740, 152);
+ ok(easy > 0 && easy < whole, 'easy-part EF excludes the faster MP segment');
+ ok(DB.easyPartEf(22, 7800, 148, 21.8, 7700, 152) === null, 'a segment covering nearly the whole run yields no easy part');
+}
 /* ---- result ---- */
 // Chart geometry is part of correctness, not just appearance.
 require('./ef-chart.test.js');

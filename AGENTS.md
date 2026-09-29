@@ -719,3 +719,22 @@ pattern); nothing personal enters the repo. After three readings in the last
 today" with the generic note. Agreed with the owner in chat after a long run
 abandoned with heart rate far above normal for the pace. A test asserts the
 rule is relative and the note carries no absolute HR.
+
+## Marathon-pace check on MP long runs — v4.64, 29 September (Claude)
+
+§10 already says MP "has an HR correlate, and it is a live recalibration
+signal" from Wk 14; the app now reads it. On any session whose title carries
+"@ MP" the log's optional section swaps the decoupling pair for MP distance
+(defaulting to the km in the title: "last 6" → 6, "2×5" → 10, "14–16" → 14),
+MP pace and MP average HR. A GPX/TCX import reads a "last N @ MP" finish off
+the end of a clean single track (RunStream `opts.tailKm`). The readback
+places the MP HR in the athlete's own zones with `PLAN.mpCheck` wording:
+below Z3 means the prescribed pace is still too slow, Z3 fits, Z4 is too
+fast, plus the pace against `PLAN.race.goalPace` and the rule-7 caveat. The
+training log lists the last six MP checks. MP runs no longer report whole-run
+decoupling (a fast finish makes it meaningless), their EF enters the long-run
+trend only through the easy part (`DB.easyPartEf`), and they are compared in
+"vs last" readback only with other MP runs. New entry fields `mpKm`,
+`mpPaceSec`, `mpHr` sit on the existing `runlog-ISO` value. Tests cover every
+MP title in the plan, the zone verdicts, the easy-part EF and the track tail;
+a browser pass covered manual entry, TCX import and the log list.

@@ -352,6 +352,45 @@
     return { hr1: Math.round(hr1 * 10) / 10, ef1, ef2, pct: ((ef1 - ef2) / ef1) * 100 };
   }
 
+  /* ---- marathon-pace segments (§10, PLAN.mpCheck) ---- */
+  function isMpSession(title) {
+    return !!(PLAN.mpCheck && new RegExp(PLAN.mpCheck.runPattern).test(String(title || '')));
+  }
+  /* Prescribed MP km from the session title: reps first ("2×5" is 10 km),
+     then a single segment ("last 6", "12", "14–16" → 14). Minute-based reps
+     ("5×3 min @ MP") carry no km and return null. */
+  function mpSegmentKm(title) {
+    const m = PLAN.mpCheck, t = String(title || '');
+    if (!m || !isMpSession(t)) return null;
+    const reps = t.match(new RegExp(m.repsPattern));
+    if (reps) return Number(reps[1]) * Number(reps[2]);
+    const one = t.match(new RegExp(m.kmPattern));
+    return one ? Number(one[1]) : null;
+  }
+  /* Only a finish ("last N @ MP") can be measured off the end of a track. */
+  function mpTailKm(title) {
+    const m = PLAN.mpCheck;
+    const hit = m && String(title || '').match(new RegExp(m.tailPattern));
+    return hit ? Number(hit[1]) : null;
+  }
+  function mpVerdict(hr, rest, max) {
+    const z = zoneOf(hr, rest, max);
+    if (!z || !PLAN.mpCheck) return null;
+    const key = z.z < 3 ? 'below' : z.z === 3 ? 'on' : 'above';
+    return { z: z.z, name: z.name, key, text: PLAN.mpCheck.verdicts[key] };
+  }
+  /* EF of the run without its MP segment: the part that is still an easy
+     long run and so still comparable with other long runs (§4.8). Average
+     HR is time-weighted, so the remainder's HR is recovered from the totals. */
+  function easyPartEf(km, sec, hr, mpKm, mpSec, mpHr) {
+    if (![km, sec, hr, mpKm, mpSec, mpHr].every((n) => n > 0)) return null;
+    const restKm = km - mpKm, restSec = sec - mpSec;
+    if (!(restKm > 0.5) || !(restSec > 0)) return null;
+    const restHr = (hr * sec - mpHr * mpSec) / restSec;
+    if (!(restHr > 40) || !(restHr < 230)) return null;
+    return ef(restKm, restSec, restHr);
+  }
+
   /* Where a decoupling figure sits against the model's thresholds. */
   function decoupleVerdict(pct) {
     const m = PLAN.decoupleModel;
@@ -835,6 +874,7 @@
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
+    isMpSession, mpSegmentKm, mpTailKm, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

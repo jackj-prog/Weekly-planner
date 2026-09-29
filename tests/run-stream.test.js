@@ -22,4 +22,11 @@ assert.equal(S.summarize([reset],'TCX').stream.decPct,null);
 assert.throws(()=>S.summarize([[{time:0,distance:0},{time:1000,distance:500}]],'TCX'),/No usable/);
 assert.equal(S.metres({lat:null,lon:0},{lat:0,lon:0}),null);
 assert.ok(Math.abs(S.metres({lat:0,lon:0},{lat:0,lon:.001})-111.1949)<.01);
+// Tail of a "last N @ MP" run: the final 2 km of this 4 km track ran at 160 bpm.
+const tailed = S.summarize([points],'TCX',{tailKm:1.4});
+assert.ok(Math.abs(tailed.values.mpKm-1.4)<0.01); assert.equal(tailed.values.mpHr,160);
+assert.ok(Math.abs(tailed.values.mpPaceSec-(540/2)*1)<2, 'tail pace from the final km: '+tailed.values.mpPaceSec);
+assert.equal(S.summarize([gap],'TCX',{tailKm:1}).values.mpHr,undefined);
+assert.ok(S.summarize([gap],'TCX',{tailKm:1}).warnings.some(w=>/final 1 km/.test(w)));
+assert.equal(S.summarize([points],'TCX').values.mpHr,undefined);
 console.log('Run stream: time weighting, equal-distance halves, missing HR, gaps, resets, segments and GPS distance passed');

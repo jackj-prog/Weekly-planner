@@ -490,6 +490,28 @@ const PLAN = {
     capNote: 'Past rule 9\u2019s 3h20 cap: beyond that the recovery cost climbs faster than the aerobic return.',
   },
 
+  /* §10: "MP has an HR correlate, and it is a live recalibration signal."
+     From Wk 14 the MP segment of a long run is logged on its own (pace, HR,
+     km) and placed in the zones: below Z3 the prescribed pace is still too
+     slow, Z3 fits, Z4 is too fast for this stage. The patterns read the
+     segment length out of the session titles in this file; nothing here is
+     a new prescription. The easy part of the run stays comparable with
+     other long runs because its EF is worked out without the MP segment. */
+  mpCheck: {
+    runPattern: '@ MP',
+    repsPattern: '(\\d+)×(\\d+)\\s*@ MP',              // "2×5 @ MP" → 10 km
+    kmPattern: '(\\d+)(?:[–-]\\d+)?\\s*@ MP',          // "last 6 @ MP" → 6, "12 @ MP" → 12, "14–16" → 14
+    tailPattern: 'last (\\d+)(?:[–-]\\d+)?\\s*@ MP',   // only a finish can be read off the end of a track
+    verdicts: {
+      below: 'Below Z3 at marathon pace. By §10 the prescribed pace is still too slow for you: evidence the target can move before December.',
+      on: 'Z3, where marathon effort belongs (§10). This pace fits the current stage.',
+      above: 'Z4 at marathon pace: too fast for this stage (§10). Ease it back next time.',
+    },
+    note:
+      'Rule 7: the December half still settles the target. Read this across ' +
+      'several MP runs, not one: heat, hills and a hard week all push HR up.',
+  },
+
   /* Moving a session to another day this week (in-app). A gym session that
      carries leg work and lands on Thursday or later keeps its upper-body and
      core work but drops the legs: §6 keeps leg work away from the long run
