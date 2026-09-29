@@ -1817,3 +1817,57 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   .view.anim .bb, .view.anim .wk-num { animation: bb-in .8s cubic-bezier(.2,.8,.2,1) backwards; }
   @keyframes bb-in { from { opacity: 0; translate: 18px 0; } }
 }
+
+/* -- v4.70: Now/Next counts down to what's next -- */
+.nownext .nn-in { margin-left: 6px; font-family: var(--mono); font-size: 11px; color: var(--t3); white-space: nowrap; }
+
+/* -- v4.70: "Previously" — Monday opens with last week -- */
+.previously {
+  position: relative; isolation: isolate; overflow: hidden;
+  margin: 0 0 16px; padding: 18px 18px 14px; border-radius: 18px;
+  background-image: var(--grain), radial-gradient(90% 70% at 100% 0%, var(--glow-white-soft), transparent 65%), linear-gradient(160deg, var(--hero-bg), var(--surface) 70%);
+  border: 1px solid var(--line);
+}
+.previously.full { box-shadow: 0 0 0 1px var(--glow-white), 0 14px 36px var(--shade); }
+.pv-num {
+  position: absolute; z-index: -1; right: -8px; top: -14px; pointer-events: none;
+  font: 900 150px/.86 var(--display); letter-spacing: -0.07em;
+  color: transparent; -webkit-text-stroke: 1.5px var(--line);
+}
+.pv-kicker { font: 400 10px var(--mono); letter-spacing: .16em; color: var(--t2); }
+.pv-km { margin-top: 10px; font: 400 15px var(--body); color: var(--t2); }
+.pv-km b { font: 900 44px/1 var(--display); letter-spacing: -0.03em; color: var(--text); margin-right: 4px; }
+.pv-line { margin-top: 6px; font: 400 14px/1.45 var(--body); color: var(--t2); }
+.pv-line em { font-style: normal; color: var(--text); font-weight: 600; }
+.pv-bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 16px 0 6px; }
+.pv-day { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.pv-day b { font: 400 10px var(--mono); color: var(--t3); }
+.pv-track { position: relative; width: 22px; height: 54px; border-bottom: 1px solid var(--line); }
+.pv-track i { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 4px 4px 0 0; }
+.pv-plan { border: 1px dashed var(--t3); border-bottom: 0; background: transparent; }
+.pv-got { background: var(--t2); }
+.pv-day.long .pv-got { background: var(--text); box-shadow: 0 0 12px var(--glow-white); }
+.pv-day.hard .pv-got { background: var(--accent); box-shadow: 0 0 12px var(--glow-red); }
+.pv-day.miss .pv-plan { border-color: var(--accent); }
+.pv-open {
+  display: flex; justify-content: space-between; align-items: center; width: 100%; min-height: 48px;
+  margin-top: 10px; padding: 0 2px; border: 0; border-top: 1px solid var(--line); background: none;
+  font: 600 14px var(--body); color: var(--text);
+}
+
+/* -- v4.70: rest days get their word, huge and outlined -- */
+.resthero { position: relative; isolation: isolate; overflow: hidden; }
+.rest-wm {
+  position: absolute; z-index: -1; right: -10px; bottom: -22px; pointer-events: none;
+  font: 900 120px/.8 var(--display); letter-spacing: -0.06em;
+  color: transparent; -webkit-text-stroke: 1.5px var(--line);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* paging through days and weeks slides in the direction of travel */
+  .view.slide-next { animation: slide-next .32s cubic-bezier(.2,.8,.2,1); }
+  .view.slide-prev { animation: slide-prev .32s cubic-bezier(.2,.8,.2,1); }
+  @keyframes slide-next { from { opacity: .2; transform: translateX(28px); } }
+  @keyframes slide-prev { from { opacity: .2; transform: translateX(-28px); } }
+  .view.anim .pv-got { transform-origin: 50% 100%; animation: bar-rise .6s cubic-bezier(.2,.8,.2,1) .1s backwards; }
+}

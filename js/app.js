@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.69.1';
+  const APP_VERSION = '4.70.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -46,6 +46,10 @@
   function fmtLeft(mins) {
     if (mins >= 60) return Math.floor(mins / 60) + 'h ' + String(mins % 60).padStart(2, '0') + 'm left';
     return mins + ' min left';
+  }
+  function fmtIn(mins) {
+    if (mins >= 60) return 'in ' + Math.floor(mins / 60) + 'h ' + String(mins % 60).padStart(2, '0') + 'm';
+    return 'in ' + mins + ' min';
   }
   function fmtGap(mins) {
     const h = Math.floor(mins / 60);
@@ -380,6 +384,7 @@
         if (nextDay.run) nextRun = nextDay;
       }
       const rest = el('<section class="resthero" aria-label="No run scheduled">' +
+        '<span class="rest-wm" aria-hidden="true">REST</span>' +
         '<div class="rest-kicker"><span>OFF THE RUN</span><span class="rest-mark" aria-hidden="true"></span></div>' +
         '<h2>No run.<br>Still on plan.</h2>' +
         (restBlock ? detailHTML(restBlock.title + (restBlock.detail ? ' · ' + restBlock.detail : ''), iso + '|rest', false) : '') +
@@ -402,6 +407,9 @@
         if (iso <= todayISO()) view.appendChild(buildRunLogger(day, iso));
       }
     }
+
+    const previously = buildPreviously(iso, day);
+    if (previously) view.appendChild(previously);
 
     view.appendChild(el('<div class="timeline-head"><h2>Your day</h2>' +
       (day.blockId === 'marathon' ? weekRingHTML(iso) : '') + '</div>'));
@@ -491,7 +499,8 @@
         '<div class="nn-bar" aria-hidden="true"><i style="width:0%"></i></div>';
     }
     if (next.length) {
-      html += '<div class="nn-next"><span class="nn-label">NEXT</span><span class="t">' + next[0].start + '</span><span>' + esc(next[0].title) + '</span></div>';
+      html += '<div class="nn-next"><span class="nn-label">NEXT</span><span class="t">' + next[0].start + '</span><span>' + esc(next[0].title) +
+        ' <span class="nn-in">' + fmtIn(next[0].startMin - nMin) + '</span></span></div>';
     } else {
       html += '<div class="nn-next"><span class="nn-label">NEXT</span><span>Nothing else scheduled today.</span></div>';
     }
@@ -1326,7 +1335,11 @@
     return (h ? h + ':' + String(m).padStart(2, '0') : String(m)) + ':' + String(s).padStart(2, '0');
   }
 
-  /* A shareable receipt rendered entirely on this device, from live tokens. */
+  /* A shareable poster rendered entirely on this device, from live tokens,
+     in the run card's own light (v4.70): a stage light by class of run (red
+     only when it was hard, §3), the days to the gun on that date as a giant
+     outlined numeral, the distance as the headline, the block as a progress
+     bar, and film grain over the lot. */
   function shareRunCard(day, iso) {
     const report = window.RunProgress.debrief(runLogHistory(), iso, todayISO());
     if (!report) return;
@@ -1335,38 +1348,102 @@
     ready.then(() => {
       const styles = getComputedStyle(document.documentElement);
       const token = name => styles.getPropertyValue(name).trim();
-      const ink = token('--paper'), text = token('--text'), muted = token('--t2');
-      const canvas = document.createElement('canvas'); canvas.width = 1080; canvas.height = 1350;
+      const rgba = (hex, a) => {
+        const n = parseInt(hex.replace('#', '').slice(0, 6), 16);
+        return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';
+      };
+      const ink = token('--paper'), text = token('--text'), muted = token('--t2'), faint = token('--t3');
+      const line = token('--line'), red = token('--accent'), redFill = token('--accent-fill');
+      const W = 1080, H = 1350, L = 72, R = 1008;
+      const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
       const x = canvas.getContext('2d');
       const display = '"Archivo", sans-serif', mono = '"Space Mono", monospace', body = '"Inter", sans-serif';
       const write = (value, px, family, weight, left, top, color) => {
         x.font = weight + ' ' + px + 'px ' + family; x.fillStyle = color || text; x.fillText(String(value), left, top);
       };
-      x.fillStyle = ink; x.fillRect(0, 0, 1080, 1350);
-      x.fillStyle = token('--surface'); x.fillRect(36, 36, 1008, 1278);
-      write('WEEK', 52, display, 900, 72, 125);
-      write('OS', 52, display, 900, 72 + x.measureText('WEEK').width, 125, token('--accent'));
-      x.textAlign = 'right'; write('RUN ' + String(report.runCount).padStart(2, '0'), 28, mono, 400, 1008, 118, muted); x.textAlign = 'left';
-      write(fmtDate(iso), 30, body, 400, 72, 210, muted);
+      const cls = day.run ? DB.runClass(day.run) : 'easy';
+      const hard = cls === 'quality' || cls === 'race';
+      const glow = hard ? redFill : text;
+
+      // ground and stage light
+      x.fillStyle = ink; x.fillRect(0, 0, W, H);
+      const light = (cx, cy, r, color) => {
+        const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+        g.addColorStop(0, color); g.addColorStop(1, rgba(ink, 0));
+        x.fillStyle = g; x.fillRect(0, 0, W, H);
+      };
+      light(W, 0, 950, hard ? rgba(redFill, .5) : cls === 'long' ? rgba(text, .17) : rgba(text, .08));
+      if (hard) light(0, H, 760, rgba(redFill, .2));
+
+      // the countdown on the day of the run, huge and outlined
+      const cd = DB.raceCountdown(iso);
+      if (day.blockId === 'marathon' && cd.days > 0) {
+        x.font = '900 430px ' + display; x.textAlign = 'right'; x.lineWidth = 3.5;
+        x.strokeStyle = hard ? rgba(red, .32) : rgba(text, .11);
+        x.strokeText(String(cd.days), W + 24, 530);
+        x.textAlign = 'left';
+      }
+
+      write('WEEK', 52, display, 900, L, 125);
+      write('OS', 52, display, 900, L + x.measureText('WEEK').width, 125, red);
+      x.textAlign = 'right'; write('RUN ' + String(report.runCount).padStart(2, '0'), 28, mono, 400, R, 118, muted); x.textAlign = 'left';
+      write(fmtDate(iso), 30, body, 400, L, 200, muted);
+
+      // the distance: gradient-lit, with its own glow
       const km = loggedDistance(e.km);
-      let size = 260;
-      while (measure(x, '900 ' + size + 'px ' + display, km) > 790 && size > 100) size -= 4;
-      write(km, size, display, 900, 62, 480);
+      let size = 290;
+      while (measure(x, '900 ' + size + 'px ' + display, km) > 800 && size > 100) size -= 4;
+      const shade = x.createLinearGradient(0, 500 - size * 0.72, 0, 500);
+      shade.addColorStop(0, text); shade.addColorStop(1, rgba(text, .7));
+      x.save(); x.shadowColor = rgba(glow, hard ? .5 : .2); x.shadowBlur = 70;
+      x.font = '900 ' + size + 'px ' + display; x.fillStyle = shade; x.fillText(km, L - 10, 500);
+      x.restore();
+      x.font = '900 ' + size + 'px ' + display;
       const numberWidth = x.measureText(km).width;
-      write('km', 58, mono, 400, 80 + numberWidth, 480, muted);
-      write(e.estimatedKm ? 'Distance from plan' : 'Logged distance', 25, body, 400, 72, 535, muted);
-      x.font = '800 48px ' + display; x.fillStyle = text;
-      wrapText(x, day.run ? day.run.title : 'Unplanned run', 72, 620, 920, 57);
-      x.strokeStyle = token('--line'); x.lineWidth = 2; x.beginPath(); x.moveTo(72, 790); x.lineTo(1008, 790); x.stroke();
-      const values = [['TIME',recordTime(e.sec)],['PACE / KM',DB.paceOf(e.km,e.sec)],['AVG HR',e.hr || '—']];
-      values.forEach((v,i) => { write(v[0],22,mono,400,72+i*320,845,muted); write(v[1],42,mono,400,72+i*320,912); });
+      write('km', 58, mono, 400, L + 8 + numberWidth, 500, muted);
+      write(e.estimatedKm ? 'Distance from plan' : 'Logged distance', 25, body, 400, L, 556, muted);
+      x.font = '800 50px ' + display; x.fillStyle = text;
+      wrapText(x, day.run ? day.run.title : 'Unplanned run', L, 640, 900, 58);
+
+      x.strokeStyle = line; x.lineWidth = 2; x.beginPath(); x.moveTo(L, 790); x.lineTo(R, 790); x.stroke();
+      const values = [['TIME', recordTime(e.sec)], ['PACE / KM', DB.paceOf(e.km, e.sec)], ['AVG HR', e.hr || '—']];
+      values.forEach((v, i) => { write(v[0], 22, mono, 400, L + i * 320, 845, muted); write(v[1], 44, mono, 400, L + i * 320, 914); });
+
       const label = report.best ? 'Fastest logged ' + km + ' km' : report.longest ? 'Longest logged run' : report.milestone ? report.milestone + ' km milestone' : 'Your log, to this run';
       const detail = report.best ? recordTime(report.best.gainSec) + ' quicker than your previous best' : report.longest ? '+' + loggedDistance(Number(report.longest.gainKm.toPrecision(12))) + ' km beyond your previous longest' : loggedDistance(report.totalKm) + ' km across ' + report.runCount + ' saved runs';
-      write(label, 36, display, 800, 72, 1040);
-      write(detail, 27, body, 400, 72, 1092, muted);
-      x.setLineDash([8,8]); x.beginPath(); x.moveTo(72,1150); x.lineTo(1008,1150); x.stroke(); x.setLineDash([]);
-      write('THAT’S IN THE BANK.', 34, display, 900, 72, 1220);
-      write('Whole-run log · ' + iso + (report.estimatedCount ? ' · includes plan-distance estimates' : ''), 22, body, 400, 72, 1270, muted);
+      write(label, 38, display, 800, L, 1012);
+      write(detail, 27, body, 400, L, 1060, muted);
+
+      // the block as a progress bar, lit at the leading edge
+      if (day.blockId === 'marathon') {
+        const weeks = (PLAN.blocks[0] && PLAN.blocks[0].weeks) || 30, frac = Math.min(1, day.week / weeks);
+        write('WEEK ' + day.week + ' OF ' + weeks, 22, mono, 400, L, 1150, muted);
+        x.textAlign = 'right';
+        write(cd.days > 0 ? cd.days + (cd.days === 1 ? ' DAY' : ' DAYS') + ' TO THE GUN' : 'RACE DAY', 22, mono, 400, R, 1150, cd.days > 0 ? muted : red);
+        x.textAlign = 'left';
+        const bx = L, by = 1178, bw = R - L, end = bx + bw * frac;
+        x.fillStyle = line; x.beginPath(); x.roundRect(bx, by, bw, 6, 3); x.fill();
+        x.save(); x.shadowColor = rgba(redFill, .7); x.shadowBlur = 18;
+        x.fillStyle = red; x.beginPath(); x.roundRect(bx, by, Math.max(6, end - bx), 6, 3); x.fill();
+        x.beginPath(); x.arc(end, by + 3, 12, 0, Math.PI * 2); x.fill();
+        x.restore();
+      }
+
+      write('THAT’S IN THE BANK.', 36, display, 900, L, 1262);
+      x.textAlign = 'right';
+      write((String(PLAN.race.city).split(',')[0] + ' · ' + fmtShort(PLAN.race.date)).toUpperCase(), 22, mono, 400, R, 1258, faint);
+      x.textAlign = 'left';
+      write('Whole-run log · ' + iso + (report.estimatedCount ? ' · includes plan-distance estimates' : ''), 20, body, 400, L, 1308, faint);
+
+      // film grain over everything, as on the card
+      const grain = document.createElement('canvas'); grain.width = grain.height = 180;
+      const gx = grain.getContext('2d'), img = gx.createImageData(180, 180);
+      for (let i = 0; i < img.data.length; i += 4) {
+        img.data[i] = img.data[i + 1] = img.data[i + 2] = 255; img.data[i + 3] = Math.random() * 20;
+      }
+      gx.putImageData(img, 0, 0);
+      x.fillStyle = x.createPattern(grain, 'repeat'); x.fillRect(0, 0, W, H);
+
       canvas.toBlob(blob => {
         if (!blob) return;
         const file = new File([blob], 'week-os-run-' + iso + '.png', {type:'image/png'});
@@ -1406,6 +1483,54 @@
     ov.addEventListener('close', () => ov.remove(), {once:true});
     document.body.appendChild(ov);
     ov.showModal();
+  }
+
+  /* ---- "Previously": Monday opens with last week in one card ----
+     Planned against recorded, day by day, drawn as ghost bars (the plan)
+     with the recorded distance filled in, in the distance profile's
+     colours (red hard, white long, grey easy). Honest both ways: a full
+     week says so, a missed long run says so. Mondays only, marathon weeks
+     only, plus the Monday after race week. */
+  function buildPreviously(iso, day) {
+    if (day.dayIndex !== 0) return null;
+    const anchor = DB.addDays(iso, -7), d0 = DB.buildDay(anchor);
+    if (d0.blockId !== 'marathon') return null;
+    const fmt = (n) => String(Math.round(n * 10) / 10);
+    let planned = 0, recorded = 0, runs = 0, ran = 0, top = 1;
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const di = DB.addDays(anchor, i), dd = DB.buildDay(di);
+      const plan = dd.run ? dd.run.run.km : 0;
+      const got = DB.recordedKm(dd, getDone(di), getRunLogEntry(di));
+      planned += plan; recorded += got; top = Math.max(top, plan, got);
+      if (plan) { runs++; if (got > 0) ran++; }
+      const cls = dd.run ? DB.runClass(dd.run) : 'rest';
+      days.push({ plan, got, kind: cls === 'quality' || cls === 'race' ? 'hard' : cls === 'long' ? 'long' : 'easy', cls });
+    }
+    const last = days[6];
+    const lrName = last.cls === 'race' ? 'the race' : 'long run';
+    const lrLine = !last.plan ? '' : last.got >= last.plan * 0.9 ? lrName + ' banked'
+      : last.got > 0 ? lrName + ' ' + fmt(last.got) + ' of ' + last.plan + ' km' : lrName + ' not recorded';
+    const all = runs && ran === runs && recorded >= planned * 0.9;
+    // A dropped Saturday buffer is rule 10 working, not a miss (PLAN.shapeRule).
+    const exempt = ((PLAN.shapeRule && PLAN.shapeRule.shortExempt) || []).includes('sat');
+    const bars = days.map((d, i) =>
+      '<span class="pv-day ' + d.kind + (d.plan && !d.got && !(exempt && i === 5) ? ' miss' : '') + '"><span class="pv-track">' +
+      (d.plan ? '<i class="pv-plan" style="height:' + (d.plan / top * 100).toFixed(1) + '%"></i>' : '') +
+      (d.got ? '<i class="pv-got" style="height:' + (Math.min(d.got, top) / top * 100).toFixed(1) + '%"></i>' : '') +
+      '</span><b>' + DAY_SHORT[i].slice(0, 1) + '</b></span>').join('');
+    const card = el('<section class="previously' + (all ? ' full' : '') + '" aria-label="Last week">' +
+      '<span class="pv-num" aria-hidden="true">' + d0.week + '</span>' +
+      '<div class="pv-kicker">PREVIOUSLY · WEEK ' + d0.week + '</div>' +
+      '<div class="pv-km"><b>' + fmt(recorded) + '</b> of ' + fmt(planned) + ' km</div>' +
+      '<div class="pv-line">' + ran + ' of ' + runs + ' runs · ' +
+      (all ? '<em>every run banked</em>' : esc(lrLine)) + '</div>' +
+      '<div class="pv-bars" aria-hidden="true">' + bars + '</div>' +
+      '<button class="pv-open">Open week ' + d0.week + ' <span aria-hidden="true">↗</span></button></section>');
+    card.querySelector('.pv-open').addEventListener('click', () => {
+      state.view = 'week'; state.weekAnchor = anchor; window.scrollTo(0, 0); render();
+    });
+    return card;
   }
 
   /* ---- week-progress ring: banked vs planned run km this week ---- */
@@ -2816,11 +2941,17 @@
     const viewKey = state.view + '|' +
       (state.view === 'today' ? state.dateISO : state.view === 'week' ? state.weekAnchor : '');
     if (viewKey !== lastViewKey) {
+      /* Paging through days or weeks slides in the direction of travel, so
+         the gesture and the screen agree; any other arrival just fades. */
+      const [lastView, lastDate] = lastViewKey.split('|');
+      const [, date] = viewKey.split('|');
+      const dir = lastView === state.view && lastDate && date ? (date > lastDate ? 'slide-next' : 'slide-prev') : '';
       lastViewKey = viewKey;
       const v = document.getElementById('view');
-      v.classList.remove('anim');
+      v.classList.remove('anim', 'slide-next', 'slide-prev');
       void v.offsetWidth;                          // restart the animation
       v.classList.add('anim');
+      if (dir) v.classList.add(dir);
     }
   }
 
@@ -2887,6 +3018,8 @@
     }
     const left = document.querySelector('.nn-left');
     if (left && cur) left.textContent = fmtLeft(cur.endMin - n);
+    const soon = document.querySelector('.nn-in');
+    if (soon && nxt) soon.textContent = fmtIn(nxt.startMin - n);
     const clock = document.querySelector('.live-clock');
     if (clock) clock.textContent = DB.fmtHM(n);
     const line = document.querySelector('.tl-now');

@@ -317,6 +317,25 @@ async function cinema() {
   check(next.length === 1 && /PARKRUN/.test(await next[0].textContent()), 'exactly one key day lit: the next one');
   noErrors(t, 'cinema');
   await t.ctx.close();
+  // v4.70: NEXT counts down; Monday opens with last week; the poster renders
+  t = await open('2026-09-29', '16:50', SEED);
+  check((await text(t.page, '.nn-in')) === 'in 20 min', 'NEXT line counts down to the run');
+  await t.ctx.close();
+  t = await open('2026-09-21', '12:00', SEED);
+  const prev = await text(t.page, '.previously');
+  check(/PREVIOUSLY · WEEK 12/.test(prev) && /3 of 5 runs · long run banked/.test(prev), 'Monday shows last week: ' + prev.slice(0, 80));
+  await t.page.click('.pv-open'); await t.page.waitForTimeout(150);
+  check(/Week 12/.test(await text(t.page, '.wk-head h1')), 'Previously opens that week');
+  await t.ctx.close();
+  t = await open('2026-09-22', '12:00', SEED);
+  check(!(await t.page.$('.previously')), 'Previously is a Monday card only');
+  await t.ctx.close();
+  t = await open('2026-09-20', '20:00', SEED);
+  await t.page.click('.recap-share');
+  await t.page.waitForSelector('.card-ov[open] img', { timeout: 5000 });
+  check(((await t.page.getAttribute('.card-ov img', 'src')) || '').length > 50000, 'run poster renders on the device');
+  noErrors(t, 'poster');
+  await t.ctx.close();
 }
 
 async function sweep() {

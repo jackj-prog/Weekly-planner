@@ -868,3 +868,27 @@ after 1.85 s. iOS resuming the app from the background is not a load, so
 it plays on cold launches and reloads (including the update toast).
 Any `titlecard-at` key left on a device is inert. The build test now
 fails if the card regains a storage gate.
+
+## Run poster, "Previously", countdown to next — v4.70, 29 September (Claude)
+
+The user asked to keep "making the app sick". Same identity and rules as
+v4.69 (tokens only, red means hard, one-shot motion behind
+reduced-motion).
+- **Run poster:** "Share run receipt" now renders a 1080×1350 poster on
+  the device: stage light by class of run, film grain, the days to the gun
+  on that date as a giant outlined numeral, the gradient-lit distance, the
+  same stats and achievement lines as before, and a red progress bar
+  through the 30 weeks. Same share path (share sheet, else the overlay).
+- **Previously (Mondays):** last week as a card: recorded of planned km,
+  runs done of planned, the long run's status or "every run banked", ghost
+  bars for the plan with the recorded distance filled in (profile colours),
+  and "Open week N". A skipped Saturday buffer is not drawn as a miss
+  (`shapeRule.shortExempt`). Shows on the Monday after race week too.
+- **NEXT counts down:** "in 20 min" beside the next block, updated by the
+  minute clock.
+- **Directional paging:** moving between days or weeks slides the view in
+  the direction of travel; tab changes and first arrival do not slide.
+- **Rest days:** a giant outlined REST behind the rest card.
+tools/interactions.js checks the countdown, the Monday card and its link,
+that it is Monday-only, and that the poster renders; 60 browser checks
+and 16,168 plan checks pass, with no overflow at 390 px.
