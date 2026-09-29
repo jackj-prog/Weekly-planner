@@ -475,6 +475,21 @@ const PLAN = {
       'one most likely to injure you. A short week stays short.',
   },
 
+  /* A long run logged well past its planned distance, or past rule 9's
+     time cap. Wk 10 (Sep 2026) planned 18 km and logged 27.3 (a wrong turn
+     and trail walking), 71% of the week; the next two long runs were 17% and
+     6% over. The week-shape panel reports that once the week is over; this
+     says it on the run itself, the day it happens. Advisory only. */
+  longRunOver: {
+    overPct: 1.10,       // more than 10% over the planned distance
+    capMin: 200,         // rule 9: ~3h20
+    note:
+      'The long run is already the week\u2019s biggest single load, and the ' +
+      'session most likely to injure you. Extra distance there is the ' +
+      'costliest kind. Next Sunday runs the plan\u2019s number, not this one.',
+    capNote: 'Past rule 9\u2019s 3h20 cap: beyond that the recovery cost climbs faster than the aerobic return.',
+  },
+
   /* Moving a session to another day this week (in-app). A gym session that
      carries leg work and lands on Thursday or later keeps its upper-body and
      core work but drops the legs: §6 keeps leg work away from the long run

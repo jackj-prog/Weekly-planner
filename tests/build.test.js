@@ -1462,6 +1462,7 @@ section('move rules and missed runs');
  }
  ok(!re.test('Hanging leg raises'), 'hanging leg raises are core, not leg work');
  ok(typeof PLAN.missedRun.note === 'string' && /not owed/.test(PLAN.missedRun.note), 'missed-run note present');
+ ok(PLAN.longRunOver.overPct > 1 && PLAN.longRunOver.capMin === 200, 'long-run overshoot flags >10% over plan and the 3h20 cap (rule 9)');
 }
 /* ---- result ---- */
 // Chart geometry is part of correctness, not just appearance.

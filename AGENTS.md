@@ -664,3 +664,13 @@ Friday; it applies §6's "leg work away from the long run" and rule 10, it is
 not a new training prescription. Tests cover the leg pattern (leg press, leg
 curl, calf raises, hinge; never pull, core or hanging leg raises). Captures of
 the picker, the moved-in Thursday card and the Monday source were inspected.
+
+## Long-run overshoot on the recap — v4.59, 29 September (Claude)
+
+A long run logged more than 10% over its planned distance, or past rule 9's
+3h20 cap, says so on the saved-run recap the same day: distance against
+plan, percentage over, the share of the week so far against the plan's
+long-run share, and `PLAN.longRunOver.note`. The existing week-shape panel
+still reports the composition once the week ends; this moves the message to
+the moment it can change next Sunday. Plan-estimated distances never trigger
+it. Checked against the real Wk 10 case (27.3 km vs 18 planned).

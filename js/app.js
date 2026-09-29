@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.58.0';
+  const APP_VERSION = '4.59.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -612,6 +612,32 @@
       (Number.isFinite(split) ? '<p>Equal-distance halves: second half ' + (Math.abs(split)<1 ? 'matched the first.' : recordTime(Math.abs(split)) + (split<0 ? ' faster (negative split).' : ' slower.')) + '</p>' : '<p>Half-run comparison unavailable for this track.</p>') +
       '<p>Track time includes recorded stops. GPS, terrain and missing samples affect comparisons. Only summaries are saved; the route stays out of storage.</p></details>';
   }
+  /* Said on the run itself, the day it happens: a long run well past its
+     planned distance or rule 9's time cap, and the share of the week it has
+     taken so far (PLAN.longRunOver). */
+  function longRunOverHTML(day, iso, r) {
+    const g = PLAN.longRunOver;
+    if (!g || !day.run || day.blockId !== 'marathon' || !day.row || r.estimatedKm) return '';
+    if (DB.runClass(day.run) !== 'long') return '';
+    const plan = day.run.run.km, over = r.km > plan * g.overPct, capped = r.sec > g.capMin * 60;
+    if (!over && !capped) return '';
+    const monday = DB.addDays(iso, -day.dayIndex);
+    let week = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = DB.addDays(monday, i);
+      if (d > iso) break;
+      week += DB.recordedKm(DB.buildDay(d), getDone(d), getRunLogEntry(d));
+    }
+    const split = DB.distancesForWeek(day.row);
+    const planShare = Math.round((split.long / day.row.km) * 100);
+    const share = week > 0 ? Math.round((r.km / week) * 100) : null;
+    const pct = Math.round((r.km / plan - 1) * 100);
+    return '<div class="recap-flag" role="note"><p><b>' + loggedDistance(r.km) + ' km against ' + plan + ' planned' +
+      (over ? ' · +' + pct + '%' : '') + '.</b> ' +
+      (share != null ? 'It carried ' + share + '% of the week so far; the plan gives the long run ' + planShare + '%. ' : '') +
+      '</p><p>' + esc(g.note) + (capped ? ' ' + esc(g.capNote) : '') + '</p></div>';
+  }
+
   function buildRunRecap(day, iso, report) {
     const r = report.current;
     const hrLabel = value => Number.isFinite(value) && value > 0 ? String(value) : '—';
@@ -645,6 +671,7 @@
       '<p class="recap-subtitle">' + esc(day.run ? day.run.title : 'Unplanned run') +
       (r.estimatedKm ? ' · distance from plan' : ' · logged distance') + '</p>' +
       '<div class="recap-metrics"><div><span>TIME</span><b>' + recordTime(r.sec) + '</b></div><div><span>PACE / KM</span><b>' + pace + '</b></div><div><span>AVG HR</span><b>' + hrLabel(r.hr) + '</b></div></div>' +
+      longRunOverHTML(day, iso, r) +
       awards.map(a => '<article class="recap-award"><span class="recap-seal" aria-hidden="true">✦</span><div><h3>' + esc(a.label) + '</h3><strong>' + esc(a.value) + '</strong><p>' + esc(a.detail) + '</p></div></article>').join('') +
       (report.runCount === 1 ? '<p class="recap-baseline">Your history starts here. Future runs build the comparison.</p>' : '') +
       '<div class="recap-total"><span>Your log to this run</span><p><b>' + fmt(report.totalKm) + '</b> km <span>across ' + report.runCount + (report.runCount === 1 ? ' run' : ' runs') + '</span></p>' +
