@@ -1450,6 +1450,19 @@ for (const wk of [23, 24, 28]) {
  ok(/altered running mechanics: skip the lower-body work/.test(gym.detail), 'wk ' + wk + ' retains the pain rule during maintenance');
  ok(gym.plan.length === 5 && gym.plan[0].sets === '1 × 5 @ 3 RIR', 'wk ' + wk + ' retains the authored reduced template');
 }
+section('move rules and missed runs');
+{
+ const r = PLAN.moveRules, re = new RegExp(r.legPattern, 'i');
+ ok(r.legDropFromDay === 3, 'late-week leg drop starts on Thursday');
+ for (const wk of [12, 18, 23]) {
+  const gym = dayOfWeek(wk, 0).blocks.find(b => b.cat === 'gym');
+  const legs = gym.plan.filter(p => re.test(p.ex)).map(p => p.ex);
+  ok(legs.length >= 2 && legs.some(x => /leg press/i.test(x)), 'wk ' + wk + ' Monday leg work is recognised: ' + legs.join(', '));
+  ok(!gym.plan.some(p => re.test(p.ex) && /pull|row|curl(?!.*leg)|ab wheel|pallof|fly/i.test(p.ex) && !/leg curl/i.test(p.ex)), 'wk ' + wk + ' upper and core work is never dropped');
+ }
+ ok(!re.test('Hanging leg raises'), 'hanging leg raises are core, not leg work');
+ ok(typeof PLAN.missedRun.note === 'string' && /not owed/.test(PLAN.missedRun.note), 'missed-run note present');
+}
 /* ---- result ---- */
 // Chart geometry is part of correctness, not just appearance.
 require('./ef-chart.test.js');

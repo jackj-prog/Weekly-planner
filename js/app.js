@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.57.0';
+  const APP_VERSION = '4.58.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -36,6 +36,7 @@
     runLogEdit: null,          // ISO date with the run-log form open
     runLogDraft: null,         // { paceSec, hr, bounds } while the steppers are open
     hrEdit: false, hrDraft: null,  // resting/max HR steppers on Reference
+    movePick: null,            // block id with the move-to-day picker open
   };
   let nowKey = '';             // today's current|next block ids — minute tick
                                // re-renders only when this changes
@@ -91,21 +92,55 @@
     if (on) o.skip[id] = true; else delete o.skip[id];
     writeJSON(ovrKey(iso), o);
   }
-  function moveToTomorrow(iso, block) {
+  /* A move records its target date in ovr-ISO.moved[id]. Moves made before
+     v4.58 stored `true` and always meant tomorrow, so that still reads as
+     tomorrow: no migration, no change to the storage keys. */
+  function movedTarget(iso, o, id) {
+    const t = o.moved[id];
+    return typeof t === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(t) ? t : DB.addDays(iso, 1);
+  }
+  function moveBlock(iso, block, target) {
     const o = getOvr(iso);
-    o.moved[block.id] = true;
-    writeJSON(ovrKey(iso), o);
-    const tmr = DB.addDays(iso, 1);
-    const list = getMoveIn(tmr);
+    if (o.moved[block.id]) undoMove(iso, block.id);
+    const fresh = getOvr(iso);
+    fresh.moved[block.id] = target;
+    writeJSON(ovrKey(iso), fresh);
+    const list = getMoveIn(target).filter((m) => !(m.srcId === block.id && m.fromIso === iso));
     list.push({ id: 'mv-' + iso + '-' + block.id, srcId: block.id, fromIso: iso, title: block.title, detail: block.detail, plan: block.plan || null, cat: block.cat });
-    writeJSON(moveKey(tmr), list);
+    writeJSON(moveKey(target), list);
   }
   function undoMove(iso, id) {
     const o = getOvr(iso);
+    const target = movedTarget(iso, o, id);
     delete o.moved[id];
     writeJSON(ovrKey(iso), o);
-    const tmr = DB.addDays(iso, 1);
-    writeJSON(moveKey(tmr), getMoveIn(tmr).filter((m) => !(m.srcId === id && m.fromIso === iso)));
+    writeJSON(moveKey(target), getMoveIn(target).filter((m) => !(m.srcId === id && m.fromIso === iso)));
+  }
+  /* Leg work that lands too close to the long run is dropped, not moved
+     with the session (PLAN.moveRules). Only inside the marathon block, where
+     there is a Sunday long run to protect. */
+  function legDropFor(block, targetIso) {
+    const r = PLAN.moveRules;
+    if (!r || block.cat !== 'gym' || !block.plan) return false;
+    const day = DB.buildDay(targetIso);
+    if (day.blockId !== 'marathon' || day.dayIndex < r.legDropFromDay) return false;
+    const re = new RegExp(r.legPattern, 'i');
+    return block.plan.some((p) => re.test(p.ex));
+  }
+  /* The other six days of this block's Monday–Sunday week, each with what
+     is already there of the same kind, so a move shows its clash first. */
+  function moveTargets(iso, block) {
+    const monday = mondayOf(iso), out = [];
+    for (let i = 0; i < 7; i++) {
+      const d = DB.addDays(monday, i);
+      if (d === iso) continue;
+      const day = DB.buildDay(d), ovr = getOvr(d);
+      const same = day.blocks.filter((x) => x.doable && x.cat === block.cat && !ovr.skip[x.id] && !ovr.moved[x.id]).map((x) => x.title)
+        .concat(getMoveIn(d).filter((m) => m.cat === block.cat && m.srcId !== block.id).map((m) => m.title));
+      out.push({ iso: d, label: DAY_SHORT[i].charAt(0) + DAY_SHORT[i].slice(1).toLowerCase() + ' ' + Number(d.slice(8)),
+        clash: same.length ? 'has ' + same.join(' + ') : '', legDrop: legDropFor(block, d) });
+    }
+    return out;
   }
   function returnMoved(iso, movedId) {
     const item = getMoveIn(iso).find((m) => m.id === movedId);
@@ -1062,7 +1097,7 @@
     const hero = el(
       '<section class="hero' + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (isSkipped ? ' skipped' : '') + (just === r.id ? ' just' : '') + '">' +
       '<div class="h-top"><div class="h-tag">' + (isRace ? 'RACE DAY' : 'TODAY’S RUN') +
-      '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : isSkipped ? 'Skipped' : isMovedOut ? 'Moved to another day' :
+      '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : isSkipped ? 'Skipped' : isMovedOut ? 'Moved to ' + movedLabel(iso, r.id) :
         unresolved ? (iso < today ? 'Not recorded' : 'Window passed · not recorded') : 'Scheduled · ' + r.start) + '</span></div>' +
       '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' +
       (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button></div>' +
@@ -1222,6 +1257,8 @@
     const cat = CAT_VAR[b.cat] || CAT_VAR.routine;
     if (opts.movedOut) return attachUndoMove(iso, b);
     const expanded = state.expanded === b.id;
+    const legDrop = !!(opts.moved && legDropFor(b, iso));
+    const legRe = legDrop ? new RegExp(PLAN.moveRules.legPattern, 'i') : null;
     const card = el(
       '<div class="tl-card' + (isDone ? ' done' : '') + (opts.skipped ? ' skipped' : '') + (opts.current ? ' current' : '') + (opts.just ? ' just' : '') + '" style="--cat:' + cat + '">' +
       '<div class="c-main">' +
@@ -1229,6 +1266,7 @@
       (opts.current ? ' <span class="nowflag">· NOW</span>' : '') + '</div>' +
       '<div class="c-title">' + esc(b.title) + '</div>' +
       '<div class="c-detail">' + detailHTML(b.detail, iso + '|' + b.id, false) + '</div>' +
+      (legDrop ? '<div class="mv-note">' + esc(PLAN.moveRules.legNote) + '</div>' : '') +
       (b.table ? paceTableHTML(b.table) : '') +
       (b.plan ? '<details class="session-plan" data-disclosure="' + esc(iso + '|' + b.id + '|plan') + '"' + (openDetails.has(iso + '|' + b.id + '|plan') ? ' open' : '') + '><summary>' + b.plan.length + ' exercises <span>View session</span></summary><div class="c-plan">' + b.plan.map((p) => {
         let w = '';
@@ -1243,6 +1281,9 @@
               '" title="' + (last ? 'last logged ' + last.d : 'log weight') + '">' +
               (last ? fmtKg(last.kg) : '· kg') + '</button>';
         }
+        if (legRe && legRe.test(p.ex)) {
+          return '<div class="xr drop"><span class="xn">' + esc(p.ex) + '</span><span class="xs">drop this week</span></div>';
+        }
         return '<div class="xr"><span class="xn">' + esc(p.ex) + '</span>' +
           '<span class="xs">' + esc(p.sets) + '</span>' + w + '</div>';
       }).join('') + '</div></details>' : '') +
@@ -1253,12 +1294,16 @@
       (expanded ? '<div class="c-actions">' +
         (opts.skipped ? '<button data-act="unskip">Unskip</button>' : '<button data-act="skip">Skip</button>') +
         (opts.moved ? '<button data-act="return">Return to ' + esc(fmtShort(opts.moved.fromIso)) + '</button>'
-                    : '<button data-act="move">Move to tomorrow</button>') +
+                    : '<button data-act="movepick" aria-expanded="' + (state.movePick === b.id) + '">Move to…</button>') +
         (b.cat === 'run' && !opts.moved
           ? '<button data-act="niggle">Niggle — rest 2 days</button>' +
             '<button data-act="illweek">Ill — rest to Sunday</button>'
           : '') +
-        '</div>' : '') +
+        '</div>' +
+        (state.movePick === b.id && !opts.moved ? '<div class="c-move" role="group" aria-label="Move ' + esc(b.title) + ' to">' +
+          moveTargets(iso, b).map((t) => '<button data-move-to="' + t.iso + '"><b>' + esc(t.label) + '</b>' +
+            (t.clash ? '<small>' + esc(t.clash) + '</small>' : '<small>free</small>') +
+            (t.legDrop ? '<small class="mv-warn">upper + core only</small>' : '') + '</button>').join('') + '</div>' : '') : '') +
       '</div>' +
       '<div class="c-side">' +
       '<button class="tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' + (isDone ? 'Mark not done: ' : 'Mark done: ') + esc(b.title) + '">✓ <span>' + (isDone ? 'Done' : 'Mark done') + '</span></button>' +
@@ -1274,17 +1319,23 @@
     });
     card.querySelector('.more-btn').addEventListener('click', () => {
       state.expanded = expanded ? null : b.id;
+      state.movePick = null;
       render();
     });
+    card.querySelectorAll('[data-move-to]').forEach((btn) => btn.addEventListener('click', () => {
+      moveBlock(iso, b, btn.getAttribute('data-move-to'));
+      state.expanded = null; state.movePick = null;
+      render();
+    }));
     card.querySelectorAll('[data-act]').forEach((btn) => btn.addEventListener('click', () => {
       const act = btn.getAttribute('data-act');
       if (act === 'skip') setSkip(iso, b.id, true);
       if (act === 'unskip') setSkip(iso, b.id, false);
-      if (act === 'move') moveToTomorrow(iso, b);
+      if (act === 'movepick') { state.movePick = state.movePick === b.id ? null : b.id; render(); return; }
       if (act === 'return') returnMoved(iso, b.id);
       if (act === 'niggle') skipRunDays(iso, 2);
       if (act === 'illweek') skipRunDays(iso, 7 - DB.dayIndex(iso));
-      state.expanded = null;
+      state.expanded = null; state.movePick = null;
       render();
     }));
     card.querySelectorAll('.xw').forEach((btn) => btn.addEventListener('click', () => {
@@ -1310,13 +1361,18 @@
     return card;
   }
 
+  function movedLabel(iso, id) {
+    const t = movedTarget(iso, getOvr(iso), id);
+    const di = DB.dayIndex(t);
+    return t === DB.addDays(iso, 1) ? 'tomorrow' : DAY_SHORT[di].charAt(0) + DAY_SHORT[di].slice(1).toLowerCase() + ' ' + fmtShort(t);
+  }
   function attachUndoMove(iso, b) {
     const cat = CAT_VAR[b.cat] || CAT_VAR.routine;
     const card = el(
       '<div class="tl-card skipped" style="--cat:' + cat + '">' +
       '<div class="c-main"><div class="c-time">' + b.start + '–' + b.end + '</div>' +
       '<div class="c-title">' + esc(b.title) + '</div>' +
-      '<div class="moved-tag">→ moved to tomorrow</div></div>' +
+      '<div class="moved-tag">→ moved to ' + esc(movedLabel(iso, b.id)) + '</div></div>' +
       '<div class="c-side"><button class="more-btn" aria-label="Undo move">↩</button></div></div>'
     );
     card.querySelector('.more-btn').addEventListener('click', () => { undoMove(iso, b.id); render(); });

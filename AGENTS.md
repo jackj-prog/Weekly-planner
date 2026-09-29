@@ -648,3 +648,19 @@ Prompted by a real Sunday where the long run was abandoned and the card still
 read as scheduled at 18:00. No storage keys changed (`ovr-ISO.skip`).
 Suite passes; captures at 390px of the passed-window and skipped states were
 inspected. Chromium mobile viewport, not a physical iPhone.
+
+## Move to any day this week — v4.58, 29 September (Claude)
+
+"Move to tomorrow" becomes "Move to…": the other six days of the same
+Monday–Sunday week, each showing what of the same kind is already there
+("has Gym — Push", "free"). `ovr-ISO.moved[id]` now stores the target ISO;
+the old `true` still reads as tomorrow, so no migration or new key. Undo and
+Return resolve the stored target; the source card says "→ moved to Thu 1 Oct".
+A gym session carrying leg work that lands on Thursday or later (marathon
+block) keeps its upper-body and core work and marks the leg exercises "drop
+this week" with `PLAN.moveRules.legNote`. That rule was agreed with the owner
+in chat after a real week where Monday's session slid to Wednesday and push to
+Friday; it applies §6's "leg work away from the long run" and rule 10, it is
+not a new training prescription. Tests cover the leg pattern (leg press, leg
+curl, calf raises, hinge; never pull, core or hanging leg raises). Captures of
+the picker, the moved-in Thursday card and the Monday source were inspected.

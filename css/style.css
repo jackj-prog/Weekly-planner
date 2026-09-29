@@ -1197,6 +1197,15 @@ body { font-size: var(--type-body); line-height: var(--leading-body); }
    one-handed between sets. */
 .tab { min-height: 44px; display: flex; align-items: center; justify-content: center; }
 .tl-card .c-actions button { min-height: 44px; padding-inline: 12px; }
+/* Move to any day this week: each target says what is already there. */
+.c-move { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; margin-top: 8px; }
+.c-move button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 52px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); text-align: left; cursor: pointer; font-family: var(--body); }
+.c-move button b { font-family: var(--mono); font-size: 12px; letter-spacing: .04em; }
+.c-move button small { font-size: 11px; line-height: 1.3; color: var(--t2); }
+.c-move button small.mv-warn { color: var(--accent); font-weight: 600; }
+.mv-note { margin-top: 8px; padding: 8px 10px; border-left: 3px solid var(--accent); border-radius: 6px; background: var(--surface); font-size: var(--type-note); line-height: 1.45; color: var(--text); }
+.c-plan .xr.drop .xn { text-decoration: line-through; color: var(--t2); }
+.c-plan .xr.drop .xs { color: var(--accent); }
 .xw, .xw-in { min-height: 44px; }
 .xw { display: inline-flex; align-items: center; justify-content: center; }
 .notday, .moved-tag, .wkp-label, .wkring .rg-t, .wk-sub, .skyline .sky-cap,

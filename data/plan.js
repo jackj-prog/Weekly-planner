@@ -475,6 +475,21 @@ const PLAN = {
       'one most likely to injure you. A short week stays short.',
   },
 
+  /* Moving a session to another day this week (in-app). A gym session that
+     carries leg work and lands on Thursday or later keeps its upper-body and
+     core work but drops the legs: §6 keeps leg work away from the long run
+     (Saturday belongs to Sunday, rule 10), and Friday is basketball. The
+     regular Monday placement is two days clear of the tempo and six of
+     Sunday; a late move keeps neither margin. */
+  moveRules: {
+    legDropFromDay: 3,   // Thursday (Mon = 0)
+    legPattern: 'leg press|leg curl|calf raise|deadlift|\\brdl\\b|step-up',
+    legNote:
+      'Moved late in the week: do the upper-body and core work and drop ' +
+      'the leg exercises. Leg work this close to the long run costs Sunday ' +
+      'more than it gives.',
+  },
+
   /* Shown on the run card once a run is marked as not having happened. It
      restates the long-run guard and return rule at the moment of the
      decision; it adds no new rule. */
