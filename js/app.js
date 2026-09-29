@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.60.0';
+  const APP_VERSION = '4.61.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -560,7 +560,7 @@
     return '<section class="records"><h3>Your logged bests</h3>' + progress.bests.slice(0,3).map(r =>
       '<article class="record"><div><span>Fastest logged ' + r.km + ' km</span><small>' + esc(r.iso) +
       ' · ' + r.compared + ' runs compared</small></div><b>' + recordTime(r.sec) + '</b></article>').join('') +
-      '<details class="record-method"><summary>What counts as a best?</summary><p>Whole runs at the exact same explicitly saved distance. ' +
+      '<details class="record-method"><summary>What counts as a best?</summary><p>Races and time trials only, as whole runs at the exact same explicitly saved distance. Easy, long and quality runs are never ranked by time: an easy run is not a performance (rule 1). ' +
       'Logs using a planned-distance fallback do not establish records. At least two logs are needed. Ties keep the earlier record. ' +
       'These are bests in this log; no splits or Strava records are inferred.</p></details></section>';
   }
@@ -2122,6 +2122,21 @@
        for reasons that have nothing to do with fitness, so one pooled
        line would read as noise — or worse, as a collapse on any week
        that happened to end with a shakeout. One trend per class. */
+    /* EF translated into the unit a runner thinks in: pace at the heart rate
+       these runs are usually done at (the median of the window), at the
+       start and end of the fitted line. Same data, same fit, no new claim. */
+    function paceAtHrHTML(chart) {
+      const pts = chart.points;
+      if (pts.length < 4) return '';
+      const hrs = pts.map(p => p.hr).filter(h => Number.isFinite(h) && h > 0).sort((a, b) => a - b);
+      if (hrs.length < 4) return '';
+      const hr = Math.round(hrs[Math.floor(hrs.length / 2)]);
+      const mx = pts.reduce((a, p) => a + p.t, 0) / pts.length, my = pts.reduce((a, p) => a + p.pct, 0) / pts.length;
+      const efAt = t => chart.reference.ef * (1 + (my + chart.change * (t - mx)) / 100);
+      const paceAt = ef => DB.fmtPaceSec(Math.round(60000 / (ef * hr)));
+      return '<p class="ef-pace">At your usual <b>' + hr + ' bpm</b>: about <b>' + paceAt(efAt(0)) + '</b> → <b>' + paceAt(efAt(1)) +
+        '/km</b> across these runs, read off the fitted line.</p>';
+    }
     function sparkFor(cls, label) {
       const eligible = entries.filter(e => e.cls === cls && !e.tooHot && e.iso <= todayISO());
       const chart = window.EFChart.chart(eligible);
@@ -2148,6 +2163,7 @@
         date(pts[pts.length-1].iso) + '</text></svg>' +
         '<div class="ef-reading"><b>' + signed(chart.change) + '</b><span>Fitted change · last ' + pts.length +
         ' runs' + (pts.length < 4 ? '<br>Too few runs to call a trend' : '') + '</span></div>' +
+        paceAtHrHTML(chart) +
         '<p class="ef-explain">Reference: EF ' + chart.reference.ef.toFixed(3) + ' on ' + esc(chart.reference.iso) +
         '. Higher means more speed per heartbeat.</p>' +
         '<details class="ef-data"><summary>Values &amp; comparison</summary><p>The line joins recorded runs, spaced by date. ' +

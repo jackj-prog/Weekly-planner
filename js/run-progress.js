@@ -1,9 +1,13 @@
-/* Facts from saved whole-run logs; never infer race or segment performances. */
+/* Facts from saved whole-run logs; never infer race or segment performances.
+   Fastest-at-distance bests count races and time trials only. An easy run is
+   not a performance (rule 1), and ranking easy runs by time rewards running
+   them faster. Entries without a class (older callers) still count. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.RunProgress = factory();
 }(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
+  const recordable = e => e.estimatedKm !== true && (e.cls == null || e.cls === 'race');
   function summarize(history, today) {
     const byDate = new Map();
     history.forEach(e => {
@@ -18,7 +22,7 @@
     }));
     const groups = new Map();
     entries.forEach(e => {
-      if (e.estimatedKm === true) return;
+      if (!recordable(e)) return;
       // Exact whole-run distance. No extrapolation or rounding a
       // near-distance run into a standard-distance record.
       const key = String(e.km);
@@ -79,9 +83,9 @@
     const eligible = earlier.filter(e => e.estimatedKm !== true);
     let best = null, longest = null;
     if (current.estimatedKm !== true && eligible.length) {
-      const sameDistance = eligible.filter(e => e.km === current.km);
+      const sameDistance = eligible.filter(e => e.km === current.km && recordable(e));
       const fastest = sameDistance.reduce((a, b) => !a || b.sec < a.sec ? b : a, null);
-      if (fastest && current.sec < fastest.sec) {
+      if (recordable(current) && fastest && current.sec < fastest.sec) {
         best = {run: current, previous: fastest, count: sameDistance.length + 1, gainSec: fastest.sec - current.sec};
       }
       const farthest = eligible.reduce((a, b) => b.km > a.km ? b : a);

@@ -19,9 +19,13 @@ assert.deepEqual(summarize([], '2026-09-10').bests,[]);
 console.log('Run progress: exact-distance bests, ties, single logs, totals, weeks, future/invalid logs and duplicates passed');
 
 const {debrief}=require('../js/run-progress.js');
-const first={iso:'2026-09-01',km:10,sec:3900,cls:'easy',hr:145};
-const second={iso:'2026-09-08',km:10,sec:3750,cls:'easy',hr:143};
-const third={iso:'2026-09-15',km:10,sec:3600,cls:'easy',hr:141};
+const first={iso:'2026-09-01',km:10,sec:3900,cls:'race',hr:145};
+const second={iso:'2026-09-08',km:10,sec:3750,cls:'race',hr:143};
+const third={iso:'2026-09-15',km:10,sec:3600,cls:'race',hr:141};
+// Easy runs are never ranked by time (rule 1): no best, even when quicker.
+assert.equal(debrief([{...first,cls:'easy'},{...second,cls:'easy'},{...third,cls:'easy'}],third.iso,'2026-09-30').best,null);
+assert.equal(summarize([{...first,cls:'easy'},{...third,cls:'easy'}],'2026-09-30').bests.length,0);
+assert.equal(summarize([first,third],'2026-09-30').bests.length,1);
 let report=debrief([third,first,second,{...third,iso:'2026-09-20',sec:3500}],third.iso,'2026-09-30');
 assert.equal(report.best.previous.iso,second.iso);
 assert.equal(report.best.gainSec,150);

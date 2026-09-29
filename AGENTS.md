@@ -685,3 +685,14 @@ resting-HR range in a plan.js comment, one run's average in a plan.js comment
 and three places in docs/AUDIT-2026-09.md). Meaning is kept through %HRR or
 "an odd value". Earlier commits still contain them; rewriting public history
 was not done.
+
+## Bests are for races; efficiency as pace — v4.61, 29 September (Claude)
+
+"Fastest logged X km" (Reference bests and the recap award) now counts runs
+classed `race` only. On real logs it had crowned a 31:40 recovery 5 km as a
+best, which rewards running easy days faster against rule 1. Entries without a
+class still count, so older callers and tests behave as before. `runClass`
+now classes the Wk 24 tune-up half ("raced honest") as `race`, not `long`, so
+it cannot inflate the long-run EF trend or pick up long-run guards. Each EF
+trend card adds "At your usual N bpm: about A → B/km", read off the existing
+fitted line at the window's median HR: the same data expressed as pace.

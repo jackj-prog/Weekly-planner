@@ -1208,6 +1208,8 @@ body { font-size: var(--type-body); line-height: var(--leading-body); }
 .c-move button small { font-size: 11px; line-height: 1.3; color: var(--t2); }
 .c-move button small.mv-warn { color: var(--accent); font-weight: 600; }
 .mv-note { margin-top: 8px; padding: 8px 10px; border-left: 3px solid var(--accent); border-radius: 6px; background: var(--surface); font-size: var(--type-note); line-height: 1.45; color: var(--text); }
+.ef-pace { margin: 0 6px 8px; font-size: var(--type-note); line-height: 1.5; color: var(--t2); }
+.ef-pace b { color: var(--text); font-family: var(--mono); font-weight: 700; }
 .c-plan .xr.drop .xn { text-decoration: line-through; color: var(--t2); }
 .c-plan .xr.drop .xs { color: var(--accent); }
 .xw, .xw-in { min-height: 44px; }

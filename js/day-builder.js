@@ -204,7 +204,9 @@
      high on EF by design and are excluded from it. */
   function runClass(runBlock) {
     const t = runBlock.title || '';
-    if (/TIME TRIAL|PARKRUN|MARATHON|all-out/i.test(t)) return 'race';
+    // The tune-up half is raced (§9, rule 7), so it is a race effort, not a
+    // long run: pooled with long runs its EF would read as a fitness jump.
+    if (/TIME TRIAL|PARKRUN|MARATHON|all-out|TUNE-UP|raced/i.test(t)) return 'race';
     if (/tempo|threshold|×|rehearsal/i.test(t)) return 'quality';
     if (runBlock.run.slot === 'long' || runBlock.run.km >= 14) return 'long';
     /* Buffer and shakeout runs are their own effort class, not short easy

@@ -658,6 +658,7 @@ section('run classification + log estimates');
   ok(!/HEART RATE/.test(mpLong.detail),
     'MP is NOT prescribed by HR — cardiac drift makes that wrong over marathon duration');
   ok(DB.runClass(dayOfWeek(8, 4).run) === 'race', 'the TT classifies as race');
+  ok(DB.runClass(dayOfWeek(24, 6).run) === 'race', 'the tune-up half classifies as race, not long');
   ok(DB.runClass(dayOfWeek(8, 1).run) === 'quality', 'the 400s rehearsal classifies as quality');
   ok(DB.runClass(dayOfWeek(7, 2).run) === 'quality', 'wk 7 Wed tempo classifies as quality');
   ok(DB.runClass(dayOfWeek(7, 6).run) === 'long', 'wk 7 Sunday classifies as long');
