@@ -827,3 +827,33 @@ planned share was reported that way over a short Saturday. Now:
 Checked against real weeks locally (data not committed) and by a new
 `weekShape` scenario in tools/interactions.js with invented logs; 46
 browser checks and 16,159 plan checks pass.
+
+## Cinema pass — v4.69, 29 September (Claude)
+
+The user asked for "cool grandiose visual splendour". Done inside the §3
+identity (near-black, grey, one red): light, scale and one-shot motion, no
+new hue. All colour comes from new :root tokens (`--glow-red`,
+`--glow-red-soft`, `--glow-white`, `--glow-white-soft`, `--glow-white-hot`,
+`--shade`, `--hero-base`, `--grain`), and red light keeps its meaning.
+- **Today billboard:** days to the gun as a giant outlined Top-10 numeral
+  behind the date ("42.2" on race morning, gone after), with a soft stage
+  light: red on quality/race days, white on long-run days, faint otherwise.
+- **Run card:** stage light by run class (`.hero.cls-*`), film grain, a
+  gradient distance numeral that counts up once per date per app open,
+  and sunrise rays on the race card. Secondary text on the red race card
+  is now white (the v4.68 grey was under AA there).
+- **Run banked:** a single light sweep and a ring off the tick.
+- **Now/Next:** the progress bar gets a lit leading edge.
+- **Week:** giant outlined week number (red-tinted on key weeks);
+  distance-profile bars glow and rise left to right on arrival.
+- **The days that count:** Top-10 numerals; only the next key day is lit red.
+- **Title card:** the installed app's first launch of the day plays a
+  1.85 s wordmark with red ribbons and "WEEK n · N DAYS TO THE GUN". Home
+  Screen only, never under reduced motion, `pointer-events: none` so taps
+  land on Today underneath, removed on animationend (2.4 s fallback).
+  `titlecard-at` is a per-device key like `backup-at`, not backed up.
+The old `.hero::before` sheen rules remain disabled; the cinema layer uses
+background layers and its own `.h-sweep` element instead. Build tests
+guard the tokens, the token-only cinema layer and the title-card gate;
+tools/interactions.js gained a `cinema` scenario. Checked at 390 px for
+horizontal overflow on eight views, plus an accessibility sweep.

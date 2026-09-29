@@ -1334,6 +1334,18 @@ section('palette contrast (WCAG AA)');
       .filter((h) => !/^#(?:fff|ffffff|000|000000)$/i.test(h)))];
     ok(stray.length === 0, 'no colour lives outside :root in style.css' + (stray.length ? ' — found ' + stray.join(', ') : ''));
 
+    /* Cinema (v4.69): light is the one red and white as tokens, and the
+       launch title card must never cost the Today glance — Home Screen only,
+       once a day, never under reduced motion, never in the way of a tap. */
+    ['--glow-red', '--glow-red-soft', '--glow-white', '--glow-white-soft', '--grain'].forEach((t) =>
+      ok(new RegExp(t + ':').test(rootSrc), 'cinema token ' + t + ' is declared in :root'));
+    const cinema = css.slice(css.indexOf('CINEMA (v4.69)'));
+    ok(cinema.length > 100 && !/rgba?\(/.test(cinema), 'the cinema layer paints only with tokens');
+    const tcFn = appSrc.slice(appSrc.indexOf('function titleCard'), appSrc.indexOf('function titleCard') + 1400);
+    ok(/display-mode: standalone/.test(tcFn) && /prefers-reduced-motion: no-preference/.test(tcFn) && /titlecard-at/.test(tcFn),
+      'title card is gated to the installed app, motion allowed, once a day');
+    ok(/\.titlecard\s*\{[^}]*pointer-events:\s*none/.test(css), 'title card never takes a tap');
+
     /* Zoom must stay available. `user-scalable=no` / `maximum-scale=1` is a
        WCAG 1.4.4 failure, and it is not even the thing that gives the app its
        native feel — `touch-action: pan-x pan-y` on html/body is what stops

@@ -72,6 +72,17 @@
   --poor: #eda29c;
   --best: #e6d3a2;
 
+  /* Cinema (v4.69): light, not new colour — the one red and white, as
+     glow. Red light only where red already means something (§3). */
+  --glow-red: rgba(229, 9, 20, 0.42);
+  --glow-red-soft: rgba(229, 9, 20, 0.16);
+  --glow-white: rgba(255, 255, 255, 0.13);
+  --glow-white-soft: rgba(255, 255, 255, 0.055);
+  --glow-white-hot: rgba(255, 255, 255, 0.28);
+  --shade: rgba(0, 0, 0, 0.5);
+  --hero-base: linear-gradient(150deg, color-mix(in srgb, var(--hero-bg) 82%, #fff) 0%, var(--hero-bg) 55%, color-mix(in srgb, var(--hero-bg) 82%, #000) 100%);
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+
   --display: "Archivo", "Archivo Black", "Avenir Next Condensed", "Arial Black", "Helvetica Neue", sans-serif;
   --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --body: "Inter", -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
@@ -1631,3 +1642,178 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .card-actions { display: flex; gap: 12px; align-items: center; }
 .card-actions > * { min-height: 48px; display: grid; place-items: center; padding: 12px 22px; font: 600 14px var(--body); border-radius: 12px; }
 .card-save { border: 1px solid var(--t3); color: var(--text); text-decoration: none; }
+
+/* ================= CINEMA (v4.69) =================================
+   Light, scale and one-shot motion, never a new hue. Red still means
+   hard: stage lights and glows turn red only for the quality session,
+   the race and key days; the long run gets white light; easy days stay
+   grey. Nothing loops, nothing blocks a tap, and every movement sits
+   behind prefers-reduced-motion. */
+
+/* -- Today billboard: the countdown as a Top-10 numeral behind the date -- */
+.day-head { position: relative; isolation: isolate; }
+.day-head::before {                       /* stage light from above, soft on every edge */
+  content: ''; position: absolute; z-index: -2; pointer-events: none;
+  top: -36px; right: -14px; width: min(360px, 100%); height: 220px;
+  background: radial-gradient(closest-side, var(--glow-white-soft), transparent);
+}
+.day-head.light-long::before { background: radial-gradient(closest-side, var(--glow-white), transparent); }
+.day-head.light-quality::before,
+.day-head.light-race::before { background: radial-gradient(closest-side, var(--glow-red-soft), transparent); }
+.bb {
+  position: absolute; z-index: -1; right: 44px; top: -16px; pointer-events: none;
+  display: flex; flex-direction: column-reverse; align-items: flex-end;
+}
+.bb-num {
+  display: block; font: 900 118px/0.86 var(--display); letter-spacing: -0.07em;
+  color: transparent; -webkit-text-stroke: 1.5px var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.day-head.light-long .bb-num { -webkit-text-stroke-color: color-mix(in srgb, var(--text) 22%, var(--line)); }
+.day-head.light-quality .bb-num,
+.day-head.light-race .bb-num { -webkit-text-stroke-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.bb-cap { display: block; margin: 0 4px 3px 0; font: 400 8.5px var(--mono); letter-spacing: .2em; color: var(--t3); }
+.day-head .day-nav h1 { text-shadow: 0 2px 18px var(--paper); }
+
+/* -- Now / Next: the progress bar gets a lit leading edge -- */
+.nownext .nn-bar { overflow: visible; }
+.nownext .nn-bar i { position: relative; border-radius: 2px; box-shadow: 0 0 12px var(--glow-red); }
+.nownext .nn-bar i::after {
+  content: ''; position: absolute; right: -5px; top: 50%; width: 10px; height: 10px; margin-top: -5px;
+  border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--glow-red-soft), 0 0 14px var(--glow-red);
+}
+
+/* -- The run card: stage light by class of run, and film grain -- */
+.hero { isolation: isolate; background-image: var(--grain), var(--hero-base); }
+.hero.cls-long {
+  background-image: var(--grain),
+    radial-gradient(110% 65% at 100% 0%, var(--glow-white), transparent 62%),
+    var(--hero-base);
+  box-shadow: 0 18px 44px var(--shade), 0 0 0 1px var(--glow-white-soft);
+}
+.hero.cls-quality {
+  background-image: var(--grain),
+    radial-gradient(110% 70% at 100% 0%, var(--glow-red), transparent 60%),
+    radial-gradient(90% 55% at 0% 100%, var(--glow-red-soft), transparent 70%),
+    var(--hero-base);
+  box-shadow: 0 18px 44px var(--glow-red-soft), 0 0 0 1px var(--glow-red-soft);
+}
+.hero.cls-easy, .hero.cls-recovery {
+  background-image: var(--grain),
+    radial-gradient(100% 60% at 100% 0%, var(--glow-white-soft), transparent 62%),
+    var(--hero-base);
+}
+.hero.has-recap { background-image: var(--grain), linear-gradient(155deg, var(--hero-bg), var(--surface) 70%); box-shadow: none; }
+/* race morning: sunrise rays over the red — Nicosia's sun comes up at 06:50, five minutes after the gun */
+.hero.race {
+  background-image: var(--grain),
+    repeating-conic-gradient(from -90deg at 50% 118%, var(--glow-white-soft) 0deg 3deg, transparent 3deg 11deg),
+    radial-gradient(90% 55% at 50% 112%, var(--glow-white), transparent 70%),
+    linear-gradient(160deg, color-mix(in srgb, var(--accent-fill) 88%, #fff) 0%, var(--accent-fill) 50%, color-mix(in srgb, var(--accent-fill) 70%, #000) 100%);
+}
+.hero .h-km { background: linear-gradient(180deg, var(--text) 55%, color-mix(in srgb, var(--text) 72%, var(--hero-bg))); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero .h-km small { -webkit-text-fill-color: var(--t2); }
+/* on the red card, secondary text is white: grey on red falls under AA */
+.hero.race .h-state, .hero.race .h-meta b, .hero.race .h-log > small,
+.hero.race .session-detail summary small { color: var(--text); }
+.hero.race .h-km, .hero.race .h-km small { background: none; color: var(--text); -webkit-text-fill-color: var(--text); }
+.hero.cls-quality .h-km { filter: drop-shadow(0 6px 22px var(--glow-red-soft)); }
+.hero.cls-long .h-km { filter: drop-shadow(0 6px 22px var(--glow-white-soft)); }
+
+/* -- Run banked: one sweep of light and a ring off the tick, once -- */
+.hero .h-sweep { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; }
+.hero .h-tick { position: relative; }
+
+/* -- Week view: the week number, huge and outlined, behind its title -- */
+.wk-head { position: relative; isolation: isolate; }
+.wk-num {
+  position: absolute; z-index: -1; right: 44px; top: -6px;
+  font: 900 100px/.86 var(--display); letter-spacing: -0.07em; pointer-events: none;
+  color: transparent; -webkit-text-stroke: 1.5px var(--line);
+}
+.wk-head.key .wk-num { -webkit-text-stroke-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.profile-day.long .profile-track i { box-shadow: 0 0 16px var(--glow-white); }
+.profile-day.hard .profile-track i { box-shadow: 0 0 16px var(--glow-red); }
+
+/* -- The days that count: Top-10 numerals -- */
+.journey-event { grid-template-columns: 74px 1fr 16px; gap: 6px; padding: 14px 8px 14px 0; }
+.journey-event-index {
+  font: 900 86px/.8 var(--display); letter-spacing: -0.08em; text-align: right; padding-right: 8px;
+  color: transparent; -webkit-text-stroke: 2px var(--line);
+}
+.journey-event.ahead .journey-event-index { color: transparent; -webkit-text-stroke-color: var(--t3); }
+.journey-event.next .journey-event-index {
+  color: var(--accent); -webkit-text-stroke: 0; text-shadow: 0 0 28px var(--glow-red);
+}
+.journey-event.next b { color: var(--text); }
+.journey-event.next em { color: var(--accent); font-weight: 600; }
+
+/* -- Title card: the installed app's launch, once a day (built in app.js) -- */
+.titlecard {
+  position: fixed; inset: 0; z-index: 1000; pointer-events: none;
+  display: grid; place-content: center; justify-items: center; gap: 16px;
+  background: var(--chrome-bg); overflow: hidden;
+  animation: tc-out 1.85s ease-in forwards;
+}
+.tc-ribbons { position: absolute; inset: 0; display: flex; justify-content: center; align-items: stretch; gap: 3px; }
+.tc-ribbons i {
+  display: block; width: 8px; height: 100%;
+  background: linear-gradient(180deg, transparent, var(--accent-fill) 25%, var(--accent) 50%, var(--accent-fill) 75%, transparent);
+  transform-origin: 50% 100%; transform: scaleY(0); opacity: .9;
+  animation: tc-ribbon 1.05s cubic-bezier(.2,.75,.2,1) forwards;
+}
+.tc-ribbons i:nth-child(1), .tc-ribbons i:nth-child(9) { width: 3px; animation-delay: .24s; }
+.tc-ribbons i:nth-child(2), .tc-ribbons i:nth-child(8) { width: 5px; animation-delay: .18s; }
+.tc-ribbons i:nth-child(3), .tc-ribbons i:nth-child(7) { width: 9px; animation-delay: .12s; }
+.tc-ribbons i:nth-child(4), .tc-ribbons i:nth-child(6) { width: 14px; animation-delay: .06s; }
+.tc-ribbons i:nth-child(5) { width: 22px; }
+.tc-mark {
+  position: relative; font: 900 56px/1 var(--display); letter-spacing: -0.02em; color: var(--text);
+  opacity: 0; animation: tc-mark .7s cubic-bezier(.2,.8,.2,1) .38s forwards;
+}
+.tc-mark b { color: var(--accent); font-weight: 900; }
+.tc-line {
+  position: relative; font: 400 11px var(--mono); letter-spacing: .22em; color: var(--t2);
+  opacity: 0; animation: tc-line .5s ease-out .72s forwards;
+}
+@keyframes tc-ribbon {
+  0% { transform: scaleY(0); opacity: .95; }
+  55% { transform: scaleY(1); opacity: .95; }
+  100% { transform: scaleY(1) scaleX(2.4); opacity: 0; }
+}
+@keyframes tc-mark {
+  from { opacity: 0; transform: scale(1.3); letter-spacing: .3em; filter: blur(6px); }
+  to { opacity: 1; transform: scale(1); letter-spacing: -0.02em; filter: blur(0); }
+}
+@keyframes tc-line { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes tc-out { 0%, 74% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero.just.done .h-sweep {
+    background: linear-gradient(100deg, transparent 30%, var(--glow-white) 48%, var(--glow-white-hot) 50%, var(--glow-white) 52%, transparent 70%);
+    background-size: 260% 100%;
+    animation: banked-sweep .9s cubic-bezier(.3,.6,.2,1) forwards;
+  }
+  @keyframes banked-sweep {
+    0% { opacity: 1; background-position: 120% 0; }
+    80% { opacity: 1; }
+    100% { opacity: 0; background-position: -30% 0; }
+  }
+  .hero.just.done .h-tick::before {
+    content: ''; position: absolute; inset: -2px; border-radius: 14px; pointer-events: none;
+    border: 2px solid var(--text); animation: banked-ring .7s ease-out forwards;
+  }
+  @keyframes banked-ring { from { opacity: .9; transform: scale(1); } to { opacity: 0; transform: scale(1.7); } }
+  /* bars rise on arrival (real navigation only — .anim), left to right */
+  .view.anim .profile-track i { transform-origin: 50% 100%; animation: bar-rise .6s cubic-bezier(.2,.8,.2,1) backwards; }
+  .view.anim .profile-day:nth-child(2) .profile-track i { animation-delay: .04s; }
+  .view.anim .profile-day:nth-child(3) .profile-track i { animation-delay: .08s; }
+  .view.anim .profile-day:nth-child(4) .profile-track i { animation-delay: .12s; }
+  .view.anim .profile-day:nth-child(5) .profile-track i { animation-delay: .16s; }
+  .view.anim .profile-day:nth-child(6) .profile-track i { animation-delay: .2s; }
+  .view.anim .profile-day:nth-child(7) .profile-track i { animation-delay: .24s; }
+  @keyframes bar-rise { from { transform: scaleY(0); } }
+  /* the billboard numeral settles into place on arrival */
+  .view.anim .bb, .view.anim .wk-num { animation: bb-in .8s cubic-bezier(.2,.8,.2,1) backwards; }
+  @keyframes bb-in { from { opacity: 0; translate: 18px 0; } }
+}

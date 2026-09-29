@@ -297,6 +297,28 @@ async function weekShape() {
   await t.ctx.close();
 }
 
+async function cinema() {
+  console.log('· billboard, key days, title card gate');
+  let t = await open('2026-10-04', '07:40', SEED);
+  check((await text(t.page, '.bb-num')) === '112', 'billboard numeral is the days to the gun');
+  check((await t.page.getAttribute('.bb', 'aria-hidden')) === 'true', 'billboard is decorative');
+  check(/light-long/.test(await t.page.getAttribute('.day-head', 'class')) && /cls-long/.test(await t.page.getAttribute('.hero', 'class')), 'long run lights the head and the card white');
+  check(!(await t.page.$('.titlecard')), 'no title card in a browser tab');
+  await t.ctx.close();
+  t = await open('2027-01-24', '05:10', SEED);
+  check((await text(t.page, '.bb-num')) === '42.2', 'race morning billboard is the distance');
+  await t.ctx.close();
+  t = await open('2027-02-10', '12:00', SEED);
+  check(!(await t.page.$('.bb')), 'no countdown once the race is past');
+  await t.ctx.close();
+  t = await open('2026-09-29', '12:00', SEED);
+  await t.page.click('[data-nav="more"]'); await t.page.click('[data-nav="plan"]'); await t.page.waitForTimeout(150);
+  const next = await t.page.$$('.journey-event.next');
+  check(next.length === 1 && /PARKRUN/.test(await next[0].textContent()), 'exactly one key day lit: the next one');
+  noErrors(t, 'cinema');
+  await t.ctx.close();
+}
+
 async function sweep() {
   if (QUICK) { console.log('· render sweep skipped (--quick)'); return; }
   console.log('· render sweep: 234 days, 34 weeks, Plan, Reference');
@@ -332,7 +354,7 @@ async function offline() {
   browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
   server = await serve();
   try {
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, sweep, offline]) await run();
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, sweep, offline]) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');

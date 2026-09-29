@@ -93,6 +93,15 @@ real tokens out of `css/style.css` and fails any text pair below WCAG AA,
 and separately checks that the PWA's own chrome colours are current tokens.
 Do not reintroduce a colour that lives outside `:root`.
 
+**Light, not new colour (v4.69 cinema pass).** Glows, stage lights and film
+grain are the one red and white as low-alpha tokens (`--glow-*`, `--grain`),
+and they follow the same semantics: red light only on the quality session,
+the race and key days; white light for the long run; easy days stay grey.
+Giant outlined numerals (the Today countdown, the week number, the key days)
+are decorative and aria-hidden. Motion runs once, never loops, and sits
+behind `prefers-reduced-motion`; the daily launch title card plays only in
+the installed app, never takes a tap, and never delays Today underneath.
+
 ## 4. Product intent (UX is yours to design)
 
 First-principles design is welcome. These behaviours are the intent:

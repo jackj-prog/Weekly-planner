@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.68.1';
+  const APP_VERSION = '4.69.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -341,8 +341,17 @@
     }
     const weekBit = day.blockId === 'marathon' ? 'WK ' + day.week + ' · DAY ' + (day.dayIndex + 1) + '/7'
       : day.blockId === 'recovery' ? 'RECOVERY · WK ' + day.week : 'STANDING WEEK';
+    /* The billboard: the countdown as a Top-10 numeral behind the date, and
+       a stage light that follows the day's run (red only on a hard one, §3).
+       Decorative: the top bar already carries the countdown for everyone. */
+    const cd = day.blockId === 'marathon' ? DB.raceCountdown(iso) : null;
+    const raceDay = cd && cd.days === 0 && day.run;
+    const bb = !cd || cd.past ? ''
+      : '<span class="bb" aria-hidden="true"><span class="bb-num">' + (raceDay ? esc(String(day.run.run.km)) : cd.days) +
+        '</span><span class="bb-cap">' + (raceDay ? 'KM · TODAY' : cd.days === 1 ? 'DAY TO THE GUN' : 'DAYS TO THE GUN') + '</span></span>';
+    const light = day.run ? DB.runClass(day.run) : 'rest';
     const head = el(
-      '<div class="day-head"><div class="day-nav">' +
+      '<div class="day-head light-' + esc(light) + '">' + bb + '<div class="day-nav">' +
       '<button class="nav" data-d="-1" aria-label="Previous day">‹</button>' +
       '<h1>' + esc(fmtDate(iso)) + '</h1>' +
       '<button class="nav" data-d="1" aria-label="Next day">›</button></div>' +
@@ -1156,6 +1165,25 @@
       '</small></button>' + (high ? '<p><b>Easy or skip today.</b> ' + esc(g.note) + '</p>' : '') + '</div>';
   }
 
+  /* The distance arrives rather than appears: a half-second count on the
+     first showing of each date's run per app open, never on re-renders.
+     Only when the system allows motion; the markup holds the final figure. */
+  const countedUp = new Set();
+  function countUp(node, km, iso) {
+    if (!node || countedUp.has(iso) || !(km > 0)) return;
+    countedUp.add(iso);
+    if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: no-preference)').matches) return;
+    const txt = node.firstChild;
+    if (!txt || txt.nodeType !== 3) return;
+    const final = txt.nodeValue, dec = final.includes('.') ? 1 : 0, t0 = performance.now(), dur = 520;
+    const step = (t) => {
+      const p = Math.min(1, (t - t0) / dur);
+      txt.nodeValue = p < 1 ? (km * (1 - Math.pow(1 - p, 3))).toFixed(dec) : final;
+      if (p < 1 && node.isConnected) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
   function buildHero(day, done, iso, just) {
     const r = day.run;
     const isRace = /marathon/i.test(r.title) || (day.row && day.row.race && day.dayIndex === 6);
@@ -1223,14 +1251,14 @@
       : '';
 
     const hero = el(
-      '<section class="hero' + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (isSkipped ? ' skipped' : '') + (just === r.id ? ' just' : '') + '">' +
+      '<section class="hero cls-' + esc(DB.runClass(r)) + (isRace ? ' race' : '') + (isDone ? ' done' : '') + (isSkipped ? ' skipped' : '') + (just === r.id ? ' just' : '') + '">' +
       '<div class="h-top"><div class="h-tag">' + (isRace ? 'RACE DAY' : 'TODAY’S RUN') +
       '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : isSkipped ? 'Skipped' : isMovedOut ? 'Moved to ' + movedLabel(iso, r.id) :
         unresolved ? (iso < today ? 'Not recorded' : 'Window passed · not recorded') :
         (r.movedFrom ? 'Moved from ' + fmtShort(r.movedFrom) + ' · ' : 'Scheduled · ') + r.start) + '</span></div>' +
       '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' +
       (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button></div>' +
-      (just === r.id && isDone ? '<div class="completion-note" role="status">✓ Run banked</div>' : '') +
+      (just === r.id && isDone ? '<i class="h-sweep" aria-hidden="true"></i><div class="completion-note" role="status">✓ Run banked</div>' : '') +
       missedHTML +
       (iso === today && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso) : '') +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
@@ -1279,6 +1307,7 @@
       view.querySelector('[data-ref-target="ref-zones"]').click();
     });
     hero.querySelector('.session-focus-open').addEventListener('click', e => openSessionFocus(r, iso, e.currentTarget));
+    countUp(hero.querySelector('.h-km'), km, iso);
     const recap = window.RunProgress.debrief(runLogHistory(), iso, todayISO());
     if (recap && !editing) {
       hero.classList.add('has-recap');
@@ -1579,10 +1608,12 @@
 
   function buildLandmarks(journey) {
     const today=todayISO();
+    let nextMarked=false;   // the first key day still ahead is lit; the rest stay outlined
     const root=el('<section class="journey-landmarks"><div class="journey-section-title"><h2>The days that count</h2><span>KEY DAYS</span></div>'+ (PLAN.keyEvents||[]).map((e,i)=>{
       const week=journey.weeks[e.wk-1], day=week.days[e.di], delta=DB.daysBetween(today,day.iso);
       const status=day.recorded>0?'Recorded':delta<0?'Past · not recorded':delta===0?'Today':delta+' days away';
-      return '<button class="journey-event'+(delta>=0?' ahead':'')+'" data-event-day="'+day.iso+'"><span class="journey-event-index">'+String(i+1).padStart(2,'0')+'</span><span><small>WEEK '+e.wk+' · '+esc(fmtShort(day.iso))+'</small><b>'+esc(e.label)+'</b><em>'+status+'</em></span><span aria-hidden="true">↗</span></button>';
+      const next=delta>=0&&!nextMarked; if(next)nextMarked=true;
+      return '<button class="journey-event'+(delta>=0?' ahead':'')+(next?' next':'')+'" data-event-day="'+day.iso+'"><span class="journey-event-index" aria-hidden="true">'+(i+1)+'</span><span><small>WEEK '+e.wk+' · '+esc(fmtShort(day.iso))+'</small><b>'+esc(e.label)+'</b><em>'+status+'</em></span><span aria-hidden="true">↗</span></button>';
     }).join('')+'</section>');
     root.addEventListener('click',event=>{const b=event.target.closest('[data-event-day]');if(!b)return;state.dateISO=b.dataset.eventDay;state.view='today';window.scrollTo(0,0);render();});return root;
   }
@@ -1752,7 +1783,9 @@
     }
 
     const head = el(
-      '<div class="wk-head"><button class="nav" data-d="-7" aria-label="Previous week">‹</button>' +
+      '<div class="wk-head' + (day0.row && day0.row.key ? ' key' : '') + '">' +
+      (day0.blockId === 'marathon' ? '<span class="wk-num" aria-hidden="true">' + day0.week + '</span>' : '') +
+      '<button class="nav" data-d="-7" aria-label="Previous week">‹</button>' +
       '<h1>' + esc(title) + '</h1>' +
       '<button class="nav" data-d="7" aria-label="Next week">›</button></div>'
     );
@@ -2935,5 +2968,33 @@
     });
   }
 
+  /* ---- title card: the installed app's launch, once a day ----
+     A second of cinema on the first Home Screen open of the day: the
+     wordmark, the week, the days to the gun. It never blocks — taps pass
+     straight through to Today underneath, which is already drawn — and it
+     is skipped in a browser tab and whenever the system asks for reduced
+     motion. `titlecard-at` is a per-device convenience, like `backup-at`. */
+  function titleCard() {
+    const mm = (q) => !!(window.matchMedia && window.matchMedia(q).matches);
+    const standalone = navigator.standalone === true || mm('(display-mode: standalone)');
+    if (!standalone || !mm('(prefers-reduced-motion: no-preference)')) return;
+    const today = todayISO();
+    try {
+      if (localStorage.getItem('titlecard-at') === today) return;
+      localStorage.setItem('titlecard-at', today);
+    } catch (e) { return; }
+    const day = DB.buildDay(today), cd = DB.raceCountdown(today);
+    const line = day.blockId === 'marathon'
+      ? 'WEEK ' + day.week + ' · ' + (cd.days === 0 ? 'RACE DAY' : cd.days + (cd.days === 1 ? ' DAY' : ' DAYS') + ' TO THE GUN')
+      : day.blockId === 'recovery' ? 'RECOVERY · WEEK ' + day.week : 'STANDING WEEK';
+    const card = el('<div class="titlecard" aria-hidden="true"><div class="tc-ribbons">' + '<i></i>'.repeat(9) +
+      '</div><div class="tc-mark">WEEK<b>OS</b></div><div class="tc-line">' + esc(line) + '</div></div>');
+    document.body.appendChild(card);
+    const bye = () => card.remove();
+    card.addEventListener('animationend', (e) => { if (e.target === card) bye(); });
+    setTimeout(bye, 2400);   // in case the animation never runs
+  }
+
   render();
+  titleCard();
 })();
