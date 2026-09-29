@@ -707,3 +707,15 @@ decoupling list, the log estimate and other runs' "vs last" readback, and is
 tagged "not in trends" in the run list. Motivation: the real Wk 10 long run
 (lost, 305 m of climb, trail walking) was pulling the long-run trend down by
 ~8%; flagged, the card reads +8.7% and 6:30 → 5:58/km at the usual 147 bpm.
+
+## Morning resting-HR check — v4.63, 29 September (Claude)
+
+Today's run card (before the run is done, logged, skipped or moved) offers
+an optional "Add this morning's resting HR" stepper. Readings live only in
+localStorage as `rhr-ISO` = {bpm} (new key, added to the backup/restore
+pattern); nothing personal enters the repo. After three readings in the last
+14 days the card compares today with the median ("+11 vs your usual 49"); at
+`PLAN.readiness.skipDelta` (10) or more above usual it says "Easy or skip
+today" with the generic note. Agreed with the owner in chat after a long run
+abandoned with heart rate far above normal for the pace. A test asserts the
+rule is relative and the note carries no absolute HR.

@@ -505,6 +505,24 @@ const PLAN = {
       'more than it gives.',
   },
 
+  /* Optional morning resting HR on the run card (in-app, v4.63). The
+     reading is personal physiology and lives only in localStorage
+     (`rhr-ISO`), never here; only the generic rule is data. Well above your
+     own recent usual means the body has not recovered from something: poor
+     sleep, illness, alcohol or stress. Agreed with the owner in chat after a
+     long run abandoned at a heart rate far above normal for the pace. */
+  readiness: {
+    skipDelta: 10,       // bpm above your recent usual
+    baselineDays: 14,    // the usual = median of readings in this window
+    minReadings: 3,      // before that, no comparison is made
+    note:
+      'Resting heart rate this far above your usual means you have not ' +
+      'recovered from something: poor sleep, illness, alcohol or stress. ' +
+      'Run it easy and short, or skip it; the km are not owed. If the ' +
+      'first easy km still shows a heart rate well above normal for the ' +
+      'pace, walk home.',
+  },
+
   /* Shown on the run card once a run is marked as not having happened. It
      restates the long-run guard and return rule at the moment of the
      decision; it adds no new rule. */

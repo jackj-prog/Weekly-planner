@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.62.0';
+  const APP_VERSION = '4.63.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -37,6 +37,7 @@
     runLogDraft: null,         // { paceSec, hr, bounds } while the steppers are open
     hrEdit: false, hrDraft: null,  // resting/max HR steppers on Reference
     movePick: null,            // block id with the move-to-day picker open
+    rhrDraft: null,            // morning resting HR being entered on the hero
   };
   let nowKey = '';             // today's current|next block ids — minute tick
                                // re-renders only when this changes
@@ -1069,6 +1070,34 @@
   }
 
 
+  /* ---- morning resting HR (PLAN.readiness) — personal, localStorage only ---- */
+  const rhrKey = (iso) => 'rhr-' + iso;
+  function rhrReading(iso) { const v = readJSON(rhrKey(iso), null); return v && Number.isFinite(v.bpm) ? v.bpm : null; }
+  function rhrUsual(iso) {
+    const g = PLAN.readiness, vals = [];
+    for (let i = 1; i <= g.baselineDays; i++) { const v = rhrReading(DB.addDays(iso, -i)); if (v != null) vals.push(v); }
+    if (vals.length < g.minReadings) return null;
+    vals.sort((a, b) => a - b);
+    return vals[Math.floor(vals.length / 2)];
+  }
+  function readinessHTML(iso) {
+    const g = PLAN.readiness;
+    if (!g) return '';
+    const bpm = rhrReading(iso), usual = rhrUsual(iso);
+    if (state.rhrDraft != null) {
+      return '<div class="h-rhr editing" role="group" aria-label="Morning resting heart rate"><span class="h-rhr-l">Morning resting HR</span>' +
+        '<span class="h-rhr-ctl"><button data-rhr="-1" aria-label="Lower">−</button><b>' + state.rhrDraft + '</b><small>bpm</small>' +
+        '<button data-rhr="1" aria-label="Higher">+</button></span><button class="h-rhr-save" data-rhr="save">Save</button></div>';
+    }
+    if (bpm == null) return '<button class="h-rhr add" data-rhr="open">Add this morning’s resting HR <small>optional · compares it with your usual</small></button>';
+    const delta = usual == null ? null : bpm - usual;
+    const high = delta != null && delta >= g.skipDelta;
+    return '<div class="h-rhr' + (high ? ' high' : '') + '"><button class="h-rhr-read" data-rhr="open" aria-label="Edit morning resting HR">' +
+      '<span>Morning resting HR <b>' + bpm + '</b></span><small>' +
+      (delta == null ? 'Your usual appears after ' + g.minReadings + ' mornings' : (delta > 0 ? '+' : delta < 0 ? '−' : '±') + Math.abs(delta) + ' vs your usual ' + usual) +
+      '</small></button>' + (high ? '<p><b>Easy or skip today.</b> ' + esc(g.note) + '</p>' : '') + '</div>';
+  }
+
   function buildHero(day, done, iso, just) {
     const r = day.run;
     const isRace = /marathon/i.test(r.title) || (day.row && day.row.race && day.dayIndex === 6);
@@ -1135,6 +1164,7 @@
       (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button></div>' +
       (just === r.id && isDone ? '<div class="completion-note" role="status">✓ Run banked</div>' : '') +
       missedHTML +
+      (iso === today && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso) : '') +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
       '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span>' + paceCell +
@@ -1152,6 +1182,19 @@
       toggleDone(iso, r.id);
       render();
     });
+    hero.querySelectorAll('[data-rhr]').forEach((btn) => btn.addEventListener('click', () => {
+      const act = btn.getAttribute('data-rhr');
+      if (act === 'open') {
+        const h = readJSON('hr', null);
+        state.rhrDraft = rhrReading(iso) || rhrUsual(iso) || (h && h.rest) || 50;
+      } else if (act === 'save') {
+        writeJSON(rhrKey(iso), { bpm: state.rhrDraft });
+        state.rhrDraft = null;
+      } else {
+        state.rhrDraft = Math.max(25, Math.min(120, state.rhrDraft + Number(act)));
+      }
+      render();
+    }));
     hero.querySelectorAll('[data-missed]').forEach((btn) => btn.addEventListener('click', () => {
       const act = btn.getAttribute('data-missed');
       if (act === 'log') { const logBtn = hero.querySelector('.runlogger .h-log'); if (logBtn) logBtn.click(); return; }
@@ -2472,7 +2515,7 @@
   }
 
   /* ---- backup / restore (ticks, skips, moves, gym weights, tune-up time) ---- */
-  const STORE_KEY = /^(?:(?:done|ovr|movein|runlog)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+|recal|hr)$/;
+  const STORE_KEY = /^(?:(?:done|ovr|movein|runlog|rhr)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+|recal|hr)$/;
 
   function buildDataSection() {
     let count = 0;
