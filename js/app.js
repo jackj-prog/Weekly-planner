@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.72.0';
+  const APP_VERSION = '4.73.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1532,7 +1532,7 @@
       (d.got ? '<i class="pv-got" style="height:' + (Math.min(d.got, top) / top * 100).toFixed(1) + '%"></i>' : '') +
       '</span><b>' + DAY_SHORT[i].slice(0, 1) + '</b></span>').join('');
     const card = el('<section class="previously' + (all ? ' full' : '') + '" aria-label="Last week">' +
-      '<span class="pv-num" aria-hidden="true">' + d0.week + '</span>' +
+      '<span class="pv-num" aria-hidden="true">' + roman(d0.week) + '</span>' +
       '<div class="pv-kicker">PREVIOUSLY · WEEK ' + d0.week + '</div>' +
       '<div class="pv-km"><b>' + fmt(recorded) + '</b> of ' + fmt(planned) + ' km</div>' +
       '<div class="pv-line">' + ran + ' of ' + runs + ' runs · ' +
@@ -1553,10 +1553,26 @@
      dashed. The night between lights out and waking is a dark band with a
      few stars, and on today a red hand points at NOW. The centre counts the
      day's sessions done. A picture with a spoken summary, not a control. */
+  function roman(n) {
+    let out = '', v = Math.floor(n);
+    [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']]
+      .forEach(([k, r]) => { while (v >= k) { out += r; v -= k; } });
+    return out;
+  }
+  /* The day's motto from PLAN.hours: the marathon and the two post-race
+     blocks are their own thing, otherwise the phase's. */
+  function mottoFor(day) {
+    const m = PLAN.hours && PLAN.hours.mottos;
+    if (!m) return null;
+    if (day.run && DB.runClass(day.run) === 'race' && /MARATHON/.test(day.run.title)) return m.race;
+    if (day.blockId === 'recovery') return m.recovery;
+    if (day.blockId !== 'marathon') return m.standing;
+    return m[day.phase] || null;
+  }
   function dayWheelHTML(day, done, iso, isToday, ovr) {
     const blocks = day.blocks.filter((b) => b.endMin > b.startMin);
     if (!blocks.length) return '<span hidden></span>';
-    const C = 150, RO = 112, RI = 90, RN = 101;
+    const C = 170, RO = 112, RI = 90, RN = 101;
     const ang = (m) => (m / 1440) * 2 * Math.PI - Math.PI / 2;
     const pt = (m, r) => (C + r * Math.cos(ang(m))).toFixed(1) + ' ' + (C + r * Math.sin(ang(m))).toFixed(1);
     const arc = (a, b, r) => {
@@ -1592,21 +1608,38 @@
         night += '<circle class="dw-star" cx="' + x + '" cy="' + y + '" r="' + [1.4, 0.8, 1.1, 0.7, 1.6, 0.9, 1.2, 0.8][i] + '"/>';
       });
     }
+    /* The dial of an astronomical clock: the eight canonical hours of a
+       Book of Hours round the rim (PLAN.hours), their clock hour beneath,
+       and rose-window tracery in the face. */
     let ticks = '';
+    const canon = ((PLAN.hours && PLAN.hours.canonical) || []).reduce((o, [h, n]) => (o[h] = n, o), {});
     for (let h = 0; h < 24; h++) {
-      const m = h * 60, major = h % 6 === 0;
-      ticks += '<path class="dw-tick' + (major ? ' major' : '') + '" d="M' + pt(m, 126) + ' L' + pt(m, major ? 134 : 130) + '"/>';
+      const m = h * 60, major = h % 3 === 0;
+      ticks += '<path class="dw-tick' + (major ? ' major' : '') + '" d="M' + pt(m, 125) + ' L' + pt(m, major ? 132 : 129) + '"/>';
       if (major) {
-        const [x, y] = pt(m, 144).split(' ');
-        ticks += '<text class="dw-hour" x="' + x + '" y="' + (Number(y) + 3).toFixed(1) + '">' + String(h).padStart(2, '0') + '</text>';
+        /* name and clock hour stacked, the hour always on the dial's side */
+        const [x, y] = pt(m, 150).split(' ').map(Number);
+        const lower = y > C + 5, name = canon[h] ? '<text class="dw-canon" x="' + x + '" y="' + (lower ? y + 10 : y - 2).toFixed(1) + '">' + esc(canon[h]) + '</text>' : '';
+        ticks += name + '<text class="dw-hour" x="' + x + '" y="' + (lower ? y - 2 : y + 9).toFixed(1) + '">' + String(h).padStart(2, '0') + '</text>';
       }
     }
+    let rose = '<circle class="dw-rose" cx="' + C + '" cy="' + C + '" r="56"/>';
+    for (let k = 0; k < 12; k++) {
+      const m = k * 120;
+      rose += '<path class="dw-rose" d="M' + pt(m, 56) + ' L' + pt(m, 84) + '"/>';
+      const [px, py] = pt(m + 60, 70).split(' ');
+      rose += '<circle class="dw-rose" cx="' + px + '" cy="' + py + '" r="10"/>';
+    }
+    const mt = mottoFor(day);
+    const motto = mt ? '<path id="dw-arc" d="M' + pt(1440 * 0.625, 176) + ' A176 176 0 0 0 ' + pt(1440 * 0.375, 176) + '" fill="none"/>' +
+      '<text class="dw-motto"><textPath href="#dw-arc" startOffset="50%"><tspan class="rub">' + esc(mt[0].charAt(0)) + '</tspan>' +
+      esc(mt[0].slice(1)) + '</textPath></text>' : '';
     let hand = '';
     if (isToday) {
       const n = nowMin();
       /* the day so far, swept from waking to now */
       if (n > first && n < last) {
-        hand += '<path class="dw-sweep" d="M150 150 L' + pt(first, 122) + ' A122 122 0 ' + (n - first > 720 ? 1 : 0) + ' 1 ' + pt(n, 122) + ' Z"/>';
+        hand += '<path class="dw-sweep" d="M' + C + ' ' + C + ' L' + pt(first, 122) + ' A122 122 0 ' + (n - first > 720 ? 1 : 0) + ' 1 ' + pt(n, 122) + ' Z"/>';
       }
       hand += '<path class="dw-hand" d="M' + pt(n, 62) + ' L' + pt(n, 134) + '"/><circle class="dw-tip" cx="' +
         pt(n, 134).split(' ')[0] + '" cy="' + pt(n, 134).split(' ')[1] + '" r="4"/>';
@@ -1619,10 +1652,10 @@
       esc(c === 'xt' ? 'cross-train' : c === 'run' && rcl === 'race' ? 'race' : c === 'run' && rcl === 'long' ? 'long run' : c === 'run' && rcl === 'quality' ? 'quality run' : c) + '</span>').join('');
     const label = 'Your day as a 24-hour clock: ' + total + ' sessions, ' + got + ' done' + (runAt ? '; run at ' + runAt : '') + '.';
     return '<figure class="daywheel" role="img" aria-label="' + esc(label) + '">' +
-      '<svg viewBox="0 0 300 300" aria-hidden="true"><circle class="dw-face" cx="150" cy="150" r="122"/>' +
-      night + ticks + rings + hand +
-      '<text class="dw-count" x="150" y="152">' + got + '<tspan class="dw-of">/' + total + '</tspan></text>' +
-      '<text class="dw-cap" x="150" y="174">SESSIONS DONE</text></svg>' +
+      '<svg viewBox="-12 0 364 362" aria-hidden="true"><circle class="dw-face" cx="' + C + '" cy="' + C + '" r="122"/>' +
+      rose + night + ticks + rings + hand + motto +
+      '<text class="dw-count" x="' + C + '" y="' + (C + 2) + '">' + got + '<tspan class="dw-of">/' + total + '</tspan></text>' +
+      '<text class="dw-cap" x="' + C + '" y="' + (C + 24) + '">SESSIONS DONE</text></svg>' +
       (legend ? '<figcaption aria-hidden="true">' + legend + '</figcaption>' : '') + '</figure>';
   }
 
@@ -1836,7 +1869,7 @@
       '<path class="sk-horizon" d="M0 ' + HZ + ' L' + W + ' ' + HZ + '"/>' +
       '<text class="sk-lab" x="12" y="' + (HZ + 16) + '">' + esc(fmtShort(days[0].iso)).toUpperCase() + '</text>' +
       '<text class="sk-lab end" x="' + (W - 12) + '" y="' + (HZ + 16) + '">GUN · ' + esc(String(PLAN.race.gun)) + '</text>' +
-      '</svg></figure>';
+      '</svg><figcaption class="fig-cap"><span class="fig">Fig. I</span> The firmament of the block</figcaption></figure>';
   }
 
   function buildTrainingJourney(journey) {
@@ -1856,11 +1889,11 @@
     });
     chart+='<g class="journey-cursor"><line x1="0" x2="0" y1="12" y2="170"/><path d="M-4 7 L4 7 L0 12 Z"/></g>';
     const root=el('<section class="training-journey"><div class="journey-intro"><div class="journey-kicker">YOUR TRAINING JOURNEY</div>'+
-      '<h1>Built one run<br>at a time.</h1><div class="journey-totals"><div><b>'+fmt(journey.recorded)+'</b><span>km recorded</span></div><div><b>'+journey.runs+'</b><span>runs recorded</span></div></div>'+
+      '<h1>Built one run<br>at a time.</h1>'+(PLAN.hours&&PLAN.hours.epigraph?'<p class="epigraph"><i>'+esc(PLAN.hours.epigraph[0])+'.</i> '+esc(PLAN.hours.epigraph[1])+'</p>':'')+'<div class="journey-totals"><div><b>'+fmt(journey.recorded)+'</b><span>km recorded</span></div><div><b>'+journey.runs+'</b><span>runs recorded</span></div></div>'+
       '<p class="journey-story">'+(journey.runs ? journey.activeWeeks+' weeks with recorded runs. Each one leaves a mark.' : 'Your first recorded run starts the story. The road ahead is already here.')+'</p>'+
       skyHTML(journey)+
       '<div class="journey-calendar"><span>'+journey.elapsedWeeks+' / '+weeks.length+' weeks elapsed</span><span>'+esc(fmtShort(PLAN.race.date))+' · '+esc(PLAN.race.city||'Race day')+'</span></div></div>'+
-      '<div class="journey-landscape"><div class="journey-chart-label"><b>The shape of the block</b><span>km / week</span></div>'+
+      '<div class="journey-landscape"><div class="journey-chart-label"><b><span class="fig">Fig. II</span> The shape of the block</b><span>km / week</span></div>'+
       '<svg viewBox="0 0 '+W+' 180" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Scheduled and recorded weekly kilometres on a shared scale">'+chart+'</svg>'+
       '<div class="journey-legend"><span><i></i>Scheduled</span><span><i></i>Recorded</span><span><i></i>Key day</span></div>'+
       '<div class="journey-phases">'+Object.entries(block.phases).map(([name,range])=>'<button data-journey-week="'+range[0]+'">'+esc(name)+'</button>').join('')+'</div>'+
@@ -1916,7 +1949,7 @@
         return '<i class="wl ' + st + (d.iso === today ? ' today' : '') + '"></i>';
       }).join('') + '</span>').join('');
     const phases = journey.weeks.map((w) => '<i style="background:var(--phase-' + esc(w.phase) + ')"></i>').join('');
-    return el('<section class="wall"><div class="wall-head"><h2>Every day of the block</h2><span>' +
+    return el('<section class="wall"><div class="wall-head"><h2><span class="fig">Fig. III</span> Every day of the block</h2><span>' +
       ran + ' OF ' + due + ' PLANNED RUNS SO FAR</span></div>' +
       '<div class="wall-grid" role="img" aria-label="' + ran + ' of ' + due + ' planned runs so far recorded, across ' +
       journey.weeks.length + ' weeks">' +
@@ -1933,7 +1966,7 @@
       const week=journey.weeks[e.wk-1], day=week.days[e.di], delta=DB.daysBetween(today,day.iso);
       const status=day.recorded>0?'Recorded':delta<0?'Past · not recorded':delta===0?'Today':delta+' days away';
       const next=delta>=0&&!nextMarked; if(next)nextMarked=true;
-      return '<button class="journey-event'+(delta>=0?' ahead':'')+(next?' next':'')+'" data-event-day="'+day.iso+'"><span class="journey-event-index" aria-hidden="true">'+(i+1)+'</span><span><small>WEEK '+e.wk+' · '+esc(fmtShort(day.iso))+'</small><b>'+esc(e.label)+'</b><em>'+status+'</em></span><span aria-hidden="true">↗</span></button>';
+      return '<button class="journey-event'+(delta>=0?' ahead':'')+(next?' next':'')+'" data-event-day="'+day.iso+'"><span class="journey-event-index" aria-hidden="true">'+roman(i+1)+'</span><span><small>WEEK '+e.wk+' · '+esc(fmtShort(day.iso))+'</small><b>'+esc(e.label)+'</b><em>'+status+'</em></span><span aria-hidden="true">↗</span></button>';
     }).join('')+'</section>');
     root.addEventListener('click',event=>{const b=event.target.closest('[data-event-day]');if(!b)return;state.dateISO=b.dataset.eventDay;state.view='today';window.scrollTo(0,0);render();});return root;
   }
@@ -2104,7 +2137,7 @@
 
     const head = el(
       '<div class="wk-head' + (day0.row && day0.row.key ? ' key' : '') + '">' +
-      (day0.blockId === 'marathon' ? '<span class="wk-num" aria-hidden="true">' + day0.week + '</span>' : '') +
+      (day0.blockId === 'marathon' ? '<span class="wk-num' + (roman(day0.week).length > 3 ? ' long' : '') + '" aria-hidden="true">' + roman(day0.week) + '</span>' : '') +
       '<button class="nav" data-d="-7" aria-label="Previous week">‹</button>' +
       '<h1>' + esc(title) + '</h1>' +
       '<button class="nav" data-d="7" aria-label="Next week">›</button></div>'
@@ -2115,6 +2148,9 @@
     }));
     view.appendChild(head);
     view.appendChild(el('<div class="wk-sub">' + sub + '</div>'));
+    const wm = mottoFor(day0);
+    if (wm) view.appendChild(el('<p class="wk-motto"><span class="rub">' + esc(wm[0].charAt(0)) + '</span>' + esc(wm[0].slice(1)) +
+      ' <span class="tr">— ' + esc(wm[1]) + '</span></p>'));
     if (note) view.appendChild(el('<div class="wk-note">' + esc(note) + '</div>'));
     const jump = loadJumpNote(anchor, day0);
     if (jump) view.appendChild(jump);
@@ -2150,10 +2186,11 @@
       '<span class="profile-count">' + week7.filter((d) => d.run).length + ' run days</span></div>' +
       '<div class="profile-bars">' + week7.map((d, i) => {
         const km = d.run ? d.run.run.km : 0;
-        const banked = d.run && !!getDone(d.iso)[d.run.id];
+        const lg = getRunLogEntry(d.iso);
+        const banked = d.run && (!!getDone(d.iso)[d.run.id] || !!(lg && lg.sec > 0));
         const cls = d.run ? DB.runClass(d.run) : 'rest';
         const kind = cls === 'race' || cls === 'quality' ? 'hard' : cls === 'long' ? 'long' : cls === 'rest' ? 'rest' : 'easy';
-        return '<button class="profile-day ' + kind + '" data-date="' + d.iso + '"' +
+        return '<button class="profile-day ' + kind + (banked ? ' lit' : '') + '" data-date="' + d.iso + '"' +
           (d.iso === real ? ' aria-current="date"' : '') + ' aria-label="' + esc(fmtDate(d.iso) +
           ': ' + (d.run ? km + ' km, ' + d.run.title : 'No run') + (banked ? ', completed' : '')) + '">' +
           '<span class="profile-track"><i style="height:' + (km / maxKm * 100).toFixed(1) + '%"></i></span>' +
@@ -2165,8 +2202,8 @@
       state.view = 'today'; state.dateISO = button.dataset.date; state.expanded = null;
       window.scrollTo(0, 0); render();
     }));
-    const noteEl = view.querySelector('.wk-note');
-    view.insertBefore(profile, noteEl ? noteEl.nextSibling : view.children[2] || null);
+    const after = view.querySelector('.wk-note') || view.querySelector('.wk-motto') || view.querySelector('.wk-sub');
+    view.insertBefore(profile, after ? after.nextSibling : null);
     if (day0.blockId === 'marathon') profile.after(buildJourney());
 
     const days = el('<div class="wk-days"></div>');
@@ -3312,10 +3349,11 @@
      none), removes itself on animationend with a fallback timer, and is
      aria-hidden because the same facts are on the page underneath. */
   const motionOK = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: no-preference)').matches);
-  function cinemaCard(kicker, markHTML, line, extra) {
+  function cinemaCard(kicker, markHTML, line, extra, latin) {
     const card = el('<div class="titlecard' + (extra ? ' ' + extra : '') + '" aria-hidden="true"><div class="tc-ribbons">' + '<i></i>'.repeat(9) +
-      '</div>' + (kicker ? '<div class="tc-kicker">' + esc(kicker) + '</div>' : '') +
-      '<div class="tc-mark">' + markHTML + '</div><div class="tc-line">' + esc(line) + '</div></div>');
+      '</div>' + (latin ? '<div class="tc-gloria"></div>' : '') + (kicker ? '<div class="tc-kicker">' + esc(kicker) + '</div>' : '') +
+      '<div class="tc-mark">' + markHTML + '</div><div class="tc-line">' + esc(line) + '</div>' +
+      (latin ? '<div class="tc-latin">❦ ' + esc(latin[0]) + ' ❦<small>' + esc(latin[1]) + '</small></div>' : '') + '</div>');
     document.body.appendChild(card);
     const bye = () => card.remove();
     card.addEventListener('animationend', (e) => { if (e.target === card) bye(); });
@@ -3334,9 +3372,9 @@
     const today = todayISO();
     const day = DB.buildDay(today), cd = DB.raceCountdown(today);
     const line = day.blockId === 'marathon'
-      ? 'WEEK ' + day.week + ' · ' + (cd.days === 0 ? 'RACE DAY' : cd.days + (cd.days === 1 ? ' DAY' : ' DAYS') + ' TO THE GUN')
-      : day.blockId === 'recovery' ? 'RECOVERY · WEEK ' + day.week : 'STANDING WEEK';
-    cinemaCard('', 'WEEK<b>OS</b>', line);
+      ? 'WEEK ' + roman(day.week) + ' · ' + (cd.days === 0 ? 'RACE DAY' : cd.days + (cd.days === 1 ? ' DAY' : ' DAYS') + ' TO THE GUN')
+      : day.blockId === 'recovery' ? 'RECOVERY · WEEK ' + roman(day.week) : 'STANDING WEEK';
+    cinemaCard('', 'WEEK<b>OS</b>', line, '', mottoFor(day));
   }
 
   /* ---- earned moments (v4.71) ----
@@ -3352,24 +3390,24 @@
     const km = (n) => esc(loggedDistance(n)) + '<small>KM</small>';
     if (r && DB.runClass(r) === 'race' && /MARATHON/.test(r.title)) {
       return cinemaCard('MARATHONER', e ? esc(recordTime(e.sec)) : km(r.run.km),
-        (e ? loggedDistance(e.km) + ' km · ' + DB.paceOf(e.km, e.sec) + '/km · ' : '') + String(PLAN.race.city).split(',')[0], 'earned race');
+        (e ? loggedDistance(e.km) + ' km · ' + DB.paceOf(e.km, e.sec) + '/km · ' : '') + String(PLAN.race.city).split(',')[0], 'earned race', (PLAN.hours && PLAN.hours.earned || {}).marathon);
     }
     if (!e) return;
     if (r && DB.runClass(r) === 'race') {
       return cinemaCard('RACED · ' + String(r.title).split(/\s+[—-]\s+|\s+all-out/)[0], esc(recordTime(e.sec)),
-        loggedDistance(e.km) + ' km · ' + DB.paceOf(e.km, e.sec) + '/km', 'earned');
+        loggedDistance(e.km) + ' km · ' + DB.paceOf(e.km, e.sec) + '/km', 'earned', (PLAN.hours && PLAN.hours.earned || {}).race);
     }
     if (report.longest) {
       return cinemaCard('NEW LONGEST RUN', km(e.km),
-        '+' + loggedDistance(Number(report.longest.gainKm.toPrecision(3))) + ' km beyond your previous longest', 'earned');
+        '+' + loggedDistance(Number(report.longest.gainKm.toPrecision(3))) + ' km beyond your previous longest', 'earned', (PLAN.hours && PLAN.hours.earned || {}).longest);
     }
     if (report.best) {
       return cinemaCard('NEW BEST · ' + loggedDistance(e.km) + ' KM', esc(recordTime(e.sec)),
-        recordTime(report.best.gainSec) + ' quicker than your previous best', 'earned');
+        recordTime(report.best.gainSec) + ' quicker than your previous best', 'earned', (PLAN.hours && PLAN.hours.earned || {}).best);
     }
     if (report.milestone) {
       return cinemaCard(report.milestone + ' KM LOGGED', esc(String(report.milestone)) + '<small>KM</small>',
-        'across ' + report.runCount + ' saved runs', 'earned');
+        'across ' + report.runCount + ' saved runs', 'earned', (PLAN.hours && PLAN.hours.earned || {}).milestone);
     }
   }
 

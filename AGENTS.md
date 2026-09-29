@@ -980,3 +980,37 @@ Build tests guard the text alternatives and tap-through; interactions
 check the wheel's summary and hand and the sky's stars and sun. 65 browser
 checks (including the 234-day sweep), 16,172 plan checks, no overflow,
 accessibility sweep clean.
+
+## The Book of Hours — v4.73, 29 September (Claude)
+
+The user asked to keep going, naming an enlightenment, traditional
+Catholic or 90s aesthetic. Interpreted as one object that is the first two
+at once and fits the near-black/grey/one-red identity: the illuminated
+Book of Hours (organised by the hours of the day; red ink = rubric = the
+app's one red). 90s left out to keep it coherent.
+- `PLAN.hours`: phase mottos (Festina lente · Per aspera ad astra · In
+  omnia paratus; Alea iacta est on race day; Solvitur ambulando in
+  recovery; Ora et labora in the standing week), the eight canonical hours,
+  earned-moment inscriptions (Ad astra · Veni, vidi, vici · Plus ultra ·
+  Citius · Nulla dies sine linea) and the journey epigraph (Pliny).
+- Day wheel → astronomical clock: canonical hour names with their clock
+  hour stacked on the dial, rose-window tracery in the face, the motto
+  curved along the bottom rim with a red initial. viewBox now -12 0 364 362,
+  centre 170.
+- Title card: WEEK XIV and the phase motto with its translation, over quiet
+  red rays. Earned moments gain gloria rays and the Latin inscription.
+- Week view: Roman week numeral; the motto under the dates; the distance
+  profile's completed days are lit candles (flame from tokens), pending
+  ones show a wick. The profile now counts a saved log as completed, as
+  everything else does, and is inserted after the note/motto.
+- Journey: Pliny epigraph; "Fig. I/II/III" engraved-plate captions on the
+  sky, the block chart and the wall; key days numbered I–V in serif; the
+  Monday "Previously" card's numeral is Roman.
+- Reference: the first note after each section's card opens with an
+  illuminated initial (::first-letter, red serif in a ruled box).
+- `--serif` system stack (Baskerville, Didot, …), no download; never data.
+- Fix found on the way: the old `.earned small { display: block }` (run
+  recap) also matched the cinema card and wrapped "KM" under the number.
+Build tests: every motto/inscription present, eight hours, no Latin in
+app.js, no serif webfont. Interactions: the dial's hours and motto, Roman
+key days. 67 browser checks, 16,177 plan checks, no overflow, a11y clean.

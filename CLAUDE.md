@@ -110,6 +110,19 @@ of the block as a star with race day as a red sunrise, and the run card's
 texture follows the class of run (red speed lines when hard, a white road
 when long, contour rings when easy). Same tokens, same meanings.
 
+**The Book of Hours (v4.73).** The user likes an enlightenment and
+traditional Catholic aesthetic; the illuminated Book of Hours is both, and a
+book organised by the hours of the day. Its red ink (rubrication) is the
+app's one red, so in this layer red marks initials only. The day wheel is an
+astronomical clock with the eight canonical hours and rose-window tracery;
+Latin mottos by phase, inscriptions on earned moments and the journey
+epigraph live in `PLAN.hours` (content, never in app.js); week numbers and
+key days take Roman numerals; completed days in the distance profile are lit
+candles; Reference notes open with illuminated initials; figures are
+captioned "Fig. I–III". The serif is the system stack `--serif` (Baskerville,
+Didot: the Enlightenment's own faces, bundled with iOS) and is never used for
+data.
+
 ## 4. Product intent (UX is yours to design)
 
 First-principles design is welcome. These behaviours are the intent:

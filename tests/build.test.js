@@ -1355,6 +1355,15 @@ section('palette contrast (WCAG AA)');
     ok(/<figure class="daywheel" role="img" aria-label=/.test(appSrc) && /<figure class="sky" role="img" aria-label=/.test(appSrc),
       'the day wheel and the night sky carry text alternatives');
     ok(/\.hero \.h-art \{[^}]*pointer-events:\s*none/.test(css), 'run card textures never take a tap');
+    /* Book of Hours (v4.73): the Latin is plan content and lives in plan.js;
+       every phase and post-race block has a motto, every moment an inscription. */
+    const H = PLAN.hours || {};
+    ok(['base', 'build', 'taper', 'race', 'recovery', 'standing'].every((k) => Array.isArray(H.mottos && H.mottos[k]) && H.mottos[k].length === 2),
+      'every phase and block has a motto with its translation');
+    ok(['marathon', 'race', 'longest', 'best', 'milestone'].every((k) => Array.isArray(H.earned && H.earned[k])), 'every earned moment has an inscription');
+    ok((H.canonical || []).length === 8, 'the eight canonical hours mark the dial');
+    ok(!/Per aspera|Festina lente|Plus ultra|Nulla dies/.test(appSrc), 'no Latin lives in app.js (§2: rendering code carries no content)');
+    ok(/--serif:/.test(rootSrc) && !/@font-face[^}]*Baskerville/.test(css), 'the serif is a system stack, no new font download');
 
     /* Zoom must stay available. `user-scalable=no` / `maximum-scale=1` is a
        WCAG 1.4.4 failure, and it is not even the thing that gives the app its

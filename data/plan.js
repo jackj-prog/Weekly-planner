@@ -510,6 +510,40 @@ const PLAN = {
     capNote: 'Past rule 9\u2019s 3h20 cap: beyond that the recovery cost climbs faster than the aerobic return.',
   },
 
+  /* The Book of Hours (v4.73). The user asked for an enlightenment and
+     traditional Catholic aesthetic; a medieval Book of Hours is both, and it
+     is literally a book organised by the hours of the day, rubricated in red
+     ink, which is what the app's one red already is. All genuine Latin.
+     Mottos by phase (and the two days that are their own thing) sit on the
+     day wheel's rim, the Week header and the launch title card. */
+  hours: {
+    mottos: {
+      base: ['Festina lente', 'make haste slowly'],
+      build: ['Per aspera ad astra', 'through hardship to the stars'],
+      taper: ['In omnia paratus', 'ready for anything'],
+      race: ['Alea iacta est', 'the die is cast'],
+      recovery: ['Solvitur ambulando', 'it is solved by walking'],
+      standing: ['Ora et labora', 'pray and work'],
+    },
+    /* The canonical hours, as the day wheel's dial marks (every 3 hours). */
+    canonical: [
+      [0, 'Matins'], [3, 'Lauds'], [6, 'Prime'], [9, 'Terce'],
+      [12, 'Sext'], [15, 'None'], [18, 'Vespers'], [21, 'Compline'],
+    ],
+    /* Inscriptions on earned moments. The marathon closes the Build motto:
+       per aspera, ad astra. */
+    earned: {
+      marathon: ['Ad astra', 'to the stars'],
+      race: ['Veni, vidi, vici', 'I came, I saw, I conquered'],
+      longest: ['Plus ultra', 'further beyond'],
+      best: ['Citius', 'faster'],
+      milestone: ['Nulla dies sine linea', 'no day without a line'],
+    },
+    /* Epigraph for the journey page: Pliny on the painter Apelles, who let
+       no day pass without drawing at least one line. */
+    epigraph: ['Nulla dies sine linea', 'No day without a line. Pliny, on Apelles.'],
+  },
+
   /* The prescription on a long run that carries marathon-pace work (\u00a710).
      {band} is the phase's easy band, {mp} the race goal pace. Only titles
      with an "@ MP" segment get it: the Wk 27 peak is easy/steady and is

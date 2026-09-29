@@ -86,6 +86,11 @@
   --display: "Archivo", "Archivo Black", "Avenir Next Condensed", "Arial Black", "Helvetica Neue", sans-serif;
   --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --body: "Inter", -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  /* The Book of Hours face (v4.73): Baskerville and Didot are the
+     Enlightenment's own typefaces (1757, 1780s) and ship with iOS, so the
+     serif costs no download. Used for Latin, Roman numerals, captions and
+     illuminated initials, never for data. */
+  --serif: "Baskerville", "Didot", "Hoefler Text", "Iowan Old Style", "Palatino", Georgia, "Times New Roman", serif;
 
   /* Type roles: display 28/22/18; language 16/14; data and labels 12. */
   --type-title: 28px;
@@ -1878,6 +1883,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   opacity: 0; animation: tc-line .5s ease-out .3s forwards;
 }
 .tc-mark { white-space: nowrap; }
+.titlecard .tc-mark small { display: inline; }
 .tc-mark small { font-size: .38em; font-weight: 800; margin-left: 8px; letter-spacing: 0; color: var(--t2); }
 .titlecard.earned { animation-duration: 2.7s; }
 .titlecard.earned .tc-mark { font-size: 76px; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; text-shadow: 0 0 40px var(--glow-white); }
@@ -2042,4 +2048,84 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   .view.anim .sk-star, .view.anim .sk-ahead { animation: dw-in 1.2s ease-out backwards; }
   .view.anim .sk-sun, .view.anim .sk-ray { animation: sk-rise 1.4s cubic-bezier(.2,.8,.2,1) .3s backwards; }
   @keyframes sk-rise { from { opacity: 0; transform: translateY(14px); } }
+}
+
+/* ================= THE BOOK OF HOURS (v4.73) =======================
+   Enlightenment and traditional Catholic, as the user asked, read through
+   one object that is both: the illuminated Book of Hours. Rubrication (red
+   ink) is the app's one red, so red here marks initials only — the rubric —
+   and everything else stays in the grey ladder. Latin, Roman numerals and
+   captions are set in the Enlightenment serifs; data stays in Archivo and
+   Space Mono. */
+
+/* rubricated initials, wherever a Latin line begins */
+.rub { color: var(--accent); fill: var(--accent); font-style: normal; }
+
+/* -- the day wheel as an astronomical clock -- */
+.daywheel svg { width: min(330px, 90vw); }
+.dw-rose { fill: none; stroke: var(--line); stroke-width: 1; }
+.dw-hour { font-size: 7.5px; }
+.dw-canon { fill: var(--t2); font: italic 400 10px var(--serif); text-anchor: middle; letter-spacing: .04em; }
+.dw-motto { fill: var(--t2); font: italic 400 14px var(--serif); letter-spacing: .14em; text-anchor: middle; }
+.dw-motto .rub { font-size: 19px; font-weight: 700; }
+
+/* -- the week's motto, under its dates -- */
+.wk-motto { margin: -4px 2px 14px; font: italic 400 17px/1.4 var(--serif); color: var(--text); }
+.wk-motto .rub { font-size: 1.5em; font-weight: 700; line-height: 0; margin-right: 1px; }
+.wk-motto .tr { color: var(--t3); font-size: 14px; }
+
+/* -- Roman numerals, engraved -- */
+.wk-num { font: 400 90px/.9 var(--serif); letter-spacing: .02em; top: -4px; -webkit-text-stroke-width: 1.2px; }
+.wk-num.long { font-size: 62px; top: 8px; }
+.pv-num { font: 400 104px/.86 var(--serif); letter-spacing: .02em; right: 4px; top: -8px; -webkit-text-stroke-width: 1.2px; }
+.journey-event { grid-template-columns: 88px 1fr 16px; }
+.journey-event-index { font: 400 56px/.9 var(--serif); letter-spacing: .02em; -webkit-text-stroke-width: 1.2px; padding-right: 10px; }
+
+/* -- the journey page: an epigraph and engraved-plate captions -- */
+.epigraph { margin: 16px 0 22px; padding-left: 14px; border-left: 2px solid var(--accent); font: 400 15px/1.5 var(--serif); color: var(--t2); }
+.epigraph i { color: var(--text); font-size: 17px; }
+.fig { font: italic 400 1em var(--serif); color: var(--t2); margin-right: 6px; letter-spacing: 0; }
+.fig-cap { margin-top: 6px; text-align: center; font: 400 13px var(--serif); color: var(--t3); }
+.fig-cap .fig { color: var(--t2); }
+
+/* -- the distance profile: a completed day is a lit candle -- */
+.profile-track i { position: relative; }
+.profile-day.lit .profile-track i::before {
+  content: ''; position: absolute; left: 50%; top: -17px; width: 10px; height: 10px; margin-left: -5px;
+  border-radius: 50% 0 50% 50%; transform: rotate(-45deg);
+  background: radial-gradient(circle at 30% 70%, var(--text) 0 30%, var(--accent) 68%);
+  box-shadow: 0 0 12px 3px var(--glow-red);
+}
+.profile-day:not(.lit):not(.rest) .profile-track i::before {
+  content: ''; position: absolute; left: 50%; top: -6px; width: 1.5px; height: 6px; margin-left: -.75px; background: var(--t3);
+}
+
+/* -- earned moments and the title card: an inscription, and a gloria -- */
+.tc-latin {
+  position: relative; margin-top: 6px; text-align: center;
+  font: italic 400 24px var(--serif); color: var(--text); letter-spacing: .03em;
+  opacity: 0; animation: tc-line .6s ease-out .95s forwards;
+}
+.tc-latin small { display: block; margin-top: 6px; font: 400 10px var(--mono); letter-spacing: .2em; color: var(--t3); text-transform: uppercase; }
+.tc-gloria {
+  position: absolute; left: 50%; top: 50%; width: 760px; height: 760px; margin: -380px 0 0 -380px; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, var(--glow-white) 0deg 2deg, transparent 2deg 7.5deg);
+  -webkit-mask-image: radial-gradient(circle, #000 12%, transparent 58%);
+  mask-image: radial-gradient(circle, #000 12%, transparent 58%);
+  opacity: 0; animation: tc-gloria 1.6s cubic-bezier(.2,.8,.2,1) .25s forwards;
+}
+.titlecard.race .tc-gloria { background: repeating-conic-gradient(from 0deg, var(--glow-red) 0deg 2deg, transparent 2deg 7.5deg); }
+/* the launch keeps its rays quieter and closer: the wordmark leads */
+.titlecard:not(.earned) .tc-gloria {
+  background: repeating-conic-gradient(from 0deg, var(--glow-red-soft) 0deg 1.5deg, transparent 1.5deg 9deg);
+  -webkit-mask-image: radial-gradient(circle, #000 6%, transparent 40%);
+  mask-image: radial-gradient(circle, #000 6%, transparent 40%);
+}
+@keyframes tc-gloria { from { opacity: 0; transform: rotate(-12deg) scale(.7); } to { opacity: 1; transform: none; } }
+
+/* -- Reference: each section's first note opens with an illuminated initial -- */
+.ref-card + .ref-note::first-letter {
+  float: left; margin: 4px 10px 0 0; padding: 7px 9px 3px;
+  font: 400 3.1em/.8 var(--serif); color: var(--accent);
+  border: 1px solid var(--line); border-radius: 3px; background: var(--surface);
 }

@@ -318,6 +318,7 @@ async function cinema() {
   check((await t.page.$$('.wall .wl-cols .wl')).length === 210, 'the wall draws all 210 days');
   check((await t.page.$$('.sky .sk-star')).length >= 6 && !!(await t.page.$('.sky .sk-sun')), 'the night sky draws recorded runs as stars and the race as a sunrise');
   check(/RUNS SO FAR/.test(await text(t.page, '.wall-head')), 'the wall counts runs so far');
+  check((await text(t.page, '.journey-event.next .journey-event-index')) === 'II', 'key days are numbered in Roman numerals');
   const next = await t.page.$$('.journey-event.next');
   check(next.length === 1 && /PARKRUN/.test(await next[0].textContent()), 'exactly one key day lit: the next one');
   noErrors(t, 'cinema');
@@ -327,6 +328,8 @@ async function cinema() {
   check((await text(t.page, '.nn-in')) === 'in 20 min', 'NEXT line counts down to the run');
   check(/sessions, 0 done; run at 17:10/.test(await t.page.getAttribute('.daywheel', 'aria-label')) && !!(await t.page.$('.daywheel .dw-hand')),
     'the day wheel summarises the day and points at now');
+  check((await t.page.$$('.daywheel .dw-canon')).length === 8 && /Per aspera ad astra/.test((await t.page.textContent('.daywheel .dw-motto')) || ''),
+    'the dial carries the canonical hours and the Build motto');
   await t.ctx.close();
   t = await open('2026-09-21', '12:00', SEED);
   const prev = await text(t.page, '.previously');
