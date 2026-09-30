@@ -200,6 +200,11 @@ Thursday's); nothing on a future date can be ticked; NOW sits after the
 block it falls inside; the countdown numeral has its own column beside
 the chips instead of colliding with the date; after noon the resting-HR
 prompt is one quiet line.
+**v4.88 (a quieter Today):** a card's tick is a circle in its corner, the
+footer row gone; category pills dropped (the emblem says it); the run's
+timeline row is a slim pointer back to the run card; one way into a gym
+session; the past recedes and an unticked passed session says so; the
+clock follows the timeline.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

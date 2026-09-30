@@ -1426,3 +1426,28 @@ releases were agreed; this is the first, the outright fixes:
 - **The resting-HR question belongs to the morning**: after noon an
   unanswered prompt shrinks to one quiet line.
 131 browser checks (sweep included), 16,244 plan checks, no overflow, a11y clean.
+
+## Release 2 of the UX plan: a quieter Today — v4.88, 1 October (Claude)
+
+- **Ticks move into the card's corner.** Every card ended in a footer row
+  of a wide "✓ Mark done" button and ⋯; the tick is now a 40px circle in
+  the top-right beside ⋯ (filled in the category colour when done, red
+  ring on the current card), and the footer row is gone. The button keeps
+  its `.tick` class and aria-label; its text is visually hidden.
+- **No category pills.** RUN / GYM / XT / READING repeated what the emblem
+  and colour already say ("XT" was jargon besides). `.c-cat` now appears
+  only for a state: skipped, or moved from a day.
+- **The run appears once in full.** The timeline's run row is `.slim`:
+  time, title, "7 km · Evo SL" and a "Run card ↑" button that scrolls back
+  to the hero. It keeps ⋯ (move, niggle, ill week) and leaves ticking to
+  the hero. A run moved onto a rest day is slim there too.
+- **One way into a gym session.** "5 exercises · View session" plus a
+  full-width "Focus session" became the list with a compact "Focus ↗"
+  pill beside its summary.
+- **The past recedes.** On today, passed quiet rows dim and passed cards
+  soften; a doable session that passed without a tick says "· not
+  ticked" after its time.
+- **The clock follows the timeline.** The day's dial moved from above the
+  timeline to below it, at full size, so the list starts right under the
+  run card.
+140 browser checks (sweep included), 16,248 plan checks, no overflow, a11y clean.

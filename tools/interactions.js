@@ -458,6 +458,23 @@ async function cinema() {
   check(await t.page.evaluate(() => { const a = document.querySelector('.day-head h1').getBoundingClientRect(), b = document.querySelector('.day-head .bb').getBoundingClientRect(), l = document.querySelector('.day-head .day-label');
     const hit = (x, y) => x.left < y.right && y.left < x.right && x.top < y.bottom && y.top < x.bottom; return !hit(a, b) && !(l && hit(l.getBoundingClientRect(), b)); }), 'race day\u2019s 42.2 clears the date and the week\u2019s label');
   await t.ctx.close();
+  // v4.88: a quieter Today
+  t = await open('2026-10-07', '19:45', SEED);
+  const run = await t.page.$('.tl-card.slim');
+  check(!!run && !(await run.$('.tick')) && !!(await run.$('.more-btn')) && /Tempo 25 min/.test(await run.textContent()), 'the day\u2019s run is a slim row that keeps its ⋯ and leaves the tick to the run card');
+  await t.page.click('.tl-card.slim .c-up');
+  check(await t.page.evaluate(() => Math.abs(document.querySelector('.hero').getBoundingClientRect().top - document.querySelector('.topbar').getBoundingClientRect().height) < 30), 'the slim row\u2019s button returns to the run card');
+  check((await t.page.$$('.tl-card .c-cat')).length === 0, 'no category labels where the emblem and colour already say it');
+  const gym = await t.page.$('.tl-card:has-text("Gym — Push")');
+  check((await gym.$$('.session-focus-open')).length === 1 && !/View session/.test(await gym.textContent()), 'one way into the gym session, beside its list');
+  check(await t.page.evaluate(() => { const c = document.querySelector('.tl-card:not(.slim)'), k = c.querySelector('.tick'); return k.getBoundingClientRect().top - c.getBoundingClientRect().top < 30; }), 'the tick sits in the card\u2019s corner');
+  check(/past/.test(await t.page.getAttribute('.tl-quiet:has-text("Dinner")', 'class')) && !/past/.test(await t.page.getAttribute('.tl-quiet:has-text("Wind down")', 'class')), 'what has passed recedes; what is to come does not');
+  check(await t.page.evaluate(() => { const tl = document.querySelector('.tl'); return !!(tl.nextElementSibling && tl.nextElementSibling.classList.contains('daywheel')); }), 'the clock follows the timeline');
+  noErrors(t, 'quieter Today');
+  await t.ctx.close();
+  t = await open('2026-10-09', '13:00', SEED);
+  check(/not ticked/.test(await text(t.page, '.tl-card:has-text("German active study") .c-time')), 'a passed session that was not ticked says so');
+  await t.ctx.close();
   // v4.86: the journey's week explorer, the pace spectrum, the week in hours
   t = await open('2026-10-01', '12:00', SEED, 'plan');
   const jd = await t.page.$$eval('.journey-days button', (ns) => ns.map((n) => n.className));

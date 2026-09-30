@@ -2810,3 +2810,35 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 /* after noon an unanswered resting-HR prompt is one quiet line */
 .h-rhr.add.mini { display: inline-flex; align-items: baseline; gap: 6px; width: auto; min-height: 40px; padding: 8px 12px; font-size: 13px; font-weight: 500; color: var(--t2); border-color: color-mix(in srgb, var(--text) 22%, transparent); background: transparent; }
 .h-rhr.add.mini small { display: inline; margin: 0; font-size: 11px; color: var(--t3); }
+
+/* ================= A QUIETER TODAY (v4.88) ========================= */
+/* the tick moves into the card's corner, beside ⋯, and the footer row goes */
+.tl-card { position: relative; }
+.tl-card .c-side { position: absolute; top: 10px; right: 10px; flex-direction: row; align-items: center; gap: 2px; margin: 0; padding: 0; border: 0; }
+.tl-card .c-time, .tl-card .c-title { padding-right: 88px; }
+.tl-card.slim .c-time, .tl-card.slim .c-title { padding-right: 44px; }
+.tl-card .tick {
+  width: 40px; min-width: 40px; height: 40px; padding: 0; border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--cat, var(--cat-run)) 55%, var(--line)); background: transparent;
+  color: var(--t3); font-size: 17px; font-weight: 700;
+}
+.tl-card .tick span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.tl-card .tick.on { background: var(--cat, var(--cat-run)); border-color: var(--cat, var(--cat-run)); color: var(--paper); box-shadow: 0 0 12px color-mix(in srgb, var(--cat, var(--cat-run)) 45%, transparent); }
+.tl-card.current .tick:not(.on) { border-color: var(--accent); color: var(--accent); }
+.tl-card .more-btn { width: 40px; height: 40px; }
+.c-late { color: var(--t3); font-style: normal; }
+/* the day's run: a slim pointer to the run card, its ⋯ kept */
+.tl-card.slim { padding-block: 12px; }
+.c-runref { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; font: 400 12.5px var(--mono); color: var(--t2); }
+.c-up { min-height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--text); font: 600 12.5px var(--body); }
+/* one way into a gym session: the list, with Focus beside its summary */
+.c-sess { position: relative; }
+.c-sess .session-plan summary { padding-right: 96px; }
+.session-focus-open.compact { position: absolute; top: 7px; right: 0; width: auto; min-height: 36px; margin: 0; padding: 0 12px; gap: 6px; border-radius: 999px; font-size: 13px; }
+.session-focus-open.compact span { font-size: 15px; }
+/* what has passed recedes, so the eye lands on now and next */
+.tl-quiet.past { opacity: .45; }
+.tl-card.past:not(.current) { opacity: .8; }
+.tl-card.past.done { opacity: .9; }
+/* the clock follows the timeline, with room to breathe */
+.tl + .daywheel { margin-top: 30px; }

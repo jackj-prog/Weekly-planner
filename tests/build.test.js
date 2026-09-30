@@ -1468,9 +1468,14 @@ section('palette contrast (WCAG AA)');
     /* v4.87 fixes */
     ok(/function runDayLabel/.test(appSrc) && /: runDayLabel\(iso\)\) \+ '<\/span><\/span>'/.test(appSrc) && /TOMORROW’S RUN/.test(appSrc) && /YESTERDAY’S RUN/.test(appSrc),
       'the run card names its own day instead of calling every run today\u2019s');
-    ok(/iso > today && !isDone \? ''/.test(appSrc) && /iso > todayISO\(\) && !isDone \? '' : '<button class="tick/.test(appSrc), 'a future session cannot be ticked, though a ticked one can be undone');
+    ok(/iso > today && !isDone \? ''/.test(appSrc) && /iso > todayISO\(\) && !isDone \|\| opts\.slim \? '' : '<button class="tick/.test(appSrc), 'a future session cannot be ticked, though a ticked one can be undone');
     ok(appSrc.indexOf("if (isCurrent) {\n        flushSun(nMin + 1);") > appSrc.indexOf("const card = buildCard(b, done, iso, { current: isCurrent"), 'NOW is placed after the block it falls inside');
     ok(/grid-template-areas: "nav nav" "sub bb" "lbl bb"/.test(css), 'the countdown numeral has its own column in the header');
+    /* v4.88: a quieter Today */
+    ok(/slim: !!\(day\.run && b\.id === day\.run\.id\)/.test(appSrc) && /class="c-up"/.test(appSrc), 'the day\u2019s run appears once in full, once as a slim pointer');
+    ok(appSrc.indexOf("view.appendChild(el(dayWheelHTML(day, done, iso, isToday, ovr)));") > appSrc.indexOf("view.appendChild(tl);"), 'the clock follows the timeline');
+    ok(/c-late">· not ticked/.test(appSrc) && /\.tl-quiet\.past/.test(css), 'the past recedes and an unticked passed session says so');
+    ok(!/<span>View session<\/span>/.test(appSrc), 'the gym card no longer offers the same session three ways');
     const shoeKm = {};
     for (let i = 0; i < 210; i++) { const d = DB.buildDay(DB.addDays(PLAN.blocks[0].start, i)); if (d.run) shoeKm[d.run.run.shoe] = (shoeKm[d.run.run.shoe] || 0) + d.run.run.km; }
     ok(PLAN.shoes.filter((s) => !/race/i.test(s.job)).every((s) => Object.keys(shoeKm).some((k) => s.shoe.endsWith(k) && shoeKm[k] > 100)),

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.87.0';
+  const APP_VERSION = '4.88.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -417,17 +417,16 @@
 
     view.appendChild(el('<div class="timeline-head"><h2>Your day</h2>' +
       (day.blockId === 'marathon' ? weekRingHTML(iso) : '') + '</div>'));
-    view.appendChild(el(dayWheelHTML(day, done, iso, isToday, ovr)));
-    /* -- timeline -- */
+    /* -- timeline -- (the clock follows it, v4.88) */
     const tl = el('<div class="tl"></div>');
     const nMin = nowMin();
     let nowPlaced = !isToday;
 
     movedIn.forEach((m) => {
       const card = buildCard({
-        id: m.id, title: m.title, detail: m.detail, plan: m.plan || null, cat: m.cat,
+        id: m.id, title: m.title, detail: m.detail, plan: m.plan || null, cat: m.cat, run: m.run || null,
         start: '·', end: '', doable: true,
-      }, done, iso, { moved: m, just: just === m.id });
+      }, done, iso, { moved: m, just: just === m.id, slim: !!(movedRun && m.id === movedRun.id) });
       tl.appendChild(card);
     });
 
@@ -458,9 +457,10 @@
       flushSun(b.startMin);
       const isCurrent = isToday && nMin >= b.startMin && nMin < b.endMin;
 
+      const isPast = isToday && b.endMin <= nMin;
       if (b.quiet && !b.doable) {
         const q = el(
-          '<div class="tl-quiet' + (isCurrent ? ' current' : '') + '" style="--cat:' + (CAT_VAR[b.cat] || CAT_VAR.routine) + '">' +
+          '<div class="tl-quiet' + (isCurrent ? ' current' : '') + (isPast ? ' past' : '') + '" style="--cat:' + (CAT_VAR[b.cat] || CAT_VAR.routine) + '">' +
           '<span class="q-emb">' + emblemSVG(emblemKind(b)) + '</span>' +
           '<span class="t">' + b.start + '–' + b.end + '</span>' +
           '<div class="quiet-main">' + (b.detail ? '<details class="anchor-detail" data-disclosure="' + esc(iso + '|' + b.id) + '"' +
@@ -470,7 +470,8 @@
         q.dataset.m = b.startMin;
         tl.appendChild(q);
       } else {
-        const card = buildCard(b, done, iso, { current: isCurrent, skipped: !!ovr.skip[b.id], moved: null, movedOut: !!ovr.moved[b.id], just: just === b.id });
+        const card = buildCard(b, done, iso, { current: isCurrent, past: isPast, skipped: !!ovr.skip[b.id], moved: null, movedOut: !!ovr.moved[b.id], just: just === b.id,
+          slim: !!(day.run && b.id === day.run.id) });
         card.dataset.m = b.startMin;
         tl.appendChild(card);
       }
@@ -487,6 +488,7 @@
     /* stagger index → cascading entrance (CSS, motion-gated) */
     Array.prototype.forEach.call(tl.children, (c, i) => c.style.setProperty('--i', i));
     view.appendChild(tl);
+    view.appendChild(el(dayWheelHTML(day, done, iso, isToday, ovr)));
     if (skySt && skySt.rise != null) {
       paintSpine(tl, skySt);
       if ('ResizeObserver' in window) new ResizeObserver(() => paintSpine(tl, skySt)).observe(tl);
@@ -2155,18 +2157,26 @@
     const legDrop = !!(opts.moved && legDropFor(b, iso));
     const legRe = legDrop ? new RegExp(PLAN.moveRules.legPattern, 'i') : null;
     const card = el(
-      '<div class="tl-card' + (isDone ? ' done' : '') + (opts.skipped ? ' skipped' : '') + (opts.current ? ' current' : '') + (opts.just ? ' just' : '') + '" style="--cat:' + cat + '">' +
+      '<div class="tl-card' + (isDone ? ' done' : '') + (opts.skipped ? ' skipped' : '') + (opts.current ? ' current' : '') + (opts.just ? ' just' : '') +
+        (opts.past ? ' past' : '') + (opts.slim ? ' slim' : '') + '" style="--cat:' + cat + '">' +
       '<span class="c-emb' + (emblemKind(b) === 'laurel' ? ' race' : '') + '">' + emblemSVG(emblemKind(b)) + '</span>' +
       '<div class="c-main">' +
       '<div class="c-time">' + b.start + (b.end && b.end !== b.start ? '–' + b.end : '') +
-      (opts.current ? ' <span class="nowflag">· NOW</span>' : '') + '</div>' +
+      (opts.current ? ' <span class="nowflag">· NOW</span>' : '') +
+      (opts.past && !isDone && !opts.skipped && !opts.slim ? ' <span class="c-late">· not ticked</span>' : '') + '</div>' +
       '<div class="c-title">' + esc(b.title) + '</div>' +
-      '<div class="c-detail">' + detailHTML(b.detail, iso + '|' + b.id, false) + '</div>' +
-      (b.plan ? '<div class="c-cat">' + esc(b.cat) + (opts.skipped ? ' · skipped' : '') +
-        (opts.moved ? ' · moved from ' + esc(fmtShort(opts.moved.fromIso)) : '') + '</div>' : '') +
+      /* the day's run lives on the run card above; its row here is a slim
+         pointer that keeps the run's ⋯ actions (move, niggle, ill) (v4.88) */
+      (opts.slim
+        ? '<div class="c-runref">' + esc((b.run ? b.run.km + ' km · ' + b.run.shoe : '')) + '<button class="c-up" aria-label="Go to the run card">Run card ↑</button></div>'
+        : '<div class="c-detail">' + detailHTML(b.detail, iso + '|' + b.id, false) + '</div>') +
+      /* the category is said by the emblem and the colour; only a state
+         (skipped, moved) earns a label now (v4.88) */
+      (opts.skipped || opts.moved ? '<div class="c-cat">' + (opts.skipped ? 'skipped' : '') + (opts.skipped && opts.moved ? ' · ' : '') +
+        (opts.moved ? 'moved from ' + esc(fmtShort(opts.moved.fromIso)) : '') + '</div>' : '') +
       (legDrop ? '<div class="mv-note">' + esc(PLAN.moveRules.legNote) + '</div>' : '') +
-      (b.table ? paceTableHTML(b.table) : '') +
-      (b.plan ? '<details class="session-plan" data-disclosure="' + esc(iso + '|' + b.id + '|plan') + '"' + (openDetails.has(iso + '|' + b.id + '|plan') ? ' open' : '') + '><summary>' + b.plan.length + ' exercises <span>View session</span></summary><div class="c-plan">' + b.plan.map((p) => {
+      (b.table && !opts.slim ? paceTableHTML(b.table) : '') +
+      (b.plan ? '<div class="c-sess"><details class="session-plan" data-disclosure="' + esc(iso + '|' + b.id + '|plan') + '"' + (openDetails.has(iso + '|' + b.id + '|plan') ? ' open' : '') + '><summary>' + b.plan.length + ' exercises</summary><div class="c-plan">' + b.plan.map((p) => {
         let w = '';
         if (b.cat === 'gym') {
           const key = exKey(p.ex);
@@ -2184,10 +2194,9 @@
         }
         return '<div class="xr"><span class="xn">' + esc(p.ex) + '</span>' +
           '<span class="xs">' + esc(p.sets) + '</span>' + w + '</div>';
-      }).join('') + '</div></details>' : '') +
-      (b.cat === 'gym' && b.plan && !opts.moved && !opts.skipped ? '<button class="session-focus-open" data-focus-id="' + esc(b.id) + '">Focus session <span aria-hidden="true">↗</span></button>' : '') +
-      (b.plan ? '' : '<div class="c-cat">' + esc(b.cat) + (opts.skipped ? ' · skipped' : '') +
-        (opts.moved ? ' · moved from ' + esc(fmtShort(opts.moved.fromIso)) : '') + '</div>') +
+      }).join('') + '</div></details>' +
+      /* one way in: the list for a glance, Focus for the session (v4.88) */
+      (b.cat === 'gym' && !opts.moved && !opts.skipped ? '<button class="session-focus-open compact" data-focus-id="' + esc(b.id) + '">Focus <span aria-hidden="true">↗</span></button>' : '') + '</div>' : '') +
       (opts.just && isDone && (b.cat !== 'run' || opts.moved) ? '<div class="completion-note" role="status">✓ Session banked</div>' : '') +
       (expanded ? '<div class="c-actions">' +
         (opts.skipped ? '<button data-act="unskip">Unskip</button>' : '<button data-act="skip">Skip</button>') +
@@ -2205,12 +2214,19 @@
           (b.cat === 'run' ? '<p class="mv-runlog">A day that already has a run keeps one run log between them.</p>' : '') + '</div>' : '') : '') +
       '</div>' +
       '<div class="c-side">' +
-      (iso > todayISO() && !isDone ? '' : '<button class="tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' + (isDone ? 'Mark not done: ' : 'Mark done: ') + esc(b.title) + '">✓ <span>' + (isDone ? 'Done' : 'Mark done') + '</span></button>') +
+      (iso > todayISO() && !isDone || opts.slim ? '' : '<button class="tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' + (isDone ? 'Mark not done: ' : 'Mark done: ') + esc(b.title) + '">✓ <span>' + (isDone ? 'Done' : 'Mark done') + '</span></button>') +
       '<button class="more-btn" aria-label="Actions">⋯</button>' +
       '</div></div>'
     );
     const focusBtn = card.querySelector('.session-focus-open');
     if (focusBtn) focusBtn.addEventListener('click', () => openSessionFocus(b, iso, focusBtn));
+    const upBtn = card.querySelector('.c-up');
+    if (upBtn) upBtn.addEventListener('click', () => {
+      const hero = document.querySelector('.hero');
+      if (!hero) return;
+      const inset = document.querySelector('.topbar').getBoundingClientRect().height + 12;
+      window.scrollTo({ top: hero.getBoundingClientRect().top + window.scrollY - inset, behavior: 'auto' });
+    });
     const tickEl = card.querySelector('.tick');
     if (tickEl) tickEl.addEventListener('click', () => {
       if (!isDone) state.justTicked = b.id;       // animate on tick-on only
