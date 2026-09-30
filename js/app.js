@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.92.0';
+  const APP_VERSION = '4.92.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -4415,6 +4415,28 @@
     if (e.touches.length > 1) stopScale(e);
   }, { passive: false });
   document.addEventListener('touchcancel', () => { swipeX = swipeY = null; }, { passive: true });
+  /* No zoom, ever (v4.92.1, the owner's call: "I should never have the need
+     to zoom and I am constantly accidentally doing it"). Beyond the viewport
+     and touch-action: a second quick tap on anything that is not a control
+     is swallowed, because iOS reads that as double-tap zoom; controls keep
+     every tap (touch-action: manipulation covers them). And if the page is
+     ever scaled regardless, the viewport is re-applied to snap it back. */
+  let lastTapEnd = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = e.timeStamp;
+    const onControl = e.target.closest && e.target.closest('button, a, input, select, textarea, label, summary, [role="button"], [data-nav]');
+    if (!onControl && now - lastTapEnd < 320 && e.cancelable) e.preventDefault();
+    lastTapEnd = now;
+  }, { passive: false });
+  const vpMeta = document.querySelector('meta[name="viewport"]');
+  if (window.visualViewport && vpMeta) {
+    const vpBase = vpMeta.getAttribute('content');
+    window.visualViewport.addEventListener('resize', () => {
+      if (window.visualViewport.scale <= 1.01) return;
+      vpMeta.setAttribute('content', vpBase.replace('initial-scale=1', 'initial-scale=1.0001'));
+      requestAnimationFrame(() => vpMeta.setAttribute('content', vpBase));
+    });
+  }
   document.addEventListener('touchend', (e) => {
     if (focusedSession || document.querySelector('.card-ov[open]')) { swipeX = swipeY = null; return; }
     if (e.touches.length || !e.changedTouches.length) { swipeX = swipeY = null; return; }

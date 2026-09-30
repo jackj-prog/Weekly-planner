@@ -1522,17 +1522,19 @@ section('palette contrast (WCAG AA)');
     ok(!/Per aspera|Festina lente|Plus ultra|Nulla dies/.test(appSrc), 'no Latin lives in app.js (§2: rendering code carries no content)');
     ok(/--serif:/.test(rootSrc) && !/@font-face[^}]*Baskerville/.test(css), 'the serif is a system stack, no new font download');
 
-    /* Zoom must stay available. `user-scalable=no` / `maximum-scale=1` is a
-       WCAG 1.4.4 failure, and it is not even the thing that gives the app its
-       native feel — `touch-action: pan-x pan-y` on html/body is what stops
-       double-tap zoom. It is an easy line to paste back in while chasing an
-       "app-like" feel, so it is guarded. */
+    /* No zoom, ever — the owner's call (v4.92.1): "I should never have the
+       need to zoom and I am constantly accidentally doing it". This reverses
+       the earlier WCAG 1.4.4 guard on purpose: one user, one phone, and the
+       app is laid out at 390px with no text below 11px. Guarded so it is
+       not quietly undone. */
     const vp = (html.match(/<meta name="viewport"[^>]*content="([^"]+)"/) || [])[1] || '';
     ok(vp.length > 0, 'index.html declares a viewport');
-    ok(!/user-scalable\s*=\s*no/i.test(vp), 'viewport does not disable zoom (WCAG 1.4.4)');
-    ok(!/maximum-scale\s*=\s*1\b/.test(vp), 'viewport does not cap zoom at 1x (WCAG 1.4.4)');
+    ok(/user-scalable\s*=\s*no/i.test(vp) && /maximum-scale\s*=\s*1\b/.test(vp), 'the viewport disables zoom (the owner\u2019s call)');
     ok(/viewport-fit=cover/.test(vp), 'viewport keeps viewport-fit=cover for the safe-area insets');
-    ok(/touch-action:\s*pan-x pan-y/.test(css), 'double-tap zoom is still suppressed via touch-action');
+    ok(/touch-action:\s*pan-x pan-y/.test(css) && /\[data-nav\] \{ touch-action: manipulation; \}/.test(css), 'pinch and double-tap zoom are suppressed via touch-action on the page and every control');
+    ok(/\['gesturestart', 'gesturechange', 'gestureend'\]/.test(appSrc) && /now - lastTapEnd < 320/.test(appSrc) && /visualViewport\.scale <= 1\.01/.test(appSrc),
+      'Safari\u2019s pinch gesture, stray double taps and any leftover scale are all handled');
+    ok(/input, select, textarea, \.xw-in, \.recal-in, \.data-box \{ font-size: 16px; \}/.test(css), 'form fields stay at 16px so focusing one never zooms the page');
 
     /* The update toast is the only signal that a new version exists. */
     ok(/id="toast"[^>]*(role="status"|aria-live)/.test(html),

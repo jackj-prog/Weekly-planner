@@ -1560,3 +1560,25 @@ and travels its path; arrival plays the night deepening, the Milky Way
 rising, the moons week by week, the runs in the order they were run, the
 constellation drawn, the comets, and the dawn last.
 161 browser checks (sweep included), 16,260 plan checks, no overflow, a11y clean.
+
+## No zoom, ever — v4.92.1, 1 October (Claude)
+
+User: "i hate that i can zoom on the app, i should never have the need to
+zoom and i am constantly accidentally doing it". This deliberately
+reverses the earlier guard that kept zoom available for WCAG 1.4.4 — one
+user, one phone, their call — and the build test now guards the opposite
+so it is not quietly undone. Layers, because iOS honours different ones in
+different places:
+- viewport: `minimum-scale=1, maximum-scale=1, user-scalable=no` (also
+  stops focus-zoom; every field was already 16px+, re-checked);
+- CSS: `touch-action: manipulation` then `pan-x pan-y` on html/body, and
+  `manipulation` on every control, which is what iOS reads to drop
+  double-tap zoom;
+- JS: the existing gesturestart/change/end and two-finger touch guards;
+  a second tap within 320 ms on anything that is not a control is
+  swallowed (controls keep every tap — four quick stepper taps still
+  register four times); and if the page is ever scaled anyway, the
+  viewport meta is re-applied to snap it back to 1×.
+Chromium cannot reproduce iOS's zoom behaviour, so this is verified by
+test in Chromium and by reasoning for Safari, not on a physical iPhone.
+161 browser checks, 16,261 plan checks, no overflow, a11y check clean.

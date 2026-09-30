@@ -122,8 +122,11 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-/* Allow native scrolling, without pinch or double-tap page scaling. */
-html, body { touch-action: pan-x pan-y; }
+/* No zoom, ever (the owner's call, v4.92.1): native scrolling only. The
+   manipulation line is the fallback for engines without pan-x/pan-y, and
+   it is what iOS reads to drop double-tap zoom on every control. */
+html, body { touch-action: manipulation; touch-action: pan-x pan-y; }
+button, a, summary, label, input, select, textarea, [role="button"], [data-nav] { touch-action: manipulation; }
 body {
   font-family: var(--body);
   /* the app glows in the current training phase's colour (set per render) */
