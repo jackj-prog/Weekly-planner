@@ -241,6 +241,8 @@ with the word before it, and a week card's extras hold together per item.
 **v4.98:** the Training log's recent runs are a ruled ledger (Run · km ·
 Pace · HR · EF, marked by class); an illuminated initial opens a word,
 never a label or an abbreviation.
+**v4.99:** an overdue backup (10+ entries, none in 21 days) gets one quiet
+line and a Copy backup button at the foot of the Week.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

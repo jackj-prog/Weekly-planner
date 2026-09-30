@@ -3095,3 +3095,11 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .ledger tr.lg-hard td:nth-child(3) { color: var(--accent); }
 .ledger tr.lg-long td:nth-child(2) { color: var(--text); font-weight: 700; }
 .ledger tbody tr:last-child > * { border-bottom: 0; }
+
+/* ================= BACKUP NUDGE (v4.99) ============================ */
+.data-actions button.go { background: var(--text); color: var(--paper); border-color: var(--text); }
+.bk-nudge { display: flex; align-items: center; gap: 12px; margin: 14px 0 4px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 12px; }
+.bk-nudge p { flex: 1; margin: 0; font-size: 13px; line-height: 1.45; color: var(--t2); text-wrap: pretty; }
+.bk-nudge p b { color: var(--accent); font-weight: 600; }
+.bk-nudge.done p b { color: var(--text); }
+.bk-nudge button { flex: none; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--text); background: var(--text); color: var(--paper); font: 600 14px var(--body); }

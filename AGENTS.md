@@ -1692,3 +1692,20 @@ Reference, every chapter open, audited:
   open on a bold label are `no-init`; the EF note now opens "Efficiency
   factor (EF) is…". A browser check asserts every initial opens a word.
 180 browser checks (4 new), 16,269 plan checks.
+
+## Backups, where the week is reviewed — v4.99, 1 October (Claude)
+
+The phone now holds the block's whole record (the restored run history,
+ticks, zones), and the only prompt to back it up was a red line inside
+Reference chapter XII, behind a grey button. Now:
+- **An overdue backup gets one quiet line at the foot of the Week** — the
+  screen the week is reviewed on — only when there is enough to lose (10+
+  entries) and no backup in 21 days: "Never backed up. This phone holds the
+  only copy of 58 entries. [Copy backup]". One tap copies it; if the
+  clipboard is refused it opens Reference → Data with the JSON selected.
+  A backup quiets it for three weeks.
+- **In the Data chapter, Copy backup is the primary (white) button** while
+  a backup is overdue.
+- `backupState()` and `copyBackup()` are shared by both, replacing the
+  chapter's inline copy.
+184 browser checks (4 new), 16,269 plan checks.

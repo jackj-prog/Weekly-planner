@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.98.0';
+  const APP_VERSION = '4.99.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -3106,6 +3106,8 @@
     view.appendChild(profile);
     view.appendChild(el(weekLightHTML(week7, day0.week)));
     if (day0.blockId === 'marathon') view.appendChild(buildJourney());
+    const nudge = backupNudge();
+    if (nudge) view.appendChild(nudge);
   }
 
   /* What a day with no run and no sessions is about: its longest free or
@@ -4197,22 +4199,59 @@
   /* ---- backup / restore (ticks, skips, moves, gym weights, tune-up time) ---- */
   const STORE_KEY = /^(?:(?:done|ovr|movein|runlog|rhr)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+|recal|hr)$/;
 
-  function buildDataSection() {
+  /* freshness: this phone holds the only copy of the ticks */
+  function backupState() {
     let count = 0;
     for (let i = 0; i < localStorage.length; i++) {
       if (STORE_KEY.test(localStorage.key(i))) count++;
     }
-    /* freshness: this phone holds the only copy of the ticks */
     const bAt = readJSONSafeString('backup-at');
-    let bNote = 'Never backed up.';
-    let stale = count > 0;
+    let note = 'Never backed up.', stale = count > 0;
     if (bAt) {
       const days = Math.max(0, Math.round(
         (DB.parseLocalDate(todayISO()) - DB.parseLocalDate(bAt)) / 86400000));
-      bNote = days === 0 ? 'Backed up today.'
+      note = days === 0 ? 'Backed up today.'
         : 'Last backup ' + days + ' day' + (days === 1 ? '' : 's') + ' ago.';
       stale = days > 21;
     }
+    return { count, note, stale };
+  }
+  /* the backup as a JSON blob on the clipboard; resolves with the entry
+     count, or rejects with the blob when the clipboard is refused */
+  function copyBackup() {
+    const entries = {};
+    let n = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (STORE_KEY.test(k)) { entries[k] = localStorage.getItem(k); n++; }
+    }
+    const blob = JSON.stringify({ app: 'week-os', exportedAt: new Date().toISOString(), entries });
+    try { localStorage.setItem('backup-at', todayISO()); } catch (e) { /* fine */ }
+    if (!(navigator.clipboard && navigator.clipboard.writeText)) return Promise.reject(blob);
+    return navigator.clipboard.writeText(blob).then(() => n, () => { throw blob; });
+  }
+  /* The Week is where the week gets reviewed, so an overdue backup gets one
+     quiet line at its foot — only when there is enough to lose (v4.99). */
+  function backupNudge() {
+    const b = backupState();
+    if (!b.stale || b.count < 10) return null;
+    const row = el('<div class="bk-nudge" role="status"><p><b>' + esc(b.note) + '</b> This phone holds the only copy of ' + b.count +
+      ' entries.</p><button data-io="nudge">Copy backup</button></div>');
+    row.querySelector('button').addEventListener('click', () => {
+      copyBackup().then((n) => {
+        row.classList.add('done');
+        row.innerHTML = '<p><b>Backup copied</b> — ' + n + ' entries. Paste it somewhere safe.</p>';
+      }, () => {
+        state.view = 'ref'; openDetails.add('ref-data'); render();
+        const d = document.getElementById('ref-data');
+        if (d) { d.scrollIntoView({ block: 'start' }); const x = d.querySelector('[data-io="export"]'); if (x) x.click(); }
+      });
+    });
+    return row;
+  }
+
+  function buildDataSection() {
+    const { count, note: bNote, stale } = backupState();
     const wrap = el(
       '<div class="ref"><h2>Data</h2><div class="ref-card data-card">' +
       '<div class="ref-note">' + count + ' entr' + (count === 1 ? 'y' : 'ies') +
@@ -4220,7 +4259,7 @@
       '<div class="ref-note backup-note' + (stale ? ' stale' : '') + '">' + bNote +
       (stale ? ' This phone holds the only copy.' : '') + '</div>' +
       '<div class="data-actions">' +
-      '<button data-io="export">Copy backup</button>' +
+      '<button data-io="export"' + (stale ? ' class="go"' : '') + '>Copy backup</button>' +
       '<button data-io="restore">Restore…</button></div>' +
       '<textarea class="data-box hidden" rows="4" aria-label="Backup JSON" ' +
       'placeholder="Paste a backup here, then tap Restore again"></textarea>' +
@@ -4230,25 +4269,12 @@
     const msg = wrap.querySelector('.data-msg');
 
     wrap.querySelector('[data-io="export"]').addEventListener('click', () => {
-      const entries = {};
-      let n = 0;
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (STORE_KEY.test(k)) { entries[k] = localStorage.getItem(k); n++; }
-      }
-      const blob = JSON.stringify({ app: 'week-os', exportedAt: new Date().toISOString(), entries });
-      try { localStorage.setItem('backup-at', todayISO()); } catch (e) { /* fine */ }
-      const fallback = () => {
+      copyBackup().then((n) => { msg.textContent = 'Backup copied — ' + n + ' entries. Paste it somewhere safe.'; }, (blob) => {
         box.classList.remove('hidden');
         box.value = blob;
         box.select();
         msg.textContent = 'Clipboard blocked — copy the text above by hand.';
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(blob)
-          .then(() => { msg.textContent = 'Backup copied — ' + n + ' entries. Paste it somewhere safe.'; })
-          .catch(fallback);
-      } else fallback();
+      });
     });
 
     wrap.querySelector('[data-io="restore"]').addEventListener('click', () => {

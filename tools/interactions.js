@@ -661,6 +661,22 @@ async function cinema() {
   const bad = inits.filter((x) => !/^[A-Z][a-z]/.test(x));
   check(inits.length >= 3 && bad.length === 0, 'an illuminated initial only ever opens a word, never a label or an abbreviation: ' + inits.join(' | '));
   await t.ctx.close();
+  // v4.99: an overdue backup gets one quiet line at the foot of the Week
+  t = await open('2026-10-01', '12:00', SEED, 'week');
+  check(!(await t.page.$('.bk-nudge')), 'no backup nudge while there is little to lose');
+  await t.ctx.close();
+  const many = Object.assign({}, SEED, { 'done-2026-09-21': { a: true }, 'done-2026-09-22': { a: true }, 'done-2026-09-23': { a: true }, 'done-2026-09-24': { a: true } });
+  t = await open('2026-10-01', '12:00', many, 'week');
+  check(/Never backed up\. This phone holds the only copy of 11 entries/.test(await text(t.page, '.bk-nudge')), 'an unbacked phone is told what it holds: ' + await text(t.page, '.bk-nudge'));
+  await t.page.click('.bk-nudge button'); await t.page.waitForTimeout(250);
+  const copied = await t.page.evaluate(() => ({ at: localStorage.getItem('backup-at'), done: !!document.querySelector('.bk-nudge.done'),
+    box: (document.querySelector('#ref-data .data-box:not(.hidden)') || {}).value || '' }));
+  check(copied.at === '2026-10-01' && (copied.done || /"app":"week-os"/.test(copied.box)), 'Copy backup copies (or falls back to the Data chapter’s text box) and records the date');
+  noErrors(t, 'backup nudge');
+  await t.ctx.close();
+  t = await open('2026-10-01', '12:00', Object.assign({}, many, { 'backup-at': '2026-09-28' }), 'week');
+  check(!(await t.page.$('.bk-nudge')), 'a recent backup quiets the nudge');
+  await t.ctx.close();
   t = await open('2026-10-01', '12:00', SEED, 'plan');
   check(!/data\/plan\.js/.test(await text(t.page, '#view')) && !!(await t.page.$('.journey-all .journey-coda')), 'the Plan’s coda sits with the recovery rows and names no file');
   await t.ctx.close();
