@@ -925,9 +925,63 @@
     const s = PLAN.sky;
     if (!s) return null;
     const away = (s.away || []).find((a) => iso >= a.from && iso <= a.to);
-    if (away) return { lat: away.lat, lon: away.lon, offsetMin: away.utcOffsetMin, away: true };
+    if (away) return { lat: away.lat, lon: away.lon, offsetMin: away.utcOffsetMin, away: true, name: away.name || '' };
     const [y, m, d] = iso.split('-').map(Number);
     return { lat: s.home.lat, lon: s.home.lon, offsetMin: -new Date(y, m - 1, d, 12).getTimezoneOffset(), away: false };
+  }
+  /* The light at a minute (v4.76): 'day' between sunrise and sunset,
+     'twi' in civil twilight either side, 'night' otherwise — and as a
+     level, 0 at night rising through the twilight to 1 forty minutes
+     after sunrise, and back down again through the evening. */
+  function lightAt(st, m) {
+    if (!st || st.rise == null || st.set == null) return 'day';
+    const dawn = st.dawn != null ? st.dawn : st.rise, dusk = st.dusk != null ? st.dusk : st.set;
+    if (m >= st.rise && m < st.set) return 'day';
+    return (m >= dawn && m < st.rise) || (m >= st.set && m < dusk) ? 'twi' : 'night';
+  }
+  function lightLevel(st, m) {
+    if (!st || st.rise == null || st.set == null) return 1;
+    const dawn = st.dawn != null ? st.dawn : st.rise - 40, dusk = st.dusk != null ? st.dusk : st.set + 40;
+    const ramp = (x, a, b) => Math.max(0, Math.min(1, (x - a) / (b - a)));
+    if (m < (st.rise + st.set) / 2) return m < st.rise ? 0.5 * ramp(m, dawn, st.rise) : 0.5 + 0.5 * ramp(m, st.rise, st.rise + 40);
+    return m > st.set ? 0.5 * (1 - ramp(m, st.set, dusk)) : 0.5 + 0.5 * (1 - ramp(m, st.set - 40, st.set));
+  }
+  /* Whether the moon is up, roughly: it crosses the meridian about
+     phase × 24 h after noon, and stays up for a semi-arc set by its
+     declination (its ecliptic longitude is the sun's plus the phase).
+     Good to half an hour or so — enough to draw it, never to time by. */
+  function moonUp(iso, m, place) {
+    const mp = moonPhase(iso), rad = Math.PI / 180;
+    const n = (Date.parse(iso + 'T12:00:00Z') - Date.UTC(2000, 0, 1, 12)) / 864e5;
+    const dec = Math.asin(0.3978 * Math.sin((280.46 + 0.9856474 * n + mp.phase * 360) * rad));
+    const cosH = -Math.tan(place.lat * rad) * Math.tan(dec);
+    const semi = cosH <= -1 ? 720 : cosH >= 1 ? 0 : (Math.acos(cosH) / rad) * 4;
+    const transit = 720 + mp.phase * 1440 + (place.offsetMin - place.lon * 4);
+    return Math.abs(((((m - transit) % 1440) + 1440 + 720) % 1440) - 720) < semi;
+  }
+  /* A run against the sky (v4.76): the sun event that matters (sunrise for
+     a morning run, sunset otherwise) and where the run sits against it —
+     the kilometre the sun comes up in, or the one it goes dark in. */
+  function runSky(iso, startMin, endMin, km) {
+    const place = skyPlace(iso);
+    if (!place) return null;
+    const st = sunTimes(iso, place.lat, place.lon, place.offsetMin);
+    if (st.rise == null || st.set == null) return null;
+    const dawn = st.dawn != null ? st.dawn : st.rise, dusk = st.dusk != null ? st.dusk : st.set;
+    const morning = startMin < (st.rise + st.set) / 2;
+    const perKm = km > 0 && endMin > startMin ? (endMin - startMin) / km : null;
+    const kmAt = (m) => perKm ? Math.min(Math.ceil(km), Math.max(1, Math.ceil((m - startMin) / perKm))) : null;
+    let state;
+    if (morning) state = endMin <= dawn ? 'dark' : startMin >= st.rise ? 'light' : 'dawn';
+    else state = startMin >= dusk ? 'dark' : endMin <= st.set ? 'light' : 'dusk';
+    return {
+      place, st, morning, state,
+      event: morning ? st.rise : st.set,
+      startLight: lightAt(st, startMin), endLight: lightAt(st, endMin),
+      lightKm: morning && state === 'dawn' && endMin > st.rise ? kmAt(st.rise) : null,
+      darkKm: !morning && state === 'dusk' && endMin > dusk ? kmAt(dusk) : null,
+      margin: morning ? startMin - st.rise : st.set - endMin,
+    };
   }
 
   return {
@@ -936,7 +990,7 @@
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
-    isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, mpVerdict, easyPartEf,
+    isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, moonUp, runSky, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

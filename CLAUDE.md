@@ -126,7 +126,15 @@ night with stars, sun marks at sunrise and sunset, the moon at its phase;
 Nicosia's sky in Cyprus time for the race trip. Home is a generic
 central-England point by design (§1). The night sky page carries every run
 as a star, comet tails on each new longest run, the block's full and new
-moons, a Milky Way, and race morning's waning moon over the red sunrise.
+moons, a Milky Way, race morning's waning moon over the red sunrise, and
+now and then a shooting star. **The sky reaches the rest of the day (v4.76):**
+the run card draws its window as a ribbon of the real light — twilight, the
+sun on the horizon, stars and the moon when it is up — with one plain line
+of what it means ("Sunset 16:48 · starts in the dusk, dark by km 2"); the
+race card on Reference shows race morning the same way; the Now card wears
+the sky outside (sun, sun on the horizon, the moon at its phase, or a star,
+and still stars behind it after dark); the launch card carries tonight's
+real moon. The ribbon's run keeps the run colours (red hard, white long).
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`
@@ -136,7 +144,8 @@ distance profile are lit candles. The serif is the system stack `--serif`
 fold starts when it scrolls into view (the dial draws itself round the clock
 and the hand sweeps to now); a tick or a minute's re-render never replays
 them. Ambient loops are allowed only in the art — stars twinkle, candles
-flicker — and never on data. All of it sits behind `prefers-reduced-motion`.
+flicker, a rare shooting star crosses the night sky — and never on data (the
+Now card's stars stay still). All of it sits behind `prefers-reduced-motion`.
 
 ## 4. Product intent (UX is yours to design)
 

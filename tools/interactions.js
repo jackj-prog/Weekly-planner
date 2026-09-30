@@ -332,6 +332,20 @@ async function cinema() {
     'the dial carries the canonical hours and the date in numerals');
   check(/sunrise 07:0\d · sunset 18:[45]\d/.test(await text(t.page, '.dw-sunline')) && (await t.page.$$('.daywheel .dw-sun')).length === 2 &&
     !!(await t.page.$('.daywheel .dw-moon')) && (await t.page.$$('.daywheel .dw-star')).length > 8, 'the dial draws the real sky: sun, moon, stars');
+  // v4.76: the run against its sky, and the Now card wearing the light outside
+  check(/^Sunset 18:[45]\d\s· /.test(await text(t.page, '.hero .runsky .rs-line')) && !!(await t.page.$('.hero .runsky .rs-sun')) &&
+    (await t.page.$eval('.hero .rs-now', (n) => getComputedStyle(n).display)) !== 'none', 'the run card draws its window against the sunset, with now on it');
+  check(!!(await t.page.$('.nownext.sky-day .nn-sky.day')) && !(await t.page.$('.nownext .nn-stars')), 'by day the Now card shows the sun and no stars');
+  await t.ctx.close();
+  t = await open('2026-10-27', '17:00', SEED);
+  check(/^Sunset 16:4\d\s· starts in the dusk, dark by km \d/.test(await text(t.page, '.hero .runsky .rs-line')),
+    'after the clocks change the run starts in the dusk: ' + await text(t.page, '.hero .runsky .rs-line'));
+  check(!!(await t.page.$('.nownext.sky-twi .nn-sky.twi')), 'in the twilight the Now card shows the sun on the horizon');
+  await t.ctx.close();
+  t = await open('2026-09-29', '12:00', SEED, 'ref');
+  check(/^Sunrise 06:5\d\s· starts in the twilight, sun up by km 2\s· Nicosia time$/.test(await text(t.page, '.race-card .rs-line')),
+    'the race card shows race morning against its sunrise, in Nicosia time');
+  noErrors(t, 'race card sky');
   await t.ctx.close();
   t = await open('2026-09-21', '12:00', SEED);
   const prev = await text(t.page, '.previously');
@@ -351,6 +365,10 @@ async function cinema() {
   await t.ctx.close();
   t = await open('2027-01-24', '05:30', SEED);
   check(/sunrise 06:5\d .* Nicosia time/.test(await text(t.page, '.dw-sunline')), 'race morning is drawn in Nicosia time, sunrise just after the gun');
+  check(/sun up by km 2/.test(await text(t.page, '.hero .runsky .rs-line')) && !!(await t.page.$('.hero .runsky .rs-moon')),
+    'race morning: the gun in the twilight under the waning moon, the sun up in km 2');
+  check(!!(await t.page.$('.nownext.sky-night .nn-sky.night .g-moon')) && (await t.page.$$('.nownext .nn-stars circle')).length >= 10,
+    'before dawn the Now card is night: the moon and stars');
   await t.ctx.close();
   t = await open('2026-09-21', '12:00', SEED);
   check(!(await t.page.$('.previously .seal')), 'a week with a missed run is not sealed');

@@ -1078,3 +1078,43 @@ art and more animation are wanted.
 - `artSeed()` (FNV-1a + murmur finaliser) replaces the ad-hoc seeds; the
   old one clumped stars into strokes.
 74 browser checks, 16,183 plan checks, no overflow, a11y clean.
+
+## The sky about the day — v4.76, 30 September (Claude)
+
+User feedback: the clock and the starry night are the favourites; more art
+and more animation, same theme. This round takes the real sky from the dial
+to the rest of the app.
+- **The run against its sky.** The run card draws its window as a ribbon of
+  the real light (`runSkyHTML`): night, twilight and day blend as a
+  gradient from `DB.lightLevel`, the sun sits on the horizon at sunrise or
+  sunset, stars fill the dark, the moon appears at its phase when it is up,
+  hour ticks run underneath, and the run is drawn across it in its own
+  colour (red hard, white long, grey easy; white on the red race card). A
+  red NOW line moves with the minute clock. One plain line says what it
+  means: "Sunset 18:15 · back 16 min before it", "Sunset 16:48 · starts in
+  the dusk, dark by km 2", "Sunrise 06:51 · starts in the twilight, sun up
+  by km 2 · Nicosia time". Race morning's sunrise glows red, as on the
+  night sky page.
+- **New pure functions** in `js/day-builder.js`: `lightAt` (day / twi /
+  night), `lightLevel` (0–1 through the twilight), `moonUp` (meridian
+  transit from the phase, semi-arc from the moon's declination; good to
+  about half an hour, used only for drawing), `runSky` (which sun event
+  matters, the run's state against it, the km it goes dark or light in).
+  `PLAN.sky.away` gains `name: 'Nicosia'`, so app.js no longer spells the
+  place out.
+- **The race card on Reference** carries the same ribbon for race morning.
+- **The Now card wears the sky outside**: a small sun, the sun on the
+  horizon in twilight, the moon at its phase when it is up at night, or a
+  star; after dark the card goes black with still stars behind it (still,
+  because it is data). The sky state is in the card's render key, so it
+  redraws at sunset without waiting for the next block.
+- **The launch card** carries tonight's real moon above the wordmark.
+- **The night sky page** gets a shooting star now and then (three paths in
+  the empty future half, one every ~7 s, 0.4 s each), behind
+  `prefers-reduced-motion` and hidden otherwise.
+- **Not changed, flagged to the user:** the dark-kit cue (`PLAN.darkKit`,
+  rule 8) still switches on by date from 1 October at 17:00, while the
+  ribbon shows the 17:10 run finishing in daylight until mid-October. The
+  cue is plan content; whether it should follow the real sunset is the
+  user's call.
+82 browser checks (sweep included), 16,199 plan checks, no overflow, a11y clean.

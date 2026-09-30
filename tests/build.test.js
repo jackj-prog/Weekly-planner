@@ -1373,6 +1373,39 @@ section('palette contrast (WCAG AA)');
     ok(dt.set < DB.parseHM('17:10') && dt.rise > DB.parseHM('07:30'), 'midwinter at home: sunset before the evening run (' + DB.fmtHM(dt.set) + ')');
     ok(Math.abs(DB.moonPhase('2027-01-22').phase - 0.5) < 0.03, 'full moon two nights before the race (22 Jan 2027)');
     ok(Math.abs(PLAN.sky.home.lat - 52) < 1 && Math.abs(PLAN.sky.home.lon + 1.5) < 1, 'home sky stays a generic point (§1)');
+    /* The sky about the day (v4.76): each run against its own light. */
+    const skyOf = (iso) => { const d = DB.buildDay(iso); return DB.runSky(iso, d.run.startMin, d.run.endMin, d.run.run.km); };
+    const gun = skyOf(PLAN.race.date);
+    ok(gun && gun.morning && gun.state === 'dawn' && gun.startLight === 'twi' && gun.lightKm === 2 && gun.place.name === 'Nicosia',
+      'race morning: the gun goes in the twilight and the sun is up in km 2, in Nicosia time');
+    const lateOct = skyOf('2026-10-27');   // the first evening run after the clocks go back
+    ok(lateOct && !lateOct.morning && lateOct.state === 'dusk' && lateOct.darkKm >= 1 && lateOct.darkKm <= Math.ceil(DB.buildDay('2026-10-27').run.run.km) && lateOct.startLight === 'twi',
+      'after the clocks change the 17:10 run starts in the dusk and goes dark by km ' + (lateOct && lateOct.darkKm));
+    ok(skyOf('2026-11-12').state === 'dark', 'a November 17:10 run is dark the whole way');
+    const julyRun = skyOf('2026-07-14');
+    ok(julyRun.state === 'light' && julyRun.margin > 120, 'a July evening run finishes hours before sunset');
+    const decLong = skyOf('2026-12-06');
+    ok(decLong.morning && decLong.state === 'light' && decLong.margin > 0 && decLong.margin < 60, 'a December long run heads out just after sunrise');
+    const nic = DB.skyPlace('2027-01-22');
+    ok(DB.moonUp('2027-01-22', 0, nic) && !DB.moonUp('2027-01-22', 720, nic), 'the full moon is up at midnight, not at noon');
+    ok(DB.moonUp(PLAN.race.date, DB.parseHM(PLAN.race.gun), DB.skyPlace(PLAN.race.date)), 'the waning moon is still up at the gun');
+    const home = DB.skyPlace('2026-10-10');
+    ok(!DB.moonUp('2026-10-10', 0, home), 'a new moon is not in the midnight sky');
+    ok(DB.lightAt(rt, 720) === 'day' && DB.lightAt(rt, 0) === 'night' && DB.lightAt(rt, rt.rise - 5) === 'twi', 'light: day at noon, night at midnight, twilight before sunrise');
+    let rising = true;
+    for (let m = rt.dawn - 30; m < rt.rise + 60; m += 5) if (DB.lightLevel(rt, m + 5) < DB.lightLevel(rt, m)) rising = false;
+    ok(rising && DB.lightLevel(rt, 0) === 0 && DB.lightLevel(rt, 720) === 1, 'the light level rises steadily through the dawn');
+    ok(/runSkyHTML\(iso, r, skyKind\(r\)/.test(appSrc) && /rd\.run \? runSkyHTML\(PLAN\.race\.date/.test(appSrc),
+      'the run card and the race card both carry the run against its sky');
+    ok(/<figcaption class="rs-line">/.test(appSrc) && /\(RS_HZ \+ 16\) \+ '" aria-hidden="true">/.test(appSrc), 'the sky ribbon is a picture; its meaning is plain text');
+    ok(/skyGlyph\(day\.iso, nMin\)/.test(appSrc) && /skyKey\(day\.iso, nMin\)/.test(appSrc) && /skyKey\(iso, n\)/.test(appSrc),
+      'the Now card shows the sky and redraws when the light changes');
+    ok(/moonSVG\([^)]*DB\.moonPhase\(today\)/.test(tcFn), 'the launch card carries tonight’s real moon');
+    const shootAt = css.indexOf('.sk-shoot { animation');
+    const gateAt = css.lastIndexOf('@media (prefers-reduced-motion: no-preference)', shootAt);
+    ok(shootAt > 0 && gateAt > 0 && !css.slice(gateAt, shootAt).includes('\n}\n') && /\.sk-shoot \{[^}]*opacity: 0/.test(css),
+      'shooting stars move only when motion is allowed, and are hidden otherwise');
+    ok(!/Nicosia time'/.test(appSrc), 'the away place is named by plan data, not by app.js');
     ok(!/Per aspera|Festina lente|Plus ultra|Nulla dies/.test(appSrc), 'no Latin lives in app.js (§2: rendering code carries no content)');
     ok(/--serif:/.test(rootSrc) && !/@font-face[^}]*Baskerville/.test(css), 'the serif is a system stack, no new font download');
 

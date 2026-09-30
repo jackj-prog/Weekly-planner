@@ -518,7 +518,7 @@ const PLAN = {
      the gun. */
   sky: {
     home: { lat: 52.0, lon: -1.5 },
-    away: [{ from: '2027-01-22', to: '2027-01-24', lat: 35.17, lon: 33.36, utcOffsetMin: 120 }],
+    away: [{ from: '2027-01-22', to: '2027-01-24', name: 'Nicosia', lat: 35.17, lon: 33.36, utcOffsetMin: 120 }],
   },
 
   /* The Book of Hours (v4.73). The user asked for an enlightenment and
