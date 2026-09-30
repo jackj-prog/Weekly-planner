@@ -1840,3 +1840,10 @@ The Now card is the first thing on screen, and before a run it said only
 during it (the time left never splits across lines). A title that already
 states the distance ("Long 22 — last 6 @ MP") is not told it again.
 216 browser checks (3 new), 16,278 plan checks.
+
+## Previously counts the extra run — v5.0.11, 1 October (Claude)
+
+Monday's Previously card read "3 of 5 runs" over four filled bars: the
+unplanned Friday run counted in the km and drew a bar, but not in the
+words. It now reads "3 of 5 runs + 1 extra · long run not recorded".
+217 browser checks (1 new), 16,278 plan checks.

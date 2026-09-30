@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.0.10';
+  const APP_VERSION = '5.0.11';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1739,14 +1739,14 @@
     const anchor = DB.addDays(iso, -7), d0 = DB.buildDay(anchor);
     if (d0.blockId !== 'marathon') return null;
     const fmt = (n) => String(Math.round(n * 10) / 10);
-    let planned = 0, recorded = 0, runs = 0, ran = 0, top = 1;
+    let planned = 0, recorded = 0, runs = 0, ran = 0, extra = 0, top = 1;
     const days = [];
     for (let i = 0; i < 7; i++) {
       const di = DB.addDays(anchor, i), dd = DB.buildDay(di);
       const plan = dd.run ? dd.run.run.km : 0;
       const got = DB.recordedKm(dd, getDone(di), getRunLogEntry(di));
       planned += plan; recorded += got; top = Math.max(top, plan, got);
-      if (plan) { runs++; if (got > 0) ran++; }
+      if (plan) { runs++; if (got > 0) ran++; } else if (got > 0) extra++;
       const cls = dd.run ? DB.runClass(dd.run) : 'rest';
       days.push({ plan, got, kind: cls === 'quality' || cls === 'race' ? 'hard' : cls === 'long' ? 'long' : 'easy', cls });
     }
@@ -1766,7 +1766,8 @@
       (weekSealed(anchor) ? sealHTML(d0.week) : '<span class="pv-num" aria-hidden="true">' + roman(d0.week) + '</span>') +
       '<div class="pv-kicker">PREVIOUSLY · WEEK ' + d0.week + '</div>' +
       '<div class="pv-km"><b>' + fmt(recorded) + '</b> of ' + fmt(planned) + ' km</div>' +
-      '<div class="pv-line">' + ran + ' of ' + runs + ' runs · ' +
+      /* a run on an unplanned day counts in the km, so the tally says so (v5.0.11) */
+      '<div class="pv-line">' + ran + ' of ' + runs + ' runs' + (extra ? ' + ' + extra + ' extra' : '') + ' · ' +
       (all ? '<em>every run banked</em>' : esc(lrLine)) + '</div>' +
       '<div class="pv-bars" aria-hidden="true">' + bars + '</div>' +
       '<button class="pv-open">Open week ' + d0.week + ' <span aria-hidden="true">↗</span></button></section>');

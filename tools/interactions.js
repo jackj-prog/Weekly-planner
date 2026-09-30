@@ -688,6 +688,10 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.0.11: Previously counts a run on an unplanned day
+  t = await open('2026-09-28', '12:00', Object.assign({}, SEED, { 'runlog-2026-09-25': { sec: 1160, hr: 141, km: 2.77 } }));
+  check(/\d of 5 runs \+ 1 extra ·/.test(await text(t.page, '.previously .pv-line')), 'an unplanned Friday run is counted as extra: ' + await text(t.page, '.previously .pv-line'));
+  await t.ctx.close();
   // v5.0.10: Now and Next say how far the run is
   t = await open('2026-10-01', '16:55', SEED);
   check(/Easy run · 5\u00a0km/.test(await t.page.$eval('.nownext .nn-next', (n) => n.textContent)), 'Next names the run’s distance');
