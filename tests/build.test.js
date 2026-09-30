@@ -1680,6 +1680,15 @@ for (const wk of [23, 24, 28]) {
  ok(/altered running mechanics: skip the lower-body work/.test(gym.detail), 'wk ' + wk + ' retains the pain rule during maintenance');
  ok(gym.plan.length === 5 && gym.plan[0].sets === '1 × 5 @ 3 RIR', 'wk ' + wk + ' retains the authored reduced template');
 }
+section('leg dose (three-tier rule)');
+{
+ const d = PLAN.legDose;
+ ok(d && Array.isArray(d.tiers) && d.tiers.map(t => t.id).join(',') === 'full,half,skip', 'the three tiers are data: full, half, skip');
+ ok(d.tiers.every(t => t.label && t.rule), 'every tier carries a label and the rule in words');
+ ok(/brutal Sunday/.test(d.tiers[1].rule) && /one-sided pain/.test(d.tiers[2].rule), 'the tiers say what §6 says');
+ const src = require('fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
+ ok(/function dosedPlan/.test(src) && /o\.legs/.test(src), 'the choice lives in ovr-ISO beside skips, so backups carry it');
+}
 section('move rules and missed runs');
 {
  const r = PLAN.moveRules, re = new RegExp(r.legPattern, 'i');

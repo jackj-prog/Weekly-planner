@@ -243,6 +243,9 @@ Pace · HR · EF, marked by class); an illuminated initial opens a word,
 never a label or an abbreviation.
 **v4.99:** an overdue backup (10+ entries, none in 21 days) gets one quiet
 line and a Copy backup button at the foot of the Week.
+**The leg dose (v5.0):** §6's three-tier rule is a choice on Monday's
+session (Normal · Halve · Upper only, `PLAN.legDose`), stored per date in
+`ovr-ISO.legs`; it rewrites the sets or drops the leg movements for that day.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every
@@ -960,7 +963,8 @@ adding or removing a life anchor.
 
 **In-app day-level flexibility (v1; "Move to…" since v4.58):** "Skip" and
 "Move to…" (any other day of the same week) on any doable block, stored as
-per-date localStorage overrides that never mutate the plan. Real life gets
+per-date localStorage overrides that never mutate the plan. The Monday leg
+dose (§6 three-tier rule) is chosen the same way (v5.0). Real life gets
 absorbed without a deploy; the plan file stays canonical.
 
 **Blocks model — post-marathon territory:**

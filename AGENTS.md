@@ -1709,3 +1709,23 @@ Reference chapter XII, behind a grey button. Now:
 - `backupState()` and `copyBackup()` are shared by both, replacing the
   chapter's inline copy.
 184 browser checks (4 new), 16,269 plan checks.
+
+## The leg dose — v5.0, 1 October (Claude)
+
+§6's three-tier leg rule ("this is what scales the dose, not the calendar")
+was three paragraphs of capitals in the Monday brief, to be applied in your
+head between sets. It is now a choice on the session:
+- **Data:** `PLAN.legDose.tiers` — Normal · Halve · Upper only, each with
+  the rule in §6's own words. The leg movements are the ones
+  `moveRules.legPattern` already names. No training content changed.
+- **Storage:** `ovr-ISO.legs[blockId] = 'half' | 'skip'` beside skips and
+  moves, so backups and restores carry it; Normal clears it.
+- **Focus:** the brief shows "Leg dose today" as three radio cards (the
+  tiers replace the three rule paragraphs). Halve takes each leg movement
+  to one set and tags it "halved"; Upper only removes them from the
+  stepper (ten exercises become six, starting at pull-ups).
+- **Card:** "10 exercises · legs halved / upper only", the leg rows marked
+  "not today" when skipped.
+- Maintenance weeks (legs already one set) offer Normal · Upper only; a
+  session without leg work has no chooser.
+192 browser checks (8 new), 16,273 plan checks.

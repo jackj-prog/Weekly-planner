@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.99.0';
+  const APP_VERSION = '5.0.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -84,6 +84,7 @@
     const o = readJSON(ovrKey(iso), {});
     if (!o.skip || typeof o.skip !== 'object') o.skip = {};
     if (!o.moved || typeof o.moved !== 'object') o.moved = {};
+    if (!o.legs || typeof o.legs !== 'object' || Array.isArray(o.legs)) o.legs = {};
     return o;
   }
 
@@ -143,6 +144,38 @@
     const re = new RegExp(r.legPattern, 'i');
     return block.plan.some((p) => re.test(p.ex));
   }
+  /* The three-tier leg rule (PLAN.legDose, §6): which tiers a session can
+     take, the one chosen for this date, and the exercise list it leaves.
+     'half' takes each leg movement to one set; 'skip' drops them. */
+  function legTiers(block) {
+    const r = PLAN.moveRules, d = PLAN.legDose;
+    if (!r || !d || block.cat !== 'gym' || !block.plan) return [];
+    const re = new RegExp(r.legPattern, 'i');
+    const legs = block.plan.filter((p) => re.test(p.ex));
+    if (!legs.length) return [];
+    const halvable = legs.some((p) => { const m = String(p.sets).match(/^(\d+)\s*×/); return m && +m[1] > 1; });
+    return d.tiers.filter((t) => t.id !== 'half' || halvable);
+  }
+  function legDose(iso, block) {
+    const v = getOvr(iso).legs[block.id];
+    return legTiers(block).some((t) => t.id === v) ? v : 'full';
+  }
+  function setLegDose(iso, id, v) {
+    const o = getOvr(iso);
+    if (v === 'full') delete o.legs[id]; else o.legs[id] = v;
+    writeJSON(ovrKey(iso), o);
+  }
+  function dosedPlan(iso, block) {
+    const dose = legDose(iso, block);
+    if (dose === 'full') return block.plan.map((p) => Object.assign({}, p));
+    const re = new RegExp(PLAN.moveRules.legPattern, 'i');
+    return block.plan.map((p) => {
+      if (!re.test(p.ex)) return Object.assign({}, p);
+      if (dose === 'skip') return Object.assign({}, p, { off: true });
+      return Object.assign({}, p, { sets: String(p.sets).replace(/^\d+\s*×/, '1 ×'), halved: true });
+    });
+  }
+
   /* The other six days of this block's Monday–Sunday week, each with what
      is already there of the same kind, so a move shows its clash first. */
   function moveTargets(iso, block) {
@@ -1090,7 +1123,7 @@
   }
   function openSessionFocus(block, iso, trigger) {
     if (focusedSession) return;
-    const exercises = block.cat === 'gym' && block.plan ? block.plan : [];
+    let exercises = block.cat === 'gym' && block.plan ? dosedPlan(iso, block).filter((p) => !p.off) : [];
     const dialog = el('<dialog class="session-focus' + (exercises.length ? ' is-gym' : '') + (block.run ? ' focus-' + skyKind(block) : '') + '" aria-labelledby="focus-title">' +
       '<div class="focus-shell"><header class="focus-header"><span>SESSION FOCUS</span><button class="focus-back" hidden>← Session brief</button>' +
       '<button class="focus-close" aria-label="Close session focus" autofocus>✕</button></header>' +
@@ -1126,7 +1159,7 @@
         /* the exercise's number, huge and outlined behind its name (v4.79.1) */
         '<span class="focus-ex-num" aria-hidden="true">' + roman(i + 1) + '</span>' +
         '<p class="focus-eyebrow">EXERCISE ' + (i + 1) + ' / ' + exercises.length + '</p>' +
-        '<h2 class="focus-ex-name" tabindex="-1">' + esc(p.ex) + '</h2><p class="focus-sets">' + esc(p.sets) + '</p>' +
+        '<h2 class="focus-ex-name" tabindex="-1">' + esc(p.ex) + '</h2><p class="focus-sets">' + esc(p.sets) + (p.halved ? ' <em class="dose-tag">halved</em>' : '') + '</p>' +
         '<form class="focus-weight"><label for="focus-kg">Working weight <span>kg</span></label>' +
         '<div><input id="focus-kg" inputmode="decimal" autocomplete="off" value="' + (last ? esc(String(last.kg)) : '') + '" placeholder="—"' + (iso > todayISO() ? ' disabled' : '') + '>' +
         '<button type="submit"' + (iso > todayISO() ? ' disabled' : '') + '>Save</button></div>' +
@@ -1165,9 +1198,22 @@
     if (exercises.length) {
       const notes = dialog.querySelector('.focus-notes');
       const brief = focusBrief(block.detail);
+      /* a session with leg work offers the three-tier rule as a choice
+         rather than three paragraphs to apply in your head (v5.0) */
+      const tiers = legTiers(block), cur = legDose(iso, block);
       const intro = el('<div class="focus-brief"><p>' + esc(withZones(brief.intro)) + '</p>' +
-        brief.rules.map(s => '<p class="focus-rule">' + esc(withZones(s)) + '</p>').join('') +
+        (tiers.length
+          ? '<fieldset class="dose"><legend>Leg dose today</legend>' + tiers.map((t) =>
+              '<label class="dose-opt d-' + t.id + '"><input type="radio" name="dose" value="' + t.id + '"' + (t.id === cur ? ' checked' : '') + '>' +
+              '<span><b>' + esc(t.label) + '</b><small>' + esc(t.rule) + '</small></span></label>').join('') + '</fieldset>'
+          : brief.rules.map(s => '<p class="focus-rule">' + esc(withZones(s)) + '</p>').join('')) +
         '<button class="focus-jump">Go to exercises ↓</button></div>');
+      intro.querySelectorAll('input[name="dose"]').forEach((r) => r.addEventListener('change', () => {
+        setLegDose(iso, block.id, r.value);
+        exercises = dosedPlan(iso, block).filter((p) => !p.off);
+        focusedSession.index = 0;
+        paintExercise(false);
+      }));
       const content = dialog.querySelector('.focus-content');
       content.before(intro, notes);
       notes.querySelector('summary').textContent = 'Full session instructions';
@@ -2316,6 +2362,7 @@
     const expanded = state.expanded === b.id;
     const legDrop = !!(opts.moved && legDropFor(b, iso));
     const legRe = legDrop ? new RegExp(PLAN.moveRules.legPattern, 'i') : null;
+    const dose = b.plan && !opts.moved ? legDose(iso, b) : 'full';
     const card = el(
       '<div class="tl-card' + (isDone ? ' done' : '') + (opts.skipped ? ' skipped' : '') + (opts.current ? ' current' : '') + (opts.just ? ' just' : '') +
         (opts.past ? ' past' : '') + (opts.slim ? ' slim' : '') + '" style="--cat:' + cat + '">' +
@@ -2336,7 +2383,9 @@
         (opts.moved ? 'moved from ' + esc(fmtShort(opts.moved.fromIso)) : '') + '</div>' : '') +
       (legDrop ? '<div class="mv-note">' + esc(PLAN.moveRules.legNote) + '</div>' : '') +
       (b.table && !opts.slim ? paceTableHTML(b.table) : '') +
-      (b.plan ? '<div class="c-sess"><details class="session-plan" data-disclosure="' + esc(iso + '|' + b.id + '|plan') + '"' + (openDetails.has(iso + '|' + b.id + '|plan') ? ' open' : '') + '><summary>' + b.plan.length + ' exercises</summary><div class="c-plan">' + b.plan.map((p) => {
+      (b.plan ? '<div class="c-sess"><details class="session-plan" data-disclosure="' + esc(iso + '|' + b.id + '|plan') + '"' + (openDetails.has(iso + '|' + b.id + '|plan') ? ' open' : '') + '><summary>' + b.plan.length + ' exercises' +
+        (dose !== 'full' ? ' <em class="dose-tag">' + (dose === 'half' ? 'legs halved' : 'upper only') + '</em>' : '') +
+        '</summary><div class="c-plan">' + (opts.moved ? b.plan : dosedPlan(iso, b)).map((p) => {
         let w = '';
         if (b.cat === 'gym') {
           const key = exKey(p.ex);
@@ -2352,6 +2401,7 @@
         if (legRe && legRe.test(p.ex)) {
           return '<div class="xr drop"><span class="xn">' + esc(p.ex) + '</span><span class="xs">drop this week</span></div>';
         }
+        if (p.off) return '<div class="xr drop"><span class="xn">' + esc(p.ex) + '</span><span class="xs">not today</span></div>';
         return '<div class="xr"><span class="xn">' + esc(p.ex) + '</span>' +
           '<span class="xs">' + esc(p.sets) + '</span>' + w + '</div>';
       }).join('') + '</div></details>' +

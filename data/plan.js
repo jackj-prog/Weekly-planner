@@ -612,6 +612,19 @@ const PLAN = {
       'more than it gives.',
   },
 
+  /* The three-tier leg rule (§6), as choices on the session (in-app,
+     v5.0). The leg dose is scaled by how Sunday went, never by the date;
+     the choice is stored per date in ovr-ISO like a skip, and the leg
+     movements are the ones moveRules.legPattern names. 'half' takes each
+     leg movement to one set; 'skip' leaves upper body and core only. */
+  legDose: {
+    tiers: [
+      { id: 'full', label: 'Normal',     rule: 'Normal week: the leg work as written.' },
+      { id: 'half', label: 'Halve',      rule: 'After a brutal Sunday (very long, MP-heavy, or legs still battered): halve it, 1 set of each.' },
+      { id: 'skip', label: 'Upper only', rule: 'Sharp or one-sided pain, joint or tendon pain, or altered running mechanics: skip the lower-body work entirely. One missed week of leg strength beats compromising Wednesday, Friday, Sunday or your health.' },
+    ],
+  },
+
   /* Optional morning resting HR on the run card (in-app, v4.63). The
      reading is personal physiology and lives only in localStorage
      (`rhr-ISO`), never here; only the generic rule is data. Well above your

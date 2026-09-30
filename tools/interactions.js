@@ -661,6 +661,32 @@ async function cinema() {
   const bad = inits.filter((x) => !/^[A-Z][a-z]/.test(x));
   check(inits.length >= 3 && bad.length === 0, 'an illuminated initial only ever opens a word, never a label or an abbreviation: ' + inits.join(' | '));
   await t.ctx.close();
+  // v5.0: the three-tier leg rule as a choice on Monday's session
+  t = await open('2026-10-05', '16:35', SEED);
+  await t.page.click('.tl-card .session-focus-open');
+  const tiers = await t.page.$$eval('.session-focus .dose-opt input', (ns) => ns.map((n) => n.value + (n.checked ? '*' : '')));
+  check(tiers.join(',') === 'full*,half,skip', 'Monday offers Normal · Halve · Upper only, Normal chosen: ' + tiers.join(','));
+  await t.page.click('.dose-opt.d-half');
+  const ovrH = await t.json('ovr-2026-10-05');
+  check(Object.values(ovrH.legs || {})[0] === 'half' && /^1 × 5–6/.test(await text(t.page, '.session-focus .focus-sets')), 'Halve is stored for the date and takes the leg press to one set');
+  await t.page.click('.dose-opt.d-skip');
+  check(/^EXERCISE 1 \/ 6$/.test(await text(t.page, '.session-focus .focus-eyebrow')) && /Pull-ups/.test(await text(t.page, '.session-focus .focus-ex-name')),
+    'Upper only leaves six exercises, starting with pull-ups');
+  await t.page.click('.focus-close'); await t.page.waitForTimeout(100);
+  check(/upper only/.test(await text(t.page, '.tl-card .session-plan summary')) && (await t.page.$$('.tl-card .c-plan .xr.drop')).length === 4,
+    'the card says upper only and marks the four leg movements not today');
+  await t.page.click('.tl-card .session-focus-open'); await t.page.click('.dose-opt.d-full');
+  check(!Object.keys((await t.json('ovr-2026-10-05')).legs || {}).length, 'Normal clears the choice');
+  noErrors(t, 'leg dose');
+  await t.ctx.close();
+  t = await open('2026-11-30', '16:35', SEED);
+  await t.page.click('.tl-card .session-focus-open');
+  check((await t.page.$$eval('.session-focus .dose-opt input', (ns) => ns.map((n) => n.value))).join(',') === 'full,skip', 'maintenance legs (one set already) offer Normal · Upper only');
+  await t.ctx.close();
+  t = await open('2026-10-07', '19:35', SEED);
+  await t.page.click('.tl-card:has-text("Push") .session-focus-open');
+  check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
+  await t.ctx.close();
   // v4.99: an overdue backup gets one quiet line at the foot of the Week
   t = await open('2026-10-01', '12:00', SEED, 'week');
   check(!(await t.page.$('.bk-nudge')), 'no backup nudge while there is little to lose');
