@@ -1809,3 +1809,14 @@ this Sunday). Race morning lists all nine from the gun (07:10 … 10:30).
   Focus's heart rate no longer read "MP in Z3 (154– / 169)". The test's
   mirror of the substitution was updated and a check ties it to app.js.
 209 browser checks (2 new), 16,278 plan checks.
+
+## The load-jump note waits for last week to finish — v5.0.8, 1 October (Claude)
+
+Looking ahead to Week 15 on the Thursday of Week 14, the Week said "Week
+14 recorded 14.4 of 42 km (34%) · this week plans 46, 3.2× that" — a
+shortfall measured against a week with three days still to run. The
+note now fires only once the previous week has ended.
+(Also checked: race week's light-of-the-week figure draws correctly; it
+only looked empty in a full-page screenshot because its columns arrive
+when scrolled into view.)
+210 browser checks (1 new), 16,278 plan checks.

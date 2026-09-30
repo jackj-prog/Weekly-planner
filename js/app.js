@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.0.7';
+  const APP_VERSION = '5.0.8';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -2932,6 +2932,9 @@
     const prev = DB.addDays(anchor, -7);
     const prevRow = DB.weekRow(PLAN.blocks[0], day0.week - 1);
     if (!prevRow) return null;
+    /* only a finished week is a shortfall: looking ahead from mid-week, the
+       current week's first days are not "what was run" (v5.0.8) */
+    if (DB.addDays(anchor, -1) >= todayISO()) return null;
     const ran = DB.weekKm(getDone, prev, getRunLogEntry).done;
     if (!(ran > 0)) return null;                 // nothing logged ≠ nothing run
     if (ran >= prevRow.km * r.shortfall) return null;

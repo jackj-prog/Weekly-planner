@@ -688,6 +688,11 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.0.8: the load-jump note waits for last week to finish
+  t = await open('2026-10-01', '12:00', SEED, 'week');
+  await t.page.click('.wk-head .nav[data-d="7"]');
+  check(/Week 15/.test(await text(t.page, '.wk-head h1')) && !(await t.page.$('.wk-jump')), 'next week, viewed mid-week, is not measured against an unfinished week');
+  await t.ctx.close();
   // v5.0.6: the gel schedule is on the run card, in clock times
   t = await open('2026-10-04', '07:45', SEED);
   check((await text(t.page, '.hero .h-gels')).replace(/\s+/g, '') === 'GELS·4I09:05II09:40III10:15IV10:50', 'Sunday’s card lists four gels at their clock times: ' + await text(t.page, '.hero .h-gels'));
