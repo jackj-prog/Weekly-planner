@@ -1420,6 +1420,7 @@ section('palette contrast (WCAG AA)');
       'the timeline keeps sunrise and sunset in order among its rows, and paints its spine in the light');
     ok(/class="d-moon"/.test(appSrc), 'the Week calendar keeps the moon beside each date');
     ok(/class="chap"/.test(appSrc) && /rc-list/.test(appSrc) && /counter\(rule, upper-roman\)/.test(css), 'Reference is a book: contents, numbered chapters, rules in numerals');
+    ok(/class="focus-ex-num" aria-hidden="true">' \+ roman\(i \+ 1\)/.test(appSrc), 'gym focus carries each exercise\u2019s numeral, decorative');
     ok(/function dressSheet/.test(appSrc) && /if \(open\) dressSheet\(\)/.test(appSrc), 'the More sheet is dressed as plates each time it opens');
     ok(/restMoonHTML\(iso\)/.test(appSrc) && !/class="rest-mark"/.test(appSrc), 'a rest day shows the night\u2019s moon, not a pause mark');
     ok(/focus-' \+ skyKind\(block\)/.test(appSrc) && /runSkyHTML\(iso, block, skyKind\(block\), 'f'/.test(appSrc), 'run focus is lit in the run\u2019s colour and shows the sun\u2019s arc');

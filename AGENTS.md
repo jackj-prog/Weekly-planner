@@ -1245,3 +1245,13 @@ User asked to keep finding bland spots. Three more, same theme:
   and the sun's arc sits under pace and shoe (the run card's drawing,
   with the sun riding it on today). Gym focus is unchanged.
 100 browser checks (sweep included), 16,217 plan checks, no overflow, a11y clean.
+
+## Gym focus — v4.79.1, 1 October (Claude, autonomous loop)
+
+Continuing the candidates offered at the end of v4.79. The gym focus
+exercise view gets each exercise's number as a huge outlined serif Roman
+numeral behind its name (decorative, aria-hidden, fading down like the
+Week header's), a faint stage light with film grain, and the progress bar
+lights the exercises already passed. The run logger was left plain on
+purpose: it is a data-entry form, and legibility wins there.
+101 browser checks (sweep included), 16,218 plan checks, no overflow, a11y clean.

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.79.0';
+  const APP_VERSION = '4.79.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1110,7 +1110,9 @@
     const paintExercise = (moveFocus) => {
       const i = focusedSession.index, p = exercises[i], key = exKey(p.ex), last = lastWeight(key);
       const content = dialog.querySelector('.focus-content');
-      content.innerHTML = '<div class="focus-ex-progress" aria-hidden="true">' + exercises.map((_, n) => '<i class="' + (n === i ? 'selected' : '') + '"></i>').join('') + '</div>' +
+      content.innerHTML = '<div class="focus-ex-progress" aria-hidden="true">' + exercises.map((_, n) => '<i class="' + (n === i ? 'selected' : n < i ? 'past' : '') + '"></i>').join('') + '</div>' +
+        /* the exercise's number, huge and outlined behind its name (v4.79.1) */
+        '<span class="focus-ex-num" aria-hidden="true">' + roman(i + 1) + '</span>' +
         '<p class="focus-eyebrow">EXERCISE ' + (i + 1) + ' / ' + exercises.length + '</p>' +
         '<h2 class="focus-ex-name" tabindex="-1">' + esc(p.ex) + '</h2><p class="focus-sets">' + esc(p.sets) + '</p>' +
         '<form class="focus-weight"><label for="focus-kg">Working weight <span>kg</span></label>' +

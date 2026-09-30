@@ -2501,3 +2501,19 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .session-focus .runsky { margin: 22px 0 6px; }
 .session-focus.focus-hard .focus-distance, .session-focus.focus-race .focus-distance { text-shadow: 0 0 40px var(--glow-red); }
 .session-focus.focus-long .focus-distance { text-shadow: 0 0 40px var(--glow-white); }
+
+/* gym focus (v4.79.1): a quiet stage light, and each exercise's numeral
+   huge and outlined behind its name, as on the Week header */
+.session-focus.is-gym { background-image: var(--grain), radial-gradient(120% 40% at 100% 0%, var(--glow-white-soft), transparent 62%); }
+.session-focus.is-gym :is(.focus-header, .focus-footer) { background: transparent; }
+.session-focus.is-gym .focus-content { position: relative; isolation: isolate; }
+.focus-ex-num {
+  position: absolute; z-index: -1; right: 0; top: 26px; pointer-events: none;
+  font: 400 118px/.85 var(--serif); letter-spacing: .02em; color: transparent;
+  -webkit-text-stroke: 1.3px color-mix(in srgb, var(--t3) 55%, var(--line));
+  -webkit-mask-image: linear-gradient(180deg, #000 40%, transparent 92%); mask-image: linear-gradient(180deg, #000 40%, transparent 92%);
+}
+.focus-ex-progress i.past { background: var(--t3); }
+@media (prefers-reduced-motion: no-preference) {
+  .focus-ex-num { animation: numeral-in .6s cubic-bezier(.2,.8,.2,1) backwards; }
+}

@@ -377,6 +377,10 @@ async function cinema() {
   check(/focus-hard/.test(await t.page.getAttribute('.session-focus', 'class')) && !!(await t.page.$('.session-focus .runsky .rs-sunnow')),
     'a hard session\u2019s focus is lit red and carries the sun\u2019s arc');
   await t.ctx.close();
+  t = await open('2026-10-05', '16:40', SEED);
+  await t.page.click('.tl-card .session-focus-open'); await t.page.click('.focus-jump'); await t.page.click('.focus-ex-nav [data-step="1"]');
+  check((await text(t.page, '.focus-ex-num')) === 'II' && (await t.page.$$('.focus-ex-progress i.past')).length === 1, 'gym focus numbers each exercise in numerals and lights the ones behind it');
+  await t.ctx.close();
   t = await open('2026-12-25', '12:00', SEED);
   check((await text(t.page, '.daywheel .dw-count')) === 'REST' && !/0\/0/.test(await text(t.page, '.daywheel')), 'a day with nothing to tick reads REST, not 0/0');
   await t.ctx.close();
