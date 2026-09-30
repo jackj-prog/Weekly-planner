@@ -501,6 +501,27 @@ async function cinema() {
   t = await open('2026-10-08', '12:00', SEED);
   check(!(await t.page.$('.hero .sess-shape')), 'an easy run has no shape to draw');
   await t.ctx.close();
+  // v4.91: the day clock as a statement piece
+  t = await open('2026-10-07', '16:40', SEED);
+  const dial = await t.page.evaluate(() => {
+    const w = document.querySelector('.daywheel'), hg = w.querySelector('.dw-handg');
+    const sky = w.querySelector('.dw-skyring');
+    return { emb: w.querySelectorAll('.dw-emb').length, arcs: w.querySelectorAll('.dw-s:not(.off)').length, lights: w.querySelectorAll('.dw-light').length,
+      rot: hg && hg.style.transform, sky: sky && getComputedStyle(sky).backgroundImage, live: w.classList.contains('live'), sec: !!w.querySelector('.dw-sec'),
+      ticks: w.querySelectorAll('.dw-tick').length, count: (w.querySelector('.dw-count') || {}).textContent };
+  });
+  check(dial.emb === 3 && dial.arcs === 3 && dial.lights === 3 && dial.count === '0/3', 'every session is on the track with its emblem, and has its own light: ' + JSON.stringify(dial));
+  check(/^rotate\(250(\.00)?deg\)$/.test(dial.rot) && dial.live && dial.sec, 'the hand is turned to now (16:40 = 250°), and the live dial carries the minute\u2019s comet');
+  check(/conic-gradient/.test(dial.sky) && dial.ticks === 96, 'the sky is shaded round the dial by the sun, inside a quarter-hour minute track');
+  await t.page.evaluate(() => { window.__mins = 1; });
+  noErrors(t, 'day clock');
+  await t.ctx.close();
+  t = await open('2026-10-06', '22:10', Object.assign({}, SEED, { 'done-2026-10-06': { 't1710-run': true, 't1930-study': true, 't2200-reading': true } }));
+  check((await t.page.$$('.daywheel .dw-light.lit')).length === 3 && (await t.page.$$('.daywheel .dw-emb.done')).length === 3, 'a finished day lights every light and fills every emblem');
+  await t.ctx.close();
+  t = await open('2026-10-07', '12:00', SEED); await t.page.click('.day-nav .nav[data-d="1"]');
+  check(!(await t.page.$('.daywheel .dw-handg')) && !(await t.page.$('.daywheel.live')), 'another day\u2019s dial has no hand and is not live');
+  await t.ctx.close();
   // v4.86: the journey's week explorer, the pace spectrum, the week in hours
   t = await open('2026-10-01', '12:00', SEED, 'plan');
   const jd = await t.page.$$eval('.journey-days button', (ns) => ns.map((n) => n.className));

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.90.0';
+  const APP_VERSION = '4.91.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1732,15 +1732,22 @@
     h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
     return (h >>> 0) / 4294967295;
   }
-  const WHEEL_C = 170;
+  /* The clock's geometry (v4.91): a 360-unit square, midnight at the top. */
+  const WHEEL_C = 180;
   function wheelPt(m, r) {
     const a = (m / 1440) * 2 * Math.PI - Math.PI / 2;
     return [WHEEL_C + r * Math.cos(a), WHEEL_C + r * Math.sin(a)];
   }
-  function handSVG(n) {
-    const [ax, ay] = wheelPt(n, 62), [bx, by] = wheelPt(n, 134);
-    return '<path class="dw-hand" d="M' + ax.toFixed(1) + ' ' + ay.toFixed(1) + ' L' + bx.toFixed(1) + ' ' + by.toFixed(1) + '"/>' +
-      '<circle class="dw-tip" cx="' + bx.toFixed(1) + '" cy="' + by.toFixed(1) + '" r="4"/>';
+  /* The hand is drawn pointing at midnight and turned to the minute, so a
+     new minute is a rotation the browser can ease, not a redraw. Its form
+     is Breguet's: a fine shaft, a hollow moon ring that frames the sky at
+     this moment, and a tapered point on the minute track. */
+  function handAngle(n) { return (n / 1440) * 360; }
+  function handSVG() {
+    const C = WHEEL_C;
+    return '<path class="dw-hand" d="M' + C + ' ' + (C - 60) + ' L' + C + ' ' + (C - 112.5) + ' M' + C + ' ' + (C - 125.5) + ' L' + C + ' ' + (C - 128) + '"/>' +
+      '<circle class="dw-pomme" cx="' + C + '" cy="' + (C - 119) + '" r="6.5"/>' +
+      '<path class="dw-point" d="M' + (C - 1.6) + ' ' + (C - 128) + ' L' + C + ' ' + (C - 156) + ' L' + (C + 1.6) + ' ' + (C - 128) + ' Z"/>';
   }
   /* ' · <place> time' while the sky is drawn from the race trip (PLAN.sky.away) */
   function placeTime(place) {
@@ -1998,124 +2005,186 @@
     }
     return '<svg class="nn-stars" viewBox="0 0 360 130" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + s + '</svg>';
   }
+  /* ---- the day clock (v4.91): a statement piece ----
+     An astronomical watch face for one day, read from the outside in:
+       · the canonical hours engraved round the rim, the clock hours and a
+         quarter-hour minute track on the bezel;
+       · the real sky as a ring, shaded continuously by the sun's actual
+         height (DB.sunAltitude), with twilight, stars in the dark, the sun
+         at its rising and setting and the moon at its highest, its path
+         from moonrise to moonset dotted outside;
+       · the day's sessions on their own track, each wearing its emblem,
+         and the fixed life of the day as a hairline inside it;
+       · a ring of lights, one per session, lit as each is done;
+       · a medallion of rose-window tracery holding the count, the date
+         engraved beneath it, a gloria when the day is complete.
+     Today, a Breguet hand points at now and a small comet circles the
+     medallion once a minute. Every mark is data or its frame. */
   function dayWheelHTML(day, done, iso, isToday, ovr) {
     const blocks = day.blocks.filter((b) => b.endMin > b.startMin);
     if (!blocks.length) return '<span hidden></span>';
-    const C = WHEEL_C, RO = 112, RI = 90, RN = 103;
+    const C = WHEEL_C, RN = 119, RS_IN = 107, RS_OUT = 131, R_S = 94, R_Q = 81, R_P = 71, R_M = 62;
     const ang = (m) => (m / 1440) * 2 * Math.PI - Math.PI / 2;
-    const pt = (m, r) => (C + r * Math.cos(ang(m))).toFixed(1) + ' ' + (C + r * Math.sin(ang(m))).toFixed(1);
-    const arc = (a, b, r) => {
+    const pt = (m, r) => (C + r * Math.cos(ang(m))).toFixed(2) + ' ' + (C + r * Math.sin(ang(m))).toFixed(2);
+    const xy = (m, r) => pt(m, r).split(' ').map(Number);
+    const arc = (a, b, r, sweep) => {
       if (b <= a) b += 1440;
-      return 'M' + pt(a, r) + ' A' + r + ' ' + r + ' 0 ' + (b - a > 720 ? 1 : 0) + ' 1 ' + pt(b, r);
+      return 'M' + pt(a, r) + ' A' + r + ' ' + r + ' 0 ' + (b - a > 720 ? 1 : 0) + ' ' + (sweep === 0 ? 0 : 1) + ' ' + pt(b, r);
     };
     const off = (b) => !!(ovr && (ovr.skip[b.id] || ovr.moved[b.id]));
-    let rings = '', total = 0, got = 0, runAt = '';
-    blocks.forEach((b) => {
-      const a = b.startMin + 3, z = Math.max(a + 2, b.endMin - 3);
-      if (b.doable) {
-        const isRun = day.run && b.id === day.run.id;
-        const rc = isRun ? DB.runClass(day.run) : '';
-        const colour = isRun ? (rc === 'quality' || rc === 'race' ? 'var(--accent)' : rc === 'long' ? 'var(--text)' : 'var(--cat-run)') : (CAT_VAR[b.cat] || 'var(--t2)');
-        const isDone = !!done[b.id] || (isRun && (getRunLogEntry(iso) || {}).sec > 0);
-        if (!off(b)) { total++; if (isDone) got++; }
-        if (isRun) runAt = b.start;
-        rings += '<path class="dw-s' + (isDone ? ' done' : '') + (off(b) ? ' off' : '') + (isRun ? ' run' : '') +
-          '" d="' + arc(a, z, RO) + '"' + (off(b) ? '' : ' pathLength="1"') + ' style="stroke:' + colour + ';--k:' + (b.startMin / 1440).toFixed(3) + '"/>';
-      } else if (!/lights out|sleep/i.test(b.title)) {
-        rings += '<path class="dw-q" d="' + arc(a, z, RI) + '" pathLength="1" style="stroke:' + (CAT_VAR[b.cat] || 'var(--t3)') + ';--k:' + (b.startMin / 1440).toFixed(3) + '"/>';
-      }
+    const n = isToday ? nowMin() : null;
+
+    /* the bezel: the minute track, quarter hours to the hour to every three */
+    let bezel = '<circle class="dw-bez" cx="' + C + '" cy="' + C + '" r="157"/><circle class="dw-bez in" cx="' + C + '" cy="' + C + '" r="143.5"/>';
+    for (let q = 0; q < 96; q++) {
+      const m = q * 15, hr = q % 4 === 0, major = q % 12 === 0;
+      bezel += '<path class="dw-tick' + (major ? ' major' : hr ? ' hr' : '') + '" d="M' + pt(m, major ? 147.5 : hr ? 150 : 152.8) + ' L' + pt(m, 157) + '"/>';
+    }
+    for (let h = 0; h < 24; h += 3) {
+      const [x, y] = xy(h * 60, 140.5);
+      bezel += '<text class="dw-hour" x="' + x.toFixed(1) + '" y="' + (y + 2.6).toFixed(1) + '">' + String(h).padStart(2, '0') + '</text>';
+    }
+    /* the canonical hours engraved round the rim: the upper names ride an
+       arc over the top, the lower ones an arc under the bottom, so every
+       name stands the right way up */
+    const canon = ((PLAN.hours && PLAN.hours.canonical) || []).reduce((o, [h, nm]) => (o[h] = nm, o), {});
+    const upA = 16.5 * 60, upB = 7.5 * 60 + 1440, loA = 7.5 * 60, loB = 16.5 * 60;
+    let labels = '<path id="dw-up" d="' + arc(upA, upB % 1440, 165) + '" fill="none"/>' +
+      '<path id="dw-lo" d="M' + pt(loB, 172.5) + ' A172.5 172.5 0 0 0 ' + pt(loA, 172.5) + '" fill="none"/>';
+    Object.keys(canon).forEach((h) => {
+      const m = Number(h) * 60;
+      const upper = m >= upA || m <= loA;
+      const frac = upper ? (((m - upA) + 1440) % 1440) / (upB - upA) : (loB - m) / (loB - loA);
+      labels += '<text class="dw-canon"><textPath href="#dw-' + (upper ? 'up' : 'lo') + '" startOffset="' + (frac * 100).toFixed(2) + '%">' + esc(canon[h]) + '</textPath></text>';
     });
-    /* The real sky behind the day (v4.75): daylight, civil twilight and
-       night for this date and place (DB.sunTimes, PLAN.sky), stars in the
-       dark that twinkle, the sun marked where it rises and sets, and the
-       moon at its actual phase in the middle of the night. From October the
-       evening run visibly slides into the dark (rule 8). */
-    let sky = '', sunLine = '', moonLit = null;
+
+    /* the sky ring: a conic gradient sampled from the sun's height every
+       ten minutes, masked to the ring behind the drawing */
+    let sky = '', skyBg = '', sunLine = '', moonLit = null;
     const place = DB.skyPlace(iso);
     const st = place ? DB.sunTimes(iso, place.lat, place.lon, place.offsetMin) : null;
     if (st && st.rise != null && st.set != null) {
+      const noonAlt = DB.sunAltitude(iso, place.lat, st, (st.rise + st.set) / 2) || 1;
+      const level = (m) => {
+        const alt = DB.sunAltitude(iso, place.lat, st, m);
+        if (alt != null && alt >= 0) return 0.45 + 0.55 * Math.min(1, alt / noonAlt);
+        return 0.9 * DB.lightLevel(st, m);
+      };
+      const stops = [];
+      let last = -1;
+      for (let m = 0; m <= 1440; m += 10) {
+        const L = Math.round(level(m % 1440) * 50) / 50;
+        if (L !== last || m === 1440) { stops.push('color-mix(in srgb, var(--sky-d) ' + Math.round(L * 100) + '%, var(--chrome-bg)) ' + (m / 4).toFixed(1) + 'deg'); last = L; }
+      }
+      skyBg = '<div class="dw-skyring" aria-hidden="true" style="background: conic-gradient(' + stops.join(', ') + ')"></div>';
       const dawn = st.dawn != null ? st.dawn : st.rise, dusk = st.dusk != null ? st.dusk : st.set;
-      const band = (a, b, cls) => '<path class="dw-sky ' + cls + '" d="' + arc(a, b, RN) + '"/>';
-      sky = band(st.rise, st.set, 'day') + band(dawn, st.rise, 'twi') + band(st.set, dusk, 'twi') + band(dusk, dawn, 'night');
       const nightLen = ((dawn - dusk) + 1440) % 1440;
       const seedOf = (k) => artSeed(iso + ':' + k);
-      const nStars = Math.round(nightLen / 38);
+      /* the stars, in the dark only: bright ones, faint dust, a few that twinkle */
+      const nStars = Math.round(nightLen / 22);
       for (let k = 0; k < nStars; k++) {
-        const m = (dusk + nightLen * (0.04 + 0.92 * seedOf(k))) % 1440, r = RN - 15 + 30 * seedOf(k + 'r');
-        const [x, y] = pt(m, r).split(' ');
-        sky += '<circle class="dw-star' + (seedOf(k + 't') > 0.55 ? ' tw' : '') + '" style="--d:' + (seedOf(k + 'd') * 4).toFixed(2) + 's" cx="' + x + '" cy="' + y + '" r="' + (0.6 + seedOf(k + 's') * 1.1).toFixed(2) + '"/>';
+        const m = (dusk + nightLen * (0.03 + 0.94 * seedOf(k))) % 1440, r = RS_IN + 3 + (RS_OUT - RS_IN - 6) * seedOf(k + 'r');
+        const [x, y] = xy(m, r), big = seedOf(k + 's');
+        sky += '<circle class="dw-star' + (big > 0.62 ? ' tw' : '') + (big < 0.35 ? ' dust' : '') + '" style="--d:' + (seedOf(k + 'd') * 5).toFixed(2) + 's" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) +
+          '" r="' + (big < 0.35 ? 0.45 : 0.6 + big * 0.9).toFixed(2) + '"/>';
       }
-      /* the moon where it really is (v4.77), like the moon pointer of an
-         astronomical clock: its arc from moonrise to moonset round the rim,
-         and the moon itself at its highest, at its real phase — in the
-         night when it is full, in the daylight when it is new */
+      /* the horizon, where the sun meets it: a hairline across the ring */
+      [st.rise, st.set].forEach((m) => { sky += '<path class="dw-horizon" d="M' + pt(m, RS_IN) + ' L' + pt(m, RS_OUT) + '"/>'; });
+      /* the moon where it really is, its path dotted outside the ring */
       const mp = DB.moonPhase(iso), ma = DB.moonArc(iso, place);
-      if (ma.semi > 20 && ma.semi < 700) sky += '<path class="dw-moonarc" pathLength="1" d="' + arc(ma.rise, ma.set, 121.5) + '"/>';
-      /* never on top of a sun mark: within the model's own error, slide it clear */
+      if (ma.semi > 20 && ma.semi < 700) sky += '<path class="dw-moonarc" pathLength="1" d="' + arc(ma.rise, ma.set, 133.8) + '"/>';
       let mAt = ma.transit;
       [st.rise, st.set].forEach((sm) => {
         const d = ((((mAt - sm) % 1440) + 1440 + 720) % 1440) - 720;
         if (Math.abs(d) < 50) mAt = (sm + (d < 0 ? -50 : 50) + 1440) % 1440;
       });
       const [mx, my] = pt(mAt, RN).split(' ').map(Number);
-      sky += moonSVG(mx, my, 7.5, mp, 'dw-moon');
+      sky += '<g class="dw-moonwrap"><circle class="dw-moonhalo" fill="url(#dw-halo)" cx="' + mx + '" cy="' + my + '" r="' + (13 + 6 * mp.lit).toFixed(1) + '"/>' + moonSVG(mx, my, 6.8, mp, 'dw-moon') + '</g>';
       moonLit = Math.round(mp.lit * 100);
-      // the sun where it rises and where it sets
+      /* the sun at its rising and its setting, a half disc on the horizon */
       [st.rise, st.set].forEach((m) => {
-        const [sx, sy] = pt(m, RN).split(' ').map(Number);
+        const [sx, sy] = xy(m, RN);
         let rays = '';
-        for (let k = 0; k < 8; k++) {
-          const a = k * Math.PI / 4;
-          rays += 'M' + (sx + 5.5 * Math.cos(a)).toFixed(1) + ' ' + (sy + 5.5 * Math.sin(a)).toFixed(1) + ' L' + (sx + 8.5 * Math.cos(a)).toFixed(1) + ' ' + (sy + 8.5 * Math.sin(a)).toFixed(1) + ' ';
+        for (let k = 0; k < 12; k++) {
+          const a = k * Math.PI / 6, r0 = k % 2 ? 5.4 : 5.2, r1 = k % 2 ? 7.4 : 9;
+          rays += 'M' + (sx + r0 * Math.cos(a)).toFixed(2) + ' ' + (sy + r0 * Math.sin(a)).toFixed(2) + ' L' + (sx + r1 * Math.cos(a)).toFixed(2) + ' ' + (sy + r1 * Math.sin(a)).toFixed(2) + ' ';
         }
-        sky += '<g class="dw-sun"><path d="' + rays + '"/><circle cx="' + sx + '" cy="' + sy + '" r="3.6"/></g>';
+        sky += '<g class="dw-sun"><circle class="dw-sunglow" fill="url(#dw-halo)" cx="' + sx + '" cy="' + sy + '" r="15"/><path d="' + rays + '"/><circle cx="' + sx + '" cy="' + sy + '" r="3.4"/></g>';
       });
       sunLine = 'sunrise ' + DB.fmtHM(st.rise) + ' · sunset ' + DB.fmtHM(st.set) + placeTime(place);
+    } else {
+      skyBg = '<div class="dw-skyring" aria-hidden="true" style="background: color-mix(in srgb, var(--sky-d) 60%, var(--chrome-bg))"></div>';
     }
-    /* The dial of an astronomical clock: the eight canonical hours of a
-       Book of Hours round the rim (PLAN.hours), their clock hour beneath,
-       and rose-window tracery in the face. */
-    let ticks = '';
-    const canon = ((PLAN.hours && PLAN.hours.canonical) || []).reduce((o, [h, n]) => (o[h] = n, o), {});
-    for (let h = 0; h < 24; h++) {
-      const m = h * 60, major = h % 3 === 0;
-      ticks += '<path class="dw-tick' + (major ? ' major' : '') + '" d="M' + pt(m, 125) + ' L' + pt(m, major ? 132 : 129) + '"/>';
-      if (major) {
-        /* name and clock hour stacked, the hour always on the dial's side */
-        const [x, y] = pt(m, 150).split(' ').map(Number);
-        const lower = y > C + 5, name = canon[h] ? '<text class="dw-canon" x="' + x + '" y="' + (lower ? y + 10 : y - 2).toFixed(1) + '">' + esc(canon[h]) + '</text>' : '';
-        ticks += name + '<text class="dw-hour" x="' + x + '" y="' + (lower ? y - 2 : y + 9).toFixed(1) + '">' + String(h).padStart(2, '0') + '</text>';
+
+    /* the sessions on their track, each with its emblem; the fixed life of
+       the day as a hairline inside */
+    let track = '<circle class="dw-groove" cx="' + C + '" cy="' + C + '" r="' + R_S + '"/>', fixed = '', embs = '';
+    let total = 0, got = 0, runAt = '';
+    const sessions = [];
+    blocks.forEach((b) => {
+      const a = b.startMin + 2, z = Math.max(a + 3, b.endMin - 2);
+      if (b.doable) {
+        const isRun = day.run && b.id === day.run.id;
+        const rc = isRun ? DB.runClass(day.run) : '';
+        const colour = isRun ? (rc === 'quality' || rc === 'race' ? 'var(--accent)' : rc === 'long' ? 'var(--text)' : 'var(--cat-run)') : (CAT_VAR[b.cat] || 'var(--t2)');
+        const isDone = !!done[b.id] || (isRun && (getRunLogEntry(iso) || {}).sec > 0);
+        if (!off(b)) { total++; if (isDone) got++; sessions.push({ colour, isDone }); }
+        if (isRun) runAt = b.start;
+        const k = (b.startMin / 1440).toFixed(3);
+        track += '<path class="dw-s' + (isDone ? ' done' : '') + (off(b) ? ' off' : '') + (isRun ? ' run' : '') + (isToday && n >= b.startMin && n < b.endMin ? ' now' : '') +
+          '" d="' + arc(a, z, R_S) + '"' + (off(b) ? '' : ' pathLength="1"') + ' style="stroke:' + colour + ';--k:' + k + '"/>';
+        const kind = isRun && rc === 'race' ? 'laurel' : emblemKind(b);
+        const [ex, ey] = xy((b.startMin + b.endMin) / 2, R_S);
+        embs += '<g class="dw-emb' + (isDone ? ' done' : '') + (off(b) ? ' off' : '') + '" style="--c:' + colour + ';--k:' + k + '">' +
+          '<circle cx="' + ex.toFixed(1) + '" cy="' + ey.toFixed(1) + '" r="8.6"/>' +
+          '<g class="dw-e" transform="translate(' + (ex - 5.6).toFixed(2) + ' ' + (ey - 5.6).toFixed(2) + ') scale(.4667)">' + (EMBLEMS[kind] || EMBLEMS.fleuron) + '</g></g>';
+      } else if (!/lights out|sleep/i.test(b.title)) {
+        fixed += '<path class="dw-q" d="' + arc(a, z, R_Q) + '" pathLength="1" style="stroke:' + (CAT_VAR[b.cat] || 'var(--t3)') + ';--k:' + (b.startMin / 1440).toFixed(3) + '"/>';
       }
+    });
+
+    /* a ring of lights, one per session, lit as each is done */
+    let lights = '';
+    if (total) {
+      const gap = total > 1 ? 7 : 0, span = 360 / total;
+      sessions.sort((x, y) => (y.isDone ? 1 : 0) - (x.isDone ? 1 : 0)).forEach((sx, k) => {
+        const a = (k * span + gap / 2) * 4, z = ((k + 1) * span - gap / 2) * 4;
+        lights += total > 1
+          ? '<path class="dw-light' + (sx.isDone ? ' lit' : '') + '" style="--p:' + k + '" d="' + arc(a, z, R_P) + '"/>'
+          : '<circle class="dw-light' + (sx.isDone ? ' lit' : '') + '" style="--p:0" cx="' + C + '" cy="' + C + '" r="' + R_P + '"/>';
+      });
+    } else lights = '<circle class="dw-light" cx="' + C + '" cy="' + C + '" r="' + R_P + '"/>';
+
+    /* the medallion: rose-window tracery, the count, the date engraved */
+    let rose = '<circle class="dw-med" cx="' + C + '" cy="' + C + '" r="' + R_M + '"/>';
+    let tracery = '<circle cx="' + C + '" cy="' + C + '" r="' + (R_M - 4) + '"/><circle cx="' + C + '" cy="' + C + '" r="21"/>';
+    for (let k = 0; k < 12; k++) {
+      const [px, py] = xy(k * 120, 39);
+      tracery += '<circle cx="' + px.toFixed(2) + '" cy="' + py.toFixed(2) + '" r="17"/>';
+      tracery += '<path d="M' + pt(k * 120 + 60, 21) + ' L' + pt(k * 120 + 60, R_M - 4) + '"/>';
     }
-    /* The rose window: twelve lights that fill clockwise as the day's
-       sessions are done, all twelve when the day is complete. */
-    const litPetals = total ? Math.round(12 * got / total) : 0;
-    let rose = '<circle class="dw-rose" cx="' + C + '" cy="' + C + '" r="56"/>';
-    /* a finished day earns a gloria: rays out of the rose window's heart */
+    rose += '<g class="dw-tracery">' + tracery + '</g>';
+    /* a finished day earns a gloria: a burst of fine rays from behind the
+       medallion, out past the lights, turning very slowly */
+    let gloria = '';
     if (total && got === total) {
       let rays = '';
-      for (let k = 0; k < 48; k++) rays += 'M' + pt(k * 30, 22) + ' L' + pt(k * 30, k % 2 ? 44 : 53) + ' ';
-      rose = '<mask id="dw-glmask"><rect x="0" y="0" width="340" height="340" fill="#fff"/>' +
-        '<rect x="' + (C - 50) + '" y="' + (C - 34) + '" width="100" height="68" rx="22" fill="#000"/></mask>' +
-        '<g class="dw-gloria" mask="url(#dw-glmask)"><path d="' + rays + '"/></g>' + rose;
+      for (let k = 0; k < 72; k++) rays += 'M' + pt(k * 20, 63) + ' L' + pt(k * 20, k % 3 === 0 ? 86 : k % 3 === 1 ? 70 : 76) + ' ';
+      gloria = '<g class="dw-gloria"><circle class="dw-glow" fill="url(#dw-halo)" cx="' + C + '" cy="' + C + '" r="92"/><path d="' + rays + '"/></g>';
     }
-    for (let k = 0; k < 12; k++) {
-      const m = k * 120;
-      rose += '<path class="dw-rose" d="M' + pt(m, 56) + ' L' + pt(m, 84) + '"/>';
-      const [px, py] = pt(m + 60, 70).split(' ');
-      rose += '<circle class="dw-rose' + (k < litPetals ? ' lit' : '') + '" style="--p:' + k + '" cx="' + px + '" cy="' + py + '" r="10"/>';
-    }
-    /* the rim carries the date, engraved in numerals */
     const [yy, mo, dd] = iso.split('-').map(Number);
     const engraved = roman(dd) + ' · ' + roman(mo) + ' · ' + roman(yy);
-    const motto = '<path id="dw-arc" d="M' + pt(1440 * 0.625, 184) + ' A184 184 0 0 0 ' + pt(1440 * 0.375, 184) + '" fill="none"/>' +
+    const motto = '<path id="dw-arc" d="M' + pt(1440 * 0.667, 54) + ' A54 54 0 0 0 ' + pt(1440 * 0.333, 54) + '" fill="none"/>' +
       '<text class="dw-motto"><textPath href="#dw-arc" startOffset="50%">' + engraved + '</textPath></text>';
-    let hand = '';
+
+    let hand = '', sec = '';
     if (isToday) {
-      const n = nowMin();
-      /* the hand points at now; on arrival it sweeps round from midnight */
-      hand = '<g class="dw-handg" style="--from:' + (-(n / 1440) * 360).toFixed(1) + 'deg">' + handSVG(n) + '</g>';
+      hand = '<g class="dw-handg" style="transform: rotate(' + handAngle(n).toFixed(2) + 'deg)">' + handSVG() + '</g>';
+      const secs = new Date().getSeconds();
+      sec = '<g class="dw-sec" style="--s:' + secs + '"><path class="dw-sectrail" d="' + arc(1440 - 70, 1440 - 1, R_M + 0.5) + '"/>' +
+        '<circle class="dw-secdot" cx="' + C + '" cy="' + (C - R_M - 0.5) + '" r="1.7"/></g>';
     }
+
     const cats = [];
     blocks.forEach((b) => { if (b.doable && !cats.includes(b.cat)) cats.push(b.cat); });
     const rcl = day.run ? DB.runClass(day.run) : '';
@@ -2125,15 +2194,18 @@
       esc(c === 'xt' ? 'cross-train' : c === 'run' && rcl === 'race' ? 'race' : c === 'run' && rcl === 'long' ? 'long run' : c === 'run' && rcl === 'quality' ? 'quality run' : c) + '</span>').join('');
     const label = 'Your day as a 24-hour clock: ' + total + ' sessions, ' + got + ' done' + (runAt ? '; run at ' + runAt : '') +
       (sunLine ? '; ' + sunLine : '') + (moonLit != null ? '; the moon ' + moonLit + '% lit' : '') + '.';
-    return '<figure class="daywheel' + (total && got === total ? ' complete' : '') + '" role="img" aria-label="' + esc(label) + '">' +
-      '<svg viewBox="-12 0 364 362" aria-hidden="true"><circle class="dw-face" cx="' + C + '" cy="' + C + '" r="122"/>' +
-      sky + rose + ticks + rings + hand + motto +
+    return '<figure class="daywheel' + (total && got === total ? ' complete' : '') + (isToday ? ' live' : '') + '" role="img" aria-label="' + esc(label) + '">' +
+      '<div class="dw-dial">' + skyBg +
+      '<svg viewBox="0 0 360 360" aria-hidden="true"><defs><radialGradient id="dw-halo"><stop offset="0" class="dw-h0"/><stop offset=".45" class="dw-h1"/><stop offset="1" class="dw-h2"/></radialGradient></defs>' +
+      '<g class="dw-bezel">' + bezel + '</g><g class="dw-labels">' + labels + '</g>' +
+      '<g class="dw-skyart"><circle class="dw-skyedge" cx="' + C + '" cy="' + C + '" r="' + RS_OUT + '"/><circle class="dw-skyedge" cx="' + C + '" cy="' + C + '" r="' + RS_IN + '"/>' + sky + '</g>' +
+      '<g class="dw-fixed">' + fixed + '</g><g class="dw-track">' + track + '</g><g class="dw-lights">' + lights + '</g>' +
+      gloria + '<g class="dw-embs">' + embs + '</g>' + hand + rose + sec + motto +
       (total
-        ? '<text class="dw-count" x="' + C + '" y="' + (C + 2) + '">' + got + '<tspan class="dw-of">/' + total + '</tspan></text>' +
+        ? '<text class="dw-count" x="' + C + '" y="' + (C + 8) + '">' + got + '<tspan class="dw-of">/' + total + '</tspan></text>' +
           '<text class="dw-cap" x="' + C + '" y="' + (C + 24) + '">SESSIONS DONE</text>'
-        /* a day with nothing to tick says so, rather than 0/0 */
-        : '<text class="dw-count rest" x="' + C + '" y="' + (C + 2) + '">REST</text>' +
-          '<text class="dw-cap" x="' + C + '" y="' + (C + 24) + '">NOTHING TO TICK</text>') + '</svg>' +
+        : '<text class="dw-count rest" x="' + C + '" y="' + (C + 6) + '">REST</text>' +
+          '<text class="dw-cap" x="' + C + '" y="' + (C + 24) + '">NOTHING TO TICK</text>') + '</svg></div>' +
       (sunLine ? '<p class="dw-sunline" aria-hidden="true">' + sunLine + '</p>' : '') +
       (legend ? '<figcaption aria-hidden="true">' + legend + '</figcaption>' : '') + '</figure>';
   }
@@ -4257,7 +4329,7 @@
     const clock = document.querySelector('.live-clock');
     if (clock) clock.textContent = DB.fmtHM(n);
     const hg = document.querySelector('.dw-handg');
-    if (hg) hg.innerHTML = handSVG(n);
+    if (hg) hg.style.transform = 'rotate(' + handAngle(n).toFixed(2) + 'deg)';
     refreshRunSky(n);
     const line = document.querySelector('.tl-now');
     if (line) line.textContent = 'NOW ' + DB.fmtHM(n);

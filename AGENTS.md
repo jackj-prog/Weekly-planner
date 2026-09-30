@@ -1493,3 +1493,44 @@ releases were agreed; this is the first, the outright fixes:
 - **A rest day's moon keeps its earthshine**: near new moon it drew as a
   black ball; the unlit disc is now faintly ashen under a brighter rim.
 151 browser checks (sweep included), 16,252 plan checks, no overflow, a11y clean.
+
+## The day clock as a statement piece — v4.91, 1 October (Claude)
+
+User: "spend a long turn making the clock a statement piece, make cleaner,
+refine animations, make commercial quality". `dayWheelHTML` was rebuilt as
+an astronomical watch face, read from the outside in, and every old dial
+rule (73 of them, scattered over eight releases) was replaced by one
+stylesheet section, "THE DAY CLOCK (v4.91)", painted only with tokens.
+- **Bezel**: a 96-mark minute track (quarter hours, hours, every three
+  hours bold), the clock hours in mono, and the canonical hours engraved
+  on two arcs so every name stands the right way up.
+- **Sky ring**: a CSS conic gradient sampled every ten minutes from the
+  sun's real height (`DB.sunAltitude`, twilight from `DB.lightLevel`),
+  masked to the ring — midday is brightest, the evening fades through
+  twilight into night rather than stepping. Stars (bright, dust, a few
+  twinkling) only in the dark; the horizon as a dotted hairline at
+  sunrise and sunset; the sun there as a rayed disc in a soft halo; the
+  moon at its highest in a halo that grows with its phase, its path
+  dotted outside the ring.
+- **Sessions track**: each doable session drawn in its colour (runs by
+  class) on a groove, with its emblem in a roundel on the arc — filled
+  once done. Fixed life is a hairline inside.
+- **Ring of lights**: one segment per session, lit as each is done
+  (replaces the twelve rose petals, which rounded).
+- **Medallion**: rose-window tracery, the count, the date engraved
+  beneath; a finished day's gloria now bursts from behind the medallion
+  out past the lights.
+- **Hand**: a Breguet hand — fine shaft, hollow moon ring that frames the
+  sky at that moment, tapered point on the minute track. It is drawn at
+  midnight and rotated (`handAngle`), so each minute is an eased
+  rotation (`--ease-spring`) instead of a redraw. A small red comet
+  circles the medallion once a minute on the live dial.
+- **Motion**: new tokens in `:root` (`--ease-out`, `--ease-inout`,
+  `--ease-spring`, `--ease-soft`, `--dur-*`). Arrival, once, when the dial
+  scrolls into view: the bezel settles, the sky turns into place, the
+  sessions draw round the track in the day's order (no round-cap dot
+  before they start), their emblems land with a spring, the hand sweeps
+  from midnight to now, the lights come on in turn, the count arrives,
+  the gloria blooms. Ambient loops only on art (stars, gloria, comet),
+  all behind `prefers-reduced-motion`.
+157 browser checks (sweep included), 16,257 plan checks, no overflow, a11y clean; render time unchanged.

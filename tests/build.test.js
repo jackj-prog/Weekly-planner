@@ -1483,6 +1483,14 @@ section('palette contrast (WCAG AA)');
     const shapeFn = appSrc.slice(appSrc.indexOf('function sessionShapeHTML'), appSrc.indexOf('function runSkyHTML'));
     ok(/ss-jog/.test(shapeFn) && /DB\.mpShape/.test(shapeFn) && !/recover\w* (\d|of)/.test(shapeFn), 'the session shape draws reps and MP from the plan and invents no recovery length');
     ok(/\.rm \.mo-dark \{ fill: color-mix/.test(css), 'a rest day\u2019s moon keeps its earthshine');
+    /* v4.91: the day clock */
+    const dialFn = appSrc.slice(appSrc.indexOf('function dayWheelHTML'), appSrc.indexOf('/* ---- week-progress ring'));
+    ok(/DB\.sunAltitude/.test(dialFn) && /conic-gradient/.test(dialFn), 'the dial\u2019s sky is shaded by the sun\u2019s real height');
+    ok(/hg\.style\.transform = 'rotate\(' \+ handAngle\(n\)/.test(appSrc) && /transition: transform \.9s var\(--ease-spring\)/.test(css), 'each minute turns the hand with an eased rotation instead of redrawing it');
+    ok(['--ease-out', '--ease-inout', '--ease-spring', '--ease-soft'].every((t) => new RegExp(t + ':').test(rootSrc)), 'the motion curves are tokens in :root');
+    const clockCss = css.slice(css.indexOf('THE DAY CLOCK (v4.91)'));
+    ok(!/#[0-9a-f]{3,6}\b/i.test(clockCss.replace(/#(?:fff|000)\b/gi, '').replace(/url\(#[\w-]+\)/g, '')) && (css.match(/\.dw-count \{/g) || []).length === 1, 'the clock has one stylesheet section, painted only with tokens');
+    ok(/@keyframes dw-arc \{ from \{[^}]*opacity: 0/.test(css), 'a session arc is invisible until it starts to draw (no round-cap dot)');
     const shoeKm = {};
     for (let i = 0; i < 210; i++) { const d = DB.buildDay(DB.addDays(PLAN.blocks[0].start, i)); if (d.run) shoeKm[d.run.run.shoe] = (shoeKm[d.run.run.shoe] || 0) + d.run.run.km; }
     ok(PLAN.shoes.filter((s) => !/race/i.test(s.job)).every((s) => Object.keys(shoeKm).some((k) => s.shoe.endsWith(k) && shoeKm[k] > 100)),

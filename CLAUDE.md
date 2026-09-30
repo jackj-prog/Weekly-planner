@@ -214,6 +214,14 @@ ruled line, the shoe in its tier; a session's shape is drawn from what the
 plan states (warm-up and reps to scale with the jogs as dots, an MP long
 run's kilometres easy-white and MP-red); focus names the heart rate the
 run is prescribed by; a rest day's moon keeps its earthshine.
+**The day clock (v4.91)** is an astronomical watch face: a minute-track
+bezel with the canonical hours engraved round it; a sky ring shaded
+continuously by the sun's real height, stars only in the dark, the sun on
+the horizon and the moon at its highest in soft halos; the sessions on
+their track each wearing its emblem; a ring of lights, one per session;
+a rose-window medallion with the count and the engraved date; a Breguet
+hand that turns (never redraws) each minute, and a comet round the
+medallion once a minute. Motion curves are tokens (`--ease-*`).
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`
