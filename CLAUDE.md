@@ -161,7 +161,12 @@ the sun's arc. **v4.80:** Reference's instruments look like instruments —
 the heart-rate zones as a staircase (grey where the block lives, red where
 it hurts) with the last logged run pinned to its heartbeat, and the Pro 4
 odometer as a half dial with every planned outing laid on it and the needle
-at the kilometres actually spent.
+at the kilometres actually spent. **v4.81:** the Week's km bar became a
+tally — one stone per run, as long as its distance, in its class's colour,
+solid when banked, struck through when missed; the tune-up recalibrator
+lays the plan's anchors on a half-marathon time ruler (the 3:45 band in
+red) and pins the saved result; the efficiency charts draw their fitted
+line and a lit ground under the runs.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

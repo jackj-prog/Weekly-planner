@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.80.0';
+  const APP_VERSION = '4.81.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -2652,11 +2652,26 @@
       const km = DB.weekKm(getDone, anchor, getRunLogEntry);
       if (km.planned > 0) {
         const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
-        const pct = Math.min(100, (km.done / km.planned) * 100).toFixed(1);
+        /* The week's tally (v4.81): one stone per planned run, as long as its
+           distance and in its class's colour — solid once banked, outlined
+           while to come, struck through if the day passed without it. */
+        const today = todayISO();
+        const stones = [];
+        for (let i = 0; i < 7; i++) {
+          const iso = DB.addDays(anchor, i), d = DB.buildDay(iso);
+          if (!d.run) continue;
+          const o = getOvr(iso), lg = getRunLogEntry(iso), c = DB.runClass(d.run);
+          const kind = c === 'quality' || c === 'race' ? 'hard' : c === 'long' ? 'long' : 'easy';
+          const state = (getDone(iso)[d.run.id] || (lg && lg.sec > 0)) ? 'done'
+            : (o.skip[d.run.id] || o.moved[d.run.id]) ? 'off' : iso < today ? 'miss' : iso === today ? 'now' : 'ahead';
+          stones.push({ km: d.run.run.km, kind, state, day: DAY_SHORT[i] });
+        }
+        const tally = stones.map((t) => '<i class="st ' + t.kind + ' ' + t.state + '" style="flex:' + t.km + '"><b>' + t.day.charAt(0) + '</b></i>').join('');
         view.appendChild(el(
           '<div class="wkp" role="img" aria-label="' + fmt(km.done) + ' of ' + fmt(km.planned) + ' km banked">' +
-          '<div class="wkp-label">✓ <b>' + fmt(km.done) + '</b> of ' + fmt(km.planned) + ' km recorded</div><p class="log-note">Logged distance, or planned distance for runs ticked done.</p>' +
-          '<div class="wkp-track"><i style="width:' + pct + '%"></i></div></div>'
+          '<div class="wkp-label"><span class="wkp-n">' + fmt(km.done) + '</span><span class="wkp-of"> / ' + fmt(km.planned) + ' km recorded</span></div>' +
+          '<div class="wkp-tally" aria-hidden="true">' + tally + '</div>' +
+          '<p class="log-note">Logged distance, or planned distance for runs ticked done.</p></div>'
         ));
       }
     }
@@ -3034,10 +3049,45 @@
       '<p>No additional bands are defined between or beyond these anchors. Your training plan has not changed.</p>';
   }
 
+  /* The tune-up as a ruler (v4.81): half-marathon time along the bottom,
+     the plan's anchors (PLAN.recalibrationAnchors) laid on it as bands with
+     their marathon targets, and the saved result pinned where it landed. */
+  function recalRulerHTML(halfSec) {
+    const anchors = (PLAN.recalibrationAnchors || []).map((a) => {
+      const t = String(a.half).replace(/[~≈]/g, '').split(/\s*[–-]\s*/).map((x) => parseHalf(x.length <= 4 ? x + ':00' : x));
+      if (!t[0]) return null;
+      const lo = t[0], hi = t[1] || t[0];
+      return { lo: lo - (t[1] ? 0 : 45), hi: hi + (t[1] ? 59 : 45), target: a.target, first: false };
+    }).filter(Boolean);
+    if (!anchors.length) return '';
+    anchors[0].first = true;
+    const W = 320, Y = 40, lo = Math.floor((Math.min(...anchors.map((a) => a.lo)) - 150) / 300) * 300, hi = Math.ceil((Math.max(...anchors.map((a) => a.hi)) + 150) / 300) * 300;
+    const X = (sec) => 12 + ((Math.max(lo, Math.min(hi, sec)) - lo) / (hi - lo)) * (W - 24);
+    const hm = (sec) => Math.floor(sec / 3600) + ':' + String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+    let ticks = '';
+    for (let t = lo; t <= hi; t += 60) {
+      const x = X(t), major = t % 300 === 0;
+      ticks += '<path class="rr-tick' + (major ? ' major' : '') + '" d="M' + x.toFixed(1) + ' ' + Y + ' L' + x.toFixed(1) + ' ' + (Y + (major ? 6 : 3)) + '"/>' +
+        (major ? '<text class="rr-t" x="' + x.toFixed(1) + '" y="' + (Y + 17) + '">' + hm(t) + '</text>' : '');
+    }
+    const bands = anchors.map((a) => {
+      const x0 = X(a.lo), x1 = X(a.hi);
+      return '<rect class="rr-band' + (a.first ? ' goal' : '') + '" x="' + x0.toFixed(1) + '" y="' + (Y - 12) + '" width="' + Math.max(4, x1 - x0).toFixed(1) + '" height="12" rx="3"/>' +
+        '<text class="rr-l' + (a.first ? ' goal' : '') + '" x="' + ((x0 + x1) / 2).toFixed(1) + '" y="' + (Y - 18) + '">' + esc(a.target) + '</text>';
+    }).join('');
+    const pin = halfSec ? '<path class="rr-pin" d="M' + X(halfSec).toFixed(1) + ' ' + (Y - 15) + ' L' + X(halfSec).toFixed(1) + ' ' + (Y + 2) + '"/>' +
+      '<circle class="rr-dot" cx="' + X(halfSec).toFixed(1) + '" cy="' + (Y - 6) + '" r="4"/>' : '';
+    return '<figure class="recal-ruler" role="img" aria-label="' + esc('The tune-up anchors on a half-marathon time scale: ' +
+      (PLAN.recalibrationAnchors || []).map((a) => a.half + ' means ' + a.target).join('; ') + (halfSec ? '; your time ' + fmtClock(halfSec) : '')) + '">' +
+      '<svg viewBox="0 0 ' + W + ' ' + (Y + 22) + '" aria-hidden="true"><path class="rr-base" d="M12 ' + Y + ' L' + (W - 12) + ' ' + Y + '"/>' +
+      ticks + bands + pin + '</svg><figcaption class="fig-cap"><span class="fig">Half</span> → the marathon it earns</figcaption></figure>';
+  }
+
   function buildRecalSection() {
     const saved = readJSONSafeString('recal');
     const wrap = el(
       '<div class="ref"><h2>Tune-up recalibrator</h2><div class="ref-card data-card">' +
+      '<div class="recal-fig">' + recalRulerHTML(parseHalf(saved)) + '</div>' +
       '<div class="ref-note">After the Week-24 half (Sun 13 Dec), enter your time. §10 sets the target — ambition doesn’t.</div>' +
       '<div class="data-actions"><input class="recal-in" inputmode="numeric" ' +
       'placeholder="1:54:30" value="' + esc(saved) + '" aria-label="Half marathon time"> ' +
@@ -3048,6 +3098,7 @@
     const out = wrap.querySelector('.recal-out');
     const show = (raw) => {
       const sec = parseHalf(raw);
+      wrap.querySelector('.recal-fig').innerHTML = recalRulerHTML(sec);
       if (!sec) { out.textContent = raw ? 'Time reads as h:mm or h:mm:ss — e.g. 1:54:30.' : ''; return; }
       out.innerHTML = recalVerdict(sec);
     };
@@ -3216,12 +3267,25 @@
         '" r="3"><title>' + p.iso + ': EF ' + p.ef.toFixed(3) + ', ' + signed(p.pct) + '</title></circle>').join('');
       const rows = pts.map(p => '<tr><td>' + esc(fmtShort(p.iso)) + '</td><td>' + p.ef.toFixed(3) +
         '</td><td>' + signed(p.pct) + '</td></tr>').join('');
-      return '<figure class="ef-chart"><figcaption><span class="ef-kind">' + label +
+      /* the fitted line, drawn (least squares in the chart's own space — the
+         same fit the reading reports), and the ground under the runs */
+      const n = pts.length, mxp = pts.reduce((a, p) => a + p.x, 0) / n, myp = pts.reduce((a, p) => a + p.y, 0) / n;
+      const sxx = pts.reduce((a, p) => a + (p.x - mxp) * (p.x - mxp), 0), sxy = pts.reduce((a, p) => a + (p.x - mxp) * (p.y - myp), 0);
+      const slope = sxx ? sxy / sxx : 0, fy = (x) => myp + slope * (x - mxp);
+      const zeroY = (chart.ticks.find((t) => t.value === 0) || { y: 100 }).y;
+      const area = 'M' + pts[0].x.toFixed(2) + ' ' + zeroY + ' ' + pts.map((p) => 'L' + p.x.toFixed(2) + ' ' + p.y.toFixed(2)).join(' ') +
+        ' L' + pts[n - 1].x.toFixed(2) + ' ' + zeroY + ' Z';
+      const gid = 'efg-' + cls;
+      const art = '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="ef-ga"/><stop offset="1" class="ef-gb"/></linearGradient></defs>' +
+        '<path class="ef-area" d="' + area + '" fill="url(#' + gid + ')"/>' +
+        (n >= 4 ? '<path class="ef-fit" d="M' + pts[0].x.toFixed(2) + ' ' + fy(pts[0].x).toFixed(2) + ' L' + pts[n - 1].x.toFixed(2) + ' ' + fy(pts[n - 1].x).toFixed(2) + '"/>' : '') +
+        '<circle class="ef-halo" cx="' + pts[n - 1].x.toFixed(2) + '" cy="' + pts[n - 1].y.toFixed(2) + '" r="9"/>';
+      return '<figure class="ef-chart ef-' + esc(cls) + '"><figcaption><span class="ef-kind">' + esc(label.charAt(0).toUpperCase() + label.slice(1)) +
         ' run efficiency</span><strong>' + status + '</strong></figcaption>' +
         '<svg viewBox="0 0 340 194" width="340" height="194" role="img" aria-label="' +
         esc(label + ' run EF relative to ' + chart.reference.iso + '. Scale minus ' + chart.extent +
         ' to plus ' + chart.extent + ' percent. ' + pts.length + ' runs. Fitted change ' + signed(chart.change)) + '">' +
-        ticks + '<polyline points="' + pts.map(p => p.x.toFixed(2)+','+p.y.toFixed(2)).join(' ') + '"/>' + dots +
+        ticks + art + '<polyline points="' + pts.map(p => p.x.toFixed(2)+','+p.y.toFixed(2)).join(' ') + '"/>' + dots +
         '<text x="48" y="184">' + date(pts[0].iso) + '</text><text x="326" y="184" text-anchor="end">' +
         date(pts[pts.length-1].iso) + '</text></svg>' +
         '<div class="ef-reading"><b>' + signed(chart.change) + '</b><span>Fitted change · last ' + pts.length +

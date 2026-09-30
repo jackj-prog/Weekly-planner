@@ -1272,3 +1272,24 @@ User ran `/loop keep going, find more bland spots to improve`. This pass:
   line under the list opts out of the illuminated initial (`no-init`) —
   it is a readout, not prose.
 103 browser checks (sweep included), 16,220 plan checks, no overflow, a11y clean.
+
+## Polish pass: the week's tally, the tune-up ruler, the efficiency charts — v4.81, 1 October (Claude)
+
+User: "keep going, some areas still look unpolished/quite bland". Three more:
+- **Week — km recorded** was a thin grey bar under a line of small text. It
+  is now a big numeral ("0 / 42 km recorded") over a tally: one stone per
+  planned run, as wide as its distance, outlined in its class's colour
+  (grey easy, red hard, white long) with the day's initial; solid and
+  glowing once banked, ringed red for today, hatched and dashed when the
+  day passed without it, dotted when skipped or moved.
+- **Reference V — tune-up recalibrator** was a text box and a button. Above
+  it now sits a ruler of half-marathon time (1:40–2:00) with the plan's
+  three anchors laid on it from `PLAN.recalibrationAnchors` (parsed, not
+  restated: "1:43–1:46" is a band, "~1:50" a ±45 s band), the 3:45 band in
+  red, each labelled with the marathon it earns, and the saved result
+  pinned where it landed. The verdict underneath is spaced into paragraphs.
+- **Reference IV — efficiency charts** gain their least-squares fit drawn as
+  a dashed line (the same fit the "+5.4%" reading reports), a faint lit
+  ground between the line and 0%, a halo on the latest run, the long-run
+  chart in white, and a serif caption in sentence case.
+107 browser checks (sweep included), 16,223 plan checks, no overflow, a11y clean.

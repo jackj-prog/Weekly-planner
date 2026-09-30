@@ -388,6 +388,18 @@ async function cinema() {
   check((await t.page.$$('#ref-pro-4-odometer .od-seg')).length === 5 && !!(await t.page.$('#ref-pro-4-odometer .od-needle')) && !(await t.page.$('#ref-pro-4-odometer .odo')),
     'the Pro 4 odometer is a dial with every outing laid on it');
   await t.ctx.close();
+  // v4.81: the week's tally, the tune-up ruler, the efficiency charts
+  t = await open('2026-10-01', '12:00', SEED, 'week');
+  const stones = await t.page.$$eval('.wkp-tally .st', (ns) => ns.map((n) => n.className));
+  check(stones.length === (await t.page.$$('.profile-day:not(.rest)')).length && stones.some((c) => /\bhard\b/.test(c)) && stones.some((c) => /\blong\b/.test(c)) && stones.some((c) => /\bnow\b/.test(c)),
+    'the week tally lays one stone per run, in its class, with today marked');
+  await t.ctx.close();
+  t = await open('2026-12-14', '12:00', Object.assign({}, SEED, { recal: '1:48:30' }), 'ref');
+  check((await t.page.$$('.recal-ruler .rr-band')).length === 3 && !!(await t.page.$('.recal-ruler .rr-band.goal')) && !!(await t.page.$('.recal-ruler .rr-dot')),
+    'the tune-up ruler lays the plan\u2019s anchors on a time scale and pins the saved result');
+  check(!!(await t.page.$('#ref-log .ef-chart .ef-fit')) && !!(await t.page.$('#ref-log .ef-chart .ef-area')), 'the efficiency charts draw their fitted line and the ground beneath');
+  noErrors(t, 'polish pass');
+  await t.ctx.close();
   t = await open('2026-12-25', '12:00', SEED);
   check((await text(t.page, '.daywheel .dw-count')) === 'REST' && !/0\/0/.test(await text(t.page, '.daywheel')), 'a day with nothing to tick reads REST, not 0/0');
   await t.ctx.close();

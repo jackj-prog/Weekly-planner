@@ -2552,3 +2552,51 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .od-cap { fill: var(--t2); font: 400 8px var(--mono); letter-spacing: .16em; text-anchor: middle; }
 /* a status line is not prose: no illuminated initial */
 .ref-card + .ref-note.no-init::first-letter { float: none; margin: 0; padding: 0; font: inherit; color: inherit; border: 0; background: none; box-shadow: none; }
+
+/* ================= POLISH PASS (v4.81) ============================= */
+/* the week's tally: one stone per run, as long as its distance */
+.wkp { margin: 4px 2px 18px; }
+.wkp-label { display: flex; align-items: baseline; gap: 2px; margin-bottom: 8px; }
+.wkp-n { font: 900 30px/1 var(--display); letter-spacing: -.03em; color: var(--text); }
+.wkp-of { font: 400 13px var(--mono); color: var(--t2); }
+.wkp-tally { display: flex; gap: 4px; height: 22px; }
+.wkp-tally .st { position: relative; min-width: 16px; border-radius: 4px; border: 1.5px solid var(--cat-run); opacity: .6; }
+.wkp-tally .st b { position: absolute; left: 5px; top: 50%; transform: translateY(-50%); font: 700 9px var(--mono); letter-spacing: .06em; color: var(--t2); }
+.wkp-tally .st.long { border-color: var(--text); }
+.wkp-tally .st.hard { border-color: var(--accent); }
+.wkp-tally .st.done { opacity: 1; background: var(--cat-run); box-shadow: 0 0 10px var(--glow-white); }
+.wkp-tally .st.long.done { background: var(--text); }
+.wkp-tally .st.hard.done { background: var(--accent); box-shadow: 0 0 10px var(--glow-red); }
+.wkp-tally .st.done b { color: var(--ink); }
+.wkp-tally .st.now { opacity: 1; box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--accent); }
+.wkp-tally .st.miss { opacity: .45; border-style: dashed; background: repeating-linear-gradient(135deg, transparent 0 5px, var(--line) 5px 6px); }
+.wkp-tally .st.off { opacity: .3; border-style: dotted; }
+.wkp .log-note { margin-top: 8px; font-size: 12px; }
+
+/* the tune-up ruler */
+.recal-fig { margin: 2px 0 6px; }
+.recal-ruler svg { display: block; width: 100%; height: auto; overflow: visible; }
+.rr-base { stroke: var(--t3); stroke-width: 1; }
+.rr-tick { stroke: var(--line); stroke-width: 1; }
+.rr-tick.major { stroke: var(--t3); }
+.rr-t { fill: var(--t3); font: 400 8px var(--mono); text-anchor: middle; }
+.rr-band { fill: var(--t3); opacity: .55; }
+.rr-band.goal { fill: var(--accent); opacity: 1; filter: drop-shadow(0 0 5px var(--glow-red)); }
+.rr-l { fill: var(--t2); font: 400 8.5px var(--mono); text-anchor: middle; }
+.rr-l.goal { fill: var(--text); font-weight: 700; }
+.rr-pin { stroke: var(--text); stroke-width: 1.2; stroke-dasharray: 2 2; }
+.rr-dot { fill: var(--text); filter: drop-shadow(0 0 4px var(--glow-white-hot)); }
+.recal-ruler .fig-cap { margin-top: 2px; font-size: 12px; }
+
+/* efficiency charts: the fitted line drawn, the ground under the runs lit */
+.ef-kind { font: italic 400 14px var(--serif); text-transform: none; color: var(--t2); }
+.ef-grid { stroke: var(--line); opacity: .6; }
+.ef-ga { stop-color: var(--text); stop-opacity: .14; }
+.ef-gb { stop-color: var(--text); stop-opacity: 0; }
+.ef-fit { stroke: var(--text); stroke-width: 1.4; stroke-dasharray: 5 4; opacity: .6; }
+.ef-halo { fill: var(--glow-red-soft); stroke: none !important; }
+.ef-chart.ef-long polyline { stroke: var(--text); }
+.ef-chart.ef-long circle:not(.ef-halo) { stroke: var(--text); }
+.ef-chart polyline { filter: drop-shadow(0 0 4px var(--glow-white)); }
+.recal-out p { margin: 10px 0; line-height: 1.55; }
+.recal-out .recal-anchors { margin: 6px 0 12px; }
