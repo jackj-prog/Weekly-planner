@@ -2793,3 +2793,20 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .wh-e { display: block; width: 15px; height: 15px; }
 .wh-e .emb { stroke-width: 1.6; }
 .wh-e.wh-night { color: var(--t2); }
+
+/* ================= FIXES (v4.87) =================================== */
+/* The countdown numeral rose behind the date itself and collided with the
+   title, the chips, the day's label and the "back to today" pill. It now
+   has a column of its own beside the chips, so nothing can run into it. */
+.day-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nav nav" "sub bb" "lbl bb"; column-gap: 12px; align-items: start; }
+.day-head > .day-nav { grid-area: nav; }
+.day-head > .sub { grid-area: sub; }
+.day-head > .day-label { grid-area: lbl; }
+.day-head > .bb { grid-area: bb; position: static; z-index: auto; flex-direction: column; align-items: flex-end; margin: 6px 2px -6px 0; }
+.day-head .bb-num { font-size: 60px; -webkit-text-stroke-width: 1.3px; }
+.day-head .bb-cap { margin: 3px 0 0; font-size: 7.5px; letter-spacing: .18em; }
+/* the week's ring on "Your day" says that it is the week's */
+.wkring .rg-t small { font-size: 10.5px; color: var(--t3); margin-left: 2px; }
+/* after noon an unanswered resting-HR prompt is one quiet line */
+.h-rhr.add.mini { display: inline-flex; align-items: baseline; gap: 6px; width: auto; min-height: 40px; padding: 8px 12px; font-size: 13px; font-weight: 500; color: var(--t2); border-color: color-mix(in srgb, var(--text) 22%, transparent); background: transparent; }
+.h-rhr.add.mini small { display: inline; margin: 0; font-size: 11px; color: var(--t3); }

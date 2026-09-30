@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.86.0';
+  const APP_VERSION = '4.87.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -457,10 +457,6 @@
       }
       flushSun(b.startMin);
       const isCurrent = isToday && nMin >= b.startMin && nMin < b.endMin;
-      if (isCurrent) {
-        tl.appendChild(nowRow());
-        nowPlaced = true;
-      }
 
       if (b.quiet && !b.doable) {
         const q = el(
@@ -477,6 +473,13 @@
         const card = buildCard(b, done, iso, { current: isCurrent, skipped: !!ovr.skip[b.id], moved: null, movedOut: !!ovr.moved[b.id], just: just === b.id });
         card.dataset.m = b.startMin;
         tl.appendChild(card);
+      }
+      /* NOW falls inside the current block, so it follows that block's
+         start rather than sitting above it as if it had not begun (v4.87) */
+      if (isCurrent) {
+        flushSun(nMin + 1);
+        tl.appendChild(nowRow());
+        nowPlaced = true;
       }
     }
     if (!nowPlaced) { flushSun(nMin + 1); tl.appendChild(nowRow()); }
@@ -1244,7 +1247,12 @@
         '<span class="h-rhr-ctl"><button data-rhr="-1" aria-label="Lower resting HR">−</button><b>' + state.rhrDraft + '</b><small>bpm</small>' +
         '<button data-rhr="1" aria-label="Higher resting HR">+</button></span><button class="h-rhr-save" data-rhr="save">Save</button></div>';
     }
-    if (bpm == null) return '<button class="h-rhr add" data-rhr="open">Add this morning’s resting HR <small>optional · compares it with your usual</small></button>';
+    /* The morning's question belongs to the morning (v4.87): after noon an
+       unanswered prompt shrinks to one quiet line instead of pushing the
+       run's numbers down the card for the rest of the day. */
+    if (bpm == null) return nowMin() < 12 * 60 || iso !== todayISO()
+      ? '<button class="h-rhr add" data-rhr="open">Add this morning’s resting HR <small>optional · compares it with your usual</small></button>'
+      : '<button class="h-rhr add mini" data-rhr="open">+ Morning resting HR <small>optional</small></button>';
     const delta = usual == null ? null : bpm - usual;
     const high = delta != null && delta >= g.skipDelta;
     return '<div class="h-rhr' + (high ? ' high' : '') + '"><button class="h-rhr-read" data-rhr="open" aria-label="Edit morning resting HR">' +
@@ -1270,6 +1278,16 @@
       if (p < 1 && node.isConnected) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
+  }
+
+  /* The run card names its own day (v4.87): it said "TODAY'S RUN" on
+     every date, including tomorrow's and last Tuesday's. */
+  function runDayLabel(iso) {
+    const t = todayISO();
+    if (iso === t) return 'TODAY’S RUN';
+    if (iso === DB.addDays(t, 1)) return 'TOMORROW’S RUN';
+    if (iso === DB.addDays(t, -1)) return 'YESTERDAY’S RUN';
+    return DAY_NAMES[DB.dayIndex(iso)].toUpperCase() + '’S RUN';
   }
 
   function buildHero(day, done, iso, just) {
@@ -1347,7 +1365,7 @@
       '<section class="hero cls-' + esc(DB.runClass(r)) + (isRace ? ' race' : '') + (redLetter ? ' red-letter' : '') + (isDone ? ' done' : '') + (isSkipped ? ' skipped' : '') + (just === r.id ? ' just' : '') + '">' +
       '<i class="h-art" aria-hidden="true"></i>' +
       '<div class="h-top"><div class="h-tag"><span class="h-mark">' + emblemSVG(emblemKind(r)) +
-      '<span class="h-tagtxt">' + (isRace ? 'RACE DAY' : redLetter ? 'RED-LETTER DAY' : 'TODAY’S RUN') + '</span></span>' +
+      '<span class="h-tagtxt">' + (isRace ? 'RACE DAY' : redLetter ? 'RED-LETTER DAY' : runDayLabel(iso)) + '</span></span>' +
       '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : isSkipped ? 'Skipped' : isMovedOut ? 'Moved to ' + movedLabel(iso, r.id) :
         unresolved ? (iso < today ? 'Not recorded' : 'Window passed · not recorded') :
         (r.movedFrom ? 'Moved from ' + fmtShort(r.movedFrom) + ' · ' : 'Scheduled · ') + r.start) + '</span></div>' +
@@ -1355,6 +1373,7 @@
          totals, the wall), so a logged run shows that instead of offering a
          tick that would change nothing. */
       (e.sec > 0 && !isDone ? '<span class="h-tick on is-logged" role="status"><span aria-hidden="true">✓</span> Logged</span>'
+        : iso > today && !isDone ? ''
         : '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' +
       (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button>') + '</div>' +
       (just === r.id && isDone ? '<i class="h-sweep" aria-hidden="true"></i><div class="completion-note" role="status">✓ Run banked</div>' : '') +
@@ -2067,7 +2086,7 @@
       '<svg viewBox="0 0 32 32"><circle class="rg-bg" cx="16" cy="16" r="13"/>' +
       '<circle class="rg-fg" cx="16" cy="16" r="13" stroke-dasharray="' + C.toFixed(1) +
       '" stroke-dashoffset="' + (C * (1 - pct)).toFixed(1) + '"/></svg>' +
-      '<span class="rg-t"><b>' + fmt(wk.done) + '</b>/' + fmt(wk.planned) + ' km</span></span>';
+      '<span class="rg-t"><b>' + fmt(wk.done) + '</b>/' + fmt(wk.planned) + ' km <small>this week</small></span></span>';
   }
 
   /* ---- emblems (v4.84) ----
@@ -2186,13 +2205,14 @@
           (b.cat === 'run' ? '<p class="mv-runlog">A day that already has a run keeps one run log between them.</p>' : '') + '</div>' : '') : '') +
       '</div>' +
       '<div class="c-side">' +
-      '<button class="tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' + (isDone ? 'Mark not done: ' : 'Mark done: ') + esc(b.title) + '">✓ <span>' + (isDone ? 'Done' : 'Mark done') + '</span></button>' +
+      (iso > todayISO() && !isDone ? '' : '<button class="tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' + (isDone ? 'Mark not done: ' : 'Mark done: ') + esc(b.title) + '">✓ <span>' + (isDone ? 'Done' : 'Mark done') + '</span></button>') +
       '<button class="more-btn" aria-label="Actions">⋯</button>' +
       '</div></div>'
     );
     const focusBtn = card.querySelector('.session-focus-open');
     if (focusBtn) focusBtn.addEventListener('click', () => openSessionFocus(b, iso, focusBtn));
-    card.querySelector('.tick').addEventListener('click', () => {
+    const tickEl = card.querySelector('.tick');
+    if (tickEl) tickEl.addEventListener('click', () => {
       if (!isDone) state.justTicked = b.id;       // animate on tick-on only
       toggleDone(iso, b.id);
       render();

@@ -1401,3 +1401,28 @@ every Plan and Reference slice:
   ringed in red, and a legend of every category's hours with its emblem,
   sleep included. The plan's budget sentence stays underneath.
 122 browser checks (sweep included), 16,240 plan checks, no overflow, a11y clean.
+
+## Release 1 of the UX plan: things that were wrong — v4.87, 1 October (Claude)
+
+The user asked for an audit and an action plan, then said "go ahead". Four
+releases were agreed; this is the first, the outright fixes:
+- **The run card names its own day.** It said "TODAY'S RUN" on every date;
+  it now says today's, tomorrow's, yesterday's, or the weekday's
+  (`runDayLabel`). The recap still relabels it "RUN LOGGED" via `.h-tagtxt`.
+- **A future session cannot be ticked** — the run card's button and every
+  timeline card's tick are absent on dates after today (the focus screen
+  already refused). A session already ticked on a future date can still
+  be un-ticked. Skip and Move stay available for planning ahead. The moved
+  run test now opens on the target day at 07:00 for that reason.
+- **"Your day" labels its ring**: "0/46 km this week", because it is the
+  week's total, not the day's.
+- **NOW follows the block it falls inside**: at 16:40 it sits after the
+  16:30 commute rather than above it, as if the commute had not begun.
+- **The date header no longer collides.** The countdown numeral was a
+  background behind the date, running into the title, the chips, the day
+  label and the "back to today" pill. It now has its own grid column
+  beside the chips (60px, caption beneath), so nothing can overlap it —
+  tested by bounding boxes on a normal day and on race day's "42.2".
+- **The resting-HR question belongs to the morning**: after noon an
+  unanswered prompt shrinks to one quiet line.
+131 browser checks (sweep included), 16,244 plan checks, no overflow, a11y clean.

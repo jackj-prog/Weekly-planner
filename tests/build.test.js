@@ -1465,6 +1465,12 @@ section('palette contrast (WCAG AA)');
       const d = DB.buildDay(DB.addDays(PLAN.blocks[0].start, i));
       if (!d.blocks.some((b) => /lights out/i.test(b.title)) || !d.blocks.some((b) => /wake|alarm/i.test(b.title))) { ok(false, 'every Monday has a wake and a lights out (' + d.iso + ')'); break; }
     }
+    /* v4.87 fixes */
+    ok(/function runDayLabel/.test(appSrc) && /: runDayLabel\(iso\)\) \+ '<\/span><\/span>'/.test(appSrc) && /TOMORROW’S RUN/.test(appSrc) && /YESTERDAY’S RUN/.test(appSrc),
+      'the run card names its own day instead of calling every run today\u2019s');
+    ok(/iso > today && !isDone \? ''/.test(appSrc) && /iso > todayISO\(\) && !isDone \? '' : '<button class="tick/.test(appSrc), 'a future session cannot be ticked, though a ticked one can be undone');
+    ok(appSrc.indexOf("if (isCurrent) {\n        flushSun(nMin + 1);") > appSrc.indexOf("const card = buildCard(b, done, iso, { current: isCurrent"), 'NOW is placed after the block it falls inside');
+    ok(/grid-template-areas: "nav nav" "sub bb" "lbl bb"/.test(css), 'the countdown numeral has its own column in the header');
     const shoeKm = {};
     for (let i = 0; i < 210; i++) { const d = DB.buildDay(DB.addDays(PLAN.blocks[0].start, i)); if (d.run) shoeKm[d.run.run.shoe] = (shoeKm[d.run.run.shoe] || 0) + d.run.run.km; }
     ok(PLAN.shoes.filter((s) => !/race/i.test(s.job)).every((s) => Object.keys(shoeKm).some((k) => s.shoe.endsWith(k) && shoeKm[k] > 100)),

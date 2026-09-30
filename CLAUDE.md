@@ -195,6 +195,11 @@ the block's paces on one line (easy band, MP, stretch, the dashed Z4
 readout, the gap from easy to MP measured); and the load budget leads with
 this week hour by hour — seven 24-hour strips, nights dark with still
 stars, every category's hours totalled with its emblem.
+**v4.87 (fixes):** the run card names its own day (today's, tomorrow's,
+Thursday's); nothing on a future date can be ticked; NOW sits after the
+block it falls inside; the countdown numeral has its own column beside
+the chips instead of colliding with the date; after noon the resting-HR
+prompt is one quiet line.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

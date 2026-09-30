@@ -167,8 +167,9 @@ async function moves() {
   noErrors(t, 'moves');
   await t.ctx.close();
 
-  const r = await open('2026-10-01', '12:00', SEED);
-  await r.page.click('.day-nav [data-d="1"]'); await r.page.click('.day-nav [data-d="1"]');
+  /* today is the target day: from v4.87 a session on a future date cannot be ticked */
+  const r = await open('2026-10-02', '07:00', SEED);
+  await r.page.click('.day-nav [data-d="1"]');
   await r.page.click('.tl-card:has-text("Recovery buffer run") .more-btn'); await r.page.click('[data-act="movepick"]');
   check(/has Easy run/.test(await text(r.page, '[data-move-to="2026-10-01"]')) && /one run log/.test(await text(r.page, '.c-move .mv-runlog')),
     'run-on-run move names the clash and warns once');
@@ -436,6 +437,26 @@ async function cinema() {
   check(plates.length === 3 && plates.filter((p) => /t-race/.test(p.cls)).length === 1 && /^\d+ of \d+ km banked · \d+ runs$/.test(plates[0].num) &&
     /km before the gun/.test(plates[2].num), 'the shoes are plates, each counting what the block asks of it: ' + plates.map((p) => p.num).join(' | '));
   noErrors(t, 'shoe plates');
+  await t.ctx.close();
+  // v4.87: the run card names its day, the future cannot be ticked, NOW follows its block, the header never collides
+  t = await open('2026-10-07', '16:40', SEED);
+  check((await text(t.page, '.hero .h-tagtxt')) === 'TODAY’S RUN', 'today\u2019s run is today\u2019s');
+  check(await t.page.evaluate(() => { const n = document.querySelector('.tl-now'); const p = n && n.previousElementSibling; return !!(p && p.classList.contains('current')); }),
+    'NOW sits after the block it falls inside');
+  check(!!(await t.page.$('.hero .h-rhr.add.mini')), 'an unanswered resting-HR prompt is one quiet line after noon');
+  check(/this week/.test(await text(t.page, '.timeline-head .wkring')), 'the ring beside Your day says it is the week\u2019s km');
+  check(await t.page.evaluate(() => { const a = document.querySelector('.day-head h1').getBoundingClientRect(), b = document.querySelector('.day-head .bb').getBoundingClientRect(), c = document.querySelector('.day-head .sub').getBoundingClientRect();
+    const hit = (x, y) => x.left < y.right && y.left < x.right && x.top < y.bottom && y.top < x.bottom; return !hit(a, b) && !hit(c, b); }), 'the countdown numeral touches neither the date nor the chips');
+  await t.page.click('.day-nav .nav[data-d="1"]');
+  check((await text(t.page, '.hero .h-tagtxt')) === 'TOMORROW’S RUN' && !(await t.page.$('.hero button.h-tick')) && (await t.page.$$('.tl-card .tick')).length === 0,
+    'tomorrow\u2019s run is named for tomorrow and cannot be ticked yet');
+  await t.page.click('.day-nav .nav[data-d="-1"]'); await t.page.click('.day-nav .nav[data-d="-1"]');
+  check((await text(t.page, '.hero .h-tagtxt')) === 'YESTERDAY’S RUN' && (await t.page.$$('.tl-card .tick')).length > 0, 'yesterday\u2019s run is named and can still be ticked');
+  noErrors(t, 'v4.87 fixes');
+  await t.ctx.close();
+  t = await open('2027-01-24', '05:00', SEED);
+  check(await t.page.evaluate(() => { const a = document.querySelector('.day-head h1').getBoundingClientRect(), b = document.querySelector('.day-head .bb').getBoundingClientRect(), l = document.querySelector('.day-head .day-label');
+    const hit = (x, y) => x.left < y.right && y.left < x.right && x.top < y.bottom && y.top < x.bottom; return !hit(a, b) && !(l && hit(l.getBoundingClientRect(), b)); }), 'race day\u2019s 42.2 clears the date and the week\u2019s label');
   await t.ctx.close();
   // v4.86: the journey's week explorer, the pace spectrum, the week in hours
   t = await open('2026-10-01', '12:00', SEED, 'plan');
