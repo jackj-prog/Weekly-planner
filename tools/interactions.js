@@ -485,6 +485,22 @@ async function cinema() {
   check(!!(await t.page.$('.training-journey')), 'that line opens the training journey');
   noErrors(t, 'week days first');
   await t.ctx.close();
+  // v4.90: the session's shape, the shoe's tier, the prescribed heart rate
+  t = await open('2026-09-30', '16:00', SEED);
+  check((await t.page.$$('.hero .sess-shape.q .ss-seg.hard')).length === 5 && (await t.page.$$('.hero .sess-shape.q .ss-jog')).length === 4 &&
+    /^10′ easy · 5 × 3′ Z4, jog between · easy to 6\skm$/.test(await text(t.page, '.hero .sess-shape figcaption')), 'a quality run shows its shape: warm-up, five reps, jogs between, the rest easy');
+  check(!!(await t.page.$('.hero .h-shoe.t-quality .h-shoe-e svg')), 'the shoe wears its tier on the run card');
+  await t.ctx.close();
+  t = await open('2026-10-11', '07:00', SEED);
+  check(!!(await t.page.$('.hero .sess-shape.l .ss-seg.mp')) && !(await t.page.$('.hero .sess-shape figcaption')), 'an MP long run shows its kilometres, its words left to the MP line');
+  await t.page.click('.hero .session-focus-open');
+  check(/km 1–18 easy · km 19–24 at MP 5:20/.test(await text(t.page, '.session-focus .sess-shape figcaption')) && /^Z2.*MP in Z3/.test(await text(t.page, '.session-focus .focus-hr strong')),
+    'focus carries the shape in words and the heart rate the run is prescribed by');
+  noErrors(t, 'session shape');
+  await t.ctx.close();
+  t = await open('2026-10-08', '12:00', SEED);
+  check(!(await t.page.$('.hero .sess-shape')), 'an easy run has no shape to draw');
+  await t.ctx.close();
   // v4.86: the journey's week explorer, the pace spectrum, the week in hours
   t = await open('2026-10-01', '12:00', SEED, 'plan');
   const jd = await t.page.$$eval('.journey-days button', (ns) => ns.map((n) => n.className));

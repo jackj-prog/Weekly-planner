@@ -2862,3 +2862,31 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .jl-text { grid-area: text; }
 .jl-text b { font: 700 13.5px var(--mono); color: var(--text); }
 .jl-go { grid-area: go; font-size: 22px; color: var(--text); }
+
+/* ================= VISUAL PASS (v4.90) ============================= */
+/* the run card's facts as one ruled line: shoe (in its tier), pace, window */
+.hero .h-meta { grid-template-columns: repeat(3, auto); justify-content: space-between; column-gap: 12px; }
+.hero .h-meta > span + span:not(.h-mp) { padding-left: 12px; border-left: 1px solid color-mix(in srgb, var(--text) 16%, transparent); }
+.hero .h-meta .h-mp { grid-column: 1 / -1; }
+.h-shoe-e { display: inline-block; width: 15px; height: 15px; margin-right: 6px; vertical-align: -2px; color: var(--t2); }
+.h-shoe-e .emb { stroke-width: 1.7; }
+.t-quality .h-shoe-e { color: var(--text); filter: drop-shadow(0 0 4px var(--glow-white-hot)); }
+.t-race .h-shoe-e { color: var(--accent); filter: drop-shadow(0 0 4px var(--glow-red)); }
+.hero.race .t-race .h-shoe-e { color: var(--text); }
+/* the session's shape */
+.sess-shape { margin: 14px 0 2px; }
+.ss-bar { display: flex; align-items: center; gap: 2px; height: 12px; }
+.ss-seg { display: block; height: 8px; min-width: 3px; border-radius: 4px; }
+.ss-seg.easy { background: color-mix(in srgb, var(--cat-run) 42%, transparent); }
+.ss-seg.long { background: color-mix(in srgb, var(--text) 72%, transparent); box-shadow: 0 0 8px var(--glow-white); }
+.ss-seg.hard, .ss-seg.mp { height: 12px; background: var(--accent); box-shadow: 0 0 10px var(--glow-red); }
+.ss-seg.mp.soft { height: 12px; background: repeating-linear-gradient(135deg, var(--accent) 0 3px, transparent 3px 6px); box-shadow: none; opacity: .75; }
+.ss-jog { display: block; flex: 0 0 7px; height: 3px; background: radial-gradient(circle, var(--t2) 1px, transparent 1.4px) 0 0 / 3.5px 3px repeat-x; }
+.sess-shape figcaption { margin-top: 7px; font: 400 11.5px/1.45 var(--mono); color: var(--t2); }
+.hero.race .sess-shape figcaption { color: var(--text); }
+/* focus: the shoe in its tier and the prescribed heart rate */
+.focus-run-facts .focus-hr strong { font-family: var(--mono); }
+.session-focus .sess-shape { margin: 16px 2px 4px; }
+/* a rest day's moon keeps its earthshine: the unlit disc faintly ashen */
+.rm .mo-dark { fill: color-mix(in srgb, var(--text) 10%, var(--chrome-bg)); stroke: color-mix(in srgb, var(--text) 38%, transparent); }
+.focus-run-facts .focus-hr strong { font-size: 17px; }

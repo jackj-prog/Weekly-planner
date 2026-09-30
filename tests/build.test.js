@@ -1477,6 +1477,12 @@ section('palette contrast (WCAG AA)');
     ok(appSrc.indexOf("view.appendChild(el(dayWheelHTML(day, done, iso, isToday, ovr)));") > appSrc.indexOf("view.appendChild(tl);"), 'the clock follows the timeline');
     ok(/c-late">· not ticked/.test(appSrc) && /\.tl-quiet\.past/.test(css), 'the past recedes and an unticked passed session says so');
     ok(!/<span>View session<\/span>/.test(appSrc), 'the gym card no longer offers the same session three ways');
+    /* v4.90 */
+    const tierFn = appSrc.slice(appSrc.indexOf('function shoeTier'), appSrc.indexOf('function sessionShapeHTML'));
+    ok(tierFn.length > 0 && /PLAN\.shoes\.find/.test(tierFn) && !/Ghost|Evo|Pro 4/.test(tierFn), 'a shoe\u2019s tier comes from the plan\u2019s shoe list, not from names in code');
+    const shapeFn = appSrc.slice(appSrc.indexOf('function sessionShapeHTML'), appSrc.indexOf('function runSkyHTML'));
+    ok(/ss-jog/.test(shapeFn) && /DB\.mpShape/.test(shapeFn) && !/recover\w* (\d|of)/.test(shapeFn), 'the session shape draws reps and MP from the plan and invents no recovery length');
+    ok(/\.rm \.mo-dark \{ fill: color-mix/.test(css), 'a rest day\u2019s moon keeps its earthshine');
     const shoeKm = {};
     for (let i = 0; i < 210; i++) { const d = DB.buildDay(DB.addDays(PLAN.blocks[0].start, i)); if (d.run) shoeKm[d.run.run.shoe] = (shoeKm[d.run.run.shoe] || 0) + d.run.run.km; }
     ok(PLAN.shoes.filter((s) => !/race/i.test(s.job)).every((s) => Object.keys(shoeKm).some((k) => s.shoe.endsWith(k) && shoeKm[k] > 100)),

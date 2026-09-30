@@ -209,6 +209,11 @@ clock follows the timeline.
 km tally folded into the distance figure (recorded against planned in its
 head, banked/missed/off on its bars); the block's totals are one line
 that opens the journey.
+**v4.90 (visual pass):** the run card's shoe, pace and window are one
+ruled line, the shoe in its tier; a session's shape is drawn from what the
+plan states (warm-up and reps to scale with the jogs as dots, an MP long
+run's kilometres easy-white and MP-red); focus names the heart rate the
+run is prescribed by; a rest day's moon keeps its earthshine.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

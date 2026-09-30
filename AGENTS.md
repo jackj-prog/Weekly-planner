@@ -1469,3 +1469,27 @@ releases were agreed; this is the first, the outright fixes:
   "14/30 weeks · 317.6 km · 53 runs logged ↗", a single button to the
   Plan page's journey, which already holds those totals in full.
 145 browser checks (sweep included), 16,249 plan checks, no overflow, a11y clean.
+
+## Release 4 of the UX plan: the visual pass — v4.90, 1 October (Claude)
+
+- **The run card's facts are one ruled line**: shoe, pace, window in three
+  columns with hairlines between; the marathon-pace line spans beneath.
+  The shoe carries its emblem in its tier (`shoeTier`, read from
+  `PLAN.shoes` by matching the end of a listed shoe's name and its job):
+  grey easy, white quality, red laurel race.
+- **The session's shape** (`sessionShapeHTML`), on the run card and in
+  focus, drawn only from what the plan states. A quality run: warm-up and
+  reps to one scale in minutes, the jogs between reps as dots because the
+  plan does not set their length (still an open question with the user),
+  and the rest of the window easy — "10′ easy · 5 × 3′ Z4, jog between ·
+  easy to 6 km". A marathon-pace long run: kilometres to scale, easy in
+  white, MP in red; a range ("last 14–16") is solid for the certain part
+  and striped for the rest; reps are spaced evenly and captioned "spacing
+  yours". On the run card the MP long run's caption is left to the MP line
+  above it. Easy and recovery runs get no bar.
+- **Focus shows the heart rate the run is prescribed by**: Z2 easy, Z4
+  threshold, Z3 for MP reps, "Z2 · MP in Z3" for an MP long run, Z1
+  recovery, with the athlete's own bpm when zones are set.
+- **A rest day's moon keeps its earthshine**: near new moon it drew as a
+  black ball; the unlit disc is now faintly ashen under a brighter rim.
+151 browser checks (sweep included), 16,252 plan checks, no overflow, a11y clean.

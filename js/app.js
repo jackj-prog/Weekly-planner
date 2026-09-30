@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.89.0';
+  const APP_VERSION = '4.90.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1180,7 +1180,13 @@
       dialog.querySelector('.focus-notes').remove();
       dialog.querySelector('.focus-content').innerHTML = '<div class="focus-distance">' + esc(String(block.run.km)) + '<span>km</span></div>' +
         '<div class="focus-run-facts">' + (pace ? '<div class="focus-pace"><span>PACE</span><strong>' + esc(pace) + '</strong></div>' : '') +
-        '<div><span>SHOE</span><strong>' + esc(block.run.shoe) + '</strong></div></div>' +
+        '<div class="focus-shoe t-' + shoeTier(block.run.shoe) + '"><span>SHOE</span><strong><i class="h-shoe-e">' + emblemSVG(shoeTier(block.run.shoe) === 'race' ? 'laurel' : 'foot') + '</i>' + esc(block.run.shoe) + '</strong></div>' +
+        /* the heart rate the run is prescribed by, from the zone model and
+           the athlete's own zones when set (v4.90) */
+        (() => { const c = DB.runClass(block), mp = /@\s*MP/.test(block.title);
+          const z = c === 'race' ? null : c === 'long' ? (mp ? 'Z2 · MP in Z3' : 'Z2') : c === 'quality' ? (mp ? 'Z3' : 'Z4') : c === 'recovery' ? 'Z1' : 'Z2';
+          return z ? '<div class="focus-hr"><span>HEART RATE</span><strong>' + esc(withZones(z)) + '</strong></div>' : ''; })() +
+        '</div>' + sessionShapeHTML(block, block.run.km) +
         runSkyHTML(iso, block, skyKind(block), 'f', iso === todayISO() ? nowMin() : null) +
         '<div class="focus-run-brief">' + detailHTML(detail, iso + '|focus', false) + paceTableHTML(block.table) + '</div>';
     }
@@ -1379,8 +1385,9 @@
       (iso === today && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso) : '') +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + esc(r.title) + '</div></div>' +
-      '<div class="h-meta"><span><b>SHOE</b>' + esc(r.run.shoe) + '</span>' + paceCell + mpCell +
-      '<span><b>WINDOW</b>' + r.start + '–' + r.end + '</span></div>' +
+      '<div class="h-meta"><span class="h-shoe t-' + shoeTier(r.run.shoe) + '"><b>SHOE</b><i class="h-shoe-e">' + emblemSVG(shoeTier(r.run.shoe) === 'race' ? 'laurel' : 'foot') + '</i>' + esc(r.run.shoe) + '</span>' + paceCell +
+      '<span><b>WINDOW</b>' + r.start + '–' + r.end + '</span>' + mpCell + '</div>' +
+      sessionShapeHTML(r, km, true) +
       runSkyHTML(iso, r, skyKind(r), 'h', iso === today ? nowMin() : null) +
       '<div class="h-detail">' + detailHTML(detail, iso + '|hero', false) + '</div>' +
       zonePrompt +
@@ -1791,6 +1798,65 @@
     const Y = (m) => { const h = alt(m); return h >= 0 ? RS_HZ - h * kY : Math.min(RS_HZ + RS_FLOOR, RS_HZ - h * kY * 0.6); };
     return { X, Y, alt, kY };
   }
+  /* A shoe's tier, from the plan's own shoe list (v4.90): the run's shoe
+     is matched by the end of a listed shoe's name ("Evo SL" of "Adidas Evo
+     SL"), and its job says the tier — race red, quality white, easy grey. */
+  function shoeTier(name) {
+    const str = String(name || '');
+    const s = PLAN.shoes.find((x) => { const w = x.shoe.split(' '); for (let k = 1; k <= w.length; k++) if (str.startsWith(w.slice(-k).join(' '))) return true; return false; });
+    return !s ? 'easy' : /race/i.test(s.job) ? 'race' : /quality|MP/i.test(s.job) ? 'quality' : 'easy';
+  }
+
+  /* The session's shape (v4.90), drawn only from what the plan states.
+     A quality run: the warm-up and every rep to one scale in minutes, the
+     jogs between reps as dots because the plan does not set their length,
+     and the rest of the window easy. A long run with marathon pace: its
+     kilometres to scale, easy in white and the MP stretch in red, a range
+     ("last 14–16") drawn solid for the certain part and faint for the
+     rest. Anything the title does not describe gets no bar at all. */
+  function sessionShapeHTML(r, kmTotal, quiet) {
+    const t = String(r.title || ''), d = String(r.detail || '');
+    const cls = DB.runClass(r);
+    const fmt = (n) => (n === Math.round(n) ? String(n) : n.toFixed(1));
+    if (cls === 'quality') {
+      const rep = t.match(/(\d+)\s*[×x]\s*(\d+)\s*min/) || (t.match(/Tempo\s+(\d+)\s*min/) ? [null, '1', t.match(/Tempo\s+(\d+)\s*min/)[1]] : null);
+      if (!rep) return '';
+      const n = Number(rep[1]), min = Number(rep[2]);
+      const wuM = d.match(/warm up (\d+) min/i), wu = wuM ? Number(wuM[1]) : 0;
+      const zone = /@\s*MP/.test(t) ? 'MP' : 'Z4';
+      const rest = Math.max(0, (r.endMin - r.startMin) - wu - n * min);
+      let segs = wu ? '<i class="ss-seg easy" style="flex:' + wu + '"></i>' : '';
+      for (let k = 0; k < n; k++) segs += (k ? '<i class="ss-jog"></i>' : '') + '<i class="ss-seg hard" style="flex:' + min + '"></i>';
+      if (rest > 0) segs += '<i class="ss-seg easy" style="flex:' + rest + '"></i>';
+      const cap = (wu ? wu + '′ easy · ' : '') + (n > 1 ? n + ' × ' + min + '′ ' + zone + ', jog between' : min + '′ ' + zone) + ' · easy to ' + fmt(kmTotal) + '\u00a0km';
+      return '<figure class="sess-shape q" role="img" aria-label="' + esc('Session shape: ' + cap) + '"><div class="ss-bar" aria-hidden="true">' + segs + '</div>' +
+        '<figcaption>' + esc(cap) + '</figcaption></figure>';
+    }
+    const mp = DB.mpShape(t, kmTotal);
+    if (!mp) return '';
+    let segs = '', cap = '';
+    if (mp.kind === 'tail') {
+      const firm = kmTotal - mp.fromLate + 1, soft = mp.fromLate - mp.from;
+      segs = '<i class="ss-seg long" style="flex:' + (mp.from - 1) + '"></i>' + (soft ? '<i class="ss-seg mp soft" style="flex:' + soft + '"></i>' : '') +
+        '<i class="ss-seg mp" style="flex:' + firm + '"></i>';
+      cap = 'km 1–' + (mp.from - 1) + ' easy · ' + (soft ? 'MP from km ' + mp.from + '–' + mp.fromLate : 'km ' + mp.from + '–' + fmt(kmTotal) + ' at MP') + ' ' + mp.pace;
+    } else if (mp.kind === 'block') {
+      const side = (kmTotal - mp.hi) / 2, soft = mp.hi - mp.lo;
+      segs = '<i class="ss-seg long" style="flex:' + side + '"></i>' + (soft ? '<i class="ss-seg mp soft" style="flex:' + soft / 2 + '"></i>' : '') +
+        '<i class="ss-seg mp" style="flex:' + mp.lo + '"></i>' + (soft ? '<i class="ss-seg mp soft" style="flex:' + soft / 2 + '"></i>' : '') + '<i class="ss-seg long" style="flex:' + side + '"></i>';
+      cap = (mp.lo === mp.hi ? mp.lo : mp.lo + '–' + mp.hi) + ' km at MP ' + mp.pace + ', mid-run';
+    } else {
+      const easy = (kmTotal - mp.reps * mp.repKm) / (mp.reps + 1);
+      if (!(easy > 0)) return '';
+      for (let k = 0; k < mp.reps; k++) segs += '<i class="ss-seg long" style="flex:' + easy + '"></i><i class="ss-seg mp" style="flex:' + mp.repKm + '"></i>';
+      segs += '<i class="ss-seg long" style="flex:' + easy + '"></i>';
+      cap = mp.reps + ' × ' + mp.repKm + ' km at MP ' + mp.pace + ' within ' + fmt(kmTotal) + ', spacing yours';
+    }
+    /* on the run card the MP line above already says this in words */
+    return '<figure class="sess-shape l" role="img" aria-label="' + esc('Session shape: ' + cap) + '"><div class="ss-bar" aria-hidden="true">' + segs + '</div>' +
+      (quiet ? '' : '<figcaption>' + esc(cap) + '</figcaption>') + '</figure>';
+  }
+
   function runSkyHTML(iso, run, cls, key, nowAt) {
     if (!run || run.startMin == null || !(run.endMin > run.startMin)) return '';
     const rs = DB.runSky(iso, run.startMin, run.endMin, run.run ? run.run.km : 0);
