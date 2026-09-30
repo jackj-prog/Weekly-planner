@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.92.1';
+  const APP_VERSION = '4.93.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -4320,9 +4320,17 @@
     ref.innerHTML = '<span class="sp-init" aria-hidden="true">R</span>' +
       '<span class="sp-t"><b>Reference</b><small>Paces · zones · shoes · fuelling · rules</small></span>';
   }
+  let sheetTimer = null;
   function setSheet(open) {
     if (open) dressSheet();
-    document.getElementById('sheet-backdrop').classList.toggle('hidden', !open);
+    const bd = document.getElementById('sheet-backdrop');
+    clearTimeout(sheetTimer);
+    bd.classList.remove('closing');
+    /* closing plays the sheet back down first, when motion is welcome */
+    if (!open && !bd.classList.contains('hidden') && motionOK()) {
+      bd.classList.add('closing');
+      sheetTimer = setTimeout(() => { bd.classList.add('hidden'); bd.classList.remove('closing'); }, 200);
+    } else bd.classList.toggle('hidden', !open);
     const more = document.querySelector('[data-nav="more"]');
     if (more) more.setAttribute('aria-expanded', open ? 'true' : 'false');
   }

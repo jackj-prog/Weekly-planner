@@ -1497,6 +1497,15 @@ section('palette contrast (WCAG AA)');
     ok(/Math\.min\(30, gain \* 3\.2\)/.test(skyFn), 'a comet\u2019s tail is as long as the gain over the previous longest run');
     const skyCss = css.slice(css.indexOf('THE FIRMAMENT OF THE BLOCK (v4.92)'));
     ok(skyCss.length > 100 && !/rgba?\(|#[0-9a-f]{3,6}\b/i.test(skyCss.replace(/url\(#[\w-]+\)/g, '')) && (css.match(/\.sk-sun \{/g) || []).length === 1, 'the sky has one stylesheet section, painted only with tokens');
+    /* v4.93: one motion system */
+    const afterRoot = css.slice(css.indexOf('}', css.indexOf(':root {')));
+    ok(!/cubic-bezier\(/.test(afterRoot), 'every easing curve is a token — no stray cubic-bezier outside :root');
+    const motionCss = css.slice(css.indexOf('MOTION SYSTEM (v4.93)'));
+    const mGate = motionCss.indexOf('@media (prefers-reduced-motion: no-preference)');
+    ok(mGate > 0 && motionCss.indexOf('@keyframes tick-on') > mGate && motionCss.indexOf('@keyframes sheet-up') > mGate && motionCss.indexOf('.view.slide-next') > mGate,
+      'the motion system\u2019s animations all sit behind prefers-reduced-motion');
+    ok(/!bd\.classList\.contains\('hidden'\) && motionOK\(\)/.test(appSrc), 'the sheet only waits for its closing animation when motion is welcome');
+    ok(!/rgba\(22, ?36, ?42/.test(css), 'no colour from the retired teal palette survives in the sheet or toast');
     const shoeKm = {};
     for (let i = 0; i < 210; i++) { const d = DB.buildDay(DB.addDays(PLAN.blocks[0].start, i)); if (d.run) shoeKm[d.run.run.shoe] = (shoeKm[d.run.run.shoe] || 0) + d.run.run.km; }
     ok(PLAN.shoes.filter((s) => !/race/i.test(s.job)).every((s) => Object.keys(shoeKm).some((k) => s.shoe.endsWith(k) && shoeKm[k] > 100)),

@@ -208,7 +208,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   background: linear-gradient(155deg, color-mix(in srgb, var(--chrome-bg) 88%, #fff) 0%, var(--chrome-bg) 60%);
   color: var(--chrome-text);
   border-radius: 18px; padding: 15px 16px; margin-bottom: 13px;
-  box-shadow: 0 10px 26px rgba(22,36,42,0.16);
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--chrome-bg) 48%, transparent);
 }
 .nownext .nn-tag {
   font-family: var(--mono); font-size: 10px; font-weight: 700;
@@ -230,7 +230,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   color: #fff;
   border-radius: 20px; padding: 18px 17px 16px; margin-bottom: 15px;
   /* floats in its own coloured light */
-  box-shadow: 0 14px 34px color-mix(in srgb, var(--hero-bg) 45%, transparent), 0 4px 10px rgba(22,36,42,0.18);
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--hero-bg) 45%, transparent), 0 4px 10px color-mix(in srgb, var(--chrome-bg) 54%, transparent);
 }
 .hero.race { background: var(--accent-fill); background: linear-gradient(150deg, color-mix(in srgb, var(--accent-fill) 84%, #fff) 0%, var(--accent-fill) 55%, color-mix(in srgb, var(--accent-fill) 82%, #000) 100%); box-shadow: 0 16px 40px color-mix(in srgb, var(--accent-fill) 48%, transparent), 0 4px 10px rgba(30,43,36,0.2); }
 .hero.done { opacity: 1; }
@@ -295,7 +295,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   background: color-mix(in srgb, var(--cat, var(--cat-routine)) 7%, var(--surface));
   border: 1px solid var(--line);
   border-radius: 16px; padding: 12px 13px 12px 15px;
-  box-shadow: 0 1px 2px rgba(22,36,42,0.05), 0 6px 16px rgba(22,36,42,0.05);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--chrome-bg) 15%, transparent), 0 6px 16px color-mix(in srgb, var(--chrome-bg) 15%, transparent);
 }
 .tl-card::before {                  /* filled category node on the spine */
   content: ""; position: absolute; left: -22px; top: 16px;
@@ -346,7 +346,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 .tl-now::after { content: ""; flex: 1; height: 2px; background: color-mix(in srgb, var(--accent) 45%, transparent); border-radius: 1px; }
-.tl-card.current { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent), 0 6px 16px rgba(22,36,42,0.06); }
+.tl-card.current { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent), 0 6px 16px color-mix(in srgb, var(--chrome-bg) 18%, transparent); }
 .tl-card.current::before { background: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .tl-quiet.current { color: var(--text); font-weight: 500; }
 .tl-quiet.current::before { background: var(--accent); border-color: var(--accent); }
@@ -582,7 +582,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ---- sheet ------------------------------------------------------------ */
 .sheet-backdrop {
   position: fixed; inset: 0; z-index: 40;
-  background: rgba(22, 36, 42, 0.45);
+  background: color-mix(in srgb, var(--chrome-bg) 62%, transparent);
   display: flex; align-items: flex-end;
 }
 .sheet {
@@ -603,7 +603,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   display: flex; align-items: center; gap: 14px;
   background: var(--chrome-bg); color: var(--chrome-text);
   padding: 10px 16px; border-radius: 999px;
-  font-size: 13.5px; box-shadow: 0 6px 24px rgba(22,36,42,0.35);
+  font-size: 13.5px; box-shadow: 0 10px 30px color-mix(in srgb, var(--chrome-bg) 70%, transparent), 0 0 0 1px var(--line);
 }
 .toast button { color: var(--accent); font-weight: 700; }
 
@@ -727,14 +727,14 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* ---- motion (only when welcome) ------------------------------------------ */
 @media (prefers-reduced-motion: no-preference) {
   .just .tick.on, .hero.just .h-tick.on {
-    animation: tickpop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: tickpop 0.3s var(--ease-spring);
   }
   @keyframes tickpop {
     0% { transform: scale(0.5); }
     60% { transform: scale(1.18); }
     100% { transform: scale(1); }
   }
-  .hero.just.done::after { animation: stampin 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .hero.just.done::after { animation: stampin 0.35s var(--ease-spring); }
   @keyframes stampin {
     0% { transform: rotate(-8deg) scale(1.9); opacity: 0; }
     100% { transform: rotate(-8deg) scale(1); opacity: 1; }
@@ -750,7 +750,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     content: ""; position: absolute; top: -10%; left: -70%; width: 55%; height: 120%;
     background: linear-gradient(100deg, transparent, rgba(255,255,255,0.2), transparent);
     transform: skewX(-16deg); pointer-events: none;
-    animation: sheen 1.15s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+    animation: sheen 1.15s var(--ease-soft) 0.3s both;
   }
   /* Today's blocks cascade in on the spine; Week and Plan rows do the same */
   .view.anim .tl > *,
@@ -762,7 +762,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     content: ""; position: absolute; top: -10%; left: -70%; width: 55%; height: 120%;
     background: linear-gradient(100deg, transparent, rgba(255,255,255,0.22), transparent);
     transform: skewX(-16deg); pointer-events: none;
-    animation: sheen 1.15s cubic-bezier(0.4, 0, 0.2, 1) 0.25s both;
+    animation: sheen 1.15s var(--ease-soft) 0.25s both;
   }
   @keyframes sheen { from { left: -70%; } to { left: 155%; } }
   /* ticking the run celebrates */
@@ -831,11 +831,11 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---- cross-view depth: one card language everywhere ---------------------- */
 .wk-day, .plan-row, .stat, .ref-card, .sheet-item {
-  box-shadow: 0 1px 2px rgba(22,36,42,0.04), 0 4px 12px rgba(22,36,42,0.045);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--chrome-bg) 12%, transparent), 0 4px 12px color-mix(in srgb, var(--chrome-bg) 14%, transparent);
 }
 .stat { border-radius: 12px; }
-.wk-day.today { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent), 0 4px 12px rgba(22,36,42,0.05); }
-.plan-row.now { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent), 0 4px 12px rgba(22,36,42,0.05); }
+.wk-day.today { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent), 0 4px 12px color-mix(in srgb, var(--chrome-bg) 15%, transparent); }
+.plan-row.now { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent), 0 4px 12px color-mix(in srgb, var(--chrome-bg) 15%, transparent); }
 
 /* ==========================================================================
    v3.0 — the app closes the loop: pacing tables, run log, EF trend
@@ -1058,7 +1058,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .frow.is-now .fi, .frow.is-now .fn { color: var(--text); font-weight: 700; }
 
 /* Run instrument: stable hierarchy and actual 48px controls, in both themes. */
-.hero { border-radius: 18px; padding: 20px; box-shadow: 0 5px 14px rgba(22,36,42,.15); }
+.hero { border-radius: 18px; padding: 20px; box-shadow: 0 5px 14px color-mix(in srgb, var(--chrome-bg) 45%, transparent); }
 .hero::before, .hero.done::after { display: none; }
 .h-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .hero .h-tag { font-size: 11px; opacity: 1; letter-spacing: .09em; }
@@ -1125,7 +1125,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hero .h-detail li + li { margin-top: 8px; }
 
 /* Live time rail: content paints immediately; only actions earn motion. */
-.nownext { padding: 12px 14px; border-radius: 14px; margin-bottom: 14px; background: var(--surface); color: var(--text); border: 1px solid var(--line); box-shadow: 0 2px 4px rgba(22,36,42,.04); }
+.nownext { padding: 12px 14px; border-radius: 14px; margin-bottom: 14px; background: var(--surface); color: var(--text); border: 1px solid var(--line); box-shadow: 0 2px 4px color-mix(in srgb, var(--chrome-bg) 12%, transparent); }
 .nn-current { display: flex; align-items: center; gap: 12px; }
 .nn-clock { flex: 0 0 51px; font-family: var(--mono); font-size: 15px; font-weight: 700; }
 .nn-clock > span { display: block; font-size: 10px; color: var(--accent); letter-spacing: .12em; margin-bottom: 2px; }
@@ -1215,7 +1215,7 @@ body { background: var(--paper); }
 .ref-course summary { min-height: 48px; padding-block: 13px; font-size: 14px; font-weight: 600; cursor: pointer; }
 .ref-course[open] summary { border-bottom: 1px solid var(--line); }
 .ref-back { min-height: 44px; padding: 10px 2px; margin-top: 8px; font-size: 13px; color: var(--t2); text-decoration: underline; text-underline-offset: 4px; }
-.race-card { box-shadow: 0 4px 10px rgba(22,36,42,.12); padding: 18px; }
+.race-card { box-shadow: 0 4px 10px color-mix(in srgb, var(--chrome-bg) 36%, transparent); padding: 18px; }
 .rc-where, .rc-meta, .rc-kicker { opacity: 1; font-size: 12px; }
 .rc-goal { margin-top: 12px; }
 .ref-list li { font-size: 14px; line-height: 1.6; padding-block: 14px; }
@@ -1337,7 +1337,7 @@ body { font-size: var(--type-body); line-height: var(--leading-body); }
 .tl-quiet::before { left: -20px; top: 12px; width: 7px; height: 7px; border-width: 1px; }
 .tl-quiet .t { color: var(--t2); flex-basis: 86px; padding-top: 2px; }
 .quiet-main { min-width: 0; flex: 1; }
-.tl-card { display: block; padding: 16px; border-radius: 12px; background: var(--surface); box-shadow: 0 2px 4px rgba(22,36,42,.04); border-left: 3px solid var(--cat); }
+.tl-card { display: block; padding: 16px; border-radius: 12px; background: var(--surface); box-shadow: 0 2px 4px color-mix(in srgb, var(--chrome-bg) 12%, transparent); border-left: 3px solid var(--cat); }
 .tl-card::before { left: -24px; top: 20px; width: 11px; height: 11px; }
 .tl-card .c-time { margin-bottom: 6px; color: var(--t2); }
 .tl-card .c-side { flex-direction: row; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
@@ -1779,7 +1779,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   display: block; width: 8px; height: 100%;
   background: linear-gradient(180deg, transparent, var(--accent-fill) 25%, var(--accent) 50%, var(--accent-fill) 75%, transparent);
   transform-origin: 50% 100%; transform: scaleY(0); opacity: .9;
-  animation: tc-ribbon 1.05s cubic-bezier(.2,.75,.2,1) forwards;
+  animation: tc-ribbon 1.05s var(--ease-out) forwards;
 }
 .tc-ribbons i:nth-child(1), .tc-ribbons i:nth-child(9) { width: 3px; animation-delay: .24s; }
 .tc-ribbons i:nth-child(2), .tc-ribbons i:nth-child(8) { width: 5px; animation-delay: .18s; }
@@ -1788,7 +1788,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .tc-ribbons i:nth-child(5) { width: 22px; }
 .tc-mark {
   position: relative; font: 900 56px/1 var(--display); letter-spacing: -0.02em; color: var(--text);
-  opacity: 0; animation: tc-mark .7s cubic-bezier(.2,.8,.2,1) .38s forwards;
+  opacity: 0; animation: tc-mark .7s var(--ease-out) .38s forwards;
 }
 .tc-mark b { color: var(--accent); font-weight: 900; }
 .tc-line {
@@ -1811,7 +1811,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   .hero.just.done .h-sweep {
     background: linear-gradient(100deg, transparent 30%, var(--glow-white) 48%, var(--glow-white-hot) 50%, var(--glow-white) 52%, transparent 70%);
     background-size: 260% 100%;
-    animation: banked-sweep .9s cubic-bezier(.3,.6,.2,1) forwards;
+    animation: banked-sweep .9s var(--ease-out) forwards;
   }
   @keyframes banked-sweep {
     0% { opacity: 1; background-position: 120% 0; }
@@ -1824,7 +1824,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   }
   @keyframes banked-ring { from { opacity: .9; transform: scale(1); } to { opacity: 0; transform: scale(1.7); } }
   /* bars rise on arrival (real navigation only — .anim), left to right */
-  .view.anim .profile-track i { transform-origin: 50% 100%; animation: bar-rise .6s cubic-bezier(.2,.8,.2,1) backwards; }
+  .view.anim .profile-track i { transform-origin: 50% 100%; animation: bar-rise .6s var(--ease-out) backwards; }
   .view.anim .profile-day:nth-child(2) .profile-track i { animation-delay: .04s; }
   .view.anim .profile-day:nth-child(3) .profile-track i { animation-delay: .08s; }
   .view.anim .profile-day:nth-child(4) .profile-track i { animation-delay: .12s; }
@@ -1833,7 +1833,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   .view.anim .profile-day:nth-child(7) .profile-track i { animation-delay: .24s; }
   @keyframes bar-rise { from { transform: scaleY(0); } }
   /* the billboard numeral settles into place on arrival */
-  .view.anim .bb, .view.anim .wk-num { animation: bb-in .8s cubic-bezier(.2,.8,.2,1) backwards; }
+  .view.anim .bb, .view.anim .wk-num { animation: bb-in .8s var(--ease-out) backwards; }
   @keyframes bb-in { from { opacity: 0; translate: 18px 0; } }
 }
 
@@ -1884,11 +1884,11 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 
 @media (prefers-reduced-motion: no-preference) {
   /* paging through days and weeks slides in the direction of travel */
-  .view.slide-next { animation: slide-next .32s cubic-bezier(.2,.8,.2,1); }
-  .view.slide-prev { animation: slide-prev .32s cubic-bezier(.2,.8,.2,1); }
+  .view.slide-next { animation: slide-next .32s var(--ease-out); }
+  .view.slide-prev { animation: slide-prev .32s var(--ease-out); }
   @keyframes slide-next { from { opacity: .2; transform: translateX(28px); } }
   @keyframes slide-prev { from { opacity: .2; transform: translateX(-28px); } }
-  .view.anim .pv-got { transform-origin: 50% 100%; animation: bar-rise .6s cubic-bezier(.2,.8,.2,1) .1s backwards; }
+  .view.anim .pv-got { transform-origin: 50% 100%; animation: bar-rise .6s var(--ease-out) .1s backwards; }
 }
 
 /* -- v4.71: earned moments share the title card's stage -- */
@@ -1937,7 +1937,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 
 @media (prefers-reduced-motion: no-preference) {
   /* the wall lights up week by week, left to right, on arrival */
-  .view.anim .wall.in .wl-col { animation: wall-in .5s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--c) * 22ms); }
+  .view.anim .wall.in .wl-col { animation: wall-in .5s var(--ease-out) backwards; animation-delay: calc(var(--c) * 22ms); }
   @keyframes wall-in { from { opacity: 0; transform: translateY(6px); } }
 }
 
@@ -2070,7 +2070,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   background: repeating-conic-gradient(from 0deg, var(--glow-white) 0deg 2deg, transparent 2deg 7.5deg);
   -webkit-mask-image: radial-gradient(circle, #000 12%, transparent 58%);
   mask-image: radial-gradient(circle, #000 12%, transparent 58%);
-  opacity: 0; animation: tc-gloria 1.6s cubic-bezier(.2,.8,.2,1) .25s forwards;
+  opacity: 0; animation: tc-gloria 1.6s var(--ease-out) .25s forwards;
 }
 .titlecard.race .tc-gloria { background: repeating-conic-gradient(from 0deg, var(--glow-red) 0deg 2deg, transparent 2deg 7.5deg); }
 /* the launch keeps its rays quieter and closer: the wordmark leads */
@@ -2131,7 +2131,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 
 @media (prefers-reduced-motion: no-preference) {
   /* the seal is pressed on arrival */
-  .view.anim .seal { animation: seal-press .55s cubic-bezier(.3,1.5,.5,1) .35s backwards; }
+  .view.anim .seal { animation: seal-press .55s var(--ease-spring) .35s backwards; }
   @keyframes seal-press { from { opacity: 0; transform: rotate(-30deg) scale(1.8); } }
 }
 
@@ -2166,7 +2166,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
     100% { transform: rotate(-44deg) scale(.96, 1.04); opacity: .88; }
   }
   /* the Roman numerals of the key days step in */
-  .view.anim .journey-landmarks.in .journey-event-index { animation: numeral-in .7s cubic-bezier(.2,.8,.2,1) backwards; }
+  .view.anim .journey-landmarks.in .journey-event-index { animation: numeral-in .7s var(--ease-out) backwards; }
   .view.anim .journey-event:nth-child(3) .journey-event-index { animation-delay: .08s; }
   .view.anim .journey-event:nth-child(4) .journey-event-index { animation-delay: .16s; }
   .view.anim .journey-event:nth-child(5) .journey-event-index { animation-delay: .24s; }
@@ -2252,7 +2252,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .tc-moon {
   position: relative; width: 46px; height: 46px; overflow: visible; margin-bottom: -4px;
   filter: drop-shadow(0 0 14px var(--glow-white-hot));
-  opacity: 0; animation: tc-moon 1.2s cubic-bezier(.2,.8,.2,1) .1s forwards;
+  opacity: 0; animation: tc-moon 1.2s var(--ease-out) .1s forwards;
 }
 .tc-moong .mo-dark { fill: var(--surface); stroke: var(--line); }
 @keyframes tc-moon { from { opacity: 0; transform: translateY(16px) scale(.85); } to { opacity: 1; transform: none; } }
@@ -2260,7 +2260,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 
 @media (prefers-reduced-motion: no-preference) {
   /* the run draws across its sky; the sun settles onto the horizon */
-  .view.anim .rs-run { animation: dw-draw 1.1s cubic-bezier(.3,.7,.2,1) .35s backwards; }
+  .view.anim .rs-run { animation: dw-draw 1.1s var(--ease-out) .35s backwards; }
   .view.anim .rs-cap.end { animation: dw-in .3s ease-out 1.3s backwards; }
   .view.anim .rs-curtain, .view.anim .rs-span { animation: dw-in .8s ease-out 1s backwards; }
   .view.anim .rs-sunnow { animation: dw-in 1s ease-out .9s backwards; }
@@ -2296,9 +2296,9 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 
 @media (prefers-reduced-motion: no-preference) {
   /* each day's sky pours down its column, Monday first; then the runs */
-  .view.anim .weeklight.in .wl-col { animation: wl-pour .9s cubic-bezier(.3,.7,.2,1) backwards; animation-delay: calc(var(--i) * 90ms); }
+  .view.anim .weeklight.in .wl-col { animation: wl-pour .9s var(--ease-out) backwards; animation-delay: calc(var(--i) * 90ms); }
   @keyframes wl-pour { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
-  .view.anim .weeklight.in .wl-rung { animation: wl-run .5s cubic-bezier(.3,1.4,.5,1) backwards; animation-delay: calc(var(--i) * 90ms + .75s); }
+  .view.anim .weeklight.in .wl-rung { animation: wl-run .5s var(--ease-spring) backwards; animation-delay: calc(var(--i) * 90ms + .75s); }
   @keyframes wl-run { from { opacity: 0; transform: scale(.4); } }
   .wl-rung { transform-box: fill-box; transform-origin: center; }
   .view.anim .weeklight.in .wl-moon { animation: dw-in 1.2s ease-out .9s backwards; }
@@ -2410,7 +2410,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 }
 .focus-ex-progress i.past { background: var(--t3); }
 @media (prefers-reduced-motion: no-preference) {
-  .focus-ex-num { animation: numeral-in .6s cubic-bezier(.2,.8,.2,1) backwards; }
+  .focus-ex-num { animation: numeral-in .6s var(--ease-out) backwards; }
 }
 
 /* ================= INSTRUMENTS (v4.80) ============================= */
@@ -2999,4 +2999,69 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   .view.anim .sky .sk-dawnfill { animation: dw-in 2.2s var(--ease-soft) 1.2s backwards; }
   .view.anim .sky .sk-racemoon { animation: dw-in 1.2s var(--ease-soft) 2.2s backwards; }
   .view.anim .sky :is(.sk-now, .sk-now-t) { animation: dw-in .8s var(--ease-soft) 1.9s backwards; }
+}
+
+/* ================= MOTION SYSTEM (v4.93) =========================== */
+/* One feel across the app. The rules (AGENTS.md): motion confirms an
+   action or dresses the art, it never delays useful content, it runs once
+   on real arrival, and all of it sits behind prefers-reduced-motion. Every
+   curve is a token: --ease-out for arrivals, --ease-inout for travel,
+   --ease-spring for things that land, --ease-soft for light. */
+.nownext .nn-bar i { transition: width 1.2s var(--ease-inout); }
+.sheet-backdrop { -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* press: every control answers the finger — a quick dip, a spring back */
+  button, .cta, summary { transition: transform .32s var(--ease-spring), background-color .16s var(--ease-soft), border-color .16s var(--ease-soft), color .16s var(--ease-soft), box-shadow .24s var(--ease-soft); }
+  :is(button, .cta):active { transform: scale(.96); transition-duration: .08s; }
+  :is(.wk-day, .profile-day, .plan-row, .sheet-item, .journey-link, .session-focus-open, .tl-card .tick, .h-tick):active { transform: scale(.975); }
+  button:active { filter: none; }
+  /* ticking: the circle fills with a spring and throws a ring of light;
+     the card's emblem on the spine fills to match */
+  .tl-card.just .tick.on { animation: tick-on .5s var(--ease-spring); }
+  @keyframes tick-on { 0% { transform: scale(.6); box-shadow: 0 0 0 0 color-mix(in srgb, var(--cat, var(--text)) 60%, transparent); } 60% { box-shadow: 0 0 0 10px transparent; } 100% { transform: scale(1); } }
+  .tl-card.just.done .c-emb { animation: emb-fill .6s var(--ease-spring); }
+  @keyframes emb-fill { 0% { transform: scale(.7); } 55% { transform: scale(1.18); } 100% { transform: scale(1); } }
+  .hero.just .h-tick.on { animation: tick-on .5s var(--ease-spring); }
+  .completion-note { animation: note-in .42s var(--ease-out); }
+  @keyframes note-in { from { opacity: 0; transform: translateY(6px); } }
+  /* paging days and weeks follows the finger; any other arrival is a
+     quick fade that never holds content back */
+  .view.slide-next { animation: page-next .34s var(--ease-out); }
+  .view.slide-prev { animation: page-prev .34s var(--ease-out); }
+  @keyframes page-next { from { opacity: .35; transform: translateX(22px); } }
+  @keyframes page-prev { from { opacity: .35; transform: translateX(-22px); } }
+  .view.anim:not(.slide-next):not(.slide-prev) { animation: view-in .26s var(--ease-out); }
+  @keyframes view-in { from { opacity: .45; transform: translateY(4px); } }
+  /* the More sheet rises on a spring over a blurred backdrop; closing
+     plays the reverse (the .closing class is set for 200 ms) */
+  .sheet-backdrop:not(.hidden) { animation: scrim-in .24s var(--ease-soft); }
+  .sheet-backdrop:not(.hidden) .sheet { animation: sheet-up .46s var(--ease-out); }
+  .sheet-backdrop:not(.hidden) .sheet-item { animation: sheet-item .5s var(--ease-out) backwards; }
+  .sheet-backdrop:not(.hidden) .sheet-item:nth-child(2) { animation-delay: .04s; }
+  .sheet-backdrop:not(.hidden) .sheet-item:nth-child(3) { animation-delay: .08s; }
+  .sheet-backdrop.closing { animation: scrim-out .2s var(--ease-soft) forwards; }
+  .sheet-backdrop.closing .sheet { animation: sheet-down .2s var(--ease-inout) forwards; }
+  @keyframes scrim-in { from { opacity: 0; } }
+  @keyframes scrim-out { to { opacity: 0; } }
+  @keyframes sheet-up { from { transform: translateY(100%); } }
+  @keyframes sheet-down { to { transform: translateY(100%); } }
+  @keyframes sheet-item { from { opacity: 0; transform: translateY(14px); } }
+  /* the update toast arrives from below */
+  .toast:not(.hidden) { animation: toast-in .5s var(--ease-spring); }
+  @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 20px) scale(.96); } }
+  /* session focus: the stage opens, the content settles */
+  .session-focus[open] { animation: scrim-in .22s var(--ease-soft); }
+  .session-focus[open] .focus-shell { animation: focus-in .42s var(--ease-out); }
+  @keyframes focus-in { from { opacity: 0; transform: translateY(14px) scale(.985); } }
+  .is-banked .focus-done { animation: focus-bank .5s var(--ease-spring); }
+  @keyframes focus-bank { 0% { transform: scale(.94); } 100% { transform: scale(1); } }
+  /* a disclosure's content fades down as it opens */
+  details[open] > :not(summary) { animation: disclose .3s var(--ease-out); }
+  @keyframes disclose { from { opacity: 0; transform: translateY(-4px); } }
+  /* the Week's bars rise with the same curve as everything else */
+  .view.anim .profile-track i { animation-duration: .7s; }
+  /* NOW on the timeline breathes, slowly, as the one live mark on data */
+  .tl-now::before { animation: now-breathe 3.2s var(--ease-soft) infinite; }
+  @keyframes now-breathe { 0%, 100% { box-shadow: 0 0 0 3px var(--glow-red-soft), 0 0 12px var(--glow-red); } 50% { box-shadow: 0 0 0 6px transparent, 0 0 18px var(--glow-red); } }
 }

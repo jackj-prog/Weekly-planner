@@ -1582,3 +1582,26 @@ different places:
 Chromium cannot reproduce iOS's zoom behaviour, so this is verified by
 test in Chromium and by reasoning for Safari, not on a physical iPhone.
 161 browser checks, 16,261 plan checks, no overflow, a11y check clean.
+
+## One motion system — v4.93, 1 October (Claude)
+
+User: "do the same with all animations". Under AGENTS.md's own rule —
+motion confirms an action or dresses the art, never delays content, runs
+once on real arrival, all behind `prefers-reduced-motion` — every
+animation now shares the v4.91 easing tokens (21 stray cubic-beziers
+retokenised; a test forbids new ones outside `:root`), and a final
+"MOTION SYSTEM (v4.93)" section adds:
+- press feedback on every control: a quick dip and a spring back;
+- ticking: the corner circle fills with a spring and throws a ring of
+  light, the spine's emblem fills to match; the "banked" note rises in;
+- paging days and weeks slides with the finger (340 ms, `--ease-out`);
+  other arrivals are a 260 ms fade that never holds content back;
+- the More sheet rises on a spring over a blurred backdrop, its plates
+  stagger in, and closing plays it back down (the 200 ms wait happens only
+  when motion is allowed — `motionOK()`);
+- the update toast springs up; the focus stage opens and settles; a
+  disclosure's content fades down as it opens; the Now bar's minute
+  steps glide; NOW on the timeline breathes slowly.
+Also: the last thirteen shadows from the retired teal palette became
+token shadows, so no colour outside `:root` survives in the app.
+164 browser checks (sweep included), 16,265 plan checks, no overflow, a11y clean.

@@ -228,12 +228,18 @@ star with a halo (spikes on the long runs), the long runs a constellation,
 comets as long as each new longest run's gain, the moon every week at its
 real phase, the future veiled past NOW, and the race a sunrise under the
 waning moon.
+**No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
+tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`
 (Baskerville, Didot) and is never used for data.
 
-**Motion (v4.75).** Arrivals run once, on real navigation, and art below the
+**Motion (v4.75, one system since v4.93).** Every curve is a token
+(`--ease-out` arrivals, `--ease-inout` travel, `--ease-spring` landings,
+`--ease-soft` light); controls dip and spring back when pressed, a tick
+fills with a spring, the More sheet rises and falls, paging slides with
+the finger. Arrivals run once, on real navigation, and art below the
 fold starts when it scrolls into view (the dial draws itself round the clock
 and the hand sweeps to now); a tick or a minute's re-render never replays
 them. Ambient loops are allowed only in the art — stars twinkle, candles

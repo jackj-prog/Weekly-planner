@@ -531,6 +531,14 @@ async function cinema() {
   check(fm.veil === 1 && fm.ahead > 0, 'the future beyond NOW is veiled, its planned runs faint');
   noErrors(t, 'firmament');
   await t.ctx.close();
+  // v4.93: the sheet opens and closes cleanly
+  t = await open('2026-10-01', '12:00', SEED);
+  await t.page.click('[data-nav="more"]');
+  check(!(await t.page.$eval('#sheet-backdrop', (n) => n.classList.contains('hidden'))), 'the More sheet opens');
+  await t.page.click('.sheet-cancel'); await t.page.waitForTimeout(320);
+  check(await t.page.$eval('#sheet-backdrop', (n) => n.classList.contains('hidden') && !n.classList.contains('closing')), 'the More sheet closes fully after its animation');
+  noErrors(t, 'sheet motion');
+  await t.ctx.close();
   // v4.86: the journey's week explorer, the pace spectrum, the week in hours
   t = await open('2026-10-01', '12:00', SEED, 'plan');
   const jd = await t.page.$$eval('.journey-days button', (ns) => ns.map((n) => n.className));
