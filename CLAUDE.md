@@ -128,9 +128,12 @@ central-England point by design (§1). The night sky page carries every run
 as a star, comet tails on each new longest run, the block's full and new
 moons, a Milky Way, race morning's waning moon over the red sunrise, and
 now and then a shooting star. **The sky reaches the rest of the day (v4.76):**
-the run card draws its window as a ribbon of the real light — twilight, the
-sun on the horizon, stars and the moon when it is up — with one plain line
-of what it means ("Sunset 16:48 · starts in the dusk, dark by km 2"); the
+the run card draws the day's real sun arc (v4.77.2, redrawn after the user
+found the first ribbon boxy): its height from `DB.sunAltitude`, a faint dome
+of daylight, sunrise and sunset times where it meets the horizon, stars and
+the moon only in the dark, the run lit on the arc in its own colour, and on
+today the sun itself riding the arc — with one plain line of what it means
+("Sunset 16:48 · starts in the dusk, dark by km 2"); the
 race card on Reference shows race morning the same way; the Now card wears
 the sky outside (sun, sun on the horizon, the moon at its phase, or a star,
 and still stars behind it after dark); the launch card carries tonight's

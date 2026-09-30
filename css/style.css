@@ -2265,18 +2265,31 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 
 /* ================= THE SKY ABOUT THE DAY (v4.76) =================== */
 /* the run against the sky: a ribbon of the real light across its window */
-.runsky { margin: 14px 0 2px; }
+.runsky { margin: 12px 0 0; }
 .runsky svg { display: block; width: 100%; height: auto; overflow: visible; }
-.rs-base { fill: var(--chrome-bg); }
-.rs-sky stop { stop-color: var(--text); }
-.rs-frame { fill: none; stroke: var(--line); stroke-width: 1; }
+.rs-sky stop { stop-color: var(--text); }          /* the week figure's columns */
+.rs-d { stop-color: var(--text); }                  /* the ribbon: lit by day… */
+.rs-n { stop-color: var(--chrome-bg); }             /* …deepening into night */
+.rs-hz { stroke: var(--t3); stroke-width: 1; opacity: .75; }
+.rs-path { fill: none; stroke: var(--text); stroke-width: 1.3; stroke-linecap: round; opacity: .5; }
+.rs-path.below { stroke-dasharray: 1.5 3.5; opacity: .32; }
 .rs-star { fill: var(--text); opacity: .8; }
 .rs-moon { filter: drop-shadow(0 0 4px var(--glow-white)); }
-.rs-glow-a { stop-color: var(--text); stop-opacity: .2; }
+.rs-glow-a { stop-color: var(--text); stop-opacity: .26; }
 .rs-glow-b { stop-color: var(--text); stop-opacity: 0; }
-.rs-sun circle { fill: var(--text); }
-.rs-sun path { stroke: var(--text); stroke-width: 1.2; stroke-linecap: round; }
-.rs-sun { filter: drop-shadow(0 0 5px var(--glow-white)); }
+/* the dome of daylight under the sun's arc */
+.rs-dome-a { stop-color: var(--text); stop-opacity: .12; }
+.rs-dome-b { stop-color: var(--text); stop-opacity: .01; }
+/* the run's span: lit on the arc, a veil down to the horizon, a mark on it */
+.rs-curtain { fill: var(--cat-run); opacity: .13; }
+.rs-span { stroke: var(--cat-run); stroke-width: 2; stroke-linecap: round; opacity: .85; }
+.rs-long .rs-curtain { fill: var(--text); opacity: .16; }
+.rs-long .rs-span { stroke: var(--text); }
+.rs-hard .rs-curtain, .rs-race .rs-curtain { fill: var(--accent); opacity: .2; }
+.rs-hard .rs-span, .rs-race .rs-span { stroke: var(--accent); }
+/* today: the sun itself on its arc */
+.rs-sunnow { fill: var(--text); filter: drop-shadow(0 0 3px var(--text)) drop-shadow(0 0 9px var(--glow-white-hot)); }
+.rs-sunnow.below { fill: var(--surface); stroke: var(--t2); stroke-width: 1; filter: none; }
 .rs-run { fill: none; stroke: var(--cat-run); stroke-width: 3.2; stroke-linecap: round; }
 .rs-cap { fill: var(--cat-run); }
 .rs-long .rs-run { stroke: var(--text); filter: drop-shadow(0 0 4px var(--glow-white-hot)); }
@@ -2286,20 +2299,22 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 /* race morning's sunrise is red, as it is in the night sky */
 .rs-race .rs-glow-a { stop-color: var(--accent-fill); stop-opacity: .6; }
 .rs-race .rs-glow-b { stop-color: var(--accent-fill); }
-.rs-race .rs-sun circle { fill: var(--accent-fill); }
-.rs-race .rs-sun path { stroke: var(--accent); }
-.rs-race .rs-sun { filter: drop-shadow(0 0 6px var(--glow-red)); }
-.rs-now { stroke: var(--accent); stroke-width: 1.3; }
-.rs-tick { stroke: var(--t3); stroke-width: 1; }
+
+.rs-now { stroke: var(--accent); stroke-width: 1; opacity: .7; }
+.rs-nowdot { fill: var(--accent); filter: drop-shadow(0 0 4px var(--glow-red)); }
+.rs-tick { stroke: var(--t3); stroke-width: 1; opacity: .75; }
 .rs-hour { fill: var(--t3); font: 400 8px var(--mono); letter-spacing: .04em; text-anchor: middle; }
 .rs-line { margin: 4px 0 0; font: 400 13px/1.45 var(--body); color: var(--t2); }
 /* on a red card the ribbon's type and run go white, like everything else there */
 :is(.hero.race, .race-card) .rs-line { color: var(--text); }
 :is(.hero.race, .race-card) .rs-hour { fill: var(--text); }
 :is(.hero.race, .race-card) .rs-tick { stroke: var(--text); }
-:is(.hero.race, .race-card) .rs-frame { stroke: var(--glow-white-hot); }
+:is(.hero.race, .race-card) .rs-hz { stroke: var(--text); opacity: .6; }
+:is(.hero.race, .race-card) .rs-path { stroke: var(--text); opacity: .7; }
 :is(.hero.race, .race-card) .rs-run { stroke: var(--text); filter: drop-shadow(0 0 5px var(--glow-white-hot)); }
 :is(.hero.race, .race-card) .rs-cap { fill: var(--text); }
+:is(.hero.race, .race-card) .rs-curtain { fill: var(--text); opacity: .16; }
+:is(.hero.race, .race-card) .rs-span { stroke: var(--text); }
 .race-card .runsky { margin-top: 16px; }
 
 /* the Now card wears the sky outside: day, twilight, or night with stars */
@@ -2332,11 +2347,9 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   /* the run draws across its sky; the sun settles onto the horizon */
   .view.anim .rs-run { animation: dw-draw 1.1s cubic-bezier(.3,.7,.2,1) .35s backwards; }
   .view.anim .rs-cap.end { animation: dw-in .3s ease-out 1.3s backwards; }
-  .view.anim .runsky.rise .rs-sun { animation: rs-rise 1.3s cubic-bezier(.2,.8,.2,1) .15s backwards; }
-  .view.anim .runsky.set .rs-sun { animation: rs-set 1.3s cubic-bezier(.2,.8,.2,1) .15s backwards; }
-  @keyframes rs-rise { from { opacity: 0; transform: translateY(8px); } }
-  @keyframes rs-set { from { opacity: 0; transform: translateY(-8px); } }
-  .view.anim .rs-glow, .view.anim .rs-moon { animation: dw-in 1.4s ease-out .3s backwards; }
+  .view.anim .rs-curtain, .view.anim .rs-span { animation: dw-in .8s ease-out 1s backwards; }
+  .view.anim .rs-sunnow { animation: dw-in 1s ease-out .9s backwards; }
+  .view.anim .rs-sky, .view.anim .rs-path, .view.anim .rs-dome { animation: dw-in 1.2s ease-out .1s backwards; }
   .rs-star.tw { animation: twinkle 3.8s ease-in-out infinite; animation-delay: var(--d); }
   /* now and then, a shooting star */
   .sk-shoot { animation: shoot 21s linear infinite; animation-delay: calc(var(--s) + 2.5s); }

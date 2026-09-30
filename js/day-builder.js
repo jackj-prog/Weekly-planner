@@ -950,6 +950,21 @@
      phase × 24 h after noon, and stays up for a semi-arc set by its
      declination (its ecliptic longitude is the sun's plus the phase).
      Good to half an hour or so — enough to draw it, never to time by. */
+  /* The sun's height above the horizon, in degrees, at a local minute:
+     declination from the day of the year, hour angle from solar noon (the
+     midpoint of sunrise and sunset), levelled so it reads 0 exactly at the
+     almanac's sunrise and sunset. Good to a degree or so — it draws the
+     sun's path, it does not navigate by it. */
+  function sunAltitude(iso, lat, st, m) {
+    if (!st || st.rise == null || st.set == null) return null;
+    const [y, mo, d] = iso.split('-').map(Number);
+    const N = Math.round((Date.UTC(y, mo - 1, d) - Date.UTC(y, 0, 0)) / 864e5);
+    const rad = Math.PI / 180, noon = (st.rise + st.set) / 2;
+    const dec = -23.44 * Math.cos((2 * Math.PI / 365) * (N + 10)) * rad;
+    const raw = (t) => Math.asin(Math.sin(lat * rad) * Math.sin(dec) +
+      Math.cos(lat * rad) * Math.cos(dec) * Math.cos(((t - noon) / 4) * rad)) / rad;
+    return raw(m) - raw(st.rise);
+  }
   function moonArc(iso, place) {
     const mp = moonPhase(iso), rad = Math.PI / 180;
     const n = (Date.parse(iso + 'T12:00:00Z') - Date.UTC(2000, 0, 1, 12)) / 864e5;
@@ -995,7 +1010,7 @@
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
-    isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
+    isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

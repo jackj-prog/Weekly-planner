@@ -1397,7 +1397,7 @@ section('palette contrast (WCAG AA)');
     ok(rising && DB.lightLevel(rt, 0) === 0 && DB.lightLevel(rt, 720) === 1, 'the light level rises steadily through the dawn');
     ok(/runSkyHTML\(iso, r, skyKind\(r\)/.test(appSrc) && /rd\.run \? runSkyHTML\(PLAN\.race\.date/.test(appSrc),
       'the run card and the race card both carry the run against its sky');
-    ok(/<figcaption class="rs-line">/.test(appSrc) && /\(RS_HZ \+ 16\) \+ '" aria-hidden="true">/.test(appSrc), 'the sky ribbon is a picture; its meaning is plain text');
+    ok(/<figcaption class="rs-line">/.test(appSrc) && /<svg viewBox="0 0 ' \+ RS_W \+ ' ' \+ H \+ '" aria-hidden="true">/.test(appSrc), 'the sky ribbon is a picture; its meaning is plain text');
     ok(/skyGlyph\(day\.iso, nMin\)/.test(appSrc) && /skyKey\(day\.iso, nMin\)/.test(appSrc) && /skyKey\(iso, n\)/.test(appSrc),
       'the Now card shows the sky and redraws when the light changes');
     ok(/moonSVG\([^)]*DB\.moonPhase\(today\)/.test(tcFn), 'the launch card carries tonight’s real moon');
@@ -1406,6 +1406,15 @@ section('palette contrast (WCAG AA)');
     ok(shootAt > 0 && gateAt > 0 && !css.slice(gateAt, shootAt).includes('\n}\n') && /\.sk-shoot \{[^}]*opacity: 0/.test(css),
       'shooting stars move only when motion is allowed, and are hidden otherwise');
     ok(!/Nicosia time'/.test(appSrc), 'the away place is named by plan data, not by app.js');
+    /* The sun's arc (v4.77.2): zero at sunrise and sunset, highest at solar
+       noon, a midsummer sun far above a midwinter one. */
+    const altAt = (iso, which) => { const pl = DB.skyPlace(iso), st = DB.sunTimes(iso, pl.lat, pl.lon, pl.offsetMin);
+      return DB.sunAltitude(iso, pl.lat, st, which === 'noon' ? (st.rise + st.set) / 2 : st[which]); };
+    ok(Math.abs(altAt('2026-09-30', 'rise')) < 0.01 && Math.abs(altAt('2026-09-30', 'set')) < 0.3, 'the sun\u2019s arc meets the horizon at sunrise and sunset');
+    ok(altAt('2026-06-21', 'noon') > 55 && altAt('2026-12-21', 'noon') < 20 && altAt('2026-09-30', 'noon') > 30,
+      'the noon sun: high at midsummer, low at midwinter (' + altAt('2026-06-21', 'noon').toFixed(0) + '\u00b0 / ' + altAt('2026-12-21', 'noon').toFixed(0) + '\u00b0)');
+    ok(/runSkyGeom\(iso, rs, a, b\)/.test(appSrc) && /rs-dome/.test(appSrc) && /rs-sunnow/.test(appSrc) && !/rs-frame/.test(appSrc),
+      'the run card draws the day\u2019s sun arc, not a box');
     /* The light of the week (v4.77): the moon keeps its real hours. */
     const circ = (a, b) => Math.abs(((((a - b) % 1440) + 1440 + 720) % 1440) - 720);
     const fullArc = DB.moonArc('2027-01-22', nic), newArc = DB.moonArc('2026-10-10', home);

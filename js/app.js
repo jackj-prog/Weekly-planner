@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.77.1';
+  const APP_VERSION = '4.77.2';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1662,11 +1662,11 @@
     else if (rs.morning) {
       s = rs.state === 'light'
         ? (rs.margin <= 2 ? 'out as it rises' : rs.margin < 30 ? 'out ' + rs.margin + ' min after it' : 'daylight all the way')
-        : (rs.startLight === 'twi' ? 'starts in the twilight' : 'starts in the dark') + (rs.lightKm ? ', sun up by km ' + rs.lightKm : '');
+        : (rs.startLight === 'twi' ? 'starts in the twilight' : 'starts in the dark') + (rs.lightKm ? ', sun up by km\u00a0' + rs.lightKm : '');
     } else {
       s = rs.state === 'light'
         ? (rs.margin <= 2 ? 'back as it sets' : rs.margin < 60 ? 'back ' + rs.margin + ' min before it' : 'daylight all the way')
-        : (rs.startLight === 'day' ? 'into the dusk' : 'starts in the dusk') + (rs.darkKm ? ', dark by km ' + rs.darkKm : '');
+        : (rs.startLight === 'day' ? 'into the dusk' : 'starts in the dusk') + (rs.darkKm ? ', dark by km\u00a0' + rs.darkKm : '');
     }
     return (rs.morning ? 'Sunrise ' : 'Sunset ') + DB.fmtHM(rs.event) + '\u00a0· ' + s + placeTime(rs.place);
   }
@@ -1677,83 +1677,122 @@
     const h = st && st.rise != null && st.set != null && m > st.rise && m < st.set ? Math.sin(Math.PI * (m - st.rise) / (st.set - st.rise)) : 0;
     return 0.02 + 0.15 * L + 0.17 * h;
   }
-  const RS_W = 320, RS_TOP = 2, RS_HZ = 30;
+  /* ---- the sun's arc over the run (v4.77.2) ----
+     Redrawn after the user's note that the ribbon "just doesn't look
+     great": a flat grey box with a bar floating in it read as a progress
+     bar, not a sky. Now it is the day's real sun: its arc from sunrise to
+     sunset (height from DB.sunAltitude, on one scale for the whole year,
+     so a December sun barely clears the horizon), a faint dome of daylight
+     under it, the times where it meets the horizon, stars and the moon only
+     in the dark. The run is lit on the arc at its own time and in its own
+     colour (red hard, white long); a run in the dark sits on the dotted
+     part below the horizon. On today, the sun itself rides the arc. */
+  const RS_W = 320, RS_TOP = 6, RS_HZ = 44, RS_FLOOR = 8;
   /* the run's colour on the ribbon: red when hard, white when long (§3) */
   function skyKind(run) {
     const c = DB.runClass(run);
     return c === 'race' ? 'race' : c === 'quality' ? 'hard' : c === 'long' ? 'long' : 'easy';
   }
+  function runSkyGeom(iso, rs, a, b) {
+    const X = (m) => ((m - a) / (b - a)) * RS_W;
+    const alt = (m) => DB.sunAltitude(iso, rs.place.lat, rs.st, m);
+    const noonAlt = alt((rs.st.rise + rs.st.set) / 2);
+    const kY = (RS_HZ - RS_TOP - 4) / Math.max(noonAlt, 40);
+    const Y = (m) => { const h = alt(m); return h >= 0 ? RS_HZ - h * kY : Math.min(RS_HZ + RS_FLOOR, RS_HZ - h * kY * 0.6); };
+    return { X, Y, alt, kY };
+  }
   function runSkyHTML(iso, run, cls, key, nowAt) {
     if (!run || run.startMin == null || !(run.endMin > run.startMin)) return '';
     const rs = DB.runSky(iso, run.startMin, run.endMin, run.run ? run.run.km : 0);
     if (!rs) return '';
-    let a = run.startMin - 45, b = run.endMin + 45;
-    if (b - a < 240) { const pad = (240 - (b - a)) / 2; a -= pad; b += pad; }
-    // keep the sun in the picture when it is near
-    if (rs.event < a && a - rs.event <= 75) a = rs.event - 20;
-    if (rs.event > b && rs.event - b <= 75) b = rs.event + 20;
-    a = Math.max(0, Math.round(a)); b = Math.min(1439, Math.round(b));
-    const X = (m) => ((m - a) / (b - a)) * RS_W;
+    // the whole day of light, and the run, with a margin of night either side
+    const a = Math.max(0, Math.min(rs.st.rise, run.startMin) - 90), b = Math.min(1439, Math.max(rs.st.set, run.endMin) + 90);
+    const { X, Y, kY } = runSkyGeom(iso, rs, a, b);
     const f1 = (v) => v.toFixed(1);
     const uid = 'rs' + key + iso.replace(/-/g, '');
     const seedOf = (k) => artSeed(iso + ':rs:' + k);
+    const pathOf = (from, to, step) => {
+      let d = '';
+      for (let m = from; ; m += step) { const t = Math.min(m, to); d += (d ? ' L' : 'M') + f1(X(t)) + ' ' + f1(Y(t)); if (t >= to) break; }
+      return d;
+    };
+    const rx = X(rs.st.rise), sxs = X(rs.st.set);
+    // night deepens either side of the day, strongest at the horizon
     let stops = '';
-    for (let k = 0; k <= 32; k++) {
-      stops += '<stop offset="' + (k / 32).toFixed(3) + '" style="stop-opacity:' +
-        skyGlow(rs.st, a + (b - a) * k / 32).toFixed(3) + '"/>';
+    for (let k = 0; k <= 40; k++) {
+      const L = DB.lightLevel(rs.st, a + (b - a) * k / 40);
+      stops += '<stop offset="' + (k / 40).toFixed(3) + '" class="rs-n" style="stop-opacity:' + (0.45 * (1 - L)).toFixed(3) + '"/>';
     }
-    let art = '';
-    for (let k = 0; k < 28; k++) {
-      const m = a + (b - a) * seedOf(k), L = DB.lightLevel(rs.st, m);
-      if (L > 0.14) continue;
-      art += '<circle class="rs-star' + (seedOf(k + 't') > 0.6 ? ' tw' : '') + '" style="--d:' + (seedOf(k + 'd') * 4).toFixed(2) +
-        's" cx="' + f1(X(m)) + '" cy="' + f1(RS_TOP + 2 + seedOf(k + 'y') * 20) + '" r="' + (0.45 + seedOf(k + 's') * 0.6).toFixed(2) + '"/>';
+    let sky = '<rect x="0" y="0" width="' + RS_W + '" height="' + RS_HZ + '" fill="url(#' + uid + 'g)"/>' +
+      '<ellipse class="rs-glow" cx="' + f1(rx) + '" cy="' + RS_HZ + '" rx="46" ry="26" fill="url(#' + uid + 'h)"/>' +
+      '<ellipse class="rs-glow" cx="' + f1(sxs) + '" cy="' + RS_HZ + '" rx="46" ry="26" fill="url(#' + uid + 'h)"/>';
+    let night = '';
+    for (let k = 0; k < 36; k++) {
+      const m = a + (b - a) * seedOf(k);
+      if (DB.lightLevel(rs.st, m) > 0.12) continue;
+      night += '<circle class="rs-star' + (seedOf(k + 't') > 0.6 ? ' tw' : '') + '" style="--d:' + (seedOf(k + 'd') * 4).toFixed(2) +
+        's" cx="' + f1(X(m)) + '" cy="' + f1(RS_TOP - 2 + seedOf(k + 'y') * (RS_HZ - RS_TOP - 8)) + '" r="' + (0.45 + seedOf(k + 's') * 0.6).toFixed(2) + '"/>';
     }
-    // the moon, at its phase, in the darkest stretch it is up for
+    // the moon, at its phase, over the darkest stretch it is up for
     const up = [];
-    for (let m = a; m <= b; m += 5) if (DB.lightLevel(rs.st, m) < 0.3 && DB.moonUp(iso, m, rs.place)) up.push(m);
-    if (up.length >= 3) art += moonSVG(Math.max(9, Math.min(RS_W - 9, X(up[Math.floor(up.length / 2)]))), RS_TOP + 7, 4, DB.moonPhase(iso), 'rs-moon');
-    // the sun on the horizon, and the glow it throws
-    if (rs.event >= a && rs.event <= b) {
-      const sx = X(rs.event);
-      let rays = '';
-      for (let k = 1; k < 6; k++) {
-        const t = Math.PI + k * Math.PI / 6;
-        rays += 'M' + f1(sx + 7.5 * Math.cos(t)) + ' ' + f1(RS_HZ + 7.5 * Math.sin(t)) + ' L' + f1(sx + 10.5 * Math.cos(t)) + ' ' + f1(RS_HZ + 10.5 * Math.sin(t)) + ' ';
-      }
-      art = '<ellipse class="rs-glow" cx="' + f1(sx) + '" cy="' + RS_HZ + '" rx="70" ry="24" fill="url(#' + uid + 'h)"/>' + art +
-        '<g class="rs-sun"><path d="' + rays + '"/><circle cx="' + f1(sx) + '" cy="' + RS_HZ + '" r="5.5"/></g>';
-    }
-    let hours = '';
-    for (let h = Math.ceil(a / 60); h * 60 <= b; h++) {
-      const x = X(h * 60);
-      hours += '<path class="rs-tick" d="M' + f1(x) + ' ' + (RS_HZ + 1) + ' L' + f1(x) + ' ' + (RS_HZ + 4) + '"/>' +
-        (x > 14 && x < RS_W - 14 ? '<text class="rs-hour" x="' + f1(x) + '" y="' + (RS_HZ + 13) + '">' + String(h).padStart(2, '0') + ':00</text>' : '');
-    }
-    const x0 = X(run.startMin), x1 = X(run.endMin), ry = RS_HZ - 13.5;
-    const runPath = '<path class="rs-run" pathLength="1" d="M' + f1(x0) + ' ' + ry + ' L' + f1(x1) + ' ' + ry + '"/>' +
-      '<circle class="rs-cap" cx="' + f1(x0) + '" cy="' + ry + '" r="2.4"/><circle class="rs-cap end" cx="' + f1(x1) + '" cy="' + ry + '" r="2.4"/>';
-    const nowOn = nowAt != null;
-    const nowPath = nowOn ? '<path class="rs-now" d="M' + f1(X(nowAt)) + ' ' + RS_TOP + ' L' + f1(X(nowAt)) + ' ' + RS_HZ + '"' +
-      (nowAt >= a && nowAt <= b ? '' : ' style="display:none"') + '/>' : '';
-    return '<figure class="runsky rs-' + cls + (rs.morning ? ' rise' : ' set') + '" data-a="' + a + '" data-b="' + b + '"' + (nowOn ? ' data-now' : '') + '>' +
-      '<svg viewBox="0 0 ' + RS_W + ' ' + (RS_HZ + 16) + '" aria-hidden="true"><defs>' +
-      '<linearGradient id="' + uid + 'g" class="rs-sky">' + stops + '</linearGradient>' +
+    for (let m = a; m <= b; m += 5) if (DB.lightLevel(rs.st, m) < 0.2 && DB.moonUp(iso, m, rs.place)) up.push(m);
+    if (up.length >= 4) night += moonSVG(Math.max(10, Math.min(RS_W - 10, X(up[Math.floor(up.length / 2)]))), RS_TOP + 4, 3.8, DB.moonPhase(iso), 'rs-moon');
+    // the dome of daylight under the sun's arc
+    const dome = pathOf(rs.st.rise, rs.st.set, 4) + ' Z';
+    const arc = pathOf(a, b, 4);
+    // where the arc meets the horizon: a tick and the time
+    const edge = (x, m) => '<path class="rs-tick" d="M' + f1(x) + ' ' + (RS_HZ - 2) + ' L' + f1(x) + ' ' + (RS_HZ + 3) + '"/>' +
+      '<text class="rs-hour" x="' + f1(Math.max(14, Math.min(RS_W - 14, x))) + '" y="' + (RS_HZ + RS_FLOOR + 9) + '">' + DB.fmtHM(m) + '</text>';
+    // the run, lit on the arc, with its span marked on the horizon beneath
+    const s0 = run.startMin, s1 = run.endMin;
+    const runD = pathOf(s0, s1, 2);
+    const runX0 = X(s0), runX1 = Math.max(X(s1), X(s0) + 3);
+    const short = runX1 - runX0 < 8, mid = (s0 + s1) / 2;
+    const runPath = '<path class="rs-curtain" d="' + runD + ' L' + f1(runX1) + ' ' + RS_HZ + ' L' + f1(runX0) + ' ' + RS_HZ + ' Z"/>' +
+      (short ? '' : '<path class="rs-run" pathLength="1" d="' + runD + '"/>') +
+      (short ? '<circle class="rs-cap end dot" cx="' + f1(X(mid)) + '" cy="' + f1(Y(mid)) + '" r="3.2"/>'
+        : '<circle class="rs-cap" cx="' + f1(X(s0)) + '" cy="' + f1(Y(s0)) + '" r="2.3"/>' +
+          '<circle class="rs-cap end" cx="' + f1(X(s1)) + '" cy="' + f1(Y(s1)) + '" r="2.3"/>');
+    const nowOn = nowAt != null, nowIn = nowOn && nowAt >= a && nowAt <= b;
+    const nowMark = nowOn ? '<g class="rs-nowg"' + (nowIn ? '' : ' style="display:none"') + '>' + runSkyNow(nowIn ? nowAt : a, X, Y, iso, rs) + '</g>' : '';
+    const H = RS_HZ + RS_FLOOR + 12;
+    return '<figure class="runsky rs-' + cls + (rs.morning ? ' rise' : ' set') + '" data-iso="' + iso + '" data-a="' + a + '" data-b="' + b + '"' + (nowOn ? ' data-now' : '') + '>' +
+      '<svg viewBox="0 0 ' + RS_W + ' ' + H + '" aria-hidden="true"><defs>' +
+      '<linearGradient id="' + uid + 'g">' + stops + '</linearGradient>' +
       '<radialGradient id="' + uid + 'h"><stop offset="0" class="rs-glow-a"/><stop offset="1" class="rs-glow-b"/></radialGradient>' +
-      '<clipPath id="' + uid + 'c"><rect x="0" y="' + RS_TOP + '" width="' + RS_W + '" height="' + (RS_HZ - RS_TOP) + '" rx="7"/></clipPath></defs>' +
-      '<g clip-path="url(#' + uid + 'c)"><rect class="rs-base" x="0" y="0" width="' + RS_W + '" height="' + RS_HZ + '"/>' +
-      '<rect x="0" y="0" width="' + RS_W + '" height="' + RS_HZ + '" fill="url(#' + uid + 'g)"/>' + art + '</g>' +
-      '<rect class="rs-frame" x=".5" y="' + (RS_TOP + 0.5) + '" width="' + (RS_W - 1) + '" height="' + (RS_HZ - RS_TOP - 1) + '" rx="6.5"/>' +
-      hours + runPath + nowPath + '</svg>' +
+      '<linearGradient id="' + uid + 'd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="rs-dome-a"/><stop offset="1" class="rs-dome-b"/></linearGradient>' +
+      '<linearGradient id="' + uid + 'v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".55" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff"/></linearGradient>' +
+      '<linearGradient id="' + uid + 'e"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".12" stop-color="#fff"/><stop offset=".88" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+      '<mask id="' + uid + 'm" maskUnits="userSpaceOnUse" x="0" y="0" width="' + RS_W + '" height="' + RS_HZ + '"><rect x="0" y="0" width="' + RS_W + '" height="' + RS_HZ + '" fill="url(#' + uid + 'v)"/></mask>' +
+      '<mask id="' + uid + 'x" maskUnits="userSpaceOnUse" x="0" y="-10" width="' + RS_W + '" height="' + (H + 10) + '"><rect x="0" y="-10" width="' + RS_W + '" height="' + (H + 10) + '" fill="url(#' + uid + 'e)"/></mask>' +
+      '<clipPath id="' + uid + 'a"><rect x="0" y="-10" width="' + RS_W + '" height="' + (RS_HZ + 10) + '"/></clipPath>' +
+      '<clipPath id="' + uid + 'b"><rect x="0" y="' + RS_HZ + '" width="' + RS_W + '" height="' + (RS_FLOOR + 4) + '"/></clipPath></defs>' +
+      '<g mask="url(#' + uid + 'x)"><g class="rs-sky" mask="url(#' + uid + 'm)">' + sky + '</g>' + night +
+      '<path class="rs-dome" d="' + dome + '" fill="url(#' + uid + 'd)"/>' +
+      '<path class="rs-hz" d="M0 ' + RS_HZ + ' L' + RS_W + ' ' + RS_HZ + '"/>' +
+      '<path class="rs-path" clip-path="url(#' + uid + 'a)" d="' + arc + '"/>' +
+      '<path class="rs-path below" clip-path="url(#' + uid + 'b)" d="' + arc + '"/></g>' +
+      edge(rx, rs.st.rise) + edge(sxs, rs.st.set) + runPath + nowMark + '</svg>' +
       '<figcaption class="rs-line">' + esc(runSkyLine(rs)) + '</figcaption></figure>';
+  }
+  /* on today the sun itself rides the arc; after dark, a faint mark on
+     the dotted path below the horizon */
+  function runSkyNow(n, X, Y, iso, rs) {
+    const up = DB.sunAltitude(iso, rs.place.lat, rs.st, n) >= 0;
+    return '<circle class="rs-sunnow' + (up ? '' : ' below') + '" cx="' + X(n).toFixed(1) + '" cy="' + Y(n).toFixed(1) + '" r="' + (up ? 4.6 : 2.4) + '"/>';
   }
   function refreshRunSky(n) {
     document.querySelectorAll('.runsky[data-now]').forEach((f) => {
-      const a = Number(f.dataset.a), b = Number(f.dataset.b), p = f.querySelector('.rs-now');
-      if (!p) return;
-      const x = (((n - a) / (b - a)) * RS_W).toFixed(1);
-      p.setAttribute('d', 'M' + x + ' ' + RS_TOP + ' L' + x + ' ' + RS_HZ);
-      p.style.display = n >= a && n <= b ? '' : 'none';
+      const g = f.querySelector('.rs-nowg');
+      if (!g) return;
+      const iso = f.dataset.iso, a = Number(f.dataset.a), b = Number(f.dataset.b);
+      const place = DB.skyPlace(iso), st = place && DB.sunTimes(iso, place.lat, place.lon, place.offsetMin);
+      if (!st || st.rise == null) return;
+      const rs = { place, st };
+      const { X, Y } = runSkyGeom(iso, rs, a, b);
+      const on = n >= a && n <= b;
+      g.style.display = on ? '' : 'none';
+      if (on) g.innerHTML = runSkyNow(n, X, Y, iso, rs);
     });
   }
 

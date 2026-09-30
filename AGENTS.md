@@ -1178,3 +1178,26 @@ parkrun, tune-up half, Christmas, recovery, standing week), Week (14, 20,
 - **Efficiency tables printed ISO dates** (2026-08-11) where every other
   list says "11 Aug"; now consistent.
 88 browser checks (sweep included), 16,207 plan checks, no overflow, a11y clean.
+
+## The sun's arc on the run card — v4.77.2, 30 September (Claude)
+
+User feedback, with a screenshot: the run card's sky ribbon (v4.76) was
+their "major visual issue — just doesn't look great". It read as a flat
+grey box with a bar floating in it, a clip-art half-sun cut off by the
+frame, and a gradient that did not look like sky. Redrawn from scratch:
+- **The day's sun arc.** `DB.sunAltitude(iso, lat, st, minute)` (solar
+  declination and hour angle, levelled to 0° at the almanac's sunrise and
+  sunset) draws the sun's real path from sunrise to sunset, on one scale
+  for the whole year: a September arc stands tall, a December one barely
+  clears the horizon. Below the horizon it continues as a dotted path.
+- **No box.** A faint dome of daylight under the arc, a glow where the sun
+  meets the horizon at each end, night deepening either side (masked to
+  fade at the top and the edges into the card), stars and the moon only
+  in the dark. Sunrise and sunset are the only two labels.
+- **The run on the arc** in its own colour (red hard, white long, grey
+  easy) with a soft veil down to the horizon, so it is obvious whether it
+  is under the sun or on the dotted night path. Very short runs are a dot.
+- **On today the sun itself rides the arc** (a glowing disc; a faint
+  mark on the dotted path after sunset), moved by the minute clock.
+- Same caption line; "km 2" no longer breaks across lines.
+89 browser checks (sweep included), 16,210 plan checks, no overflow, a11y clean.
