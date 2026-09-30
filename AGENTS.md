@@ -1623,3 +1623,25 @@ only (a test checks every hex in icons/icon.svg against :root).
   back up (Reference → Data → Copy backup), remove the app, add it again
   from Safari, and Restore — removing a Home Screen web app also removes
   its storage.
+
+## Audit polish — v4.95, 1 October (Claude)
+
+User: "Keep iterating keep improving the app as a whole". A full screenshot
+audit of Today (morning, evening, night), Week, Plan and Reference found:
+- **The clock's emblems stacked** when two short sessions sit back to back
+  (Thursday's deep reading 21:00 and read 22:00). Emblems are now placed
+  after the loop and eased apart along the track until 58 minutes (a
+  roundel's width and a gap) separate every neighbour.
+- **Quiet rows with a disclosure were twice as tall** as plain ones (the
+  summary's 44 px min-height pushed the row). The 44 px target stays, but
+  hangs into the row gaps with a negative margin, so Wake, Commute and Work
+  keep the same rhythm as Lunch and Dinner.
+- **Reference's chapter titles wandered** with the width of their numeral
+  (I vs VIII). The numeral now has a fixed column, as on the contents page.
+- **A missed run offered two identical buttons** — the corner "Mark done"
+  and the panel's "Ran as planned". While the question is open the corner
+  tick is gone; once answered it returns as Done.
+- **The Plan page ended on a developer's note** ("…written into
+  data/plan.js") loose under the closed archive. It is now a serif coda
+  inside the archive after the recovery rows, and speaks to the runner.
+169 browser checks (5 new), 16,269 plan checks.

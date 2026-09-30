@@ -1478,7 +1478,7 @@ section('palette contrast (WCAG AA)');
     /* v4.87 fixes */
     ok(/function runDayLabel/.test(appSrc) && /: runDayLabel\(iso\)\) \+ '<\/span><\/span>'/.test(appSrc) && /TOMORROW’S RUN/.test(appSrc) && /YESTERDAY’S RUN/.test(appSrc),
       'the run card names its own day instead of calling every run today\u2019s');
-    ok(/iso > today && !isDone \? ''/.test(appSrc) && /iso > todayISO\(\) && !isDone \|\| opts\.slim \? '' : '<button class="tick/.test(appSrc), 'a future session cannot be ticked, though a ticked one can be undone');
+    ok(/\(iso > today \|\| unresolved\) && !isDone \? ''/.test(appSrc) && /iso > todayISO\(\) && !isDone \|\| opts\.slim \? '' : '<button class="tick/.test(appSrc), 'a future session cannot be ticked, though a ticked one can be undone');
     ok(appSrc.indexOf("if (isCurrent) {\n        flushSun(nMin + 1);") > appSrc.indexOf("const card = buildCard(b, done, iso, { current: isCurrent"), 'NOW is placed after the block it falls inside');
     ok(/grid-template-areas: "nav nav" "sub bb" "lbl bb"/.test(css), 'the countdown numeral has its own column in the header');
     /* v4.88: a quieter Today */

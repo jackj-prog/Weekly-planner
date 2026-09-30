@@ -1373,7 +1373,10 @@ summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; b
 .tl-quiet { padding-block: 0; align-items: baseline; }
 .anchor-detail summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; cursor: pointer; list-style: none; }
 .anchor-detail summary::-webkit-details-marker { display: none; }
-.anchor-detail summary::after { content: '+'; font-size: 18px; color: var(--t2); }
+.anchor-detail summary::after { content: '+'; font-size: 18px; line-height: 1; color: var(--t2); }
+/* a quiet row with a disclosure keeps the rhythm of one without: the 44px
+   target stays, but it hangs into the gaps instead of pushing them (v4.95) */
+.tl-quiet .anchor-detail summary { min-height: 0; padding-block: 11px; margin-block: -11px; }
 .anchor-detail[open] summary::after { content: '−'; }
 .tl-card .tick { width: auto; min-width: 112px; padding: 0 12px; border-radius: 8px; color: var(--t2); border-width: 1px; font-size: 16px; }
 .tl-card .tick span { font-size: 14px; font-weight: 600; }
@@ -1544,6 +1547,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .journey-all { margin-top: 24px; border-top: 1px solid var(--line); }
 .journey-all > summary { padding: 20px 0; cursor: pointer; font: 600 16px var(--body); }
 .journey-all > summary > span { display: block; margin-top: 8px; color: var(--t3); font: 400 12px var(--body); }
+.journey-coda { margin: 18px 0 8px; font: italic 400 15px/1.5 var(--serif); color: var(--t2); }
 @media (prefers-reduced-motion: no-preference) {
   .journey-cursor { transition: transform 100ms ease-out; }
   .journey-days button:active, .journey-event:active { transform: scale(.97); }
@@ -2353,7 +2357,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .ref-index button b { flex: 0 0 29px; font: 400 14px/1 var(--serif); color: var(--accent); letter-spacing: 0; }
 .ref-index button { font-size: 13px; gap: 5px; }
 .ref-index button span { color: var(--text); }
-.ref-fold > summary .chap { flex: 0 0 auto; margin-right: -6px; font: 400 19px/1 var(--serif); color: var(--accent); letter-spacing: .02em; }
+.ref-fold > summary .chap { flex: 0 0 36px; margin-right: -6px; font: 400 19px/1 var(--serif); color: var(--accent); letter-spacing: .02em; }
 .ref-fold > summary h2 { flex: 1; }
 /* the rules of the block are numbered like commandments */
 .ref-list:not(.qs) li { padding-left: 38px; }

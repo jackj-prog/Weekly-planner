@@ -136,6 +136,7 @@ async function missedRun() {
   console.log('· missed-run question and skips');
   let t = await open('2026-09-27', '18:00', SEED);
   check(await t.page.isVisible('.h-missed [data-missed="skip"]'), 'question shown after the window');
+  check(!(await t.page.$('.hero button.h-tick')), 'v4.95: no second Mark done beside “Ran as planned”');
   await t.page.click('[data-missed="skip"]');
   check((await t.json('ovr-2026-09-27')).skip['t0830-run'] === true, 'Didn’t happen stores a skip');
   check(await t.page.isVisible('.hero.skipped'), 'hero shows the skipped state');
@@ -143,6 +144,7 @@ async function missedRun() {
   check(!(await t.json('ovr-2026-09-27')).skip['t0830-run'], 'Undo clears the skip');
   await t.page.click('[data-missed="done"]');
   check((await t.json('done-2026-09-27'))['t0830-run'] === true, 'Ran as planned ticks the run');
+  check(await t.page.isVisible('.hero button.h-tick.on'), 'once answered, the corner tick returns as Done');
   noErrors(t, 'missed-run');
   await t.ctx.close();
   t = await open('2026-09-27', '09:00', SEED);
@@ -612,6 +614,25 @@ async function cinema() {
   await t.page.waitForSelector('.card-ov[open] img', { timeout: 5000 });
   check(((await t.page.getAttribute('.card-ov img', 'src')) || '').length > 50000, 'run poster renders on the device');
   noErrors(t, 'poster');
+  await t.ctx.close();
+  // v4.95: audit polish
+  t = await open('2026-10-01', '17:40', SEED);
+  const gaps = await t.page.$$eval('.daywheel .dw-emb circle', (cs) => {
+    const p = cs.map((c) => [+c.getAttribute('cx'), +c.getAttribute('cy')]), out = [];
+    for (let i = 0; i < p.length; i++) for (let j = i + 1; j < p.length; j++) out.push(Math.hypot(p[i][0] - p[j][0], p[i][1] - p[j][1]));
+    return out;
+  });
+  check(gaps.length >= 3 && Math.min(...gaps) >= 19, 'back-to-back sessions keep their roundels apart on the clock: min ' + Math.min(...gaps).toFixed(1));
+  const rows = await t.page.$$eval('.tl-quiet', (ns) => ns.map((n) => ({ h: n.getBoundingClientRect().height, d: !!n.querySelector('.anchor-detail') })));
+  const hd = rows.filter((r) => r.d).map((r) => r.h), hp = rows.filter((r) => !r.d).map((r) => r.h);
+  check(hd.length && hp.length && Math.max(...hd) - Math.min(...hp) <= 2, 'a quiet row with a disclosure is no taller than one without: ' + hd.join(',') + ' vs ' + hp.join(','));
+  await t.ctx.close();
+  t = await open('2026-10-01', '12:00', SEED, 'ref');
+  const xs = await t.page.$$eval('.ref-fold > summary h2', (ns) => ns.map((n) => Math.round(n.getBoundingClientRect().left)));
+  check(xs.length >= 10 && new Set(xs).size === 1, 'Reference’s chapter titles share one left edge: ' + [...new Set(xs)].join(','));
+  await t.ctx.close();
+  t = await open('2026-10-01', '12:00', SEED, 'plan');
+  check(!/data\/plan\.js/.test(await text(t.page, '#view')) && !!(await t.page.$('.journey-all .journey-coda')), 'the Plan’s coda sits with the recovery rows and names no file');
   await t.ctx.close();
 }
 

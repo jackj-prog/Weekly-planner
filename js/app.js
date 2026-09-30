@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.94.0';
+  const APP_VERSION = '4.95.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1377,7 +1377,9 @@
          totals, the wall), so a logged run shows that instead of offering a
          tick that would change nothing. */
       (e.sec > 0 && !isDone ? '<span class="h-tick on is-logged" role="status"><span aria-hidden="true">✓</span> Logged</span>'
-        : iso > today && !isDone ? ''
+        /* an unresolved run asks "did it happen?" with its own "ran as
+           planned" — a second Mark done in the corner said the same (v4.95) */
+        : (iso > today || unresolved) && !isDone ? ''
         : '<button class="h-tick' + (isDone ? ' on' : '') + '" aria-pressed="' + isDone + '" aria-label="' +
       (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button>') + '</div>' +
       (just === r.id && isDone ? '<i class="h-sweep" aria-hidden="true"></i><div class="completion-note" role="status">✓ Run banked</div>' : '') +
@@ -2120,7 +2122,7 @@
        the day as a hairline inside */
     let track = '<circle class="dw-groove" cx="' + C + '" cy="' + C + '" r="' + R_S + '"/>', fixed = '', embs = '';
     let total = 0, got = 0, runAt = '';
-    const sessions = [];
+    const sessions = [], emb = [];
     blocks.forEach((b) => {
       const a = b.startMin + 2, z = Math.max(a + 3, b.endMin - 2);
       if (b.doable) {
@@ -2133,14 +2135,30 @@
         const k = (b.startMin / 1440).toFixed(3);
         track += '<path class="dw-s' + (isDone ? ' done' : '') + (off(b) ? ' off' : '') + (isRun ? ' run' : '') + (isToday && n >= b.startMin && n < b.endMin ? ' now' : '') +
           '" d="' + arc(a, z, R_S) + '"' + (off(b) ? '' : ' pathLength="1"') + ' style="stroke:' + colour + ';--k:' + k + '"/>';
-        const kind = isRun && rc === 'race' ? 'laurel' : emblemKind(b);
-        const [ex, ey] = xy((b.startMin + b.endMin) / 2, R_S);
-        embs += '<g class="dw-emb' + (isDone ? ' done' : '') + (off(b) ? ' off' : '') + '" style="--c:' + colour + ';--k:' + k + '">' +
-          '<circle cx="' + ex.toFixed(1) + '" cy="' + ey.toFixed(1) + '" r="8.6"/>' +
-          '<g class="dw-e" transform="translate(' + (ex - 5.6).toFixed(2) + ' ' + (ey - 5.6).toFixed(2) + ') scale(.4667)">' + (EMBLEMS[kind] || EMBLEMS.fleuron) + '</g></g>';
+        emb.push({ m: (b.startMin + b.endMin) / 2, kind: isRun && rc === 'race' ? 'laurel' : emblemKind(b),
+          cls: (isDone ? ' done' : '') + (off(b) ? ' off' : ''), style: '--c:' + colour + ';--k:' + k });
       } else if (!/lights out|sleep/i.test(b.title)) {
         fixed += '<path class="dw-q" d="' + arc(a, z, R_Q) + '" pathLength="1" style="stroke:' + (CAT_VAR[b.cat] || 'var(--t3)') + ';--k:' + (b.startMin / 1440).toFixed(3) + '"/>';
       }
+    });
+    /* each emblem sits at the middle of its session, but two short sessions
+       back to back (reading at 21:00 and 22:00) would stack their roundels:
+       ease neighbours apart along the track until a roundel's width clears */
+    const SEP = 58;
+    emb.sort((x, y) => x.m - y.m);
+    for (let pass = 0; pass < 24; pass++) {
+      let moved = false;
+      for (let k = 0; k + 1 < emb.length; k++) {
+        const gap = emb[k + 1].m - emb[k].m;
+        if (gap < SEP - 0.01) { const d = (SEP - gap) / 2; emb[k].m -= d; emb[k + 1].m += d; moved = true; }
+      }
+      if (!moved) break;
+    }
+    emb.forEach((e) => {
+      const [ex, ey] = xy(e.m, R_S);
+      embs += '<g class="dw-emb' + e.cls + '" style="' + e.style + '">' +
+        '<circle cx="' + ex.toFixed(1) + '" cy="' + ey.toFixed(1) + '" r="8.6"/>' +
+        '<g class="dw-e" transform="translate(' + (ex - 5.6).toFixed(2) + ' ' + (ey - 5.6).toFixed(2) + ') scale(.4667)">' + (EMBLEMS[e.kind] || EMBLEMS.fleuron) + '</g></g>';
     });
 
     /* a ring of lights, one per session, lit as each is done */
@@ -3200,8 +3218,11 @@
 
     Array.prototype.forEach.call(rows.children, (c, i) => c.style.setProperty('--i', i));
     const archive = el('<details class="journey-all"><summary>All weeks & recovery <span>View the full programme</span></summary></details>');
-    archive.appendChild(rows); view.appendChild(archive);
-    view.appendChild(el('<div class="ref-note">After the fortnight the standing week takes over — until the next block is written into data/plan.js.</div>'));
+    /* the coda belongs with the recovery rows it follows, not loose under the
+       closed archive, and it speaks to the runner, not the developer (v4.95) */
+    archive.appendChild(rows);
+    archive.appendChild(el('<p class="journey-coda">After the recovery fortnight the standing week takes over: three easy runs, the full gym split, until the next goal is set.</p>'));
+    view.appendChild(archive);
   }
 
   /* ================= reference view ================= */
