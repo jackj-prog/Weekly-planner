@@ -135,6 +135,14 @@ race card on Reference shows race morning the same way; the Now card wears
 the sky outside (sun, sun on the horizon, the moon at its phase, or a star,
 and still stars behind it after dark); the launch card carries tonight's
 real moon. The ribbon's run keeps the run colours (red hard, white long).
+**The light of the week (v4.77):** the Week view ends on a figure of seven
+columns of real sky, 05:00 to 22:00, with sunrise and sunset ruled across,
+each night's moon above, and every run placed in its light (lit when done),
+captioned with how the light is changing ("Sunset 16:24 on Monday, 16:15 by
+Sunday · 3 of 5 runs finish after sunset"). The dial's moon now keeps its
+real hours — drawn at its highest with a dotted arc from moonrise to
+moonset (`DB.moonArc`), in the daylight when it is new — and a finished day
+earns a gloria of rays round the count in the rose window.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

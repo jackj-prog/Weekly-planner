@@ -336,6 +336,19 @@ async function cinema() {
   check(/^Sunset 18:[45]\d\s· /.test(await text(t.page, '.hero .runsky .rs-line')) && !!(await t.page.$('.hero .runsky .rs-sun')) &&
     (await t.page.$eval('.hero .rs-now', (n) => getComputedStyle(n).display)) !== 'none', 'the run card draws its window against the sunset, with now on it');
   check(!!(await t.page.$('.nownext.sky-day .nn-sky.day')) && !(await t.page.$('.nownext .nn-stars')), 'by day the Now card shows the sun and no stars');
+  check(!!(await t.page.$('.daywheel .dw-moonarc')) && !(await t.page.$('.daywheel .dw-gloria')), 'the dial draws the moon\u2019s arc; an unfinished day has no gloria');
+  await t.ctx.close();
+  // v4.77: a finished day earns the gloria; the Week view carries the light of the week
+  t = await open('2026-10-06', '22:10', Object.assign({}, SEED, { 'done-2026-10-06': { 't1710-run': true, 't1930-study': true, 't2200-reading': true } }));
+  check(/complete/.test(await t.page.getAttribute('.daywheel', 'class')) && !!(await t.page.$('.daywheel .dw-gloria')), 'a finished day earns the gloria');
+  await t.ctx.close();
+  t = await open('2026-11-11', '12:00', SEED, 'week');
+  check((await t.page.$$('.weeklight .wl-col')).length === 7 && (await t.page.$$('.weeklight .wl-moon')).length === 7 &&
+    (await t.page.$$('.weeklight .wl-run')).length === (await t.page.$$('.profile-day:not(.rest)')).length, 'the light of the week: seven skies, seven moons, every run placed');
+  check(/^Sunset 16:\d\d on Monday, 16:\d\d by Sunday · \d of \d runs finish after sunset$/.test(await text(t.page, '.weeklight .wl-line')),
+    'the week says how its light is changing: ' + await text(t.page, '.weeklight .wl-line'));
+  check(!!(await t.page.$('.weeklight .wl-frame.today')) && !!(await t.page.$('.weeklight .wl-now')), 'today\u2019s column is ringed, with now on it');
+  noErrors(t, 'week light');
   await t.ctx.close();
   t = await open('2026-10-27', '17:00', SEED);
   check(/^Sunset 16:4\d\s· starts in the dusk, dark by km \d/.test(await text(t.page, '.hero .runsky .rs-line')),

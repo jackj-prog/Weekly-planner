@@ -1406,6 +1406,18 @@ section('palette contrast (WCAG AA)');
     ok(shootAt > 0 && gateAt > 0 && !css.slice(gateAt, shootAt).includes('\n}\n') && /\.sk-shoot \{[^}]*opacity: 0/.test(css),
       'shooting stars move only when motion is allowed, and are hidden otherwise');
     ok(!/Nicosia time'/.test(appSrc), 'the away place is named by plan data, not by app.js');
+    /* The light of the week (v4.77): the moon keeps its real hours. */
+    const circ = (a, b) => Math.abs(((((a - b) % 1440) + 1440 + 720) % 1440) - 720);
+    const fullArc = DB.moonArc('2027-01-22', nic), newArc = DB.moonArc('2026-10-10', home);
+    ok(circ(fullArc.transit, 0) < 60 && fullArc.semi > 360, 'a full moon is highest at midnight and up all night (' + DB.fmtHM(fullArc.transit) + ')');
+    ok(circ(newArc.transit, 720) < 90, 'a new moon is highest around midday (' + DB.fmtHM(newArc.transit) + ')');
+    ok(circ(fullArc.rise, (fullArc.transit - fullArc.semi + 1440) % 1440) <= 1 && DB.moonUp('2027-01-22', fullArc.transit, nic) &&
+      !DB.moonUp('2027-01-22', (fullArc.transit + 720) % 1440, nic), 'moonrise, moonset and moonUp agree');
+    ok(/pt\(ma\.transit, RN\)/.test(appSrc) && /dw-moonarc/.test(appSrc), 'the dial puts the moon at its highest, with its arc from rise to set');
+    ok(/if \(total && got === total\) \{[^}]*dw-gloria|if \(total && got === total\) \{\s*let rays/.test(appSrc), 'the gloria is earned: only a finished day has one');
+    ok(/view\.appendChild\(el\(weekLightHTML\(week7, day0\.week\)\)\)/.test(appSrc) && /<figure class="weeklight" role="img" aria-label=/.test(appSrc),
+      'the Week view carries the light of the week, with a spoken summary');
+    ok(/#view \.weeklight'\)/.test(appSrc) && /\.weeklight:not\(\.in\)/.test(css), 'the week figure waits to be scrolled to before it pours in');
     ok(!/Per aspera|Festina lente|Plus ultra|Nulla dies/.test(appSrc), 'no Latin lives in app.js (§2: rendering code carries no content)');
     ok(/--serif:/.test(rootSrc) && !/@font-face[^}]*Baskerville/.test(css), 'the serif is a system stack, no new font download');
 

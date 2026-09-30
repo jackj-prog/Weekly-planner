@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.76.0';
+  const APP_VERSION = '4.77.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1670,6 +1670,13 @@
     }
     return (rs.morning ? 'Sunrise ' : 'Sunset ') + DB.fmtHM(rs.event) + '\u00a0· ' + s + placeTime(rs.place);
   }
+  /* how bright to paint the sky at a minute: the twilight ramp, plus the
+     sun's height — brightest at solar noon, so a day is a curve, not a slab */
+  function skyGlow(st, m) {
+    const L = DB.lightLevel(st, m);
+    const h = st && st.rise != null && st.set != null && m > st.rise && m < st.set ? Math.sin(Math.PI * (m - st.rise) / (st.set - st.rise)) : 0;
+    return 0.02 + 0.15 * L + 0.17 * h;
+  }
   const RS_W = 320, RS_TOP = 2, RS_HZ = 30;
   /* the run's colour on the ribbon: red when hard, white when long (§3) */
   function skyKind(run) {
@@ -1693,7 +1700,7 @@
     let stops = '';
     for (let k = 0; k <= 32; k++) {
       stops += '<stop offset="' + (k / 32).toFixed(3) + '" style="stop-opacity:' +
-        (0.02 + 0.3 * DB.lightLevel(rs.st, a + (b - a) * k / 32)).toFixed(3) + '"/>';
+        skyGlow(rs.st, a + (b - a) * k / 32).toFixed(3) + '"/>';
     }
     let art = '';
     for (let k = 0; k < 28; k++) {
@@ -1828,7 +1835,7 @@
        dark that twinkle, the sun marked where it rises and sets, and the
        moon at its actual phase in the middle of the night. From October the
        evening run visibly slides into the dark (rule 8). */
-    let sky = '', sunLine = '';
+    let sky = '', sunLine = '', moonLit = null;
     const place = DB.skyPlace(iso);
     const st = place ? DB.sunTimes(iso, place.lat, place.lon, place.offsetMin) : null;
     if (st && st.rise != null && st.set != null) {
@@ -1843,10 +1850,15 @@
         const [x, y] = pt(m, r).split(' ');
         sky += '<circle class="dw-star' + (seedOf(k + 't') > 0.55 ? ' tw' : '') + '" style="--d:' + (seedOf(k + 'd') * 4).toFixed(2) + 's" cx="' + x + '" cy="' + y + '" r="' + (0.6 + seedOf(k + 's') * 1.1).toFixed(2) + '"/>';
       }
-      // the moon, at its real phase, in the middle of the night
-      const mp = DB.moonPhase(iso), mm = (dusk + nightLen / 2) % 1440;
-      const [mx, my] = pt(mm, RN).split(' ').map(Number);
+      /* the moon where it really is (v4.77), like the moon pointer of an
+         astronomical clock: its arc from moonrise to moonset round the rim,
+         and the moon itself at its highest, at its real phase — in the
+         night when it is full, in the daylight when it is new */
+      const mp = DB.moonPhase(iso), ma = DB.moonArc(iso, place);
+      if (ma.semi > 20 && ma.semi < 700) sky += '<path class="dw-moonarc" pathLength="1" d="' + arc(ma.rise, ma.set, 121.5) + '"/>';
+      const [mx, my] = pt(ma.transit, RN).split(' ').map(Number);
       sky += moonSVG(mx, my, 7.5, mp, 'dw-moon');
+      moonLit = Math.round(mp.lit * 100);
       // the sun where it rises and where it sets
       [st.rise, st.set].forEach((m) => {
         const [sx, sy] = pt(m, RN).split(' ').map(Number);
@@ -1878,6 +1890,14 @@
        sessions are done, all twelve when the day is complete. */
     const litPetals = total ? Math.round(12 * got / total) : 0;
     let rose = '<circle class="dw-rose" cx="' + C + '" cy="' + C + '" r="56"/>';
+    /* a finished day earns a gloria: rays out of the rose window's heart */
+    if (total && got === total) {
+      let rays = '';
+      for (let k = 0; k < 48; k++) rays += 'M' + pt(k * 30, 22) + ' L' + pt(k * 30, k % 2 ? 44 : 53) + ' ';
+      rose = '<mask id="dw-glmask"><rect x="0" y="0" width="340" height="340" fill="#fff"/>' +
+        '<rect x="' + (C - 50) + '" y="' + (C - 34) + '" width="100" height="68" rx="22" fill="#000"/></mask>' +
+        '<g class="dw-gloria" mask="url(#dw-glmask)"><path d="' + rays + '"/></g>' + rose;
+    }
     for (let k = 0; k < 12; k++) {
       const m = k * 120;
       rose += '<path class="dw-rose" d="M' + pt(m, 56) + ' L' + pt(m, 84) + '"/>';
@@ -1902,7 +1922,7 @@
     const legend = cats.map((c) => '<span><i style="background:' + (c === 'run' ? runSwatch : CAT_VAR[c] || 'var(--t2)') + '"></i>' +
       esc(c === 'xt' ? 'cross-train' : c === 'run' && rcl === 'race' ? 'race' : c === 'run' && rcl === 'long' ? 'long run' : c === 'run' && rcl === 'quality' ? 'quality run' : c) + '</span>').join('');
     const label = 'Your day as a 24-hour clock: ' + total + ' sessions, ' + got + ' done' + (runAt ? '; run at ' + runAt : '') +
-      (sunLine ? '; ' + sunLine : '') + '.';
+      (sunLine ? '; ' + sunLine : '') + (moonLit != null ? '; the moon ' + moonLit + '% lit' : '') + '.';
     return '<figure class="daywheel' + (total && got === total ? ' complete' : '') + '" role="img" aria-label="' + esc(label) + '">' +
       '<svg viewBox="-12 0 364 362" aria-hidden="true"><circle class="dw-face" cx="' + C + '" cy="' + C + '" r="122"/>' +
       sky + rose + ticks + rings + hand + motto +
@@ -2387,6 +2407,78 @@
     );
   }
 
+  /* ---- the light of the week (v4.77) ----
+     Seven columns of the real sky, 05:00 at the top to 22:00 at the foot:
+     night, twilight and day for each date and place, stars in the dark,
+     sunrise and sunset ruled across, that night's moon at its phase above,
+     and each day's run set in its own light — red when hard, white when
+     long, lit when done. Through the autumn the weekday runs slide into
+     the dark while the long run keeps the morning. */
+  function weekLightHTML(week7, weekNo) {
+    const T0 = 300, T1 = 1320, W = 360, TOP = 24, H = 204, CW = 34, X0 = 30;
+    const GAP = (W - X0 - 4 - 7 * CW) / 6;
+    const Y = (m) => TOP + ((Math.max(T0, Math.min(T1, m)) - T0) / (T1 - T0)) * H;
+    const f1 = (v) => v.toFixed(1);
+    const today = todayISO(), n = nowMin();
+    let defs = '', cols = '', over = '', sets = [], runs = 0, dark = 0, awayFrom = -1, awayName = '';
+    week7.forEach((d, i) => {
+      const iso = d.iso, x = X0 + i * (CW + GAP), cx = x + CW / 2;
+      const place = DB.skyPlace(iso);
+      const st = place ? DB.sunTimes(iso, place.lat, place.lon, place.offsetMin) : null;
+      if (place && place.away && awayFrom < 0) { awayFrom = i; awayName = place.name || ''; }
+      const gid = 'wl' + iso.replace(/-/g, '');
+      let stops = '';
+      for (let k = 0; k <= 34; k++) {
+        stops += '<stop offset="' + (k / 34).toFixed(3) + '" style="stop-opacity:' +
+          skyGlow(st, T0 + (T1 - T0) * k / 34).toFixed(3) + '"/>';
+      }
+      defs += '<linearGradient id="' + gid + '" class="rs-sky" x1="0" y1="0" x2="0" y2="1">' + stops + '</linearGradient>';
+      let art = '';
+      for (let k = 0; k < 14; k++) {
+        const m = T0 + (T1 - T0) * artSeed(iso + ':wl:' + k);
+        if (DB.lightLevel(st, m) > 0.12) continue;
+        art += '<circle class="wl-star' + (artSeed(iso + ':wl:' + k + 't') > 0.6 ? ' tw' : '') + '" style="--d:' + (artSeed(iso + ':wl:' + k + 'd') * 4).toFixed(2) +
+          's" cx="' + f1(x + 3 + artSeed(iso + ':wl:' + k + 'x') * (CW - 6)) + '" cy="' + f1(Y(m)) + '" r="' + (0.45 + artSeed(iso + ':wl:' + k + 's') * 0.55).toFixed(2) + '"/>';
+      }
+      if (st && st.rise != null && st.set != null) {
+        sets.push(st.set);
+        [st.rise, st.set].forEach((m) => { if (m > T0 && m < T1) art += '<path class="wl-sunline" d="M' + f1(x) + ' ' + f1(Y(m)) + ' L' + f1(x + CW) + ' ' + f1(Y(m)) + '"/>'; });
+      }
+      let run = '';
+      if (d.run) {
+        const r = d.run, c = DB.runClass(r), lg = getRunLogEntry(iso);
+        const kind = c === 'race' || c === 'quality' ? 'hard' : c === 'long' ? 'long' : 'easy';
+        const ovr = getOvr(iso), off = !!(ovr.skip[r.id] || ovr.moved[r.id]);
+        const banked = !off && (!!getDone(iso)[r.id] || !!(lg && lg.sec > 0));
+        const y0 = Y(r.startMin), y1 = Math.max(y0 + 5, Y(r.endMin));
+        runs++;
+        if (st && st.set != null && r.startMin > 720 && r.endMin > st.set) dark++;
+        run = '<rect class="wl-run ' + kind + (banked ? ' done' : '') + (off ? ' off' : '') + '" x="' + f1(x + 5) + '" y="' + f1(y0) + '" width="' + (CW - 10) + '" height="' + f1(y1 - y0) + '" rx="2.5"/>';
+      }
+      const isToday = iso === today;
+      cols += '<g class="wl-col" style="--i:' + i + '"><rect class="wl-base" x="' + f1(x) + '" y="' + TOP + '" width="' + CW + '" height="' + H + '" rx="8"/>' +
+        '<rect x="' + f1(x) + '" y="' + TOP + '" width="' + CW + '" height="' + H + '" rx="8" fill="url(#' + gid + ')"/>' + art +
+        '<rect class="wl-frame' + (isToday ? ' today' : '') + '" x="' + f1(x + 0.5) + '" y="' + (TOP + 0.5) + '" width="' + (CW - 1) + '" height="' + (H - 1) + '" rx="7.5"/></g>' +
+        (run ? '<g class="wl-rung" style="--i:' + i + '">' + run + '</g>' : '');
+      over += moonSVG(cx, 10, 5.5, DB.moonPhase(iso), 'wl-moon') +
+        '<text class="wl-day' + (isToday ? ' today' : '') + '" x="' + f1(cx) + '" y="' + (TOP + H + 14) + '">' + DAY_SHORT[i] + '</text>' +
+        '<text class="wl-date' + (isToday ? ' today' : '') + '" x="' + f1(cx) + '" y="' + (TOP + H + 27) + '">' + Number(iso.slice(8)) + '</text>';
+      if (isToday && n > T0 && n < T1) over += '<path class="wl-now" d="M' + f1(x - 3) + ' ' + f1(Y(n)) + ' L' + f1(x + CW + 3) + ' ' + f1(Y(n)) + '"/>';
+    });
+    let grid = '';
+    [360, 720, 1080].forEach((m) => {
+      grid += '<path class="wl-grid" d="M' + (X0 - 4) + ' ' + f1(Y(m)) + ' L' + (W - 2) + ' ' + f1(Y(m)) + '"/>' +
+        '<text class="wl-hour" x="' + (X0 - 7) + '" y="' + f1(Y(m) + 3) + '">' + String(m / 60).padStart(2, '0') + '</text>';
+    });
+    const setLine = sets.length > 1 ? 'Sunset ' + DB.fmtHM(sets[0]) + ' on Monday, ' + DB.fmtHM(sets[sets.length - 1]) + ' by Sunday' : '';
+    const darkLine = runs ? (dark ? dark + ' of ' + runs + ' runs finish after sunset' : 'every run finishes in daylight') : 'no runs this week';
+    const line = [setLine, darkLine].filter(Boolean).join(' · ') + (awayFrom >= 0 && awayName ? ' · from ' + ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][awayFrom] + ' in ' + awayName + ' time' : '');
+    return '<figure class="weeklight" role="img" aria-label="' + esc('The light of the week: each day as a column of sky from 05:00 to 22:00, with its run placed in it. ' + line + '.') + '">' +
+      '<svg viewBox="0 0 ' + W + ' ' + (TOP + H + 32) + '" aria-hidden="true"><defs>' + defs + '</defs>' + grid + cols + over + '</svg>' +
+      '<p class="wl-line" aria-hidden="true">' + esc(line) + '</p>' +
+      '<figcaption class="fig-cap" aria-hidden="true">' + (weekNo ? '<span class="fig">Fig. ' + roman(weekNo) + '</span> ' : '') + 'The light of the week</figcaption></figure>';
+  }
+
   function renderWeek() {
     const anchor = state.weekAnchor || mondayOf(todayISO());
     state.weekAnchor = anchor;
@@ -2559,6 +2651,7 @@
     }
     Array.prototype.forEach.call(days.children, (c, i) => c.style.setProperty('--i', i));
     view.appendChild(days);
+    view.appendChild(el(weekLightHTML(week7, day0.week)));
   }
 
   /* What a day with no run and no sessions is about: its longest free or
@@ -3487,7 +3580,7 @@
      arrival when it scrolls into view, not while it is still off screen. */
   let artObserver = null;
   function revealArt() {
-    const nodes = document.querySelectorAll('#view .daywheel, #view .wall, #view .journey-landmarks');
+    const nodes = document.querySelectorAll('#view .daywheel, #view .wall, #view .journey-landmarks, #view .weeklight');
     if (!('IntersectionObserver' in window)) { nodes.forEach((n) => n.classList.add('in')); return; }
     if (!artObserver) artObserver = new IntersectionObserver((entries) => entries.forEach((e) => {
       if (e.isIntersecting) { e.target.classList.add('in'); artObserver.unobserve(e.target); }

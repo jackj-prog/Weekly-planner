@@ -1118,3 +1118,31 @@ to the rest of the app.
   cue is plan content; whether it should follow the real sunset is the
   user's call.
 82 browser checks (sweep included), 16,199 plan checks, no overflow, a11y clean.
+
+## The light of the week — v4.77, 30 September (Claude)
+
+User asked to continue the aesthetic work on the same theme.
+- **The light of the week** (Week view, after the day list): seven columns
+  of the real sky from 05:00 to 22:00 — night, twilight and day shaded by
+  the sun's height (`skyGlow`: the twilight ramp plus a sine of the sun's
+  arc, so a day is a curve with its peak at solar noon, not a flat slab),
+  stars in the dark, sunrise and sunset ruled across, that night's moon
+  at its phase above each column, and every run as a band at its own time
+  (red hard, white long, grey easy; bright and glowing when done, faint
+  when skipped or moved). Today's column is ringed in red with a NOW line.
+  Captioned "Fig. <week in numerals> The light of the week" over a
+  computed line: "Sunset 16:24 on Monday, 16:15 by Sunday · 3 of 5 runs
+  finish after sunset", plus the switch to Nicosia time in race week.
+  Arrival: each day's sky pours down its column, Monday first, then the
+  runs land; waits for the IntersectionObserver reveal.
+- **The dial's moon keeps its real hours.** `DB.moonArc(iso, place)` gives
+  transit, semi-arc, rise and set (the same model as `moonUp`, now built
+  on it). The moon is drawn at its highest, not mid-night, so a new moon
+  sits in the daylight and a full moon at the top of the night, with a
+  dotted arc from moonrise to moonset round the rim — an astronomical
+  clock's moon pointer. The dial's spoken summary adds how lit it is.
+- **A finished day earns a gloria:** rays out of the rose window around
+  the count (masked clear of the numerals), blooming on arrival and
+  turning very slowly — only when every session of the day is done.
+- The run ribbon uses the same `skyGlow` shading.
+88 browser checks (sweep included), 16,206 plan checks, no overflow, a11y clean.

@@ -950,14 +950,19 @@
      phase × 24 h after noon, and stays up for a semi-arc set by its
      declination (its ecliptic longitude is the sun's plus the phase).
      Good to half an hour or so — enough to draw it, never to time by. */
-  function moonUp(iso, m, place) {
+  function moonArc(iso, place) {
     const mp = moonPhase(iso), rad = Math.PI / 180;
     const n = (Date.parse(iso + 'T12:00:00Z') - Date.UTC(2000, 0, 1, 12)) / 864e5;
     const dec = Math.asin(0.3978 * Math.sin((280.46 + 0.9856474 * n + mp.phase * 360) * rad));
     const cosH = -Math.tan(place.lat * rad) * Math.tan(dec);
     const semi = cosH <= -1 ? 720 : cosH >= 1 ? 0 : (Math.acos(cosH) / rad) * 4;
-    const transit = 720 + mp.phase * 1440 + (place.offsetMin - place.lon * 4);
-    return Math.abs(((((m - transit) % 1440) + 1440 + 720) % 1440) - 720) < semi;
+    const transit = ((720 + mp.phase * 1440 + (place.offsetMin - place.lon * 4)) % 1440 + 1440) % 1440;
+    return { transit: Math.round(transit), semi: Math.round(semi),
+      rise: Math.round(((transit - semi) % 1440 + 1440) % 1440), set: Math.round((transit + semi) % 1440) };
+  }
+  function moonUp(iso, m, place) {
+    const arc = moonArc(iso, place);
+    return Math.abs(((((m - arc.transit) % 1440) + 1440 + 720) % 1440) - 720) < arc.semi;
   }
   /* A run against the sky (v4.76): the sun event that matters (sunrise for
      a morning run, sunset otherwise) and where the run sits against it —
@@ -990,7 +995,7 @@
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
-    isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, moonUp, runSky, mpVerdict, easyPartEf,
+    isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });
