@@ -392,9 +392,9 @@ async function cinema() {
   await t.ctx.close();
   // v4.81: the week's tally, the tune-up ruler, the efficiency charts
   t = await open('2026-10-01', '12:00', SEED, 'week');
-  const stones = await t.page.$$eval('.wkp-tally .st', (ns) => ns.map((n) => n.className));
-  check(stones.length === (await t.page.$$('.profile-day:not(.rest)')).length && stones.some((c) => /\bhard\b/.test(c)) && stones.some((c) => /\blong\b/.test(c)) && stones.some((c) => /\bnow\b/.test(c)),
-    'the week tally lays one stone per run, in its class, with today marked');
+  const bars = await t.page.$$eval('.week-profile .profile-day:not(.rest)', (ns) => ns.map((n) => n.className));
+  check(bars.length === 5 && bars.some((c) => /\bhard\b/.test(c)) && bars.some((c) => /\blong\b/.test(c)) && /\/ \d+ km recorded/.test(await text(t.page, '.week-profile h2')),
+    'one distance figure carries the week: each run in its class, recorded against planned (v4.89)');
   await t.ctx.close();
   t = await open('2026-12-14', '12:00', Object.assign({}, SEED, { recal: '1:48:30' }), 'ref');
   check((await t.page.$$('.recal-ruler .rr-band')).length === 3 && !!(await t.page.$('.recal-ruler .rr-band.goal')) && !!(await t.page.$('.recal-ruler .rr-dot')),
@@ -474,6 +474,16 @@ async function cinema() {
   await t.ctx.close();
   t = await open('2026-10-09', '13:00', SEED);
   check(/not ticked/.test(await text(t.page, '.tl-card:has-text("German active study") .c-time')), 'a passed session that was not ticked says so');
+  await t.ctx.close();
+  // v4.89: the week, days first
+  t = await open('2026-10-09', '12:00', SEED, 'week');
+  check(await t.page.evaluate(() => { const d = document.querySelector('.wk-days'), p = document.querySelector('.week-profile'); return !!(d && p && (d.compareDocumentPosition(p) & Node.DOCUMENT_POSITION_FOLLOWING)); }),
+    'the seven days come before the distance figure');
+  check(!(await t.page.$('.wkp-tally')) && (await t.page.$$('.week-profile .profile-day.miss')).length >= 1, 'the tally\u2019s states live on the distance bars; a passed unrecorded run reads missed');
+  check(!!(await t.page.$('.journey.line .journey-link')) && !(await t.page.$('.journey h2')) && /weeks · .* km · \d+ runs logged/.test(await text(t.page, '.journey.line')), 'the block\u2019s totals are one line');
+  await t.page.click('.journey.line .journey-link');
+  check(!!(await t.page.$('.training-journey')), 'that line opens the training journey');
+  noErrors(t, 'week days first');
   await t.ctx.close();
   // v4.86: the journey's week explorer, the pace spectrum, the week in hours
   t = await open('2026-10-01', '12:00', SEED, 'plan');

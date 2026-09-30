@@ -205,6 +205,10 @@ footer row gone; category pills dropped (the emblem says it); the run's
 timeline row is a slim pointer back to the run card; one way into a gym
 session; the past recedes and an unticked passed session says so; the
 clock follows the timeline.
+**v4.89 (the Week, days first):** the seven day cards lead the Week; the
+km tally folded into the distance figure (recorded against planned in its
+head, banked/missed/off on its bars); the block's totals are one line
+that opens the journey.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

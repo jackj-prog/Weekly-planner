@@ -2842,3 +2842,23 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .tl-card.past.done { opacity: .9; }
 /* the clock follows the timeline, with room to breathe */
 .tl + .daywheel { margin-top: 30px; }
+
+/* ================= THE WEEK, DAYS FIRST (v4.89) ==================== */
+/* the distance figure carries the tally's states */
+.profile-day.miss .profile-track i { opacity: .28; background-image: repeating-linear-gradient(135deg, transparent 0 4px, var(--paper) 4px 6px); }
+.profile-day.off .profile-track i { background: transparent; border: 1.5px dashed var(--t3); border-bottom: 0; }
+.profile-day.miss .profile-state, .profile-day.off .profile-state { color: var(--t3); }
+.week-profile .log-note { margin: 10px 0 0; font-size: 12px; color: var(--t3); }
+.week-profile .profile-head h2 small { font-size: .42em; }
+.wk-days + .week-profile { margin-top: 18px; }
+/* the block's totals, in one line that leads to the journey */
+.journey.line { margin: 18px 0 0; padding: 0; border: 0; background: none; box-shadow: none; }
+.journey.line .journey-link {
+  display: grid; grid-template-columns: 1fr auto; grid-template-areas: "track go" "text go"; align-items: center; gap: 8px 12px;
+  width: 100%; height: auto; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px;
+  background-image: var(--grain), var(--hero-base); color: var(--t2); font: 400 13px var(--body); text-align: left;
+}
+.journey.line .journey-track { grid-area: track; height: 8px; gap: 2px; }
+.jl-text { grid-area: text; }
+.jl-text b { font: 700 13.5px var(--mono); color: var(--text); }
+.jl-go { grid-area: go; font-size: 22px; color: var(--text); }

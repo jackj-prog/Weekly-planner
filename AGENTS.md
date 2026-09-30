@@ -1451,3 +1451,21 @@ releases were agreed; this is the first, the outright fixes:
   timeline to below it, at full size, so the list starts right under the
   run card.
 140 browser checks (sweep included), 16,248 plan checks, no overflow, a11y clean.
+
+## Release 3 of the UX plan: the Week, days first — v4.89, 1 October (Claude)
+
+- **The seven day cards come first.** They sat about two and a half
+  screens down, under the distance profile, the block totals and the km
+  tally. Order is now: header, motto and notes, the days, the distance
+  figure, the light of the week, the block line.
+- **One distance figure.** The km tally (v4.81) drew the same runs as the
+  distance profile's bars. Its numbers moved into the profile's head
+  ("0 / 46 km recorded" once the week has started, "46 km planned"
+  before) and its states onto the bars: lit and ✓ when banked, striped
+  and "missed" when a day passed without it, dashed and "off" when
+  skipped or moved. `.wkp` is gone; the logged-distance note moved under
+  the figure.
+- **"The work adds up" is one line**: the thirty weeks in miniature over
+  "14/30 weeks · 317.6 km · 53 runs logged ↗", a single button to the
+  Plan page's journey, which already holds those totals in full.
+145 browser checks (sweep included), 16,249 plan checks, no overflow, a11y clean.

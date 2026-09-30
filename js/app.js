@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.88.0';
+  const APP_VERSION = '4.89.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -709,17 +709,13 @@
         (current ? ' · current' : past ? ' · elapsed' : ' · ahead') + '"></i>';
     }).join('');
     const p = savedProgress();
-    const wrap = el('<section class="journey"><div class="journey-heading"><h2>The work adds up</h2>' +
-      '<button class="journey-link" aria-label="Open the full training plan">↗</button></div>' +
-      '<div class="journey-caption"><b>' + elapsed + '<span> / ' + block.weeks + '</span></b> weeks elapsed</div>' +
-      '<div class="journey-track" role="img" aria-label="' + elapsed + ' of ' + block.weeks +
-      ' weeks elapsed; outlined segment is this week">' + segments + '</div>' +
-      '<div class="journey-legend"><span>Base</span><span>Build</span><span>Taper</span></div>' +
-      '<div class="journey-stats"><div><b>' + p.km.toLocaleString('en-GB',{maximumFractionDigits:1}) +
-      '</b><span>km logged</span></div><div><b>' + p.runs + '</b><span>runs logged</span></div><div><b>' + p.weeks +
-      '</b><span>weeks logged</span></div></div>' +
-      (p.runs ? '<p>Every saved run contributes. Weeks logged count weeks with at least one run.</p>' :
-        '<p>Your first saved run starts these counters. Use Log this run after your session.</p>') + '</section>');
+    /* The block's totals live on the Plan page's journey; here they are one
+       line that leads there (v4.89), over the thirty weeks in miniature. */
+    const wrap = el('<section class="journey line"><button class="journey-link" aria-label="Open your training journey: ' + elapsed + ' of ' + block.weeks +
+      ' weeks elapsed, ' + p.km.toLocaleString('en-GB',{maximumFractionDigits:1}) + ' km and ' + p.runs + ' runs logged">' +
+      '<span class="journey-track" aria-hidden="true">' + segments + '</span>' +
+      '<span class="jl-text"><b>' + elapsed + '</b>/' + block.weeks + ' weeks · <b>' + p.km.toLocaleString('en-GB',{maximumFractionDigits:1}) +
+      '</b> km · <b>' + p.runs + '</b> runs logged</span><span class="jl-go" aria-hidden="true">↗</span></button></section>');
     wrap.querySelector('.journey-link').addEventListener('click', () => {
       state.view = 'plan'; window.scrollTo(0,0); render();
     });
@@ -2754,35 +2750,6 @@
     const shape = weekShapeNote(anchor, day0);
     if (shape) view.appendChild(shape);
 
-    /* banked km — only once the week has started */
-    if (anchor <= todayISO()) {
-      const km = DB.weekKm(getDone, anchor, getRunLogEntry);
-      if (km.planned > 0) {
-        const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
-        /* The week's tally (v4.81): one stone per planned run, as long as its
-           distance and in its class's colour — solid once banked, outlined
-           while to come, struck through if the day passed without it. */
-        const today = todayISO();
-        const stones = [];
-        for (let i = 0; i < 7; i++) {
-          const iso = DB.addDays(anchor, i), d = DB.buildDay(iso);
-          if (!d.run) continue;
-          const o = getOvr(iso), lg = getRunLogEntry(iso), c = DB.runClass(d.run);
-          const kind = c === 'quality' || c === 'race' ? 'hard' : c === 'long' ? 'long' : 'easy';
-          const state = (getDone(iso)[d.run.id] || (lg && lg.sec > 0)) ? 'done'
-            : (o.skip[d.run.id] || o.moved[d.run.id]) ? 'off' : iso < today ? 'miss' : iso === today ? 'now' : 'ahead';
-          stones.push({ km: d.run.run.km, kind, state, day: DAY_SHORT[i] });
-        }
-        const tally = stones.map((t) => '<i class="st ' + t.kind + ' ' + t.state + '" style="flex:' + t.km + '"><b>' + t.day.charAt(0) + '</b></i>').join('');
-        view.appendChild(el(
-          '<div class="wkp" role="img" aria-label="' + fmt(km.done) + ' of ' + fmt(km.planned) + ' km banked">' +
-          '<div class="wkp-label"><span class="wkp-n">' + fmt(km.done) + '</span><span class="wkp-of"> / ' + fmt(km.planned) + ' km recorded</span></div>' +
-          '<div class="wkp-tally" aria-hidden="true">' + tally + '</div>' +
-          '<p class="log-note">Logged distance, or planned distance for runs ticked done.</p></div>'
-        ));
-      }
-    }
-
     /* seven days, run distances as the anchors — rows double as a bar chart */
     const real = todayISO();
     const week7 = [];
@@ -2792,9 +2759,16 @@
     // The existing daily plan, drawn on one common scale. Completion marks
     // are separate from bar height: ticking a run does not change its plan.
     const totalKm = week7.reduce((n, d) => n + (d.run ? d.run.run.km : 0), 0);
-    const profile = el('<section class="week-profile" aria-label="Planned daily distances">' +
+    /* One figure for the week's distance (v4.89): the km tally that sat
+       beside it drew the same runs a second time, so its numbers and its
+       states (banked, missed, skipped, today) moved onto these bars. */
+    const started = anchor <= real;
+    const wkKm = started ? DB.weekKm(getDone, anchor, getRunLogEntry) : null;
+    const fmtW = (n) => (n === Math.round(n) ? n : n.toFixed(1));
+    const profile = el('<section class="week-profile" aria-label="' + (wkKm ? fmtW(wkKm.done) + ' of ' + fmtW(totalKm) + ' km recorded' : 'Planned daily distances') + '">' +
       '<div class="profile-head"><div><span class="profile-label">DISTANCE PROFILE</span>' +
-      '<h2>' + (Math.round(totalKm * 10) / 10) + '<small> km planned</small></h2></div>' +
+      (wkKm ? '<h2>' + fmtW(wkKm.done) + '<small> / ' + fmtW(Math.round(totalKm * 10) / 10) + ' km recorded</small></h2>'
+        : '<h2>' + (Math.round(totalKm * 10) / 10) + '<small> km planned</small></h2>') + '</div>' +
       '<span class="profile-count">' + week7.filter((d) => d.run).length + ' run days</span></div>' +
       '<div class="profile-bars">' + week7.map((d, i) => {
         const km = d.run ? d.run.run.km : 0;
@@ -2802,22 +2776,23 @@
         const banked = d.run && (!!getDone(d.iso)[d.run.id] || !!(lg && lg.sec > 0));
         const cls = d.run ? DB.runClass(d.run) : 'rest';
         const kind = cls === 'race' || cls === 'quality' ? 'hard' : cls === 'long' ? 'long' : cls === 'rest' ? 'rest' : 'easy';
-        return '<button class="profile-day ' + kind + (banked ? ' lit' : '') + '" data-date="' + d.iso + '"' +
+        const ov = getOvr(d.iso);
+        const off = d.run && !banked && (ov.skip[d.run.id] || ov.moved[d.run.id]);
+        const miss = d.run && !banked && !off && d.iso < real;
+        return '<button class="profile-day ' + kind + (banked ? ' lit' : off ? ' off' : miss ? ' miss' : '') + '" data-date="' + d.iso + '"' +
           (d.iso === real ? ' aria-current="date"' : '') + ' aria-label="' + esc(fmtDate(d.iso) +
           ': ' + (d.run ? km + ' km, ' + d.run.title : 'No run') + (banked ? ', completed' : '')) + '">' +
           '<span class="profile-track"><i style="height:' + (km / maxKm * 100).toFixed(1) + '%"></i></span>' +
           '<b class="profile-km">' + (km || '—') + '</b><span class="profile-date">' + DAY_SHORT[i] + '</span>' +
-          '<span class="profile-state">' + (banked ? '✓' : km ? '' : 'rest') + '</span></button>';
+          '<span class="profile-state">' + (banked ? '✓' : off ? 'off' : miss ? 'missed' : km ? '' : 'rest') + '</span></button>';
       }).join('') + '</div><div class="profile-legend"><span>Easy / recovery</span><span>Quality / race</span><span>Long</span>' +
-      '<span>✓ completed</span></div></section>');
+      '<span>✓ completed</span></div>' +
+      (wkKm ? '<p class="log-note">Logged distance, or planned distance for runs ticked done.</p>' : '') + '</section>');
     profile.querySelectorAll('[data-date]').forEach((button) => button.addEventListener('click', () => {
       state.view = 'today'; state.dateISO = button.dataset.date; state.expanded = null;
       window.scrollTo(0, 0); render();
     }));
-    const after = view.querySelector('.wk-note') || view.querySelector('.wk-motto') || view.querySelector('.wk-sub');
-    view.insertBefore(profile, after ? after.nextSibling : null);
     if (weekSealed(anchor)) profile.insertAdjacentHTML('afterbegin', sealHTML(day0.week));
-    if (day0.blockId === 'marathon') profile.after(buildJourney());
 
     const days = el('<div class="wk-days"></div>');
     for (let i = 0; i < 7; i++) {
@@ -2901,8 +2876,11 @@
       days.appendChild(row);
     }
     Array.prototype.forEach.call(days.children, (c, i) => c.style.setProperty('--i', i));
+    /* the days come first (v4.89): they are what this tab is opened for */
     view.appendChild(days);
+    view.appendChild(profile);
     view.appendChild(el(weekLightHTML(week7, day0.week)));
+    if (day0.blockId === 'marathon') view.appendChild(buildJourney());
   }
 
   /* What a day with no run and no sessions is about: its longest free or
