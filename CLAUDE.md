@@ -173,6 +173,17 @@ last few logged easy runs ruled across every rung. **v4.83:** the Week's
 day cards are lit like their run cards (red from the corner on the hard
 day, white on the long one, the distance and its bar in the run's colour,
 glowing once banked) and rest days recede to a dashed, quiet row.
+**Emblems (v4.84, the user's idea):** every activity carries a small
+engraved monoline emblem in its category colour, as a Book of Hours margin
+carries its own — Mercury's winged foot for a run and a laurel wreath (red)
+for a race, Fortitude's column for the gym, the lamp of learning for study,
+a scroll for German, an open book for reading, an hourglass for work and a
+compass rose for the journey to it, a goblet at table, a lyre for free
+time, a ball for basketball, and a rising sun, crescent moon or drop of
+water for the day's own hours. They stand on the timeline's spine (a
+roundel for cards, bare for quiet rows), in the clock's legend, as a row
+under each Week day card (lit once done), and above a session's title in
+focus. Decorative and aria-hidden; the text says the same.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

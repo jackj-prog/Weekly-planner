@@ -1325,3 +1325,27 @@ Rest days (`no-run`) recede to a dashed, transparent row with "No run" in
 the serif italic, so the week reads at a glance: Wednesday red, Sunday
 white, the rest quiet.
 109 browser checks (sweep included), 16,227 plan checks, no overflow, a11y clean.
+
+## Emblems for every activity — v4.84, 1 October (Claude)
+
+User, mid-pass: "feel like you could add symbols for each activity, make it
+match the aesthetic we are going for". A Book of Hours marks its margins
+with emblems, so every activity now has one — engraved monoline SVG,
+drawn in the activity's own category colour (`EMBLEMS`, `emblemKind`,
+`emblemSVG` in app.js; a 24-unit viewBox, stroke `currentColor`):
+- run → Mercury's winged foot; race (runClass `race`) → laurel wreath, red
+- gym → a classical column (Fortitude); xt → a ball (basketball)
+- study → the lamp of learning; german → a scroll; reading → an open book
+- work → an hourglass, commutes → a compass rose; meal → a goblet;
+  free → a lyre
+- routine by its hour: wake → rising sun, lights out → crescent moon and
+  star, shower → a drop, travel → compass rose, otherwise a quatrefoil
+Placed: on the Today timeline's spine (a glowing roundel in the category
+colour for cards — filled once done, red-ringed when current, the race's
+laurel red — and the bare emblem, grey, for quiet rows); in the clock's
+legend instead of colour squares; as a row under each Week day card, one
+per session, dim until done and lit after; above the title on the focus
+screen. All `aria-hidden` — the titles and labels already say it. Tests
+check that every category maps to a drawn emblem and that each surface
+carries them.
+112 browser checks (sweep included), 16,231 plan checks, no overflow, a11y clean.

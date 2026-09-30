@@ -410,6 +410,18 @@ async function cinema() {
   check((await t.page.$$('.wk-days .wk-day.k-hard')).length === 1 && (await t.page.$$('.wk-days .wk-day.k-long')).length === 1 &&
     (await t.page.$$('.wk-days .wk-day.no-run')).length === 2, 'the week\u2019s day cards carry their run\u2019s class, and rest days recede');
   await t.ctx.close();
+  // v4.84: emblems
+  t = await open('2026-10-05', '12:00', SEED);
+  check((await t.page.$$('.tl .tl-card')).length === (await t.page.$$('.tl .tl-card .c-emb svg')).length &&
+    (await t.page.$$('.tl .tl-quiet')).length === (await t.page.$$('.tl .tl-quiet .q-emb svg')).length &&
+    (await t.page.$$('.daywheel figcaption .lg-e svg')).length >= 2, 'every timeline row and the clock\u2019s legend carry an emblem');
+  await t.ctx.close();
+  t = await open('2027-01-24', '05:30', SEED);
+  check(!!(await t.page.$('.tl-card .c-emb.race')), 'race day\u2019s marathon carries the red laurel');
+  await t.ctx.close();
+  t = await open('2026-10-01', '12:00', SEED, 'week');
+  check((await t.page.$$('.wk-days .wk-day .d-embs')).length === 7, 'every day card carries its sessions as emblems');
+  await t.ctx.close();
   t = await open('2026-12-25', '12:00', SEED);
   check((await text(t.page, '.daywheel .dw-count')) === 'REST' && !/0\/0/.test(await text(t.page, '.daywheel')), 'a day with nothing to tick reads REST, not 0/0');
   await t.ctx.close();

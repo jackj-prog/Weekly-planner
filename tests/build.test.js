@@ -1431,6 +1431,17 @@ section('palette contrast (WCAG AA)');
     ok(/\.ref-fold:not\(\.ref-fold \+ \.ref-fold\)/.test(css) && /\.ref-fold:last-of-type/.test(css), 'Reference\u2019s chapters are bound as one volume');
     ok(/' k-' \+ \(rc === 'quality' \|\| rc === 'race' \? 'hard'/.test(appSrc) && /\.wk-day\.k-hard/.test(css) && /\.wk-day\.no-run/.test(css),
       'the Week\u2019s day cards are lit by their run class, red only on the hard day');
+    /* Emblems (v4.84): every activity category has its emblem, and every
+       emblem the mapping can name is drawn. */
+    const embBlock = appSrc.slice(appSrc.indexOf('const EMBLEMS = {'), appSrc.indexOf('function emblemKind'));
+    const embKinds = (embBlock.match(/^\s{4}(\w+): '/gm) || []).map((m) => m.trim().replace(/: '$/, ''));
+    const kindFn = appSrc.slice(appSrc.indexOf('function emblemKind'), appSrc.indexOf('function emblemSVG'));
+    const named = [...new Set((kindFn.match(/'([a-z]+)'/g) || []).map((q) => q.replace(/'/g, '')).filter((k) => !['run', 'race', 'gym', 'xt', 'study', 'german', 'reading', 'meal', 'free', 'work'].includes(k)))];
+    ok(named.length >= 12 && named.every((k) => embKinds.includes(k)), 'every emblem the mapping names is drawn (' + named.filter((k) => !embKinds.includes(k)).join(', ') + ')');
+    ok(['run', 'gym', 'xt', 'study', 'german', 'reading', 'meal', 'free', 'work'].every((c) => kindFn.includes("case '" + c + "'")), 'every activity category has its emblem');
+    ok(/<span class="c-emb/.test(appSrc) && /<span class="q-emb">/.test(appSrc) && /class="d-embs" aria-hidden="true"/.test(appSrc) && /focus-emb/.test(appSrc),
+      'emblems mark the timeline, the Week\u2019s day cards and the focus screen');
+    ok(/emblemSVG\(kind, cls\)[\s\S]{0,80}aria-hidden="true"/.test(appSrc), 'emblems are decorative and hidden from assistive technology');
     ok(/function dressSheet/.test(appSrc) && /if \(open\) dressSheet\(\)/.test(appSrc), 'the More sheet is dressed as plates each time it opens');
     ok(/restMoonHTML\(iso\)/.test(appSrc) && !/class="rest-mark"/.test(appSrc), 'a rest day shows the night\u2019s moon, not a pause mark');
     ok(/focus-' \+ skyKind\(block\)/.test(appSrc) && /runSkyHTML\(iso, block, skyKind\(block\), 'f'/.test(appSrc), 'run focus is lit in the run\u2019s colour and shows the sun\u2019s arc');

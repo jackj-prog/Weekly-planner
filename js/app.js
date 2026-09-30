@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.83.0';
+  const APP_VERSION = '4.84.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -464,7 +464,8 @@
 
       if (b.quiet && !b.doable) {
         const q = el(
-          '<div class="tl-quiet' + (isCurrent ? ' current' : '') + '">' +
+          '<div class="tl-quiet' + (isCurrent ? ' current' : '') + '" style="--cat:' + (CAT_VAR[b.cat] || CAT_VAR.routine) + '">' +
+          '<span class="q-emb">' + emblemSVG(emblemKind(b)) + '</span>' +
           '<span class="t">' + b.start + '–' + b.end + '</span>' +
           '<div class="quiet-main">' + (b.detail ? '<details class="anchor-detail" data-disclosure="' + esc(iso + '|' + b.id) + '"' +
           (openDetails.has(iso + '|' + b.id) ? ' open' : '') + '><summary>' + esc(b.title) + '</summary>' +
@@ -1083,7 +1084,8 @@
     const dialog = el('<dialog class="session-focus' + (exercises.length ? ' is-gym' : '') + (block.run ? ' focus-' + skyKind(block) : '') + '" aria-labelledby="focus-title">' +
       '<div class="focus-shell"><header class="focus-header"><span>SESSION FOCUS</span><button class="focus-back" hidden>← Session brief</button>' +
       '<button class="focus-close" aria-label="Close session focus" autofocus>✕</button></header>' +
-      '<div class="focus-scroll"><p class="focus-date">' + esc(DAY_NAMES[DB.dayIndex(iso)] + ' · ' + fmtShort(iso)) + '</p>' +
+      '<div class="focus-scroll"><span class="focus-emb' + (emblemKind(block) === 'laurel' ? ' race' : '') + '" style="--cat:' + (CAT_VAR[block.cat] || CAT_VAR.routine) + '">' + emblemSVG(emblemKind(block)) + '</span>' +
+      '<p class="focus-date">' + esc(DAY_NAMES[DB.dayIndex(iso)] + ' · ' + fmtShort(iso)) + '</p>' +
       '<h1 id="focus-title">' + esc(block.title) + '</h1>' +
       '<div class="focus-window"><span>' + esc(block.start + '–' + block.end) + '</span><p class="focus-clock"></p></div>' +
       '<div class="focus-content"></div>' +
@@ -2033,7 +2035,8 @@
     blocks.forEach((b) => { if (b.doable && !cats.includes(b.cat)) cats.push(b.cat); });
     const rcl = day.run ? DB.runClass(day.run) : '';
     const runSwatch = rcl === 'quality' || rcl === 'race' ? 'var(--accent)' : rcl === 'long' ? 'var(--text)' : CAT_VAR.run;
-    const legend = cats.map((c) => '<span><i style="background:' + (c === 'run' ? runSwatch : CAT_VAR[c] || 'var(--t2)') + '"></i>' +
+    const legend = cats.map((c) => '<span><i class="lg-e" style="color:' + (c === 'run' ? runSwatch : CAT_VAR[c] || 'var(--t2)') + '">' +
+      emblemSVG(c === 'run' && rcl === 'race' ? 'laurel' : emblemKind({ cat: c, title: '' }), 'lg') + '</i>' +
       esc(c === 'xt' ? 'cross-train' : c === 'run' && rcl === 'race' ? 'race' : c === 'run' && rcl === 'long' ? 'long run' : c === 'run' && rcl === 'quality' ? 'quality run' : c) + '</span>').join('');
     const label = 'Your day as a 24-hour clock: ' + total + ' sessions, ' + got + ' done' + (runAt ? '; run at ' + runAt : '') +
       (sunLine ? '; ' + sunLine : '') + (moonLit != null ? '; the moon ' + moonLit + '% lit' : '') + '.';
@@ -2065,6 +2068,53 @@
       '<span class="rg-t"><b>' + fmt(wk.done) + '</b>/' + fmt(wk.planned) + ' km</span></span>';
   }
 
+  /* ---- emblems (v4.84) ----
+     Every activity carries a small engraved emblem, as the margins of a
+     Book of Hours carry theirs: the winged foot of Mercury for a run and
+     a laurel wreath for a race, Fortitude's column for the gym, the lamp
+     of learning for study, a speech scroll for German, an open book for
+     reading, an hourglass for work and a compass rose for the journey to
+     it, a goblet at table, a lyre for free time, a ball for basketball,
+     and for the day's own hours a rising sun, a crescent moon, a drop of
+     water. Monoline, drawn in the activity's own category colour. */
+  const EMBLEMS = {
+    foot: '<path d="M5.5 20H15.8C18.2 20 19.9 18.9 19.9 17.5 19.9 16.6 19.2 16.1 18.2 15.9L13.2 14.9 12 11.6H8.6V15.4C6.8 15.7 5.5 17.3 5.5 20Z"/><path d="M9 12.3C8.7 8.4 6.6 5.6 2.8 4.1 3.2 6.1 4.1 7.5 5.4 8.4 4.2 8.5 3.1 8.2 2.2 7.6 2.9 9.9 4.6 11.1 6.5 11.5 5.6 12 4.4 12.2 3.3 12 4.6 13.5 6.8 14 9 13.4"/><path d="M8.6 16.8H12.8"/>',
+    laurel: '<path d="M12 20.5C6.5 19.5 3.8 14.5 5.2 8.5M12 20.5C17.5 19.5 20.2 14.5 18.8 8.5"/><path d="M5.2 8.5c-1.6-.6-2.2-2.2-1.6-3.6 1.4.6 2 2.2 1.6 3.6zM4.7 13c-1.7-.3-2.6-1.8-2.3-3.3 1.5.4 2.4 1.9 2.3 3.3zM7 17c-1.7.1-3-1.1-3.1-2.6 1.6-.1 2.9 1.1 3.1 2.6zM18.8 8.5c1.6-.6 2.2-2.2 1.6-3.6-1.4.6-2 2.2-1.6 3.6zM19.3 13c1.7-.3 2.6-1.8 2.3-3.3-1.5.4-2.4 1.9-2.3 3.3zM17 17c1.7.1 3-1.1 3.1-2.6-1.6-.1-2.9 1.1-3.1 2.6z"/><path d="M10 21.5L12 20 14 21.5"/>',
+    column: '<path d="M5 3.5H19V5.8H5Z"/><path d="M6.5 5.8C6.5 7 7 7.6 7.8 7.6H16.2C17 7.6 17.5 7 17.5 5.8M8 7.6V18M10.7 7.6V18M13.3 7.6V18M16 7.6V18M6.5 18H17.5M5 20.5H19"/>',
+    lamp: '<path d="M3.5 14.5C3.5 12 7 11 11 11H14.5L20.2 8.6C21 8.3 21.6 9.1 21 9.7L16 14.5Z"/><path d="M20.9 7.3C19.9 6.1 20.1 4.7 21 3.1 22 4.7 22.2 6.1 21.3 7.3M3.8 13C1.8 12.6 1.6 10.2 3.5 10M8.2 14.5L7.2 17.5H13.2L12.2 14.5M9.5 11C9.5 9.8 11.5 9.8 11.5 11"/>',
+    scroll: '<path d="M6.5 3.5H18.5C19.9 3.5 19.9 6.5 18.5 6.5H6.5M6.5 3.5C5.1 3.5 5.1 6.5 6.5 6.5M5.5 20.5H17.5C18.9 20.5 18.9 17.5 17.5 17.5H5.5M5.5 20.5C4.1 20.5 4.1 17.5 5.5 17.5M7.5 6.5V17.5M17 6.5V17.5"/><path d="M9.8 9.5H14.8M9.8 12H14.8M9.8 14.5H13.2"/>',
+    book: '<path d="M12 6.5C9.5 5 6 4.8 3 5.6V18.6C6 17.8 9.5 18 12 19.5 14.5 18 18 17.8 21 18.6V5.6C18 4.8 14.5 5 12 6.5ZM12 6.5V19.5"/><path d="M5.5 9C7.2 8.7 8.8 8.9 10 9.5M5.5 12C7.2 11.7 8.8 11.9 10 12.5M14 9.5C15.2 8.9 16.8 8.7 18.5 9M14 12.5C15.2 11.9 16.8 11.7 18.5 12"/>',
+    hourglass: '<path d="M6 3H18M6 21H18M7.5 3C7.5 8.5 11 9.5 11 12 11 14.5 7.5 15.5 7.5 21M16.5 3C16.5 8.5 13 9.5 13 12 13 14.5 16.5 15.5 16.5 21"/><path d="M9.3 19.6C10.3 17.9 13.7 17.9 14.7 19.6ZM12 13V16.5"/>',
+    goblet: '<path d="M6.5 3.5H17.5C17.5 8.5 15.5 11 12 11 8.5 11 6.5 8.5 6.5 3.5Z"/><path d="M7.1 6.2H16.9M12 11V18M9.5 18H14.5M8 20.5H16"/>',
+    lyre: '<path d="M8 20C4.2 16.5 4 10.5 6.2 6.8 6.9 5.6 6.2 4.2 5 4.4M16 20C19.8 16.5 20 10.5 17.8 6.8 17.1 5.6 17.8 4.2 19 4.4M5.8 9.5H18.2M7 20H17M10 9.5V20M12 9.5V20M14 9.5V20"/>',
+    ball: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12H20.5M12 3.5V20.5M6.2 5.8C9.2 8.8 9.2 15.2 6.2 18.2M17.8 5.8C14.8 8.8 14.8 15.2 17.8 18.2"/>',
+    sunrise: '<path d="M2.5 17.5H21.5M7 17.5A5 5 0 0 1 17 17.5M12 8.8V6.3M6.4 11.6 4.7 9.9M17.6 11.6 19.3 9.9M4.3 15H2.6M19.7 15H21.4M7.5 20.5H16.5"/>',
+    moon: '<path d="M16 20.2A8.5 8.5 0 1 1 16 3.8 6.6 6.6 0 1 0 16 20.2Z"/><path d="M19.3 6.2 19.8 7.7 21.3 8.2 19.8 8.7 19.3 10.2 18.8 8.7 17.3 8.2 18.8 7.7Z"/>',
+    compass: '<path d="M12 2.5 13.6 10.4 21.5 12 13.6 13.6 12 21.5 10.4 13.6 2.5 12 10.4 10.4Z"/><path d="M8.3 8.3 12 12 15.7 8.3M8.3 15.7 12 12 15.7 15.7" opacity=".55"/>',
+    drop: '<path d="M12 3C12 3 5.5 10.5 5.5 14.5 5.5 18 8.5 21 12 21S18.5 18 18.5 14.5C18.5 10.5 12 3 12 3Z"/><path d="M8.9 15C8.9 16.8 10.2 18.1 12 18.1"/>',
+    fleuron: '<path d="M12 12C9 9 9 5 12 3.5 15 5 15 9 12 12 15 9 19 9 20.5 12 19 15 15 15 12 12 15 15 15 19 12 20.5 9 19 9 15 12 12 9 15 5 15 3.5 12 5 9 9 9 12 12Z"/>',
+  };
+  function emblemKind(b) {
+    const t = String(b.title || '');
+    switch (b.cat) {
+      case 'run': return b.run && DB.runClass(b) === 'race' ? 'laurel' : 'foot';
+      case 'gym': return 'column';
+      case 'xt': return 'ball';
+      case 'study': return 'lamp';
+      case 'german': return 'scroll';
+      case 'reading': return 'book';
+      case 'meal': return 'goblet';
+      case 'free': return 'lyre';
+      case 'work': return /commute|home/i.test(t) ? 'compass' : 'hourglass';
+      default:
+        return /wake|alarm/i.test(t) ? 'sunrise' : /lights out|sleep/i.test(t) ? 'moon' : /shower/i.test(t) ? 'drop'
+          : /travel|fly|walk|^to /i.test(t) ? 'compass' : 'fleuron';
+    }
+  }
+  function emblemSVG(kind, cls) {
+    return '<svg class="emb ' + (cls || '') + '" viewBox="0 0 24 24" aria-hidden="true">' + (EMBLEMS[kind] || EMBLEMS.fleuron) + '</svg>';
+  }
+
   function buildCard(b, done, iso, opts) {
     opts = opts || {};
     const isDone = !!done[b.id];
@@ -2075,6 +2125,7 @@
     const legRe = legDrop ? new RegExp(PLAN.moveRules.legPattern, 'i') : null;
     const card = el(
       '<div class="tl-card' + (isDone ? ' done' : '') + (opts.skipped ? ' skipped' : '') + (opts.current ? ' current' : '') + (opts.just ? ' just' : '') + '" style="--cat:' + cat + '">' +
+      '<span class="c-emb' + (emblemKind(b) === 'laurel' ? ' race' : '') + '">' + emblemSVG(emblemKind(b)) + '</span>' +
       '<div class="c-main">' +
       '<div class="c-time">' + b.start + (b.end && b.end !== b.start ? '–' + b.end : '') +
       (opts.current ? ' <span class="nowflag">· NOW</span>' : '') + '</div>' +
@@ -2748,6 +2799,12 @@
         st.push('<span class="d-st mv">+ ' + esc(m.title.replace(/ *[—·(].*$/, '').trim()) + ' from ' + DAY_SHORT[from].charAt(0) + DAY_SHORT[from].slice(1).toLowerCase() + '</span>');
       });
       const statusHtml = st.length ? '<div class="d-status">' + st.join('') + '</div>' : '';
+      /* the day's sessions as a row of emblems in their own colours, lit once done */
+      const embs = doables.map((b) => {
+        const colour = b.cat === 'run' ? (skyKind(b) === 'hard' || skyKind(b) === 'race' ? 'var(--accent)' : skyKind(b) === 'long' ? 'var(--text)' : CAT_VAR.run) : (CAT_VAR[b.cat] || CAT_VAR.routine);
+        return '<i class="d-emb' + (isDoneBlock(b) ? ' on' : '') + '" style="color:' + colour + '">' + emblemSVG(emblemKind(b)) + '</i>';
+      }).join('');
+      const embRow = embs ? '<div class="d-embs" aria-hidden="true">' + embs + '</div>' : '';
 
       let cls = 'wk-day' + (iso === real ? ' today' : iso < real ? ' past' : '');
       let runHtml, barHtml = '';
@@ -2761,13 +2818,13 @@
           '" style="width:' + ((km / maxKm) * 100).toFixed(1) + '%"></i>';
         runHtml = {
           run: '<div class="d-run">' + esc(day.run.title) + '</div>' +
-            '<div class="d-extras">' + esc(day.run.run.shoe) + extraBits(day, ovr) + '</div>' + statusHtml,
+            '<div class="d-extras">' + esc(day.run.run.shoe) + extraBits(day, ovr) + '</div>' + statusHtml + embRow,
           km: (km === Math.round(km) ? km : km.toFixed(1)) + '<small>km</small>',
         };
       } else {
         cls += ' no-run';
         runHtml = {
-          run: '<div class="d-run rest">No run</div><div class="d-extras">' + (extraBits(day, ovr).replace(/^ · /, '') || esc(dayHeadline(day))) + '</div>' + statusHtml,
+          run: '<div class="d-run rest">No run</div><div class="d-extras">' + (extraBits(day, ovr).replace(/^ · /, '') || esc(dayHeadline(day))) + '</div>' + statusHtml + embRow,
           km: '—',
         };
       }

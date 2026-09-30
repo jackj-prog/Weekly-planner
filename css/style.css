@@ -2650,3 +2650,41 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .wk-day.no-run { min-height: 64px; background: transparent; background-image: none; border-style: dashed; box-shadow: none; }
 .wk-day.no-run .d-date span { color: var(--t2); }
 .wk-day.no-run .d-run.rest { font: italic 400 16px var(--serif); color: var(--t2); }
+
+/* ================= EMBLEMS (v4.84) ================================= */
+.emb { display: block; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+/* the cards' node on the spine becomes a roundel carrying the emblem */
+.tl-card::before { display: none; }
+.c-emb {
+  position: absolute; left: -35px; top: 13px; z-index: 1; width: 26px; height: 26px; padding: 4px; border-radius: 50%;
+  background: var(--paper); border: 1.5px solid var(--cat, var(--cat-routine)); color: var(--cat, var(--cat-routine));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--cat, var(--cat-routine)) 25%, transparent);
+}
+.tl-card.done .c-emb { background: var(--cat, var(--cat-routine)); color: var(--paper); box-shadow: 0 0 12px color-mix(in srgb, var(--cat, var(--cat-routine)) 45%, transparent); }
+.tl-card.current .c-emb { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow-red-soft), 0 0 12px var(--glow-red); }
+.tl-card.skipped .c-emb { opacity: .5; border-style: dashed; }
+/* quiet rows: the emblem alone, small and grey, on the spine */
+.tl-quiet::before { display: none; }
+.q-emb { position: absolute; left: -28px; top: 6px; width: 21px; height: 21px; padding: 1.5px; border-radius: 50%; background: var(--paper); color: var(--t2); }
+.q-emb .emb { stroke-width: 1.3; }
+.tl-quiet.current .q-emb { color: var(--accent); }
+.c-emb.race { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px var(--glow-red); }
+/* a sheet of every emblem, for checking the drawing */
+/* the clock's legend carries the emblems */
+.daywheel figcaption span { display: inline-flex; align-items: center; gap: 5px; }
+.daywheel figcaption i.lg-e { width: 16px; height: 16px; margin: 0; border-radius: 0; background: none; }
+/* the Week's day cards: the day's sessions as a row of emblems */
+.d-embs { display: flex; gap: 7px; margin-top: 8px; }
+.d-emb { display: block; width: 17px; height: 17px; opacity: .45; }
+.d-emb.on { opacity: 1; filter: drop-shadow(0 0 4px currentColor); }
+/* session focus: the emblem above the title */
+.focus-emb {
+  display: block; width: 44px; height: 44px; padding: 8px; margin: 4px 0 14px; border-radius: 50%;
+  border: 1.5px solid var(--cat); color: var(--cat); background: var(--paper);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--cat) 30%, transparent);
+}
+.focus-emb.race { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 16px var(--glow-red); }
+.session-focus.focus-hard .focus-emb { border-color: var(--accent); color: var(--accent); }
+.session-focus.focus-long .focus-emb { border-color: var(--text); color: var(--text); }
+.focus-working .focus-emb { display: none; }
+.daywheel figcaption i.lg-e svg { width: 16px; height: 16px; }
