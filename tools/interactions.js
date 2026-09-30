@@ -688,6 +688,16 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.0.10: Now and Next say how far the run is
+  t = await open('2026-10-01', '16:55', SEED);
+  check(/Easy run · 5\u00a0km/.test(await t.page.$eval('.nownext .nn-next', (n) => n.textContent)), 'Next names the run’s distance');
+  await t.ctx.close();
+  t = await open('2026-10-01', '17:20', SEED);
+  check(/17:10–17:43 · 5\u00a0km · 23 min left/.test(await t.page.$eval('.nownext .nn-time', (n) => n.textContent)), 'Now, mid-run, reads window · distance · time left');
+  await t.ctx.close();
+  t = await open('2026-10-04', '08:20', SEED);
+  check(!/km/.test(await t.page.$eval('.nownext .nn-next', (n) => n.textContent)), 'a title that already says 22 is not told again');
+  await t.ctx.close();
   // v5.0.9: the Paces card — units small, "see below" a way there
   t = await open('2026-10-01', '12:00', SEED, 'ref');
   await t.page.evaluate(() => { document.getElementById('ref-paces').open = true; });

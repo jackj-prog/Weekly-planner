@@ -1831,3 +1831,12 @@ when scrolled into view.)
   that opens and scrolls to that chapter (listener on the Paces chapter's
   own node, so re-renders don't stack handlers on #view).
 213 browser checks (3 new), 16,278 plan checks.
+
+## Now and Next say how far — v5.0.10, 1 October (Claude)
+
+The Now card is the first thing on screen, and before a run it said only
+"NEXT 17:10 Easy run in 15 min". It now carries the distance: "Easy run ·
+5 km in 15 min" ahead of the run, and "17:10–17:43 · 5 km · 23 min left"
+during it (the time left never splits across lines). A title that already
+states the distance ("Long 22 — last 6 @ MP") is not told it again.
+216 browser checks (3 new), 16,278 plan checks.

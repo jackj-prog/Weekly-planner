@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.0.9';
+  const APP_VERSION = '5.0.10';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -597,6 +597,7 @@
       '<div class="detail-body">' + parts.map(p => '<p>' + esc(p) + '</p>').join('') + '</div></details>';
   }
 
+  const nnKm = (k) => String(Math.round(k * 10) / 10);
   function buildNowNext(day) {
     const nMin = nowMin();
     const cur = day.blocks.find((b) => nMin >= b.startMin && nMin < b.endMin);
@@ -609,7 +610,7 @@
     if (cur) {
       const pct = Math.round(((nMin - cur.startMin) / (cur.endMin - cur.startMin)) * 100);
       html += '<div class="nn-title"><span class="nn-emb" style="color:' + emblemTone(cur) + '">' + emblemSVG(emblemKind(cur)) + '</span>' + tt(cur.title) + '</div>' +
-        '<div class="nn-time">' + cur.start + '–' + cur.end +
+        '<div class="nn-time">' + cur.start + '–' + cur.end + (cur.run && !new RegExp('\\b' + cur.run.km + '\\b').test(cur.title) ? ' · ' + nnKm(cur.run.km) + '\u00a0km' : '') +
         ' · <span class="nn-left">' + fmtLeft(cur.endMin - nMin) + '</span>' +
         '</div></div><button class="nn-jump" aria-label="Go to current activity">↓</button></div>' +
         '<div class="nn-bar" aria-hidden="true"><i style="width:' + pct + '%"></i></div>';
@@ -632,6 +633,7 @@
     if (next.length) {
       html += '<div class="nn-next"><span class="nn-label">NEXT</span><span class="t">' + next[0].start + '</span><span>' +
         '<span class="nn-nemb" style="color:' + emblemTone(next[0]) + '">' + emblemSVG(emblemKind(next[0])) + '</span>' + tt(next[0].title) +
+        (next[0].run && !new RegExp('\\b' + next[0].run.km + '\\b').test(next[0].title) ? ' <span class="nn-km">· ' + nnKm(next[0].run.km) + '\u00a0km</span>' : '') +
         ' <span class="nn-in">' + fmtIn(next[0].startMin - nMin) + '</span></span></div>';
     } else if (!(day.blocks.length && nMin >= day.blocks[day.blocks.length - 1].endMin)) {
       html += '<div class="nn-next"><span class="nn-label">NEXT</span><span>Nothing else scheduled today.</span></div>';

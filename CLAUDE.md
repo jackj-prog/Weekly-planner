@@ -263,6 +263,7 @@ the run card's ruled line as numbered clock times, not minutes in Details.
 **v5.0.8:** the load-jump note only measures a finished week.
 **v5.0.9:** the Paces card sets units small beside the figure, and its
 "see below" is a link that opens Easy pace by phase.
+**v5.0.10:** Now/Next name the run's distance ("Easy run · 5 km").
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

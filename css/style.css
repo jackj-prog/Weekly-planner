@@ -3139,3 +3139,4 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .pace-row.numeric .v small.u { margin-left: 4px; font: 400 13px var(--body); letter-spacing: 0; color: var(--t2); }
 .pace-row .ref-jump { display: inline-flex; align-items: center; min-height: 44px; margin: -12px 0 -12px 6px; padding: 0 2px; border: 0; background: none;
   font: 400 13px var(--body); color: var(--t2); text-decoration: underline; text-underline-offset: 4px; }
+.nownext .nn-left, .nownext .nn-in, .nownext .nn-km { white-space: nowrap; }
