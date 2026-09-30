@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.79.1';
+  const APP_VERSION = '4.80.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -3330,6 +3330,32 @@
   /* ---- HR zones: personal numbers stay on the phone, never in the repo.
      Two steppers (rest, max) recompute the whole table live. ---- */
   const getHR = () => readJSON('hr', null);
+  /* The zones as a staircase (v4.80): each zone a step as wide as its bpm
+     band and a little higher than the last, grey where the block lives and
+     red where it hurts, with the last logged run pinned to its heartbeat. */
+  function zoneScaleHTML(zones, last) {
+    const W = 320, BASE = 58, x0 = 14, x1 = W - 14, lo = zones[0].lo, hi = zones[zones.length - 1].hi;
+    const X = (b) => x0 + ((b - lo) / (hi - lo)) * (x1 - x0);
+    let steps = '', labels = '';
+    zones.forEach((z, k) => {
+      const h = 10 + k * 8, a = X(z.lo), b = X(z.hi);
+      steps += '<rect class="zs z' + z.z + '" x="' + (a + 0.8).toFixed(1) + '" y="' + (BASE - h) + '" width="' + (b - a - 1.6).toFixed(1) + '" height="' + h + '" rx="2"/>' +
+        '<text class="zs-k" x="' + ((a + b) / 2).toFixed(1) + '" y="' + (BASE - h - 4) + '">Z' + z.z + '</text>';
+      labels += '<text class="zs-b" x="' + a.toFixed(1) + '" y="' + (BASE + 12) + '">' + z.lo + '</text>';
+    });
+    labels += '<text class="zs-b" x="' + X(hi).toFixed(1) + '" y="' + (BASE + 12) + '">' + hi + '</text>';
+    let pin = '';
+    if (last && last.hr) {
+      const px = X(Math.max(lo, Math.min(hi, last.hr)));
+      pin = '<path class="zs-pin" d="M' + px.toFixed(1) + ' ' + (BASE + 1) + ' L' + px.toFixed(1) + ' 6"/>' +
+        '<circle class="zs-dot" cx="' + px.toFixed(1) + '" cy="6" r="3.2"/>' +
+        '<text class="zs-pt' + (px > W - 90 ? ' end' : '') + '" x="' + (px + (px > W - 90 ? -7 : 7)).toFixed(1) + '" y="9">' + last.hr + ' bpm · ' + esc(fmtShort(last.iso)) + '</text>';
+    }
+    return '<figure class="zscale" role="img" aria-label="' + esc('Heart-rate zones from ' + lo + ' to ' + hi + ' bpm' +
+      (last && last.hr ? '; last logged run at ' + last.hr + ' bpm' : '')) + '"><svg viewBox="0 0 ' + W + ' ' + (BASE + 16) + '" aria-hidden="true">' +
+      steps + '<path class="zs-base" d="M' + x0 + ' ' + BASE + ' L' + x1 + ' ' + BASE + '"/>' + labels + pin + '</svg></figure>';
+  }
+
   function buildZoneSection() {
     const hr = getHR();
     const editing = state.hrEdit;
@@ -3405,6 +3431,7 @@
         : '<div class="ref-row"><span>Resting ' + rest + ' · Max ' + max +
           ' · HRR ' + (max - rest) + '</span>' +
           '<span class="v"><button class="zedit" data-hz="edit">Edit</button></span></div>') +
+      (zones ? zoneScaleHTML(zones, hist.length ? hist[hist.length - 1] : null) : '') +
       '<div class="ref-card ztable">' + rows + '</div>' +
       recent + rhrBlock +
       '<div class="ref-note">' + esc(PLAN.zoneModel.method) + '. ' +
@@ -3433,19 +3460,40 @@
   function buildOdoSection() {
     const p4 = DB.pro4Status(getDone, todayISO());
     const fmt = (n) => (n === Math.round(n) ? n : n.toFixed(1));
-    const usedPct = Math.min(100, (p4.used / p4.cap) * 100);
-    const planPct = Math.min(100 - usedPct, (p4.toCome / p4.cap) * 100);
     const rows = p4.outings.map((o) =>
       '<div class="ref-row tight"><span>Wk ' + o.wk + ' · ' + esc(o.label) +
       (o.optional ? ' (optional)' : '') + '</span>' +
       '<span class="v">' + (o.done ? '✓ ' : '') + o.km + ' km</span></div>').join('');
+    /* An odometer should look like one (v4.80): a half dial from 0 to the
+       cap, every planned outing already laid on it as its own segment in
+       the race shoe's red — solid once run, outlined while to come, dashed
+       if optional — and the needle at the kilometres actually spent. */
+    const C = 160, CY = 134, R = 96, cap = p4.cap;
+    const at = (km, r) => { const a = Math.PI + Math.min(1, km / cap) * Math.PI; return [C + r * Math.cos(a), CY + r * Math.sin(a)]; };
+    const arcD = (k0, k1, r) => { const [ax, ay] = at(k0, r), [bx, by] = at(k1, r); return 'M' + ax.toFixed(1) + ' ' + ay.toFixed(1) + ' A' + r + ' ' + r + ' 0 0 1 ' + bx.toFixed(1) + ' ' + by.toFixed(1); };
+    let segs = '', acc = 0;
+    p4.outings.forEach((o) => {
+      if (acc >= cap) return;
+      const k0 = acc + 0.35, k1 = Math.min(cap, acc + o.km) - 0.35;
+      segs += '<path class="od-seg' + (o.done ? ' done' : o.optional ? ' opt' : '') + '" d="' + arcD(k0, k1, R) + '"/>';
+      acc += o.km;
+    });
+    let ticks = '';
+    for (let k = 0; k <= cap; k += 10) {
+      const [ax, ay] = at(k, R + 11), [bx, by] = at(k, R + 17), [tx, ty] = at(k, R + 29);
+      ticks += '<path class="od-tick" d="M' + ax.toFixed(1) + ' ' + ay.toFixed(1) + ' L' + bx.toFixed(1) + ' ' + by.toFixed(1) + '"/>' +
+        '<text class="od-num" x="' + tx.toFixed(1) + '" y="' + (ty + 3).toFixed(1) + '">' + k + '</text>';
+    }
+    const [nx, ny] = at(p4.used, R - 22);
+    const gauge = '<figure class="odo-gauge" role="img" aria-label="' + fmt(p4.used) + ' km used, ' + fmt(p4.toCome) +
+      ' to come, of about ' + cap + '"><svg viewBox="0 0 320 146" aria-hidden="true">' +
+      '<path class="od-track" d="' + arcD(0, cap, R) + '"/>' + segs + ticks +
+      '<path class="od-needle" d="M' + C + ' ' + CY + ' L' + nx.toFixed(1) + ' ' + ny.toFixed(1) + '"/><circle class="od-hub" cx="' + C + '" cy="' + CY + '" r="5"/>' +
+      '<text class="od-read" x="' + C + '" y="' + (CY - 30) + '">' + fmt(p4.used) + '<tspan class="od-of"> / ' + cap + '</tspan></text>' +
+      '<text class="od-cap" x="' + C + '" y="' + (CY - 14) + '">KM USED</text></svg></figure>';
     return el(
-      '<div class="ref"><h2>Pro 4 odometer</h2><div class="ref-card">' + rows + '</div>' +
-      '<div class="odo" role="img" aria-label="' + fmt(p4.used) + ' km used, ' + fmt(p4.toCome) +
-      ' to come, of about ' + p4.cap + '">' +
-      '<i class="odo-used" style="width:' + usedPct + '%"></i>' +
-      '<i class="odo-plan" style="width:' + planPct + '%"></i></div>' +
-      '<div class="ref-note">Used ' + fmt(p4.used) + ' km · to come ' + fmt(p4.toCome) +
+      '<div class="ref"><h2>Pro 4 odometer</h2>' + gauge + '<div class="ref-card">' + rows + '</div>' +
+      '<div class="ref-note no-init">Used ' + fmt(p4.used) + ' km · to come ' + fmt(p4.toCome) +
       (p4.optional ? ' (+' + p4.optional + ' optional)' : '') + ' · cap ≈' + p4.cap +
       ' km. Every unplanned km is bounce borrowed from mile 22.</div></div>'
     );

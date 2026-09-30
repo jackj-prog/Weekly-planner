@@ -1255,3 +1255,20 @@ Week header's), a faint stage light with film grain, and the progress bar
 lights the exercises already passed. The run logger was left plain on
 purpose: it is a data-entry form, and legibility wins there.
 101 browser checks (sweep included), 16,218 plan checks, no overflow, a11y clean.
+
+## Reference instruments — v4.80, 1 October (Claude, /loop)
+
+User ran `/loop keep going, find more bland spots to improve`. This pass:
+- **Heart-rate zones** (Reference III) were a text list only. Above it now
+  sits a staircase (`zoneScaleHTML`): each zone a step as wide as its bpm
+  band and a little taller than the last, Z1 dark grey → Z3 light →
+  Z4/Z5 red (red means hard), bpm boundaries along the base, and the last
+  logged run pinned at its heartbeat with its date.
+- **Pro 4 odometer** (Reference VII) was a flat two-tone bar. It is now a
+  half dial from 0 to the ~50 km cap: every planned outing laid on the arc
+  as its own segment in the race shoe's red (solid and glowing once run,
+  translucent while to come, dashed if optional), 10 km ticks, a needle
+  at the kilometres actually used, and the reading in the hub. The status
+  line under the list opts out of the illuminated initial (`no-init`) —
+  it is a readout, not prose.
+103 browser checks (sweep included), 16,220 plan checks, no overflow, a11y clean.

@@ -157,7 +157,11 @@ sheet is two illustrated plates (the journey as a small night sky with its
 real totals and red sunrise; Reference as an illuminated R); a rest day's
 emblem is the night's real moon, named ("Waning gibbous"); and a run's
 session focus is lit in the run's colour (red hard, white long) and carries
-the sun's arc.
+the sun's arc. **v4.80:** Reference's instruments look like instruments —
+the heart-rate zones as a staircase (grey where the block lives, red where
+it hurts) with the last logged run pinned to its heartbeat, and the Pro 4
+odometer as a half dial with every planned outing laid on it and the needle
+at the kilometres actually spent.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

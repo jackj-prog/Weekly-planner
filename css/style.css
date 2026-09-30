@@ -2517,3 +2517,38 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 @media (prefers-reduced-motion: no-preference) {
   .focus-ex-num { animation: numeral-in .6s cubic-bezier(.2,.8,.2,1) backwards; }
 }
+
+/* ================= INSTRUMENTS (v4.80) ============================= */
+/* heart-rate zones as a staircase, the last run pinned to its heartbeat */
+.zscale { margin: 14px 0 12px; }
+.zscale svg { display: block; width: 100%; height: auto; overflow: visible; }
+.zs { fill: var(--line); }
+.zs.z1 { fill: var(--cat-routine); }
+.zs.z2 { fill: var(--t2); }
+.zs.z3 { fill: var(--phase-build); }
+.zs.z4 { fill: var(--accent); }
+.zs.z5 { fill: var(--accent-fill); }
+.zs-k { fill: var(--t2); font: 700 8px var(--mono); letter-spacing: .08em; text-anchor: middle; }
+.zs-b { fill: var(--t3); font: 400 8px var(--mono); text-anchor: middle; }
+.zs-base { stroke: var(--t3); stroke-width: 1; }
+.zs-pin { stroke: var(--text); stroke-width: 1.2; stroke-dasharray: 2 2; }
+.zs-dot { fill: var(--text); filter: drop-shadow(0 0 4px var(--glow-white-hot)); }
+.zs-pt { fill: var(--text); font: 400 9px var(--mono); }
+.zs-pt.end { text-anchor: end; }
+
+/* the Pro 4 odometer as a dial */
+.odo-gauge { margin: 6px 0 12px; }
+.odo-gauge svg { display: block; width: 100%; height: auto; overflow: visible; }
+.od-track { fill: none; stroke: var(--line); stroke-width: 16; }
+.od-seg { fill: none; stroke: var(--accent); stroke-width: 16; opacity: .55; }
+.od-seg.done { opacity: 1; filter: drop-shadow(0 0 5px var(--glow-red)); }
+.od-seg.opt { stroke-dasharray: 2.5 3; opacity: .5; }
+.od-tick { stroke: var(--t3); stroke-width: 1.2; }
+.od-num { fill: var(--t3); font: 400 9px var(--mono); text-anchor: middle; }
+.od-needle { stroke: var(--text); stroke-width: 2.2; stroke-linecap: round; filter: drop-shadow(0 0 4px var(--glow-white-hot)); }
+.od-hub { fill: var(--text); }
+.od-read { fill: var(--text); font: 900 30px var(--display); text-anchor: middle; letter-spacing: -.03em; }
+.od-of { fill: var(--t2); font: 400 14px var(--mono); letter-spacing: 0; }
+.od-cap { fill: var(--t2); font: 400 8px var(--mono); letter-spacing: .16em; text-anchor: middle; }
+/* a status line is not prose: no illuminated initial */
+.ref-card + .ref-note.no-init::first-letter { float: none; margin: 0; padding: 0; font: inherit; color: inherit; border: 0; background: none; box-shadow: none; }

@@ -381,6 +381,13 @@ async function cinema() {
   await t.page.click('.tl-card .session-focus-open'); await t.page.click('.focus-jump'); await t.page.click('.focus-ex-nav [data-step="1"]');
   check((await text(t.page, '.focus-ex-num')) === 'II' && (await t.page.$$('.focus-ex-progress i.past')).length === 1, 'gym focus numbers each exercise in numerals and lights the ones behind it');
   await t.ctx.close();
+  // v4.80: Reference instruments
+  t = await open('2026-10-01', '12:00', SEED, 'ref');
+  check((await t.page.$$('#ref-zones .zscale .zs')).length === 5 && /^\d+ bpm · \d+ \w+$/.test(await text(t.page, '#ref-zones .zs-pt')),
+    'the zones are drawn as a staircase with the last run pinned to its heartbeat');
+  check((await t.page.$$('#ref-pro-4-odometer .od-seg')).length === 5 && !!(await t.page.$('#ref-pro-4-odometer .od-needle')) && !(await t.page.$('#ref-pro-4-odometer .odo')),
+    'the Pro 4 odometer is a dial with every outing laid on it');
+  await t.ctx.close();
   t = await open('2026-12-25', '12:00', SEED);
   check((await text(t.page, '.daywheel .dw-count')) === 'REST' && !/0\/0/.test(await text(t.page, '.daywheel')), 'a day with nothing to tick reads REST, not 0/0');
   await t.ctx.close();

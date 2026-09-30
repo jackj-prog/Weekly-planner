@@ -1421,6 +1421,8 @@ section('palette contrast (WCAG AA)');
     ok(/class="d-moon"/.test(appSrc), 'the Week calendar keeps the moon beside each date');
     ok(/class="chap"/.test(appSrc) && /rc-list/.test(appSrc) && /counter\(rule, upper-roman\)/.test(css), 'Reference is a book: contents, numbered chapters, rules in numerals');
     ok(/class="focus-ex-num" aria-hidden="true">' \+ roman\(i \+ 1\)/.test(appSrc), 'gym focus carries each exercise\u2019s numeral, decorative');
+    ok(/function zoneScaleHTML/.test(appSrc) && /zoneScaleHTML\(zones, hist\.length/.test(appSrc), 'Reference draws the zones as a staircase');
+    ok(/class="odo-gauge" role="img" aria-label=/.test(appSrc) && /od-seg' \+ \(o\.done/.test(appSrc), 'the Pro 4 odometer is a dial with a text alternative');
     ok(/function dressSheet/.test(appSrc) && /if \(open\) dressSheet\(\)/.test(appSrc), 'the More sheet is dressed as plates each time it opens');
     ok(/restMoonHTML\(iso\)/.test(appSrc) && !/class="rest-mark"/.test(appSrc), 'a rest day shows the night\u2019s moon, not a pause mark');
     ok(/focus-' \+ skyKind\(block\)/.test(appSrc) && /runSkyHTML\(iso, block, skyKind\(block\), 'f'/.test(appSrc), 'run focus is lit in the run\u2019s colour and shows the sun\u2019s arc');
