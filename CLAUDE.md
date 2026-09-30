@@ -189,6 +189,12 @@ comes next, the run card's label carries the winged foot (the laurel on
 key days and the race), and Reference's shoes are three plates by tier —
 grey, white, red — each counting the km the block asks of it and how much
 is banked; the race shoe counts against its cap.
+**v4.86:** the Plan page's week explorer lights each day by its run
+(red hard, white long, the moon on rest days); Reference's Paces open on
+the block's paces on one line (easy band, MP, stretch, the dashed Z4
+readout, the gap from easy to MP measured); and the load budget leads with
+this week hour by hour — seven 24-hour strips, nights dark with still
+stars, every category's hours totalled with its emblem.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

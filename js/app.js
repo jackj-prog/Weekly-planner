@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.85.0';
+  const APP_VERSION = '4.86.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -2390,7 +2390,15 @@
       const dailyMax=Math.max(...week.days.map(d=>Math.max(d.planned,d.recorded)),1);
       root.querySelector('.journey-selected').innerHTML='<div class="journey-week-head"><div><span>WEEK</span><h2>'+String(week.wk).padStart(2,'0')+'</h2></div><div><b>'+esc(week.phase)+(week.cutback?' · cutback':'')+'</b><span>'+esc(fmtShort(week.start))+' – '+esc(fmtShort(week.end))+'</span>'+(current&&current.wk===week.wk?'<strong>You are here</strong>':'')+'</div></div>'+
         '<div class="journey-week-numbers"><div><b>'+fmt(week.planned)+'</b><span>km scheduled</span></div><div><b>'+fmt(week.recorded)+'</b><span>km recorded</span></div><div><b>'+fmt(week.longest)+'</b><span>longest run · km</span></div></div>'+
-        '<div class="journey-days" aria-label="Open a day">'+week.days.map((d,i)=>'<button data-journey-day="'+d.iso+'" aria-label="'+DAY_NAMES[i]+', '+(d.title?esc(d.title)+', '+fmt(d.planned)+' km':'no run scheduled')+', '+fmt(d.recorded)+' km recorded"><span>'+DAY_SHORT[i].slice(0,1)+'</span><span class="journey-day-plot"><i style="height:'+d.planned/dailyMax*100+'%" class="'+(d.cls==='quality'||d.cls==='race'?'hard':'')+'"></i>'+(d.recorded?'<em style="height:'+d.recorded/dailyMax*100+'%"></em>':'')+'</span><b>'+ (d.planned?fmt(d.planned):'–')+'</b></button>').join('')+'</div>'+
+        /* each day lit like its Week card (v4.86): the run's emblem and bar
+           in its class — red hard, white long, grey easy — glowing once
+           recorded; a day without a run shows that night's moon */
+        '<div class="journey-days" aria-label="Open a day">'+week.days.map((d,i)=>{
+          const kind=!d.planned?(d.recorded?'easy':'rest'):d.cls==='quality'||d.cls==='race'?'hard':d.cls==='long'?'long':'easy';
+          return '<button class="jd-'+kind+(d.recorded?' lit':'')+'" data-journey-day="'+d.iso+'" aria-label="'+DAY_NAMES[i]+', '+(d.title?esc(d.title)+', '+fmt(d.planned)+' km':'no run scheduled')+', '+fmt(d.recorded)+' km recorded"><span>'+DAY_SHORT[i].slice(0,1)+'</span>'+
+            (kind!=='rest'?'<span class="jd-emb">'+emblemSVG(d.cls==='race'?'laurel':'foot')+'</span>':'<svg class="jd-moon" viewBox="0 0 12 12" aria-hidden="true">'+moonSVG(6,6,4.4,DB.moonPhase(d.iso),'dm')+'</svg>')+
+            '<span class="journey-day-plot"><i style="height:'+d.planned/dailyMax*100+'%" class="'+(kind==='hard'||kind==='long'?kind:'')+'"></i>'+(d.recorded?'<em style="height:'+Math.min(100,d.recorded/dailyMax*100)+'%"></em>':'')+'</span><b>'+ (d.planned?fmt(d.planned):'–')+'</b></button>';
+        }).join('')+'</div>'+
         '<button class="journey-open" data-journey-open="'+week.start+'">Open week '+week.wk+' <span aria-hidden="true">↗</span></button>';
     }
     range.addEventListener('input',()=>paint(range.value));
@@ -3035,7 +3043,7 @@
     }
     view.appendChild(el(
       '<div class="ref" id="ref-paces" tabindex="-1">' +
-      '<h2>Paces</h2><div class="ref-card pace-card">' +
+      '<h2>Paces</h2>' + paceSpectrumHTML() + '<div class="ref-card pace-card">' +
       PLAN.paces.map((p) => refRow(p.type, withZones(p.pace))).join('') + '</div>' +
       '<div class="ref-note">' + esc(PLAN.recalibration) + '</div>' +
       '</div>'
@@ -3051,7 +3059,7 @@
       '<div class="ref">' +
       '<h2>Rules of the block</h2><ol class="ref-list">' +
       PLAN.rules.map((r) => '<li>' + esc(r) + '</li>').join('') + '</ol>' +
-      '<h2>Weekly load budget</h2><div class="ref-note">' + esc(PLAN.loadBudget) + '</div>' +
+      '<h2>Weekly load budget</h2>' + weekHoursHTML() + '<div class="ref-note">' + esc(PLAN.loadBudget) + '</div>' +
       (PLAN.openQuestions.some((q) => !/ANSWERED|SHIPPED/.test(q)) ? '<h2>Open questions</h2><ul class="ref-list qs">' : '<h2>Settled questions</h2><ul class="ref-list qs settled">') +
       PLAN.openQuestions.map((q) => '<li>' + esc(q) + '</li>').join('') + '</ul>' +
       '</div>'
@@ -3220,6 +3228,117 @@
       '<svg viewBox="0 0 320 ' + (TOP + rungs.length * RH + 18) + '" aria-hidden="true">' + svg + '</svg>' +
       '<figcaption class="pl-cap"><span><i class="k band"></i>band</span><span><i class="k good"></i>clear day</span>' +
       (med ? '<span><i class="k you"></i>your last ' + easy.length + ' easy · ' + DB.fmtPaceSec(med) + '</span>' : '') +
+      '<span class="dir">slower ← → quicker</span></figcaption></figure>';
+  }
+
+  /* This week, hour by hour (v4.86): a Book of Hours laid flat. Seven
+     strips of twenty-four hours, each block painted in its category's
+     colour (a run in its class: red hard, white long), the nights from
+     lights out to waking dark, and every category's hours totalled from
+     the week as planned. It sits over the plan's own load budget. */
+  const HOUR_NAMES = { run: 'running', xt: 'basketball', gym: 'gym', study: 'study', german: 'German', work: 'work & commute',
+    meal: 'meals', free: 'free', reading: 'reading', routine: 'routine' };
+  function weekHoursHTML() {
+    const today = todayISO(), mon = mondayOf(today);
+    const L = 22, R = 312, RH = 13, GAP = 5, TOP = 14, X = (m) => L + (m / 1440) * (R - L);
+    const tot = {}, days = [];
+    let sleep = 0, svg = '';
+    for (const h of [0, 6, 12, 18, 24]) {
+      svg += '<path class="wh-grid" d="M' + X(h * 60).toFixed(1) + ' ' + (TOP - 3) + ' V' + (TOP + 7 * (RH + GAP) - GAP + 2) + '"/>' +
+        '<text class="wh-t" x="' + X(h * 60).toFixed(1) + '" y="' + (TOP - 6) + '">' + String(h % 24).padStart(2, '0') + '</text>';
+    }
+    for (let i = 0; i < 7; i++) {
+      const iso = DB.addDays(mon, i), day = DB.buildDay(iso), y = TOP + i * (RH + GAP);
+      const wake = day.blocks.find((b) => /wake|alarm/i.test(b.title));
+      const out = day.blocks.find((b) => /lights out/i.test(b.title));
+      const night = [[0, wake ? wake.startMin : 0], [out ? out.startMin : 1440, 1440]];
+      night.forEach(([a, b], k) => {
+        if (b <= a) return;
+        sleep += b - a;
+        svg += '<rect class="wh-sleep" x="' + X(a).toFixed(1) + '" y="' + y + '" width="' + (X(b) - X(a)).toFixed(1) + '" height="' + RH + '"/>';
+        /* a few still stars in each night, placed the same way every time */
+        for (let s = 0; s < Math.floor((b - a) / 150); s++) {
+          const f = ((i * 7 + s * 13 + k * 5) % 17) / 17, g = ((i * 11 + s * 7 + k * 3) % 13) / 13;
+          svg += '<circle class="wh-star" cx="' + (X(a + 20 + f * (b - a - 40))).toFixed(1) + '" cy="' + (y + 3 + g * (RH - 6)).toFixed(1) + '" r="' + (s % 3 ? 0.5 : 0.8) + '"/>';
+        }
+      });
+      day.blocks.forEach((b) => {
+        if (b === out) return;
+        const s = Math.max(0, b.startMin), e = Math.min(1440, b.endMin);
+        if (e <= s) return;
+        tot[b.cat] = (tot[b.cat] || 0) + (e - s);
+        const rc = b.run ? DB.runClass(b) : '';
+        svg += '<rect class="wh-b' + (rc === 'quality' || rc === 'race' ? ' hard' : rc === 'long' ? ' long' : '') + '" x="' + (X(s) + 0.4).toFixed(1) + '" y="' + y +
+          '" width="' + Math.max(0.8, X(e) - X(s) - 0.8).toFixed(1) + '" height="' + RH + '" style="--c:' + (CAT_VAR[b.cat] || CAT_VAR.routine) + '"/>';
+      });
+      svg += '<text class="wh-d' + (iso === today ? ' now' : '') + '" x="' + (L - 7) + '" y="' + (y + RH - 3) + '">' + DAY_SHORT[i].slice(0, 1) + '</text>';
+      if (iso === today) svg += '<rect class="wh-today" x="' + (L - 1.5) + '" y="' + (y - 1.5) + '" width="' + (R - L + 3) + '" height="' + (RH + 3) + '" rx="2"/>';
+      days.push(iso);
+    }
+    const hrs = (m) => { const h = Math.round(m / 30) / 2; return (h === Math.round(h) ? h : h.toFixed(1)) + 'h'; };
+    const cats = Object.keys(tot).sort((a, b) => tot[b] - tot[a]);
+    const legend = cats.map((c) => '<span><i class="wh-e" style="color:' + (CAT_VAR[c] || CAT_VAR.routine) + '">' + emblemSVG(emblemKind({ cat: c, title: '' })) + '</i>' +
+      esc(HOUR_NAMES[c] || c) + ' <b>' + hrs(tot[c]) + '</b></span>').join('') +
+      '<span><i class="wh-e wh-night">' + emblemSVG('moon') + '</i>sleep <b>' + hrs(sleep) + '</b></span>';
+    const H = TOP + 7 * (RH + GAP) - GAP + 4;
+    return '<figure class="week-hours" role="img" aria-label="' + esc('This week as planned, hour by hour: ' +
+      cats.map((c) => (HOUR_NAMES[c] || c) + ' ' + hrs(tot[c])).join(', ') + ', sleep ' + hrs(sleep) + '.') + '">' +
+      '<figcaption class="wh-head"><span class="fig">Fig.</span> This week, hour by hour <small>' + esc(fmtShort(days[0]) + ' – ' + fmtShort(days[6])) + ' · as planned</small></figcaption>' +
+      '<svg viewBox="0 0 320 ' + H + '" aria-hidden="true">' + svg + '</svg>' +
+      '<div class="wh-legend">' + legend + '</div></figure>';
+  }
+
+  /* The block's paces on one line (v4.86), slower to the left: this
+     phase's easy band, marathon pace and the stretch bet, and the tempo's
+     clear-day readout drawn dashed because it is a readout, not a target.
+     The gap from easy to MP is measured, and your last logged MP segment
+     is pinned where it landed. Every number is read from the plan. */
+  function paceSpectrumHTML() {
+    const span = (str) => String(str || '').split(/\s*[–-]\s*/).map(DB.parsePace);
+    const band = DB.easyBand(DB.weekNumber(todayISO()));
+    const [bl, bh] = band ? span(band.band) : [null, null];
+    const mp = DB.parsePace(String(PLAN.race.goalPace).replace(/\/km$/, ''));
+    const st = DB.parsePace(String(PLAN.race.stretchPace).replace(/\/km$/, ''));
+    const tm = String(PLAN.tempoPaceNote || '').match(/CLEAR day expect (\d:\d\d)\s*[–-]\s*(\d:\d\d)/);
+    const [tl, th] = tm ? [DB.parsePace(tm[1]), DB.parsePace(tm[2])] : [null, null];
+    if (!bl || !bh || !mp) return '';
+    const lastMp = runLogHistory().filter((e) => e.mpPaceSec > 0 && e.iso <= todayISO()).pop();
+    const pts = [bl, bh, mp, st, tl, th, lastMp && lastMp.mpPaceSec].filter(Boolean);
+    const slow = Math.ceil((Math.max(...pts) + 8) / 15) * 15, fast = Math.floor((Math.min(...pts) - 8) / 15) * 15;
+    const L = 12, R = 308, AX = 46, X = (sec) => L + ((slow - sec) / (slow - fast)) * (R - L);
+    let svg = '';
+    for (let t = Math.ceil(fast / 30) * 30; t <= slow; t += 30) {
+      svg += '<path class="ps-tick" d="M' + X(t).toFixed(1) + ' ' + (AX - 3) + ' V' + (AX + 3) + '"/>' +
+        '<text class="ps-t" x="' + X(t).toFixed(1) + '" y="' + (AX + 14) + '">' + DB.fmtPaceSec(t) + '</text>';
+    }
+    svg = '<path class="ps-axis" d="M' + L + ' ' + AX + ' H' + R + '"/>' + svg;
+    /* easy: the band on the axis, lit grey */
+    svg += '<rect class="ps-easy" x="' + X(bh).toFixed(1) + '" y="' + (AX - 5) + '" width="' + (X(bl) - X(bh)).toFixed(1) + '" height="10" rx="5"/>' +
+      '<text class="ps-l" x="' + ((X(bh) + X(bl)) / 2).toFixed(1) + '" y="' + (AX - 13) + '">EASY</text>';
+    /* threshold readout: dashed, red, as a readout */
+    if (tl && th) svg += '<rect class="ps-tempo" x="' + X(th).toFixed(1) + '" y="' + (AX - 5) + '" width="' + (X(tl) - X(th)).toFixed(1) + '" height="10" rx="5"/>' +
+      '<text class="ps-l hard" x="' + ((X(th) + X(tl)) / 2).toFixed(1) + '" y="' + (AX - 13) + '">Z4 READOUT</text>';
+    /* marathon pace: the race's own mark, and the stretch bet beside it */
+    svg += '<path class="ps-mp" d="M' + X(mp).toFixed(1) + ' ' + (AX - 30) + ' V' + (AX + 5) + '"/>' +
+      '<circle class="ps-mpdot" cx="' + X(mp).toFixed(1) + '" cy="' + (AX - 30) + '" r="3.2"/>' +
+      '<text class="ps-l mp" x="' + X(mp).toFixed(1) + '" y="' + (AX - 37) + '">MP ' + DB.fmtPaceSec(mp) + '</text>';
+    if (st) svg += '<path class="ps-st" d="M' + X(st).toFixed(1) + ' ' + (AX - 16) + ' V' + (AX + 5) + '"/>' +
+      '<circle class="ps-stdot" cx="' + X(st).toFixed(1) + '" cy="' + (AX - 16) + '" r="2.6"/>';
+    /* the distance between easy and marathon pace, bracketed under the line */
+    const gap = bl - mp, gy = AX + 26;
+    if (gap > 0) svg += '<path class="ps-gap" d="M' + X(bl).toFixed(1) + ' ' + (gy - 4) + ' V' + gy + ' H' + X(mp).toFixed(1) + ' V' + (gy - 4) + '"/>' +
+      '<text class="ps-g" x="' + ((X(bl) + X(mp)) / 2).toFixed(1) + '" y="' + (gy + 11) + '">' + gap + ' s/km easy → MP</text>';
+    if (lastMp) {
+      const x = X(lastMp.mpPaceSec);
+      svg += '<path class="ps-you" d="M' + x.toFixed(1) + ' ' + (AX - 8) + ' V' + (AX + 8) + '"/><circle class="ps-youdot" cx="' + x.toFixed(1) + '" cy="' + (AX + 8) + '" r="2.4"/>';
+    }
+    const label = 'Paces, slower to the left: easy ' + band.band + ', marathon pace ' + DB.fmtPaceSec(mp) +
+      (st ? ', stretch ' + DB.fmtPaceSec(st) : '') + (tl ? ', threshold readout ' + tm[1] + '–' + tm[2] : '') +
+      (lastMp ? '; your last marathon-pace segment ' + DB.fmtPaceSec(Math.round(lastMp.mpPaceSec)) : '');
+    return '<figure class="pace-spectrum" role="img" aria-label="' + esc(label) + '"><svg viewBox="0 0 320 ' + (gy + 16) + '" aria-hidden="true">' + svg + '</svg>' +
+      '<figcaption class="pl-cap"><span><i class="k ps-ke"></i>easy · Wk ' + DB.weekNumber(todayISO()) + '</span><span><i class="k ps-kmp"></i>MP</span>' +
+      (st ? '<span><i class="k ps-kst"></i>stretch ' + DB.fmtPaceSec(st) + '</span>' : '') +
+      (lastMp ? '<span><i class="k you"></i>your last MP · ' + DB.fmtPaceSec(Math.round(lastMp.mpPaceSec)) + '</span>' : '') +
       '<span class="dir">slower ← → quicker</span></figcaption></figure>';
   }
 

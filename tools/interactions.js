@@ -123,6 +123,7 @@ async function open(date, time, seed, view) {
   await page.goto('http://127.0.0.1:' + server.address().port + '/index.html', { waitUntil: 'networkidle' });
   if (view === 'week') await page.click('[data-nav="week"]');
   if (view === 'ref') { await page.click('[data-nav="more"]'); await page.click('[data-nav="ref"]'); }
+  if (view === 'plan') { await page.click('[data-nav="more"]'); await page.click('[data-nav="plan"]'); }
   await page.waitForTimeout(200);
   const ls = (k) => page.evaluate((key) => localStorage.getItem(key), k);
   const json = async (k) => JSON.parse(await ls(k) || 'null');
@@ -435,6 +436,21 @@ async function cinema() {
   check(plates.length === 3 && plates.filter((p) => /t-race/.test(p.cls)).length === 1 && /^\d+ of \d+ km banked · \d+ runs$/.test(plates[0].num) &&
     /km before the gun/.test(plates[2].num), 'the shoes are plates, each counting what the block asks of it: ' + plates.map((p) => p.num).join(' | '));
   noErrors(t, 'shoe plates');
+  await t.ctx.close();
+  // v4.86: the journey's week explorer, the pace spectrum, the week in hours
+  t = await open('2026-10-01', '12:00', SEED, 'plan');
+  const jd = await t.page.$$eval('.journey-days button', (ns) => ns.map((n) => n.className));
+  check(jd.length === 7 && jd.filter((c) => /jd-hard/.test(c)).length === 1 && jd.filter((c) => /jd-long/.test(c)).length === 1 && jd.some((c) => /jd-rest/.test(c)),
+    'the journey’s week explorer lights the hard day red, the long run white, and rests the rest: ' + jd.join(' | '));
+  check((await t.page.$$('.journey-days .jd-emb svg')).length + (await t.page.$$('.journey-days .jd-moon')).length === 7, 'every explorer day carries an emblem or the night’s moon');
+  await t.ctx.close();
+  t = await open('2026-10-01', '12:00', SEED, 'ref');
+  check(!!(await t.page.$('#ref-paces .pace-spectrum .ps-easy')) && !!(await t.page.$('#ref-paces .pace-spectrum .ps-mp')) && /easy → MP/.test(await text(t.page, '#ref-paces .pace-spectrum')),
+    'the paces sit on one line, easy to threshold, with the gap to marathon pace measured');
+  const wh = await t.page.$$eval('.week-hours .wh-sleep', (ns) => ns.length);
+  check(wh >= 7 && (await t.page.$$('.week-hours .wh-d.now')).length === 1 && /sleep \d+(\.5)?h/.test(await text(t.page, '.week-hours .wh-legend')),
+    'this week, hour by hour: seven days of blocks, nights dark, today marked, the hours totalled');
+  noErrors(t, 'v4.86 figures');
   await t.ctx.close();
   t = await open('2026-12-25', '12:00', SEED);
   check((await text(t.page, '.daywheel .dw-count')) === 'REST' && !/0\/0/.test(await text(t.page, '.daywheel')), 'a day with nothing to tick reads REST, not 0/0');

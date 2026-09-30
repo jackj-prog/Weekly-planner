@@ -1450,6 +1450,21 @@ section('palette contrast (WCAG AA)');
     const shoeFn = appSrc.slice(appSrc.indexOf('function buildShoeSection'), appSrc.indexOf('function buildOdoSection'));
     ok(shoeFn.length > 0 && /PLAN\.shoes\.map/.test(shoeFn) && /DB\.pro4Status/.test(shoeFn) && !/Ghost|Evo|Pro 4/.test(shoeFn),
       'the shoe plates read every shoe from the plan and name none in code');
+    /* v4.86: the Plan page's week explorer, the pace spectrum and the week
+       in hours all read their numbers from the plan. */
+    ok(/jd-'\+kind/.test(appSrc) && /\.journey-days button\.jd-long/.test(css) && /\.journey-days button\.jd-hard/.test(css),
+      'the journey\u2019s week explorer lights each day by its run class');
+    const specFn = appSrc.slice(appSrc.indexOf('function paceSpectrumHTML'), appSrc.indexOf('function buildEasyBandSection'));
+    ok(/PLAN\.race\.goalPace/.test(specFn) && /PLAN\.race\.stretchPace/.test(specFn) && /DB\.easyBand/.test(specFn) && /PLAN\.tempoPaceNote/.test(specFn) && !/\b5:20\b|\b5:06\b|\b4:25\b/.test(specFn),
+      'the pace spectrum reads every pace from the plan and hard-codes none');
+    ok(/CLEAR day expect (\d:\d\d)\s*[–-]\s*(\d:\d\d)/.test(PLAN.tempoPaceNote), 'the tempo note still states a clear-day readout the spectrum can draw');
+    ok(DB.parsePace(PLAN.race.goalPace.replace(/\/km$/, '')) > 0 && DB.parsePace(PLAN.race.stretchPace.replace(/\/km$/, '')) > 0, 'race and stretch paces parse for the spectrum');
+    const hoursFn = appSrc.slice(appSrc.indexOf('function weekHoursHTML'), appSrc.indexOf('/* The block\u2019s paces on one line') > 0 ? appSrc.indexOf('/* The block\u2019s paces on one line') : appSrc.indexOf('function paceSpectrumHTML'));
+    ok(/DB\.buildDay/.test(hoursFn) && /lights out/i.test(hoursFn) && /wake\|alarm/.test(hoursFn), 'the week in hours is built from the planned days, sleeping from lights out to waking');
+    for (let i = 0; i < 210; i += 7) {
+      const d = DB.buildDay(DB.addDays(PLAN.blocks[0].start, i));
+      if (!d.blocks.some((b) => /lights out/i.test(b.title)) || !d.blocks.some((b) => /wake|alarm/i.test(b.title))) { ok(false, 'every Monday has a wake and a lights out (' + d.iso + ')'); break; }
+    }
     const shoeKm = {};
     for (let i = 0; i < 210; i++) { const d = DB.buildDay(DB.addDays(PLAN.blocks[0].start, i)); if (d.run) shoeKm[d.run.run.shoe] = (shoeKm[d.run.run.shoe] || 0) + d.run.run.km; }
     ok(PLAN.shoes.filter((s) => !/race/i.test(s.job)).every((s) => Object.keys(shoeKm).some((k) => s.shoe.endsWith(k) && shoeKm[k] > 100)),

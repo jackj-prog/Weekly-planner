@@ -1373,3 +1373,31 @@ User: "continue visual upgrades". Three places that still read plain:
   come from `PLAN.shoes`, runs match by the shoe's own name. The budget
   note below keeps its illuminated initial.
 117 browser checks (sweep included), 16,235 plan checks, no overflow, a11y clean.
+
+## The journey's week lit, the paces on one line, the week in hours — v4.86, 1 October (Claude)
+
+User: "keep going, more bland spots to polish". Three found by screenshotting
+every Plan and Reference slice:
+- **Plan · the week explorer** drew every day as the same grey bar — the
+  long run grey too, against the rule that the long run reads white. Each
+  day is now lit like its Week card: the run's emblem (winged foot, laurel
+  on a race) and bar in its class — red hard, white long, grey easy —
+  translucent while planned, solid and glowing once recorded; a day
+  without a run is dashed and shows that night's moon; an unplanned
+  recorded run on a rest day still gets its emblem and bar.
+- **Reference · I Paces** was four text rows. It now opens on the block's
+  paces on one line, slower to the left: this phase's easy band (grey),
+  marathon pace (red, tall), the stretch bet (red ring, dashed), and the
+  tempo's clear-day readout drawn dashed because it is a readout, not a
+  target, with the gap from easy to MP bracketed and measured ("47 s/km
+  easy → MP"). Your last logged MP segment is pinned when one exists.
+  `paceSpectrumHTML()` reads `PLAN.race.goalPace`/`stretchPace`,
+  `DB.easyBand` and the readout inside `PLAN.tempoPaceNote`; it hard-codes
+  no pace (tested), and quietly drops the readout if that sentence changes.
+- **Reference · Weekly load budget** was a paragraph. It now leads with
+  "This week, hour by hour": seven 24-hour strips of the current week as
+  planned, each block in its category colour (runs in their class), the
+  nights from lights out to waking black with a few still stars, today
+  ringed in red, and a legend of every category's hours with its emblem,
+  sleep included. The plan's budget sentence stays underneath.
+122 browser checks (sweep included), 16,240 plan checks, no overflow, a11y clean.

@@ -2729,3 +2729,67 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .shoe-plate.t-easy .sp-num b { color: var(--text); }
 .sp-no { position: absolute; top: 12px; right: 14px; font: 400 17px/1 var(--serif); color: var(--t3); }
 .shoe-plate.t-race .sp-no { color: var(--accent); }
+
+/* ================= JOURNEY WEEK · PACES · HOURS (v4.86) ============ */
+/* the Plan page's week explorer: each day lit like its Week card */
+.journey-days button { --k: var(--cat-run); --kg: var(--glow-white-soft); gap: 6px; background-image: var(--grain), var(--hero-base); border: 1px solid var(--line); }
+.journey-days button.jd-hard { --k: var(--accent); --kg: var(--glow-red); background-image: var(--grain), radial-gradient(120% 90% at 100% 0%, var(--glow-red), transparent 70%), var(--hero-base); }
+.journey-days button.jd-long { --k: var(--text); --kg: var(--glow-white-hot); background-image: var(--grain), radial-gradient(120% 90% at 100% 0%, var(--glow-white), transparent 70%), var(--hero-base); }
+.journey-days button.jd-rest { background: transparent; background-image: none; border-style: dashed; }
+.jd-emb { display: block; width: 15px; height: 15px; color: var(--k); opacity: .5; }
+.jd-emb .emb { stroke-width: 1.7; }
+.journey-days button.lit .jd-emb { opacity: 1; filter: drop-shadow(0 0 4px var(--kg)); }
+.journey-days svg.jd-moon { display: block; width: 13px; height: 13px; margin: 1px 0; overflow: visible; }
+.journey-days .journey-day-plot { border-bottom-color: var(--line); }
+.journey-days .journey-day-plot i { background: color-mix(in srgb, var(--k) 30%, transparent); }
+.journey-days .journey-day-plot i.hard { background: color-mix(in srgb, var(--k) 55%, transparent); }
+.journey-days .journey-day-plot i.long { background: color-mix(in srgb, var(--k) 72%, transparent); box-shadow: 0 0 10px var(--glow-white); }
+.journey-days button b { color: var(--t2); }
+.journey-days button.jd-long b { color: var(--text); text-shadow: 0 0 12px var(--glow-white-hot); }
+.journey-days .journey-day-plot em { left: 0; width: 12px; border-radius: 3px 3px 0 0; background: var(--k); box-shadow: 0 0 9px var(--kg); }
+.journey-days button.jd-hard b { color: var(--accent); text-shadow: 0 0 12px var(--glow-red); }
+.journey-days button.jd-rest b { color: var(--t3); }
+/* Reference · Paces: the block's paces on one line */
+.pace-spectrum { margin: 6px 0 14px; }
+.pace-spectrum > svg { display: block; width: 100%; height: auto; overflow: visible; }
+.ps-axis { stroke: var(--line); stroke-width: 1.2; }
+.ps-tick { stroke: var(--t3); stroke-width: 1; }
+.ps-t { fill: var(--t3); font: 400 8px var(--mono); text-anchor: middle; }
+.ps-l { fill: var(--t2); font: 700 8px var(--mono); letter-spacing: .08em; text-anchor: middle; }
+.ps-l.hard { fill: var(--accent); }
+.ps-l.mp { fill: var(--text); font-size: 9.5px; letter-spacing: .04em; }
+.ps-easy { fill: color-mix(in srgb, var(--cat-run) 55%, transparent); stroke: var(--cat-run); stroke-width: 1; filter: drop-shadow(0 0 6px var(--glow-white)); }
+.ps-tempo { fill: color-mix(in srgb, var(--accent) 16%, transparent); stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 3 2; }
+.ps-mp { stroke: var(--accent); stroke-width: 2; filter: drop-shadow(0 0 5px var(--glow-red)); }
+.ps-mpdot { fill: var(--accent); filter: drop-shadow(0 0 6px var(--glow-red)); }
+.ps-st { stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 2 2; }
+.ps-stdot { fill: var(--paper); stroke: var(--accent); stroke-width: 1.3; }
+.ps-gap { fill: none; stroke: var(--t3); stroke-width: 1; }
+.ps-g { fill: var(--t2); font: 400 8.5px var(--mono); text-anchor: middle; }
+.ps-you { stroke: var(--text); stroke-width: 1.4; stroke-dasharray: 2 2; }
+.ps-youdot { fill: var(--text); filter: drop-shadow(0 0 4px var(--glow-white-hot)); }
+.pl-cap .k.ps-ke { background: color-mix(in srgb, var(--cat-run) 55%, transparent); border: 1px solid var(--cat-run); border-radius: 4px; }
+.pl-cap .k.ps-kmp { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.pl-cap .k.ps-kst { width: 7px; height: 7px; border-radius: 50%; border: 1.3px solid var(--accent); }
+/* Reference · the week, hour by hour */
+.week-hours { margin: 10px 0 12px; padding: 14px 14px 12px; border: 1px solid var(--line); border-radius: 14px; background-image: var(--grain), var(--hero-base); }
+.week-hours > svg { display: block; width: 100%; height: auto; overflow: visible; margin-top: 10px; }
+.wh-head { font-family: var(--display); font-weight: 800; font-size: 15px; color: var(--text); }
+.wh-head .fig { font: italic 400 15px var(--serif); color: var(--t2); margin-right: 4px; }
+.wh-head small { display: block; margin-top: 3px; font: 400 11px var(--mono); color: var(--t3); letter-spacing: .03em; }
+.wh-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 1 3; }
+.wh-t { fill: var(--t3); font: 400 7.5px var(--mono); text-anchor: middle; }
+.wh-d { fill: var(--t3); font: 400 8.5px var(--mono); text-anchor: middle; }
+.wh-d.now { fill: var(--accent); font-weight: 700; }
+.wh-sleep { fill: var(--chrome); }
+.wh-star { fill: var(--t2); }
+.wh-b { fill: color-mix(in srgb, var(--c) 78%, transparent); }
+.wh-b.hard { fill: var(--accent); filter: drop-shadow(0 0 3px var(--glow-red)); }
+.wh-b.long { fill: var(--text); filter: drop-shadow(0 0 3px var(--glow-white-hot)); }
+.wh-today { fill: none; stroke: var(--accent); stroke-width: 1; opacity: .8; }
+.wh-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 12px; font-size: 12px; color: var(--t2); }
+.wh-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.wh-legend b { font: 700 11.5px var(--mono); color: var(--text); }
+.wh-e { display: block; width: 15px; height: 15px; }
+.wh-e .emb { stroke-width: 1.6; }
+.wh-e.wh-night { color: var(--t2); }
