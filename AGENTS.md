@@ -1146,3 +1146,35 @@ User asked to continue the aesthetic work on the same theme.
   turning very slowly — only when every session of the day is done.
 - The run ribbon uses the same `skyGlow` shading.
 88 browser checks (sweep included), 16,206 plan checks, no overflow, a11y clean.
+
+## Visual audit — v4.77.1, 30 September (Claude)
+
+User asked for a pass through every screen for visual glitches. Screens
+captured in viewport-height slices (Chromium, 390 px) across Today in
+several states (run day, rest day, logged run, missed run, race morning,
+parkrun, tune-up half, Christmas, recovery, standing week), Week (14, 20,
+26, 30), Plan, Reference with every section open, and the overlays
+(session focus, More sheet, run logger, card actions). Fixed:
+- **Week numeral ran into the phase chip:** the outlined XIV's bottom
+  serif poked out beside the BUILD chip. The numeral now fades out down
+  its height (mask), so it never reaches the dates row.
+- **Race card split table read pink on red:** the table title and column
+  heads were white at 60–75% opacity over the red fill. Full white on
+  the race card.
+- **Dial: moon on top of the sun:** when the moon's highest point fell
+  within ~50 min of sunrise or sunset the two glyphs overlapped. The
+  moon now slides clear (within the model's own error).
+- **Dial: crowded foot:** the date engraved on the rim sat right under
+  "12 / Sext". Rim radius 176 → 184.
+- **Dial on a day with nothing to tick** read "0/0 SESSIONS DONE"; it now
+  reads "REST · NOTHING TO TICK".
+- **Run ribbon: stray moon at the edge** — drawn for a 5-minute sliver of
+  dark at the window's start. Needs a real stretch (≥15 min) and keeps
+  clear of the ends.
+- **"Fig. III" was set in the mono caption style**, unlike Figs. I and II;
+  now the serif italic.
+- **Run-intensity readout was cramped** and its key had no colour swatches
+  (the CSS existed, the markup did not). Spaced, swatched, verdict in white.
+- **Efficiency tables printed ISO dates** (2026-08-11) where every other
+  list says "11 Aug"; now consistent.
+88 browser checks (sweep included), 16,207 plan checks, no overflow, a11y clean.

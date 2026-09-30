@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.77.0';
+  const APP_VERSION = '4.77.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1712,7 +1712,7 @@
     // the moon, at its phase, in the darkest stretch it is up for
     const up = [];
     for (let m = a; m <= b; m += 5) if (DB.lightLevel(rs.st, m) < 0.3 && DB.moonUp(iso, m, rs.place)) up.push(m);
-    if (up.length) art += moonSVG(X(up[Math.floor(up.length / 2)]), RS_TOP + 7, 4, DB.moonPhase(iso), 'rs-moon');
+    if (up.length >= 3) art += moonSVG(Math.max(9, Math.min(RS_W - 9, X(up[Math.floor(up.length / 2)]))), RS_TOP + 7, 4, DB.moonPhase(iso), 'rs-moon');
     // the sun on the horizon, and the glow it throws
     if (rs.event >= a && rs.event <= b) {
       const sx = X(rs.event);
@@ -1856,7 +1856,13 @@
          night when it is full, in the daylight when it is new */
       const mp = DB.moonPhase(iso), ma = DB.moonArc(iso, place);
       if (ma.semi > 20 && ma.semi < 700) sky += '<path class="dw-moonarc" pathLength="1" d="' + arc(ma.rise, ma.set, 121.5) + '"/>';
-      const [mx, my] = pt(ma.transit, RN).split(' ').map(Number);
+      /* never on top of a sun mark: within the model's own error, slide it clear */
+      let mAt = ma.transit;
+      [st.rise, st.set].forEach((sm) => {
+        const d = ((((mAt - sm) % 1440) + 1440 + 720) % 1440) - 720;
+        if (Math.abs(d) < 50) mAt = (sm + (d < 0 ? -50 : 50) + 1440) % 1440;
+      });
+      const [mx, my] = pt(mAt, RN).split(' ').map(Number);
       sky += moonSVG(mx, my, 7.5, mp, 'dw-moon');
       moonLit = Math.round(mp.lit * 100);
       // the sun where it rises and where it sets
@@ -1907,7 +1913,7 @@
     /* the rim carries the date, engraved in numerals */
     const [yy, mo, dd] = iso.split('-').map(Number);
     const engraved = roman(dd) + ' · ' + roman(mo) + ' · ' + roman(yy);
-    const motto = '<path id="dw-arc" d="M' + pt(1440 * 0.625, 176) + ' A176 176 0 0 0 ' + pt(1440 * 0.375, 176) + '" fill="none"/>' +
+    const motto = '<path id="dw-arc" d="M' + pt(1440 * 0.625, 184) + ' A184 184 0 0 0 ' + pt(1440 * 0.375, 184) + '" fill="none"/>' +
       '<text class="dw-motto"><textPath href="#dw-arc" startOffset="50%">' + engraved + '</textPath></text>';
     let hand = '';
     if (isToday) {
@@ -1926,8 +1932,12 @@
     return '<figure class="daywheel' + (total && got === total ? ' complete' : '') + '" role="img" aria-label="' + esc(label) + '">' +
       '<svg viewBox="-12 0 364 362" aria-hidden="true"><circle class="dw-face" cx="' + C + '" cy="' + C + '" r="122"/>' +
       sky + rose + ticks + rings + hand + motto +
-      '<text class="dw-count" x="' + C + '" y="' + (C + 2) + '">' + got + '<tspan class="dw-of">/' + total + '</tspan></text>' +
-      '<text class="dw-cap" x="' + C + '" y="' + (C + 24) + '">SESSIONS DONE</text></svg>' +
+      (total
+        ? '<text class="dw-count" x="' + C + '" y="' + (C + 2) + '">' + got + '<tspan class="dw-of">/' + total + '</tspan></text>' +
+          '<text class="dw-cap" x="' + C + '" y="' + (C + 24) + '">SESSIONS DONE</text>'
+        /* a day with nothing to tick says so, rather than 0/0 */
+        : '<text class="dw-count rest" x="' + C + '" y="' + (C + 2) + '">REST</text>' +
+          '<text class="dw-cap" x="' + C + '" y="' + (C + 24) + '">NOTHING TO TICK</text>') + '</svg>' +
       (sunLine ? '<p class="dw-sunline" aria-hidden="true">' + sunLine + '</p>' : '') +
       (legend ? '<figcaption aria-hidden="true">' + legend + '</figcaption>' : '') + '</figure>';
   }
@@ -3090,7 +3100,7 @@
         '" text-anchor="end">' + (t.value > 0 ? '+' : '') + t.value + '%</text>').join('');
       const dots = pts.map(p => '<circle cx="' + p.x.toFixed(2) + '" cy="' + p.y.toFixed(2) +
         '" r="3"><title>' + p.iso + ': EF ' + p.ef.toFixed(3) + ', ' + signed(p.pct) + '</title></circle>').join('');
-      const rows = pts.map(p => '<tr><td>' + esc(p.iso) + '</td><td>' + p.ef.toFixed(3) +
+      const rows = pts.map(p => '<tr><td>' + esc(fmtShort(p.iso)) + '</td><td>' + p.ef.toFixed(3) +
         '</td><td>' + signed(p.pct) + '</td></tr>').join('');
       return '<figure class="ef-chart"><figcaption><span class="ef-kind">' + label +
         ' run efficiency</span><strong>' + status + '</strong></figcaption>' +
@@ -3103,7 +3113,7 @@
         '<div class="ef-reading"><b>' + signed(chart.change) + '</b><span>Fitted change · last ' + pts.length +
         ' runs' + (pts.length < 4 ? '<br>Too few runs to call a trend' : '') + '</span></div>' +
         paceAtHrHTML(chart) +
-        '<p class="ef-explain">Reference: EF ' + chart.reference.ef.toFixed(3) + ' on ' + esc(chart.reference.iso) +
+        '<p class="ef-explain">Reference: EF ' + chart.reference.ef.toFixed(3) + ' on ' + esc(fmtShort(chart.reference.iso)) +
         '. Higher means more speed per heartbeat.</p>' +
         '<details class="ef-data"><summary>Values &amp; comparison</summary><p>The line joins recorded runs, spaced by date. ' +
         'Fitted change uses every point across this period, relative to the reference. The scale stays at least ±10% and expands in 5-point steps. ' +
@@ -3140,8 +3150,8 @@
         const easy = (secs[0]+secs[1])/total*100;
         return '<div class="dist"><div class="dc-h">' + title + '</div><div class="dist-bar">' +
           secs.map((v,i)=>v ? '<i style="width:'+(v/total*100).toFixed(2)+'%;background:'+tone[i]+'"></i>' : '').join('') +
-          '</div><div class="dist-key">' + secs.map((v,i)=>v ? '<span>Z'+(i+1)+' '+Math.round(v/total*100)+'% · '+Math.round(v/60)+' min</span>' : '').join('') +
-          '</div><p class="log-note">'+Math.round(easy)+'% at Z2 or easier · plan target '+PLAN.intensityTarget.easyPct+'%+</p><p class="log-note">'+note+'</p></div>';
+          '</div><div class="dist-key">' + secs.map((v,i)=>v ? '<span><i style="background:'+tone[i]+'"></i>Z'+(i+1)+' '+Math.round(v/total*100)+'% · '+Math.round(v/60)+' min</span>' : '').join('') +
+          '</div><p class="log-note dist-sum">'+Math.round(easy)+'% at Z2 or easier · plan target '+PLAN.intensityTarget.easyPct+'%+</p><p class="log-note">'+note+'</p></div>';
       };
       return bar(measured,'Time in zones · imported HR samples',
         'Time-weighted recorded samples, using your current zones. Each reading holds until the next sample (at most 30 seconds). '+Math.round(uncovered/60)+' min without usable HR excluded.') +

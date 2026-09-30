@@ -342,6 +342,9 @@ async function cinema() {
   t = await open('2026-10-06', '22:10', Object.assign({}, SEED, { 'done-2026-10-06': { 't1710-run': true, 't1930-study': true, 't2200-reading': true } }));
   check(/complete/.test(await t.page.getAttribute('.daywheel', 'class')) && !!(await t.page.$('.daywheel .dw-gloria')), 'a finished day earns the gloria');
   await t.ctx.close();
+  t = await open('2026-12-25', '12:00', SEED);
+  check((await text(t.page, '.daywheel .dw-count')) === 'REST' && !/0\/0/.test(await text(t.page, '.daywheel')), 'a day with nothing to tick reads REST, not 0/0');
+  await t.ctx.close();
   t = await open('2026-11-11', '12:00', SEED, 'week');
   check((await t.page.$$('.weeklight .wl-col')).length === 7 && (await t.page.$$('.weeklight .wl-moon')).length === 7 &&
     (await t.page.$$('.weeklight .wl-run')).length === (await t.page.$$('.profile-day:not(.rest)')).length, 'the light of the week: seven skies, seven moons, every run placed');

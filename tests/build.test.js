@@ -1413,7 +1413,8 @@ section('palette contrast (WCAG AA)');
     ok(circ(newArc.transit, 720) < 90, 'a new moon is highest around midday (' + DB.fmtHM(newArc.transit) + ')');
     ok(circ(fullArc.rise, (fullArc.transit - fullArc.semi + 1440) % 1440) <= 1 && DB.moonUp('2027-01-22', fullArc.transit, nic) &&
       !DB.moonUp('2027-01-22', (fullArc.transit + 720) % 1440, nic), 'moonrise, moonset and moonUp agree');
-    ok(/pt\(ma\.transit, RN\)/.test(appSrc) && /dw-moonarc/.test(appSrc), 'the dial puts the moon at its highest, with its arc from rise to set');
+    ok(/let mAt = ma\.transit/.test(appSrc) && /pt\(mAt, RN\)/.test(appSrc) && /dw-moonarc/.test(appSrc), 'the dial puts the moon at its highest, with its arc from rise to set');
+    ok(/Math\.abs\(d\) < 50\) mAt =/.test(appSrc), 'the dial never draws the moon on top of a sun mark');
     ok(/if \(total && got === total\) \{[^}]*dw-gloria|if \(total && got === total\) \{\s*let rays/.test(appSrc), 'the gloria is earned: only a finished day has one');
     ok(/view\.appendChild\(el\(weekLightHTML\(week7, day0\.week\)\)\)/.test(appSrc) && /<figure class="weeklight" role="img" aria-label=/.test(appSrc),
       'the Week view carries the light of the week, with a spoken summary');

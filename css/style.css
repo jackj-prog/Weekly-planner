@@ -2396,3 +2396,16 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   @keyframes gloria-turn { to { transform: rotate(360deg); } }
   .view.anim .daywheel:not(.in) :is(.dw-moonarc, .dw-gloria) { opacity: 0; }
 }
+
+/* ================= VISUAL AUDIT (v4.77.1) ========================== */
+/* the Week numeral fades out before it reaches the dates and the chip */
+.wk-num { -webkit-mask-image: linear-gradient(180deg, #000 45%, transparent 80%); mask-image: linear-gradient(180deg, #000 45%, transparent 80%); }
+/* Fig. III is set like Figs. I and II */
+.wall-head h2 .fig { font: italic 400 1em var(--serif); letter-spacing: 0; color: var(--t2); white-space: normal; }
+/* on the red race card the split table's heads are white, not faded pink */
+.hero.race .ptable .pt-title, .hero.race .ptable th { opacity: 1; }
+/* the intensity readout: its verdict, then its caveat, with air between */
+.dist .log-note { margin: 10px 0 0; }
+.dist .dist-sum { color: var(--text); }
+/* a rest day's dial: a word, not 0/0 */
+.dw-count.rest { font-size: 30px; letter-spacing: .06em; }
