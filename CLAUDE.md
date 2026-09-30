@@ -254,6 +254,8 @@ Edit run is an outline, not the card's primary action.
 up at 07:00" instead of "Off the clock".
 **v5.0.4:** the journey's line is facts, not a sentiment: weeks running ·
 longest run · the last four weeks' average against plan.
+**v5.0.5:** an empty device mid-block opens the Week with "No history on
+this device" and a Restore button.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

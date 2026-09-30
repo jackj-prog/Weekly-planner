@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.0.4';
+  const APP_VERSION = '5.0.5';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -3192,6 +3192,10 @@
     }
     Array.prototype.forEach.call(days.children, (c, i) => c.style.setProperty('--i', i));
     /* the days come first (v4.89): they are what this tab is opened for */
+    /* an empty device mid-block — a fresh Home Screen install has its own
+       storage — shows every past day "not recorded"; say why first (v5.0.5) */
+    const restore = restoreNudge();
+    if (restore) view.appendChild(restore);
     view.appendChild(days);
     view.appendChild(profile);
     view.appendChild(el(weekLightHTML(week7, day0.week)));
@@ -4336,6 +4340,18 @@
         const d = document.getElementById('ref-data');
         if (d) { d.scrollIntoView({ block: 'start' }); const x = d.querySelector('[data-io="export"]'); if (x) x.click(); }
       });
+    });
+    return row;
+  }
+
+  function restoreNudge() {
+    if (backupState().count > 0 || todayISO() < DB.addDays(PLAN.blocks[0].start, 7)) return null;
+    const row = el('<div class="bk-nudge restore" role="note"><p><b>No history on this device.</b> A Home Screen install keeps its own storage — restore a backup to bring your runs and ticks across.</p>' +
+      '<button data-io="to-restore">Restore</button></div>');
+    row.querySelector('button').addEventListener('click', () => {
+      state.view = 'ref'; openDetails.add('ref-data'); render();
+      const d = document.getElementById('ref-data');
+      if (d) { d.scrollIntoView({ block: 'start' }); const r = d.querySelector('[data-io="restore"]'); if (r) r.click(); }
     });
     return row;
   }

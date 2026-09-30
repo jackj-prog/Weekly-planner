@@ -3120,3 +3120,5 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .dose-opt:has(input:checked) { border-color: var(--text); background: color-mix(in srgb, var(--text) 6%, transparent); }
 .dose-opt:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
 .dose-tag { margin-left: 6px; padding: 1px 7px; border: 1px solid var(--line); border-radius: 99px; font: 500 11px var(--body); font-style: normal; color: var(--t2); vertical-align: 2px; }
+.bk-nudge.restore { margin: 0 0 14px; }
+.bk-nudge.restore p b { color: var(--text); }

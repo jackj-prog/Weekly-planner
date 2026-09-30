@@ -688,6 +688,16 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.0.5: an empty device mid-block says why and offers the restore
+  t = await open('2026-10-01', '12:00', {}, 'week');
+  check(/No history on this device/.test(await text(t.page, '.bk-nudge.restore')), 'an empty device explains its blank week');
+  await t.page.click('.bk-nudge.restore button'); await t.page.waitForTimeout(200);
+  check(await t.page.evaluate(() => { const d = document.getElementById('ref-data'); return !!(d && d.open && !d.querySelector('.data-box').classList.contains('hidden')); }),
+    'Restore opens Reference → Data with the paste box ready');
+  await t.ctx.close();
+  t = await open('2026-10-01', '12:00', SEED, 'week');
+  check(!(await t.page.$('.bk-nudge.restore')), 'a device with history is not asked to restore');
+  await t.ctx.close();
   // v5.0.4: the journey opens on facts, not a sentiment
   t = await open('2026-10-01', '12:00', SEED, 'plan');
   const story = await text(t.page, '.journey-story');

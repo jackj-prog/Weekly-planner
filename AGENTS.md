@@ -1772,3 +1772,14 @@ recorded run (a run left out of trends still counts as distance), and the
 last four finished weeks' average against what they asked for.
 `journeyStory()` in app.js, from the same `DB.trainingJourney` weeks.
 202 browser checks (1 new), 16,273 plan checks.
+
+## An empty device says why — v5.0.5, 1 October (Claude)
+
+A fresh Home Screen install has its own storage, so after the owner
+re-adds the app (for the new icon) the Week shows every past day "not
+recorded" with no explanation. When nothing is stored and the block is a
+week or more in, the Week now opens with "No history on this device. A
+Home Screen install keeps its own storage — restore a backup to bring your
+runs and ticks across. [Restore]", which opens Reference → Data with the
+paste box ready. It disappears as soon as anything is stored.
+205 browser checks (3 new), 16,273 plan checks.
