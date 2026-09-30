@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.0.3';
+  const APP_VERSION = '5.0.4';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -2681,6 +2681,21 @@
       '</svg><figcaption class="fig-cap"><span class="fig">Fig. I</span> The firmament of the block</figcaption></figure>';
   }
 
+  /* the journey in three facts rather than a sentiment (v5.0.4): weeks
+     run, the longest run, and how the last four finished weeks compare
+     with what they asked for */
+  function journeyStory(journey, today) {
+    const f1 = (n) => String(Math.round(n * 10) / 10);
+    const longest = Math.max(0, ...journey.weeks.flatMap((w) => w.days.map((d) => d.recorded)));
+    const done = journey.weeks.filter((w) => w.end < today).slice(-4);
+    const bits = [journey.activeWeeks + ' week' + (journey.activeWeeks === 1 ? '' : 's') + ' running', 'longest <b>' + f1(longest) + '</b> km'];
+    if (done.length >= 2) {
+      const rec = done.reduce((n, w) => n + w.recorded, 0) / done.length, plan = done.reduce((n, w) => n + w.planned, 0) / done.length;
+      bits.push('last ' + done.length + ' weeks <b>' + f1(rec) + '</b> of ' + f1(plan) + ' km a week');
+    }
+    return bits.join(' · ');
+  }
+
   function buildTrainingJourney(journey) {
     const weeks = journey.weeks, block = PLAN.blocks[0], today = todayISO();
     const current = weeks.find(w=>w.start<=today && today<=w.end);
@@ -2699,7 +2714,7 @@
     chart+='<g class="journey-cursor"><line x1="0" x2="0" y1="12" y2="170"/><path d="M-4 7 L4 7 L0 12 Z"/></g>';
     const root=el('<section class="training-journey"><div class="journey-intro"><div class="journey-kicker">YOUR TRAINING JOURNEY</div>'+
       '<h1>Built one run<br>at a time.</h1><div class="journey-totals"><div><b>'+fmt(journey.recorded)+'</b><span>km recorded</span></div><div><b>'+journey.runs+'</b><span>runs recorded</span></div></div>'+
-      '<p class="journey-story">'+(journey.runs ? journey.activeWeeks+' weeks with recorded runs. Each one leaves a mark.' : 'Your first recorded run starts the story. The road ahead is already here.')+'</p>'+
+      '<p class="journey-story">'+(journey.runs ? journeyStory(journey, today) : 'Your first recorded run starts the story. The road ahead is already here.')+'</p>'+
       skyHTML(journey)+
       '<div class="journey-calendar"><span>'+journey.elapsedWeeks+' / '+weeks.length+' weeks elapsed</span><span>'+esc(fmtShort(PLAN.race.date))+' · '+esc(PLAN.race.city||'Race day')+'</span></div></div>'+
       '<div class="journey-landscape"><div class="journey-chart-label"><b><span class="fig">Fig. II</span> The shape of the block</b><span>km / week</span></div>'+

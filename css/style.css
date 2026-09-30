@@ -1484,6 +1484,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .journey-totals b { display: block; font: 800 42px/1.1 var(--display); letter-spacing: -.045em; }
 .journey-totals span, .journey-story { color: var(--t2); font: 400 14px/1.5 var(--body); }
 .journey-story { margin: 12px 0; }
+.journey-story b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
 .journey-calendar { display: flex; justify-content: space-between; gap: 16px; padding-top: 14px; border-top: 1px solid var(--line); font: 400 11px/1.5 var(--mono); color: var(--t3); }
 .journey-calendar span:last-child { text-align: right; }
 .journey-landscape { padding: 18px 14px 14px; background: linear-gradient(150deg,var(--hero-bg),var(--surface) 65%); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; }

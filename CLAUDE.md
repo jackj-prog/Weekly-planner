@@ -252,6 +252,8 @@ gels (Long, Race) and the decoupling split (Long) only where they apply.
 Edit run is an outline, not the card's primary action.
 **v5.0.3:** after lights out and before waking, Now reads "Night · Sleep ·
 up at 07:00" instead of "Off the clock".
+**v5.0.4:** the journey's line is facts, not a sentiment: weeks running ·
+longest run · the last four weeks' average against plan.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

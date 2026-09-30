@@ -1761,3 +1761,14 @@ up at 07:00" — the next wake-up, tomorrow's after lights out. The "nothing
 else today" line goes after the last block; the TMRW line already looks
 ahead. "Off the clock" stays for genuine gaps inside the day.
 201 browser checks (2 new), 16,273 plan checks.
+
+## The journey opens on facts — v5.0.4, 1 October (Claude)
+
+The Plan page's line under the totals was "14 weeks with recorded runs.
+Each one leaves a mark." — half a fact and half a sentiment, where the
+brief asks for zero filler. It now reads "14 weeks running · longest 27.3
+km · last 4 weeks 34.6 of 39.3 km a week": weeks with a run, the longest
+recorded run (a run left out of trends still counts as distance), and the
+last four finished weeks' average against what they asked for.
+`journeyStory()` in app.js, from the same `DB.trainingJourney` weeks.
+202 browser checks (1 new), 16,273 plan checks.

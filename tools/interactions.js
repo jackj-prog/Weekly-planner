@@ -688,6 +688,11 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.0.4: the journey opens on facts, not a sentiment
+  t = await open('2026-10-01', '12:00', SEED, 'plan');
+  const story = await text(t.page, '.journey-story');
+  check(/^\d+ weeks? running · longest 21 km · last 4 weeks [\d.]+ of [\d.]+ km a week$/.test(story.trim()) && !/leaves a mark/.test(story), 'the journey says weeks run, longest, and the last four weeks against plan: ' + story);
+  await t.ctx.close();
   // v5.0.3: after lights out and before the day starts, Now says night
   t = await open('2026-10-01', '23:30', SEED);
   check(/^Night$/.test((await text(t.page, '.nownext .nn-title')).trim()) && /Sleep · up at 07:00/.test(await text(t.page, '.nownext .nn-time')) &&
