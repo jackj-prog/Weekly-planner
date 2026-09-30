@@ -236,6 +236,8 @@ apart; a quiet row with a disclosure keeps the plain rows' rhythm;
 Reference's chapter titles share one edge; a missed run asks once.
 **Typography (v4.96):** titles wrap balanced, a separator (· —) stays
 with the word before it, and a week card's extras hold together per item.
+**v4.97:** the Week's load-jump note is one line with its reasoning behind
+"Why", so the days lead; a number keeps its unit and "@" its object.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

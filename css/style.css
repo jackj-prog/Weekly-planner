@@ -366,6 +366,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border-radius: 8px;
 }
 .wk-jump b { font-weight: 700; }
+.wk-jump summary { display: flex; align-items: baseline; gap: 12px; min-height: 24px; cursor: pointer; list-style: none; }
+.wk-jump summary::-webkit-details-marker { display: none; }
+.wk-jump summary b { flex: 1; font-weight: 600; text-wrap: pretty; }
+.wk-jump summary small { color: var(--t2); white-space: nowrap; font-size: 12px; }
+.wk-jump summary small::after { content: ' +'; }
+.wk-jump[open] summary small::after { content: ' −'; }
+.wk-jump .detail-body { margin-top: 8px; }
 
 /* week SHAPE — the total can be right while the composition is not */
 .wk-shape {

@@ -1662,3 +1662,16 @@ is about how text breaks:
 - **Week-card extras hold together item by item** (`.xb`): "German active
   study · / Basketball 1v1 + shooting", not "…Basketball 1v1 + / shooting".
 172 browser checks in quick mode (3 new), 16,269 plan checks.
+
+## Days first, really — v4.97, 1 October (Claude)
+
+The load-jump advisory (last week's recorded distance against this week's
+plan) opened the Week as eleven lines of body copy above the seven day
+cards the Week exists for. It is now a closed disclosure in the run card's
+pattern: the fact on one line ("Week 13 recorded 19.9 of 35 km (57%) ·
+this week plans 42, 2.1× that"), the caveat and `returnRule.note` behind
+"Why", its open state kept across re-renders (`data-disclosure`).
+`glue()` also keeps a number with its unit ("5×3 min", "22 km") and "@"
+with its object ("@ threshold"), so "Quality run — 5×3 min @ threshold"
+breaks after the dash instead of between 5×3 and min.
+176 browser checks (3 new), 16,269 plan checks.

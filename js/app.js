@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.96.0';
+  const APP_VERSION = '4.97.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -253,7 +253,11 @@
   }
   /* a separator stays with the word before it, so a wrapped title never
      opens its second line on a bare "·" or "—" (v4.96) */
-  function glue(html) { return String(html).replace(/ ([·—]) /g, '\u00a0$1 '); }
+  function glue(html) {
+    return String(html).replace(/ ([·—]) /g, '\u00a0$1 ')
+      .replace(/(\d) (min|km|s|h|bpm)\b/g, '$1\u00a0$2')      // 5×3 min, 22 km: a number keeps its unit
+      .replace(/ @ /g, ' @\u00a0');                           // @ MP, @ threshold: the mark keeps its object
+  }
   function tt(s) { return glue(esc(s)); }
   function el(html) {
     const t = document.createElement('template');
@@ -2836,12 +2840,16 @@
     if (ran >= prevRow.km * r.shortfall) return null;
     if (day0.row.km < ran * r.jumpRatio) return null;
     const pct = Math.round((ran / prevRow.km) * 100);
+    const ratio = Math.round((day0.row.km / ran) * 10) / 10;
+    /* The fact is one line; the reasoning waits behind "Why", as on the run
+       card. Open, it was eleven lines above the seven days the Week is for
+       (v4.97). */
+    const key = anchor + '|jump';
     return el(
-      '<div class="wk-jump"><b>Last week’s recorded distance.</b> Week ' + (day0.week - 1) +
-      ' records <b>' + (Math.round(ran * 10) / 10) + ' of ' + prevRow.km + ' km</b> (' + pct +
-      '%). This week plans ' + day0.row.km + ' — about ' +
-      (Math.round((day0.row.km / ran) * 10) / 10) + '× the recorded distance. Missing logs or ticks may understate it.<br>' +
-      esc(r.note) + '</div>'
+      '<details class="wk-jump" data-disclosure="' + esc(key) + '"' + (openDetails.has(key) ? ' open' : '') + '><summary><b>' +
+      'Week ' + (day0.week - 1) + ' recorded ' + (Math.round(ran * 10) / 10) + ' of ' + prevRow.km + ' km (' + pct + '%) · this week plans ' +
+      day0.row.km + ', ' + ratio + '× that</b><small>Why</small></summary>' +
+      '<div class="detail-body"><p>Missing logs or ticks may understate last week.</p><p>' + esc(r.note) + '</p></div></details>'
     );
   }
 

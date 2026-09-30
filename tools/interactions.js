@@ -463,7 +463,7 @@ async function cinema() {
   // v4.88: a quieter Today
   t = await open('2026-10-07', '19:45', SEED);
   const run = await t.page.$('.tl-card.slim');
-  check(!!run && !(await run.$('.tick')) && !!(await run.$('.more-btn')) && /Tempo 25 min/.test(await run.textContent()), 'the day\u2019s run is a slim row that keeps its ⋯ and leaves the tick to the run card');
+  check(!!run && !(await run.$('.tick')) && !!(await run.$('.more-btn')) && /Tempo 25\smin/.test(await run.textContent()), 'the day\u2019s run is a slim row that keeps its ⋯ and leaves the tick to the run card');
   await t.page.click('.tl-card.slim .c-up');
   check(await t.page.evaluate(() => Math.abs(document.querySelector('.hero').getBoundingClientRect().top - document.querySelector('.topbar').getBoundingClientRect().height) < 30), 'the slim row\u2019s button returns to the run card');
   check((await t.page.$$('.tl-card .c-cat')).length === 0, 'no category labels where the emblem and colour already say it');
@@ -639,6 +639,14 @@ async function cinema() {
   await t.ctx.close();
   t = await open('2026-10-02', '12:00', SEED, 'week');
   check(/Basketball 1v1 \+ shooting/.test(await text(t.page, '.wk-day.today .d-extras .xb:last-child')), 'a week card’s extras hold together item by item');
+  check(/5×3 min @ threshold/.test(await t.page.$eval('.wk-day:nth-of-type(3) .d-run', (n) => n.textContent)), 'a number keeps its unit and @ keeps its object');
+  // v4.97: last week's shortfall is one line above the days, its reasoning behind Why
+  const jump = await t.page.$eval('.wk-jump', (n) => ({ tag: n.tagName, open: n.open, sum: n.querySelector('summary').textContent }));
+  check(jump.tag === 'DETAILS' && !jump.open && /^Week 13 recorded 17 of 35 km \(49%\) · this week plans 42, 2\.5× thatWhy$/.test(jump.sum.replace(/\s+/g, ' ')),
+    'the load-jump note is a closed one-liner: ' + jump.sum);
+  await t.page.click('.wk-jump summary'); await t.page.click('.wk-day.today');
+  await t.page.click('[data-nav="week"]');
+  check(await t.page.$eval('.wk-jump', (n) => n.open), 'its Why stays open across a re-render');
   await t.ctx.close();
   t = await open('2026-10-01', '12:00', SEED, 'plan');
   check(!/data\/plan\.js/.test(await text(t.page, '#view')) && !!(await t.page.$('.journey-all .journey-coda')), 'the Plan’s coda sits with the recovery rows and names no file');
