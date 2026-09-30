@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.81.0';
+  const APP_VERSION = '4.82.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -3119,6 +3119,49 @@
   /* ---- Pro 4 odometer (§11) ---- */
   /* Easy pace is the block's slowest-moving progress signal — a static
      band would hide it. Marks the live phase and names the benchmark. */
+  /* The easy bands as a ladder (v4.82): one rung per phase on a single pace
+     axis, slower on the left and quicker on the right, the legal band
+     outlined and the clear-day range filled, this phase lit — and the median
+     of your last few logged easy runs ruled across every rung, so the band
+     and what you actually run sit on the same scale. */
+  function paceLadderHTML(bands, live) {
+    const span = (str) => String(str).split(/\s*[–-]\s*/).map(DB.parsePace);
+    const rungs = bands.map((b, i) => {
+      const [bl, bh] = span(b.band), [gl, gh] = span(b.good);
+      const to = i + 1 < bands.length ? bands[i + 1].fromWk - 1 : 30;
+      return { bl, bh, gl, gh, now: b === live, label: b.fromWk === to ? 'Wk ' + b.fromWk : 'Wk ' + b.fromWk + '–' + to };
+    }).filter((r) => r.bl && r.bh && r.gl && r.gh);
+    if (!rungs.length) return '';
+    const easy = runLogHistory().filter((e) => e.cls === 'easy' && !e.x && e.iso <= todayISO()).slice(-6);
+    const med = easy.length >= 3 ? easy.map((e) => e.paceSec).sort((a, b) => a - b)[Math.floor(easy.length / 2)] : null;
+    const slow = Math.ceil((Math.max(...rungs.map((r) => r.bh), med || 0) + 4) / 10) * 10;
+    const fast = Math.floor((Math.min(...rungs.map((r) => r.bl), med || 9999) - 4) / 10) * 10;
+    const L = 64, R = 300, X = (sec) => L + ((slow - sec) / (slow - fast)) * (R - L), RH = 20, TOP = 8;
+    let svg = '';
+    for (let t = fast; t <= slow; t += 10) {
+      const x = X(t);
+      svg += '<path class="pl-grid" d="M' + x.toFixed(1) + ' ' + TOP + ' L' + x.toFixed(1) + ' ' + (TOP + rungs.length * RH) + '"/>' +
+        '<text class="pl-t" x="' + x.toFixed(1) + '" y="' + (TOP + rungs.length * RH + 12) + '">' + DB.fmtPaceSec(t) + '</text>';
+    }
+    rungs.forEach((r, i) => {
+      const y = TOP + i * RH + 4, h = RH - 8;
+      svg += '<text class="pl-l' + (r.now ? ' now' : '') + '" x="' + (L - 8) + '" y="' + (y + h - 2) + '">' + esc(r.label) + '</text>' +
+        '<rect class="pl-band' + (r.now ? ' now' : '') + '" x="' + X(r.bh).toFixed(1) + '" y="' + y + '" width="' + (X(r.bl) - X(r.bh)).toFixed(1) + '" height="' + h + '" rx="3"/>' +
+        '<rect class="pl-good' + (r.now ? ' now' : '') + '" x="' + X(r.gh).toFixed(1) + '" y="' + (y + 2) + '" width="' + (X(r.gl) - X(r.gh)).toFixed(1) + '" height="' + (h - 4) + '" rx="2"/>';
+    });
+    if (med) {
+      const x = X(med);
+      svg += '<path class="pl-you" d="M' + x.toFixed(1) + ' ' + (TOP - 4) + ' L' + x.toFixed(1) + ' ' + (TOP + rungs.length * RH) + '"/>' +
+        '<circle class="pl-youdot" cx="' + x.toFixed(1) + '" cy="' + (TOP - 4) + '" r="2.6"/>';
+    }
+    return '<figure class="pace-ladder" role="img" aria-label="' + esc('Easy pace bands by phase, quicker to the right' +
+      (med ? '; your last ' + easy.length + ' easy runs have a median of ' + DB.fmtPaceSec(med) + ' per km' : '')) + '">' +
+      '<svg viewBox="0 0 320 ' + (TOP + rungs.length * RH + 18) + '" aria-hidden="true">' + svg + '</svg>' +
+      '<figcaption class="pl-cap"><span><i class="k band"></i>band</span><span><i class="k good"></i>clear day</span>' +
+      (med ? '<span><i class="k you"></i>your last ' + easy.length + ' easy · ' + DB.fmtPaceSec(med) + '</span>' : '') +
+      '<span class="dir">slower ← → quicker</span></figcaption></figure>';
+  }
+
   function buildEasyBandSection() {
     const wk = DB.weekNumber(todayISO());
     const live = DB.easyBand(wk);
@@ -3134,7 +3177,7 @@
     }).join('');
     const bm = PLAN.benchmark;
     return el(
-      '<div class="ref"><h2>Easy pace by phase</h2><div class="ref-card">' + rows + '</div>' +
+      '<div class="ref"><h2>Easy pace by phase</h2>' + paceLadderHTML(bands, live) + '<div class="ref-card">' + rows + '</div>' +
       '<div class="ref-note"><b>Now (Wk ' + wk + '):</b> band ' + esc(live.band) +
       '/km · a clear, 7/10 day should return <b>' + esc(live.good) + '</b>. ' + esc(live.note) + '</div>' +
       '<div class="ref-note"><b>Benchmark:</b> ' + esc(bm.slot) + '. ' + esc(bm.log) + '<br>' +
@@ -3626,7 +3669,7 @@
       '<div class="ref-row"><span>Cache</span><span class="v" data-diag="cache">checking…</span></div>' +
       '<div class="ref-row"><span>Display</span><span class="v" data-diag="mode">—</span></div>' +
       '<div class="ref-row"><span>Storage used</span><span class="v" data-diag="store">—</span></div>' +
-      '</div><div class="ref-note">Offline-first · plan lives in data/plan.js · ' +
+      '</div><div class="ref-note no-init">Offline-first · plan lives in data/plan.js · ' +
       'after a deploy this should read the new version and <b>controlling</b>.</div></div>'
     );
     const set = (k, txt) => {

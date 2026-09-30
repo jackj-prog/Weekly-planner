@@ -1426,6 +1426,8 @@ section('palette contrast (WCAG AA)');
     ok(/function recalRulerHTML/.test(appSrc) && /PLAN\.recalibrationAnchors \|\| \[\]\)\.map\(\(a\) =>/.test(appSrc), 'the tune-up ruler is drawn from the plan\u2019s own anchors, not restated');
     ok(/wkp-tally/.test(appSrc) && !/wkp-track/.test(appSrc), 'the week tally replaced the plain progress bar');
     ok(/ef-fit/.test(appSrc) && /sxy \/ sxx/.test(appSrc), 'the efficiency chart draws its least-squares fit');
+    ok(/function paceLadderHTML/.test(appSrc) && /paceLadderHTML\(bands, live\)/.test(appSrc), 'the easy bands are drawn as a ladder from PLAN.easyBands');
+    ok(/ref-note no-init">Offline-first/.test(appSrc), 'the App chapter\u2019s readout carries no illuminated initial');
     ok(/function dressSheet/.test(appSrc) && /if \(open\) dressSheet\(\)/.test(appSrc), 'the More sheet is dressed as plates each time it opens');
     ok(/restMoonHTML\(iso\)/.test(appSrc) && !/class="rest-mark"/.test(appSrc), 'a rest day shows the night\u2019s moon, not a pause mark');
     ok(/focus-' \+ skyKind\(block\)/.test(appSrc) && /runSkyHTML\(iso, block, skyKind\(block\), 'f'/.test(appSrc), 'run focus is lit in the run\u2019s colour and shows the sun\u2019s arc');

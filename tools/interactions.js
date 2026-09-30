@@ -400,6 +400,11 @@ async function cinema() {
   check(!!(await t.page.$('#ref-log .ef-chart .ef-fit')) && !!(await t.page.$('#ref-log .ef-chart .ef-area')), 'the efficiency charts draw their fitted line and the ground beneath');
   noErrors(t, 'polish pass');
   await t.ctx.close();
+  // v4.82: the easy-pace ladder
+  t = await open('2026-10-01', '12:00', SEED, 'ref');
+  check((await t.page.$$('#ref-easy-pace-by-phase .pl-band')).length === 5 && (await t.page.$$('#ref-easy-pace-by-phase .pl-good.now')).length === 1 &&
+    /your last \d easy · \d:\d\d/.test(await text(t.page, '#ref-easy-pace-by-phase .pl-cap')), 'the easy bands are a ladder with this phase lit and your recent easy runs ruled across');
+  await t.ctx.close();
   t = await open('2026-12-25', '12:00', SEED);
   check((await text(t.page, '.daywheel .dw-count')) === 'REST' && !/0\/0/.test(await text(t.page, '.daywheel')), 'a day with nothing to tick reads REST, not 0/0');
   await t.ctx.close();

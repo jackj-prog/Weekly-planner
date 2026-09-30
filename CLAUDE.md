@@ -166,7 +166,10 @@ tally — one stone per run, as long as its distance, in its class's colour,
 solid when banked, struck through when missed; the tune-up recalibrator
 lays the plan's anchors on a half-marathon time ruler (the 3:45 band in
 red) and pins the saved result; the efficiency charts draw their fitted
-line and a lit ground under the runs.
+line and a lit ground under the runs. **v4.82:** the easy bands are a
+ladder — one rung per phase on a single pace axis (quicker to the right),
+band outlined, clear day filled, this phase lit — with the median of the
+last few logged easy runs ruled across every rung.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

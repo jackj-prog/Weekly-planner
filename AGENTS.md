@@ -1293,3 +1293,18 @@ User: "keep going, some areas still look unpolished/quite bland". Three more:
   ground between the line and 0%, a halo on the latest run, the long-run
   chart in white, and a serif caption in sentence case.
 107 browser checks (sweep included), 16,223 plan checks, no overflow, a11y clean.
+
+## The easy-pace ladder — v4.82, 1 October (Claude)
+
+User: "keep going, more bland spots to polish". Reference II (Easy pace by
+phase) was five rows of bold text. Above them now sits a ladder
+(`paceLadderHTML`, drawn from `PLAN.easyBands`): one rung per phase on a
+single pace axis, slower on the left and quicker on the right, the legal
+band outlined and the clear-day range filled, this phase lit white with
+its label in red (NOW), so the ~9 s/km shift across the block is visible
+as the rungs step right. The median of the last six logged easy runs
+(class easy, not flagged) is ruled across every rung as a dashed white
+line, so the band and what is actually run sit on one scale; it is left
+out when fewer than three easy runs are logged. The App chapter's status
+readout also opts out of the illuminated initial.
+108 browser checks (sweep included), 16,225 plan checks, no overflow, a11y clean.
