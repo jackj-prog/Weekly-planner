@@ -1428,6 +1428,7 @@ section('palette contrast (WCAG AA)');
     ok(/ef-fit/.test(appSrc) && /sxy \/ sxx/.test(appSrc), 'the efficiency chart draws its least-squares fit');
     ok(/function paceLadderHTML/.test(appSrc) && /paceLadderHTML\(bands, live\)/.test(appSrc), 'the easy bands are drawn as a ladder from PLAN.easyBands');
     ok(/ref-note no-init">Offline-first/.test(appSrc), 'the App chapter\u2019s readout carries no illuminated initial');
+    ok(/\.ref-fold:not\(\.ref-fold \+ \.ref-fold\)/.test(css) && /\.ref-fold:last-of-type/.test(css), 'Reference\u2019s chapters are bound as one volume');
     ok(/function dressSheet/.test(appSrc) && /if \(open\) dressSheet\(\)/.test(appSrc), 'the More sheet is dressed as plates each time it opens');
     ok(/restMoonHTML\(iso\)/.test(appSrc) && !/class="rest-mark"/.test(appSrc), 'a rest day shows the night\u2019s moon, not a pause mark');
     ok(/focus-' \+ skyKind\(block\)/.test(appSrc) && /runSkyHTML\(iso, block, skyKind\(block\), 'f'/.test(appSrc), 'run focus is lit in the run\u2019s colour and shows the sun\u2019s arc');

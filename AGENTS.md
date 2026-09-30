@@ -1308,3 +1308,8 @@ line, so the band and what is actually run sit on one scale; it is left
 out when fewer than three easy runs are logged. The App chapter's status
 readout also opts out of the illuminated initial.
 108 browser checks (sweep included), 16,225 plan checks, no overflow, a11y clean.
+- **v4.82.1:** Reference's twelve chapters were twelve separate boxes.
+  They are now bound as one ruled volume — consecutive chapters share
+  their borders, rounded only at the top and bottom covers, rows a little
+  tighter — and an open chapter is raised on the run card's grained
+  ground with its numeral glowing. CSS only.
