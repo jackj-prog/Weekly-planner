@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.0.2';
+  const APP_VERSION = '5.0.3';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -613,15 +613,26 @@
         '</div></div><button class="nn-jump" aria-label="Go to current activity">↓</button></div>' +
         '<div class="nn-bar" aria-hidden="true"><i style="width:' + pct + '%"></i></div>';
     } else {
-      html += '<div class="nn-title">Off the clock</div><div class="nn-time">Space between activities</div></div>' +
-        '<button class="nn-jump" aria-label="Go to current time">↓</button></div>' +
-        '<div class="nn-bar" aria-hidden="true"><i style="width:0%"></i></div>';
+      /* after lights out, or before the day's first block, it is night — not
+         "space between activities" (v5.0.3): say so, and when the day starts */
+      const first = day.blocks[0], last = day.blocks[day.blocks.length - 1];
+      const before = first && nMin < first.startMin, after = last && nMin >= last.endMin;
+      if (before || after) {
+        const wake = before ? first : DB.buildDay(DB.addDays(day.iso, 1)).blocks[0];
+        html += '<div class="nn-title"><span class="nn-emb" style="color:var(--t2)">' + emblemSVG('moon') + '</span>Night</div>' +
+          '<div class="nn-time">' + (wake ? 'Sleep · up at ' + wake.start : 'Sleep') + '</div></div>' +
+          '<button class="nn-jump" aria-label="Go to current time">↓</button></div>';
+      } else {
+        html += '<div class="nn-title">Off the clock</div><div class="nn-time">Space between activities</div></div>' +
+          '<button class="nn-jump" aria-label="Go to current time">↓</button></div>' +
+          '<div class="nn-bar" aria-hidden="true"><i style="width:0%"></i></div>';
+      }
     }
     if (next.length) {
       html += '<div class="nn-next"><span class="nn-label">NEXT</span><span class="t">' + next[0].start + '</span><span>' +
         '<span class="nn-nemb" style="color:' + emblemTone(next[0]) + '">' + emblemSVG(emblemKind(next[0])) + '</span>' + tt(next[0].title) +
         ' <span class="nn-in">' + fmtIn(next[0].startMin - nMin) + '</span></span></div>';
-    } else {
+    } else if (!(day.blocks.length && nMin >= day.blocks[day.blocks.length - 1].endMin)) {
       html += '<div class="nn-next"><span class="nn-label">NEXT</span><span>Nothing else scheduled today.</span></div>';
     }
     /* evening onwards, look ahead — lay the kit out tonight */

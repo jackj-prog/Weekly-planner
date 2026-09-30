@@ -688,6 +688,14 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.0.3: after lights out and before the day starts, Now says night
+  t = await open('2026-10-01', '23:30', SEED);
+  check(/^Night$/.test((await text(t.page, '.nownext .nn-title')).trim()) && /Sleep · up at 07:00/.test(await text(t.page, '.nownext .nn-time')) &&
+    !/Nothing else scheduled/.test(await text(t.page, '.nownext')), 'late evening reads Night, up at Friday’s 07:00');
+  await t.ctx.close();
+  t = await open('2026-10-02', '00:40', SEED);
+  check(/Sleep · up at 07:00/.test(await text(t.page, '.nownext .nn-time')) && /Wake/.test(await text(t.page, '.nownext .nn-next')), 'small hours read Night, next the wake-up');
+  await t.ctx.close();
   // v5.0.2: the recap reads plainly and editing is secondary
   t = await open('2026-09-24', '20:00', SEED);
   check(!/logged distance/.test(await text(t.page, '.recap-subtitle')) && /Your log so far/.test(await text(t.page, '.recap-total')), 'the recap says what it means: ' + await text(t.page, '.recap-total'));

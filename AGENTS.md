@@ -1751,3 +1751,13 @@ head between sets. It is now a choice on the session:
   screen's one primary action; after logging, editing is secondary, and it
   had been the loudest thing on the card.
 199 browser checks (2 new), 16,273 plan checks.
+
+## Night is night — v5.0.3, 1 October (Claude)
+
+After lights out, and before the day's first block, the Now card said
+"Off the clock · Space between activities" (and at 23:30, "Nothing else
+scheduled today"). It now reads **Night**, with the crescent, and "Sleep ·
+up at 07:00" — the next wake-up, tomorrow's after lights out. The "nothing
+else today" line goes after the last block; the TMRW line already looks
+ahead. "Off the clock" stays for genuine gaps inside the day.
+201 browser checks (2 new), 16,273 plan checks.
