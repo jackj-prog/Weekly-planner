@@ -1313,3 +1313,15 @@ readout also opts out of the illuminated initial.
   their borders, rounded only at the top and bottom covers, rows a little
   tighter — and an open chapter is raised on the run card's grained
   ground with its numeral glowing. CSS only.
+
+## The week's days — v4.83, 1 October (Claude)
+
+The Week view's seven day cards were identical grey slabs, rest days as
+heavy as run days. Each run day now carries its class (`k-hard`, `k-long`,
+`k-easy`) and is lit like its run card — a red stage light from the corner
+on the hard day, white on the long one, grain on all — with the distance
+in the run's colour and the distance bar in it too, glowing once banked.
+Rest days (`no-run`) recede to a dashed, transparent row with "No run" in
+the serif italic, so the week reads at a glance: Wednesday red, Sunday
+white, the rest quiet.
+109 browser checks (sweep included), 16,227 plan checks, no overflow, a11y clean.

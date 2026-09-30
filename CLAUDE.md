@@ -169,7 +169,10 @@ red) and pins the saved result; the efficiency charts draw their fitted
 line and a lit ground under the runs. **v4.82:** the easy bands are a
 ladder — one rung per phase on a single pace axis (quicker to the right),
 band outlined, clear day filled, this phase lit — with the median of the
-last few logged easy runs ruled across every rung.
+last few logged easy runs ruled across every rung. **v4.83:** the Week's
+day cards are lit like their run cards (red from the corner on the hard
+day, white on the long one, the distance and its bar in the run's colour,
+glowing once banked) and rest days recede to a dashed, quiet row.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

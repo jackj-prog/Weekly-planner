@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.82.1';
+  const APP_VERSION = '4.83.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -2754,7 +2754,9 @@
       if (day.run) {
         const km = day.run.run.km;
         const rc = DB.runClass(day.run);
-        cls += ' has-run' + (km === maxKm && (rc === 'long' || rc === 'race') ? ' lr' : '');
+        cls += ' has-run' + (km === maxKm && (rc === 'long' || rc === 'race') ? ' lr' : '') +
+          ' k-' + (rc === 'quality' || rc === 'race' ? 'hard' : rc === 'long' ? 'long' : 'easy') +
+          (done[day.run.id] || runLogged ? ' banked' : '');
         barHtml = '<i class="d-bar' + (done[day.run.id] || runLogged ? ' done' : ovr.skip[day.run.id] || ovr.moved[day.run.id] ? ' off' : '') +
           '" style="width:' + ((km / maxKm) * 100).toFixed(1) + '%"></i>';
         runHtml = {
@@ -2763,6 +2765,7 @@
           km: (km === Math.round(km) ? km : km.toFixed(1)) + '<small>km</small>',
         };
       } else {
+        cls += ' no-run';
         runHtml = {
           run: '<div class="d-run rest">No run</div><div class="d-extras">' + (extraBits(day, ovr).replace(/^ · /, '') || esc(dayHeadline(day))) + '</div>' + statusHtml,
           km: '—',

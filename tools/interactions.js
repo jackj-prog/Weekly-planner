@@ -405,6 +405,11 @@ async function cinema() {
   check((await t.page.$$('#ref-easy-pace-by-phase .pl-band')).length === 5 && (await t.page.$$('#ref-easy-pace-by-phase .pl-good.now')).length === 1 &&
     /your last \d easy · \d:\d\d/.test(await text(t.page, '#ref-easy-pace-by-phase .pl-cap')), 'the easy bands are a ladder with this phase lit and your recent easy runs ruled across');
   await t.ctx.close();
+  // v4.83: the week's days lit by their run
+  t = await open('2026-10-01', '12:00', SEED, 'week');
+  check((await t.page.$$('.wk-days .wk-day.k-hard')).length === 1 && (await t.page.$$('.wk-days .wk-day.k-long')).length === 1 &&
+    (await t.page.$$('.wk-days .wk-day.no-run')).length === 2, 'the week\u2019s day cards carry their run\u2019s class, and rest days recede');
+  await t.ctx.close();
   t = await open('2026-12-25', '12:00', SEED);
   check((await text(t.page, '.daywheel .dw-count')) === 'REST' && !/0\/0/.test(await text(t.page, '.daywheel')), 'a day with nothing to tick reads REST, not 0/0');
   await t.ctx.close();

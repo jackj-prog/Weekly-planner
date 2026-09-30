@@ -2630,3 +2630,23 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .ref-fold > summary { min-height: 58px; padding: 12px 16px; }
 .ref-fold[open] { background: var(--hero-bg); background-image: var(--grain), var(--hero-base); }
 .ref-fold[open] > summary .chap { text-shadow: 0 0 14px var(--glow-red); }
+
+/* ================= THE WEEK'S DAYS (v4.83) ========================= */
+/* each day lit like its run card: red from the corner on the hard day,
+   white on the long one; rest days recede to a quiet ruled row; the
+   distance bar takes the run's colour and glows once banked */
+.wk-day { position: relative; overflow: hidden; }
+.wk-day.k-hard { background-image: var(--grain), radial-gradient(90% 120% at 100% 0%, var(--glow-red-soft), transparent 65%), var(--hero-base); }
+.wk-day.k-long { background-image: var(--grain), radial-gradient(90% 120% at 100% 0%, var(--glow-white), transparent 65%), var(--hero-base); }
+.wk-day.k-easy { background-image: var(--grain), var(--hero-base); }
+.wk-day.k-hard .d-km { color: var(--accent); text-shadow: 0 0 22px var(--glow-red); }
+.wk-day.k-long .d-km { color: var(--text); text-shadow: 0 0 22px var(--glow-white); }
+.wk-day .d-bar { background: color-mix(in srgb, var(--cat-run) 35%, transparent); }
+.wk-day.k-hard .d-bar { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+.wk-day.k-long .d-bar { background: color-mix(in srgb, var(--text) 45%, transparent); }
+.wk-day .d-bar.done { background: var(--cat-run); box-shadow: 0 0 8px var(--glow-white); }
+.wk-day.k-hard .d-bar.done { background: var(--accent); box-shadow: 0 0 8px var(--glow-red); }
+.wk-day.k-long .d-bar.done { background: var(--text); box-shadow: 0 0 8px var(--glow-white-hot); }
+.wk-day.no-run { min-height: 64px; background: transparent; background-image: none; border-style: dashed; box-shadow: none; }
+.wk-day.no-run .d-date span { color: var(--t2); }
+.wk-day.no-run .d-run.rest { font: italic 400 16px var(--serif); color: var(--t2); }
