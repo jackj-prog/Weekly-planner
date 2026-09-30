@@ -1740,3 +1740,14 @@ head between sets. It is now a choice on the session:
   for Long or Race, the split for Long; changing Run type shows or hides
   them in place, and a group that already holds a value is never hidden.
 197 browser checks (4 new), 16,273 plan checks.
+
+## The recap reads plainly — v5.0.2, 1 October (Claude)
+
+- The recap's subtitle no longer ends "· logged distance" (the default
+  said nothing); "· distance from plan" stays when it applies. The title
+  is glued like every other title.
+- "Your log to this run" → "Your log so far".
+- **Edit run is an outline once the run is in.** The white fill marks a
+  screen's one primary action; after logging, editing is secondary, and it
+  had been the loudest thing on the card.
+199 browser checks (2 new), 16,273 plan checks.

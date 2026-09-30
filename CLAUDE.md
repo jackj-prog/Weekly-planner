@@ -248,6 +248,8 @@ session (Normal · Halve · Upper only, `PLAN.legDose`), stored per date in
 `ovr-ISO.legs`; it rewrites the sets or drops the leg movements for that day.
 **v5.0.1:** no resting-HR prompt on race morning; the log form asks for
 gels (Long, Race) and the decoupling split (Long) only where they apply.
+**v5.0.2:** the logged-run recap reads plainly ("Your log so far") and
+Edit run is an outline, not the card's primary action.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

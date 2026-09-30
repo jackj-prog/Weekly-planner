@@ -1653,7 +1653,9 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .recap-plan > summary { min-height: 52px; padding: 16px 0; font: 600 14px/1.5 var(--body); cursor: pointer; }
 .recap-plan > summary span { float: right; font: 400 13px var(--mono); color: var(--t2); }
 .recap-plan .resthero { margin: 12px 0; }
-.hero.has-recap .runlogger > .h-log.logged { width: 100%; min-height: 52px; margin-top: 10px; text-align: left; background: var(--text); color: var(--paper); border: 0; }
+/* once the run is in, editing it is a secondary act: an outline, not the
+   white fill that marks a screen's one primary action (v5.0.2) */
+.hero.has-recap .runlogger > .h-log.logged { width: 100%; min-height: 52px; margin-top: 10px; text-align: left; background: transparent; color: var(--text); border: 1px solid var(--line); }
 .hero.has-recap .runlogger > .h-log.logged span { color: inherit; }
 .runlogger .h-log.form { scroll-margin-top: 86px; }
 .recap-share { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 52px; width: 100%; border: 1px solid var(--t3); border-radius: 12px; margin-top: 12px; padding: 12px 14px; font: 600 15px var(--body); }

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.0.1';
+  const APP_VERSION = '5.0.2';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -838,13 +838,13 @@
     const wrap = el('<section class="run-recap" aria-label="Saved run recap"><div class="recap-intro"><h2 tabindex="-1">' +
       (report.runCount === 1 ? 'The first one, saved.' : 'That’s in the bank.') + '</h2><span>RUN ' + String(report.runCount).padStart(2, '0') + '</span></div>' +
       '<div class="recap-distance"><strong>' + fmt(r.km) + '</strong><span>km</span></div>' +
-      '<p class="recap-subtitle">' + esc(day.run ? day.run.title : 'Unplanned run') +
-      (r.estimatedKm ? ' · distance from plan' : ' · logged distance') + '</p>' +
+      '<p class="recap-subtitle">' + tt(day.run ? day.run.title : 'Unplanned run') +
+      (r.estimatedKm ? ' · distance from plan' : '') + '</p>' +
       '<div class="recap-metrics"><div><span>TIME</span><b>' + recordTime(r.sec) + '</b></div><div><span>PACE / KM</span><b>' + pace + '</b></div><div><span>AVG HR</span><b>' + hrLabel(r.hr) + '</b></div></div>' +
       longRunOverHTML(day, iso, r) +
       awards.map(a => '<article class="recap-award"><span class="recap-seal" aria-hidden="true">✦</span><div><h3>' + esc(a.label) + '</h3><strong>' + esc(a.value) + '</strong><p>' + esc(a.detail) + '</p></div></article>').join('') +
       (report.runCount === 1 ? '<p class="recap-baseline">Your history starts here. Future runs build the comparison.</p>' : '') +
-      '<div class="recap-total"><span>Your log to this run</span><p><b>' + fmt(report.totalKm) + '</b> km <span>across ' + report.runCount + (report.runCount === 1 ? ' run' : ' runs') + '</span></p>' +
+      '<div class="recap-total"><span>Your log so far</span><p><b>' + fmt(report.totalKm) + '</b> km <span>across ' + report.runCount + (report.runCount === 1 ? ' run' : ' runs') + '</span></p>' +
       (report.estimatedCount ? '<small>Includes ' + report.estimatedCount + ' ' + (report.estimatedCount === 1 ? 'distance' : 'distances') + ' from the plan.</small>' : '') + '</div>' +
       comparison + '<details class="recap-method"><summary>What this recap counts</summary><p>Saved whole runs through ' + esc(fmtShort(iso)) +
       '. Records use explicitly saved distances and earlier logs only. First observations and ties do not earn a new best; segment times are never inferred.' +

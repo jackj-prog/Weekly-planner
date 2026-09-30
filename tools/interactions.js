@@ -688,6 +688,11 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.0.2: the recap reads plainly and editing is secondary
+  t = await open('2026-09-24', '20:00', SEED);
+  check(!/logged distance/.test(await text(t.page, '.recap-subtitle')) && /Your log so far/.test(await text(t.page, '.recap-total')), 'the recap says what it means: ' + await text(t.page, '.recap-total'));
+  check(await t.page.$eval('.hero.has-recap .runlogger > .h-log.logged', (n) => getComputedStyle(n).backgroundColor === 'rgba(0, 0, 0, 0)'), 'Edit run is an outline once the run is in');
+  await t.ctx.close();
   // v5.0.1: the log form asks for gels and the half split only on long runs
   t = await open('2026-10-01', '18:10', SEED);
   await t.page.click('button.h-log'); await t.page.click('.log-extra > summary');
