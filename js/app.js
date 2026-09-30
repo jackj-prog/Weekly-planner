@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.91.0';
+  const APP_VERSION = '4.92.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -2440,86 +2440,143 @@
      the block does. The recorded long runs are joined into one constellation,
      a thin beam marks today, and the race is a red sun on the horizon —
      Nicosia's sunrise comes five minutes after the gun. */
+  /* ---- the firmament of the block (v4.92) ----
+     The thirty weeks as one night sky, left to right, drawn like a plate
+     from an astronomical atlas:
+       · depth: a black zenith falling to a faint horizon, the future
+         veiled beyond NOW, and the race's dawn reddening the far right;
+       · the Milky Way in three layers — a wide glow, a brighter core and a
+         dark dust lane — thick with its own tiny stars;
+       · a field of background stars in three magnitudes;
+       · every recorded run as a star: size from its distance, a soft
+         halo, diffraction spikes on the long runs, red for the hard ones;
+       · the long runs joined as a constellation, the lines stopping
+         short of each star as on a star chart;
+       · a comet on each new longest run, its tail as long as the gain;
+       · the moon each week at its real phase along the top;
+       · the race: a sunrise over low hills at the gun, the waning moon
+         still up above it.
+     Every mark is data or ground. */
   function skyHTML(journey) {
-    const W = 360, H = 176, HZ = 150, today = todayISO();
+    const W = 360, H = 190, HZ = 158, today = todayISO();
     const days = journey.weeks.reduce((all, w) => all.concat(w.days), []);
     if (!days.length) return '';
     const n = days.length;
-    const X = (i) => 12 + (i / (n - 1)) * (W - 24);
+    const X = (i) => 14 + (i / (n - 1)) * (W - 50);
     const seed = artSeed;
-    let halos = '', stars = '', spine = [], dust = '', todayX = null, comets = '', moons = '', maxKm = 0;
-    /* the Milky Way: a soft band rising across the block, thick with dust */
-    const way = (t) => [t * W, HZ - 18 - t * (HZ - 44) + Math.sin(t * Math.PI * 2) * 10];
-    let wayPath = '';
-    for (let k = 0; k <= 24; k++) { const [x, y] = way(k / 24); wayPath += (k ? ' L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1); }
-    for (let k = 0; k < 170; k++) {
-      const t = seed('w' + k), [x, y] = way(t), off = (seed('o' + k) - 0.5) * 30;
-      dust += '<circle class="sk-dust way" cx="' + x.toFixed(1) + '" cy="' + (y + off).toFixed(1) + '" r="' + (0.35 + seed('r' + k) * 0.45).toFixed(2) + '"/>';
+    const f1 = (v) => v.toFixed(1);
+    let field = '', way = '', halos = '', spikes = '', stars = '', comets = '', lines = '', moons = '', ahead = '';
+    let todayX = null, maxKm = 0;
+    /* background field: three magnitudes, denser near the Milky Way */
+    for (let k = 0; k < 150; k++) {
+      const x = seed('f' + k) * W, y = 22 + Math.pow(seed('fy' + k), 1.25) * (HZ - 26), m = seed('fm' + k);
+      field += '<circle class="sk-f' + (m > 0.93 ? ' b' : m > 0.6 ? ' m' : '') + '" cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + (m > 0.93 ? 0.85 : m > 0.6 ? 0.55 : 0.35) + '"/>';
     }
+    /* the Milky Way rising across the block: glow, core, dust lane, and its stars */
+    const wy = (t) => HZ - 30 - t * (HZ - 64) + Math.sin(t * Math.PI * 1.6 + 0.4) * 11;
+    let wp = '', lane = '';
+    for (let k = 0; k <= 30; k++) {
+      const t = k / 30, x = t * W;
+      wp += (k ? ' L' : 'M') + f1(x) + ' ' + f1(wy(t));
+      lane += (k ? ' L' : 'M') + f1(x) + ' ' + f1(wy(t) + 3 + Math.sin(t * 9) * 2.2);
+    }
+    way = '<path class="sk-way wide" d="' + wp + '" filter="url(#sk-blur-l)"/><path class="sk-way core" d="' + wp + '" filter="url(#sk-blur-m)"/>';
+    for (let k = 0; k < 320; k++) {
+      const t = seed('w' + k), g = (seed('wg' + k) + seed('wh' + k) + seed('wi' + k) - 1.5) * 20;
+      way += '<circle class="sk-wd" cx="' + f1(t * W) + '" cy="' + f1(wy(t) + g) + '" r="' + (0.25 + seed('wr' + k) * 0.4).toFixed(2) + '"/>';
+    }
+    way += '<path class="sk-lane" d="' + lane + '" filter="url(#sk-blur-s)"/>';
+    /* the moon each week, at its real phase, along the top */
+    journey.weeks.forEach((w, k) => {
+      const iso = DB.addDays(w.start, 3), mp = DB.moonPhase(iso), x = X(k * 7 + 3);
+      const full = mp.lit > 0.93, nw = mp.lit < 0.07;
+      moons += '<g class="sk-mo' + (full ? ' full' : nw ? ' new' : '') + '" style="--i:' + k + '">' +
+        (full ? '<circle class="sk-mohalo" fill="url(#sk-hw)" cx="' + f1(x) + '" cy="10" r="8"/>' : '') + moonSVG(x, 10, 3, mp, 'sk-moon') + '</g>';
+    });
+    /* the runs */
+    const spine = [];
     days.forEach((d, i) => {
       const x = X(i);
       if (d.iso === today) todayX = x;
-      /* the moon across the block: each full moon a bright disc, each new moon a ring */
-      const p0 = DB.moonPhase(d.iso).phase, p1 = i + 1 < n ? DB.moonPhase(days[i + 1].iso).phase : p0;
-      if (p0 <= 0.5 && p1 > 0.5 && (0.5 - p0) <= (p1 - 0.5)) moons += moonSVG(x, 9, 3.6, { phase: 0.5, lit: 1, waxing: false }, 'sk-moon full');
-      else if (i > 0) { const pm = DB.moonPhase(days[i - 1].iso).phase; if (pm < 0.5 && p0 > 0.5 && (p0 - 0.5) < (0.5 - pm)) moons += moonSVG(x, 9, 3.6, { phase: 0.5, lit: 1, waxing: false }, 'sk-moon full'); }
-      if (p1 < p0 && (1 - p0) <= p1) moons += '<circle class="sk-moon new" cx="' + x.toFixed(1) + '" cy="9" r="3.2"/>';
-      else if (i > 0) { const pm = DB.moonPhase(days[i - 1].iso).phase; if (p0 < pm && p0 < (1 - pm)) moons += '<circle class="sk-moon new" cx="' + x.toFixed(1) + '" cy="9" r="3.2"/>'; }
-      // background dust: faint fixed points so the sky is never empty
-      if (seed(d.iso + 'd') > 0.55) dust += '<circle class="sk-dust" cx="' + x.toFixed(1) + '" cy="' + (8 + seed(d.iso + 'y') * (HZ - 16)).toFixed(1) + '" r="0.6"/>';
       if (!d.planned && !d.recorded) return;
       const kind = d.cls === 'quality' || d.cls === 'race' ? 'hard' : d.cls === 'long' ? 'long' : 'easy';
-      // long runs ride high, hard sessions in the middle, easy runs low — the Milky Way
-      const band = kind === 'long' ? [26, 60] : kind === 'hard' ? [52, 92] : [80, HZ - 12];
+      const band = kind === 'long' ? [30, 66] : kind === 'hard' ? [58, 98] : [88, HZ - 16];
       const y = band[0] + seed(d.iso) * (band[1] - band[0]);
+      const t = (x / W).toFixed(3);
       if (d.recorded > 0) {
-        const r = Math.max(1, Math.min(4.4, Math.sqrt(d.recorded) * 0.9));
-        if (kind !== 'easy') halos += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (r * 2.8).toFixed(1) + '" fill="url(#sk-h' + (kind === 'hard' ? 'r' : 'w') + ')"/>';
-        stars += '<circle class="sk-star ' + kind + (seed(d.iso + 't') > 0.6 ? ' tw' : '') + '" style="--d:' + (seed(d.iso + 'd') * 5).toFixed(2) + 's" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '"/>';
-        if (kind === 'long') spine.push(x.toFixed(1) + ',' + y.toFixed(1));
-        /* every run that went further than any before it trails a comet's tail */
+        const r = Math.max(0.8, Math.min(3.2, Math.sqrt(d.recorded) * 0.66));
+        halos += '<circle class="sk-halo ' + kind + '" style="--t:' + t + '" cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(r * (kind === 'easy' ? 3 : 4.6)) + '" fill="url(#sk-h' + (kind === 'hard' ? 'r' : 'w') + ')"/>';
+        /* the brightest carry diffraction spikes: four tapered needles */
+        if (kind === 'long' || d.recorded >= 21) {
+          const L = r * 2.8 + 2.5, w = 0.32;
+          const needle = (x0, y0, x1, y1, px, py) => 'M' + f1(x0) + ' ' + f1(y0) + ' L' + (x + px).toFixed(2) + ' ' + (y + py).toFixed(2) + ' L' + f1(x1) + ' ' + f1(y1) + ' L' + (x - px).toFixed(2) + ' ' + (y - py).toFixed(2) + ' Z';
+          spikes += '<path class="sk-spike" style="--t:' + t + '" d="' + needle(x - L, y, x + L, y, 0, w) + ' ' + needle(x, y - L, x, y + L, w, 0) + '"/>';
+        }
+        stars += '<circle class="sk-star ' + kind + (seed(d.iso + 't') > 0.62 ? ' tw' : '') + '" style="--t:' + t + ';--d:' + (seed(d.iso + 'd') * 6).toFixed(2) + 's" cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(r) + '"/>';
+        if (kind === 'long') spine.push([x, y, r]);
         if (d.recorded > maxKm) {
-          if (maxKm > 0) comets += '<path class="sk-comet" pathLength="1" style="--d:' + (i / n * 1.2).toFixed(2) + 's" d="M' + (x - 20).toFixed(1) + ' ' + (y - 11).toFixed(1) + ' L' + x.toFixed(1) + ' ' + y.toFixed(1) + '"/>';
+          if (maxKm > 0) {
+            const gain = d.recorded - maxKm, len = 8 + Math.min(30, gain * 3.2);
+            comets += '<path class="sk-comet" pathLength="1" style="--t:' + t + '" d="M' + f1(x - len * 0.93) + ' ' + f1(y - len * 0.37) + ' L' + f1(x - r) + ' ' + f1(y - r * 0.4) + '"/>';
+          }
           maxKm = d.recorded;
         }
       } else if (d.iso > today) {
-        stars += '<circle class="sk-ahead' + (kind === 'hard' ? ' hard' : '') + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="0.9"/>';
+        ahead += '<circle class="sk-ahead' + (kind === 'hard' ? ' hard' : kind === 'long' ? ' long' : '') + '" cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + (kind === 'long' ? 1.1 : 0.8) + '"/>';
       }
     });
-    const sunX = X(n - 1);
-    let rays = '';
-    for (let k = 0; k < 9; k++) {
-      const a = Math.PI + (k + 1) * (Math.PI / 10);
-      rays += '<path class="sk-ray" d="M' + (sunX + 22 * Math.cos(a)).toFixed(1) + ' ' + (HZ + 22 * Math.sin(a)).toFixed(1) +
-        ' L' + (sunX + 40 * Math.cos(a)).toFixed(1) + ' ' + (HZ + 40 * Math.sin(a)).toFixed(1) + '"/>';
+    /* the constellation: segments that stop short of each star */
+    for (let k = 1; k < spine.length; k++) {
+      const [ax, ay, ar] = spine[k - 1], [bx, by, br] = spine[k], dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy);
+      if (L < ar + br + 6) continue;
+      const ux = dx / L, uy = dy / L, ga = ar + 3.5, gb = br + 3.5;
+      lines += '<path class="sk-line" pathLength="1" style="--t:' + (ax / W).toFixed(3) + '" d="M' + f1(ax + ux * ga) + ' ' + f1(ay + uy * ga) + ' L' + f1(bx - ux * gb) + ' ' + f1(by - uy * gb) + '"/>';
     }
+    /* the race: the sun rising over low hills at the gun, rays like a window */
+    const sunX = X(n - 1) + 4;
+    let rays = '';
+    for (let k = 0; k < 15; k++) {
+      const a = Math.PI + (k + 0.5) * (Math.PI / 15), r0 = 20, r1 = k % 2 ? 34 : 46;
+      rays += 'M' + f1(sunX + r0 * Math.cos(a)) + ' ' + f1(HZ + r0 * Math.sin(a)) + ' L' + f1(sunX + r1 * Math.cos(a)) + ' ' + f1(HZ + r1 * Math.sin(a)) + ' ';
+    }
+    let hills = 'M0 ' + (HZ + 2);
+    for (let k = 0; k <= 36; k++) {
+      const x = k * 10, h = 2.5 + Math.sin(k * 0.55) * 1.6 + Math.sin(k * 1.7 + 1) * 1 + (k > 28 ? (k - 28) * 0.5 : 0);
+      hills += ' L' + x + ' ' + f1(HZ - h + 2);
+    }
+    hills += ' L' + W + ' ' + H + ' L0 ' + H + ' Z';
     const ran = days.filter((d) => d.recorded > 0).length;
-    /* now and then a shooting star crosses it — the one ambient flourish */
-    const shooting = [[236, 44, 0], [190, 86, 8], [284, 24, 15]].map(([x, y, s]) =>
-      '<path class="sk-shoot" pathLength="1" style="--s:' + s + 's" d="M' + x + ' ' + y + ' L' + (x + 44) + ' ' + (y + 17) + '"/>').join('');
-    /* race morning's own moon: waning, still up in the west at the gun */
-    const raceMoon = moonSVG(sunX - 46, HZ - 74, 6, DB.moonPhase(days[n - 1].iso), 'sk-moon race');
+    const shooting = [[228, 40, 0], [176, 82, 9], [276, 26, 17]].map(([x, y, s]) =>
+      '<g class="sk-shoot" style="--s:' + s + 's"><path d="M' + x + ' ' + y + ' L' + (x + 46) + ' ' + (y + 18) + '"/><circle cx="' + (x + 46) + '" cy="' + (y + 18) + '" r=".9"/></g>').join('');
+    const raceMoon = '<g class="sk-racemoon"><circle fill="url(#sk-hw)" cx="' + f1(sunX - 56) + '" cy="' + (HZ - 84) + '" r="13"/>' + moonSVG(sunX - 56, HZ - 84, 4.4, DB.moonPhase(days[n - 1].iso), 'sk-moon race') + '</g>';
+    const veil = todayX != null ? '<rect class="sk-veil" x="' + f1(todayX) + '" y="0" width="' + f1(W - todayX) + '" height="' + HZ + '" fill="url(#sk-veil)"/>' : '';
     return '<figure class="sky" role="img" aria-label="The block as a night sky: ' + ran + ' runs recorded as stars, ' +
-      'long runs joined as a constellation, comet tails on each new longest run, full and new moons along the top, ' +
+      'long runs joined as a constellation, comet tails on each new longest run, the moon each week at its phase along the top, ' +
       'and the race as a sunrise at the far right under a waning moon.">' +
       '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
-      '<defs><radialGradient id="sk-dawn" cx="1" cy="1" r="0.55"><stop offset="0" class="sk-dawn-a"/><stop offset="1" class="sk-dawn-b"/></radialGradient>' +
+      '<defs><linearGradient id="sk-depth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="sk-z0"/><stop offset=".75" class="sk-z1"/><stop offset="1" class="sk-z2"/></linearGradient>' +
+      '<radialGradient id="sk-dawn" cx="1" cy="1" r="0.62"><stop offset="0" class="sk-dawn-a"/><stop offset=".5" class="sk-dawn-m"/><stop offset="1" class="sk-dawn-b"/></radialGradient>' +
       '<radialGradient id="sk-glow"><stop offset="0" class="sk-glow-a"/><stop offset="1" class="sk-glow-b"/></radialGradient>' +
-      '<radialGradient id="sk-hw"><stop offset="0" class="sk-hw-a"/><stop offset="1" class="sk-hw-b"/></radialGradient>' +
-      '<radialGradient id="sk-hr"><stop offset="0" class="sk-hr-a"/><stop offset="1" class="sk-hr-b"/></radialGradient>' +
+      '<radialGradient id="sk-hw"><stop offset="0" class="sk-hw-a"/><stop offset=".35" class="sk-hw-m"/><stop offset="1" class="sk-hw-b"/></radialGradient>' +
+      '<radialGradient id="sk-hr"><stop offset="0" class="sk-hr-a"/><stop offset=".35" class="sk-hr-m"/><stop offset="1" class="sk-hr-b"/></radialGradient>' +
       '<linearGradient id="sk-tail" x1="1" y1="1" x2="0" y2="0"><stop offset="0" class="sk-tail-a"/><stop offset="1" class="sk-tail-b"/></linearGradient>' +
-      '<filter id="sk-blur" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>' +
+      '<linearGradient id="sk-veil" x1="0" y1="0" x2="1" y2="0"><stop offset="0" class="sk-veil-a"/><stop offset=".08" class="sk-veil-b"/><stop offset="1" class="sk-veil-b"/></linearGradient>' +
+      '<filter id="sk-blur-l" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="11"/></filter>' +
+      '<filter id="sk-blur-m" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="4.5"/></filter>' +
+      '<filter id="sk-blur-s" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="1.8"/></filter>' +
       '<clipPath id="sk-above"><rect x="0" y="0" width="' + W + '" height="' + HZ + '"/></clipPath></defs>' +
-      '<rect class="sk-dawnfill" x="0" y="0" width="' + W + '" height="' + HZ + '" fill="url(#sk-dawn)"/>' +
-      '<path class="sk-way" d="' + wayPath + '" filter="url(#sk-blur)"/>' + dust + moons + halos + comets +
-      (spine.length > 1 ? '<polyline class="sk-spine" points="' + spine.join(' ') + '"/>' : '') + stars + raceMoon + shooting +
-      (todayX != null ? '<path class="sk-now" d="M' + todayX.toFixed(1) + ' 18 L' + todayX.toFixed(1) + ' ' + HZ + '"/>' +
-        '<text class="sk-now-t" x="' + (todayX + 4).toFixed(1) + '" y="25">NOW</text>' : '') +
-      '<g clip-path="url(#sk-above)"><circle class="sk-sunglow" cx="' + sunX.toFixed(1) + '" cy="' + HZ + '" r="54" fill="url(#sk-glow)"/>' +
-      rays + '<circle class="sk-sun" cx="' + sunX.toFixed(1) + '" cy="' + HZ + '" r="16"/></g>' +
-      '<path class="sk-horizon" d="M0 ' + HZ + ' L' + W + ' ' + HZ + '"/>' +
-      '<text class="sk-lab" x="12" y="' + (HZ + 16) + '">' + esc(fmtShort(days[0].iso)).toUpperCase() + '</text>' +
-      '<text class="sk-lab end" x="' + (W - 12) + '" y="' + (HZ + 16) + '">GUN · ' + esc(String(PLAN.race.gun)) + '</text>' +
+      '<rect class="sk-ground" x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#sk-depth)"/>' +
+      '<rect x="0" y="0" width="' + W + '" height="' + HZ + '" fill="url(#sk-dawn)" class="sk-dawnfill"/>' +
+      '<g class="sk-fieldg">' + field + '</g><g class="sk-wayg">' + way + '</g>' + veil +
+      '<g class="sk-moons">' + moons + '</g>' +
+      '<g class="sk-runs">' + halos + spikes + lines + comets + stars + ahead + '</g>' + raceMoon + shooting +
+      (todayX != null ? '<path class="sk-now" d="M' + f1(todayX) + ' 22 L' + f1(todayX) + ' ' + HZ + '"/>' +
+        '<text class="sk-now-t" x="' + f1(todayX + 4) + '" y="29">NOW</text>' : '') +
+      '<g clip-path="url(#sk-above)" class="sk-dawng"><circle class="sk-sunglow" cx="' + f1(sunX) + '" cy="' + HZ + '" r="64" fill="url(#sk-glow)"/>' +
+      '<path class="sk-ray" d="' + rays + '"/><circle class="sk-sun" cx="' + f1(sunX) + '" cy="' + HZ + '" r="15"/></g>' +
+      '<path class="sk-hills" d="' + hills + '"/><path class="sk-horizon" d="M0 ' + HZ + ' L' + W + ' ' + HZ + '"/>' +
+      '<text class="sk-lab" x="14" y="' + (HZ + 20) + '">' + esc(fmtShort(days[0].iso)).toUpperCase() + '</text>' +
+      '<text class="sk-lab end" x="' + (W - 14) + '" y="' + (HZ + 20) + '">GUN · ' + esc(String(PLAN.race.gun)) + '</text>' +
       '</svg><figcaption class="fig-cap"><span class="fig">Fig. I</span> The firmament of the block</figcaption></figure>';
   }
 

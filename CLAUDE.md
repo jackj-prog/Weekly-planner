@@ -222,6 +222,12 @@ their track each wearing its emblem; a ring of lights, one per session;
 a rose-window medallion with the count and the engraved date; a Breguet
 hand that turns (never redraws) each minute, and a comet round the
 medallion once a minute. Motion curves are tokens (`--ease-*`).
+**The firmament (v4.92)** is an atlas plate: depth from zenith to hills,
+a three-layer Milky Way, a field of stars in three magnitudes, every run a
+star with a halo (spikes on the long runs), the long runs a constellation,
+comets as long as each new longest run's gain, the moon every week at its
+real phase, the future veiled past NOW, and the race a sunrise under the
+waning moon.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

@@ -1491,6 +1491,12 @@ section('palette contrast (WCAG AA)');
     const clockCss = css.slice(css.indexOf('THE DAY CLOCK (v4.91)'));
     ok(!/#[0-9a-f]{3,6}\b/i.test(clockCss.replace(/#(?:fff|000)\b/gi, '').replace(/url\(#[\w-]+\)/g, '')) && (css.match(/\.dw-count \{/g) || []).length === 1, 'the clock has one stylesheet section, painted only with tokens');
     ok(/@keyframes dw-arc \{ from \{[^}]*opacity: 0/.test(css), 'a session arc is invisible until it starts to draw (no round-cap dot)');
+    /* v4.92: the firmament */
+    const skyFn = appSrc.slice(appSrc.indexOf('  function skyHTML(journey)'), appSrc.indexOf('  function buildTrainingJourney'));
+    ok(/journey\.weeks\.forEach\(\(w, k\) => \{\s*const iso = DB\.addDays\(w\.start, 3\), mp = DB\.moonPhase\(iso\)/.test(skyFn), 'each week\u2019s moon is drawn at its real phase');
+    ok(/Math\.min\(30, gain \* 3\.2\)/.test(skyFn), 'a comet\u2019s tail is as long as the gain over the previous longest run');
+    const skyCss = css.slice(css.indexOf('THE FIRMAMENT OF THE BLOCK (v4.92)'));
+    ok(skyCss.length > 100 && !/rgba?\(|#[0-9a-f]{3,6}\b/i.test(skyCss.replace(/url\(#[\w-]+\)/g, '')) && (css.match(/\.sk-sun \{/g) || []).length === 1, 'the sky has one stylesheet section, painted only with tokens');
     const shoeKm = {};
     for (let i = 0; i < 210; i++) { const d = DB.buildDay(DB.addDays(PLAN.blocks[0].start, i)); if (d.run) shoeKm[d.run.run.shoe] = (shoeKm[d.run.run.shoe] || 0) + d.run.run.km; }
     ok(PLAN.shoes.filter((s) => !/race/i.test(s.job)).every((s) => Object.keys(shoeKm).some((k) => s.shoe.endsWith(k) && shoeKm[k] > 100)),

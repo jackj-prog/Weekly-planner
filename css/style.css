@@ -1978,30 +1978,6 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 /* -- the day wheel -- */
 
 /* -- the night sky -- */
-.sky { margin: 16px -6px 6px; }
-.sky svg { display: block; width: 100%; height: auto; }
-.sk-dawn-a { stop-color: var(--accent-fill); stop-opacity: .2; }
-.sk-dawn-b { stop-color: var(--accent-fill); stop-opacity: 0; }
-.sk-glow-a { stop-color: var(--accent); stop-opacity: .6; }
-.sk-glow-b { stop-color: var(--accent); stop-opacity: 0; }
-.sk-hw-a { stop-color: var(--text); stop-opacity: .26; }
-.sk-hw-b { stop-color: var(--text); stop-opacity: 0; }
-.sk-hr-a { stop-color: var(--accent); stop-opacity: .45; }
-.sk-hr-b { stop-color: var(--accent); stop-opacity: 0; }
-.sk-dust { fill: var(--t3); opacity: .45; }
-.sk-star.easy { fill: var(--t2); }
-.sk-star.long { fill: var(--text); }
-.sk-star.hard { fill: var(--accent); }
-.sk-ahead { fill: var(--t3); opacity: .45; }
-.sk-ahead.hard { fill: var(--accent); opacity: .4; }
-.sk-spine { fill: none; stroke: var(--glow-white); stroke-width: .9; stroke-dasharray: 2 3; }
-.sk-now { stroke: var(--t2); stroke-width: .8; stroke-dasharray: 1 3; }
-.sk-now-t { fill: var(--t2); font: 700 7px var(--mono); letter-spacing: .16em; }
-.sk-sun { fill: var(--accent-fill); }
-.sk-ray { stroke: var(--accent); stroke-width: 1.4; stroke-linecap: round; opacity: .75; }
-.sk-horizon { stroke: var(--t3); stroke-width: .8; }
-.sk-lab { fill: var(--t3); font: 400 8px var(--mono); letter-spacing: .12em; }
-.sk-lab.end { text-anchor: end; }
 
 /* -- the run card's texture, by class of run -- */
 .hero .h-art { position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; overflow: hidden; }
@@ -2033,9 +2009,6 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   /* the wheel's sessions draw round the dial on arrival, the sky twinkles in */
   @keyframes dw-in { from { opacity: 0; } }
   
-  .view.anim .sk-star, .view.anim .sk-ahead { animation: dw-in 1.2s ease-out backwards; }
-  .view.anim .sk-sun, .view.anim .sk-ray { animation: sk-rise 1.4s cubic-bezier(.2,.8,.2,1) .3s backwards; }
-  @keyframes sk-rise { from { opacity: 0; transform: translateY(14px); } }
 }
 
 /* ================= THE BOOK OF HOURS (v4.73) =======================
@@ -2165,16 +2138,6 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .mo-lit { fill: var(--text); }
 
 /* the night sky page: the Milky Way, moons, comets */
-.sk-way { fill: none; stroke: var(--glow-white-soft); stroke-width: 30; stroke-linecap: round; }
-.sk-dust.way { fill: var(--t2); opacity: .35; }
-.sk-moon.new { fill: none; stroke: var(--t3); stroke-width: .8; }
-.sk-moon.full .mo-lit, .sk-moon.full .mo-dark { fill: var(--t2); stroke: none; }
-.sk-moon.full { filter: drop-shadow(0 0 4px var(--glow-white)); }
-.sk-moon.race .mo-lit { fill: var(--text); }
-.sk-moon.race { filter: drop-shadow(0 0 8px var(--glow-white)); }
-.sk-comet { fill: none; stroke: url(#sk-tail); stroke-width: 1.4; stroke-linecap: round; }
-.sk-tail-a { stop-color: var(--text); stop-opacity: .85; }
-.sk-tail-b { stop-color: var(--text); stop-opacity: 0; }
 
 /* the earned inscription is a footnote, not the headline */
 .tc-latin { font-size: 17px; opacity: 0; }
@@ -2187,13 +2150,8 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 @media (prefers-reduced-motion: no-preference) {
   @keyframes dw-draw { from { stroke-dasharray: 1; stroke-dashoffset: 1; } to { stroke-dasharray: 1; stroke-dashoffset: 0; } }
   /* stars twinkle, a few at a time; the moon glows up */
-  .sk-star.tw { animation: twinkle 3.8s ease-in-out infinite; animation-delay: var(--d); }
   @keyframes twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
-  .view.anim .sk-moon { animation: dw-in 1.6s ease-out .6s backwards; }
   /* comets streak in along the block, oldest first */
-  .view.anim .sk-comet { animation: comet 1s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--d) + .5s); }
-  @keyframes comet { from { stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; } to { stroke-dasharray: 1; stroke-dashoffset: 0; opacity: 1; } }
-  .view.anim .sk-way { animation: dw-in 2s ease-out backwards; }
   /* candles burn */
   .profile-day.lit .profile-track i::before { animation: flicker 1.9s ease-in-out infinite alternate; }
   .profile-day.lit:nth-child(2n) .profile-track i::before { animation-duration: 1.5s; animation-delay: -.6s; }
@@ -2296,8 +2254,6 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .tc-moong .mo-dark { fill: var(--surface); stroke: var(--line); }
 @keyframes tc-moon { from { opacity: 0; transform: translateY(16px) scale(.85); } to { opacity: 1; transform: none; } }
 
-/* shooting stars on the night sky page */
-.sk-shoot { fill: none; stroke: url(#sk-tail); stroke-width: 1.1; stroke-linecap: round; opacity: 0; }
 
 @media (prefers-reduced-motion: no-preference) {
   /* the run draws across its sky; the sun settles onto the horizon */
@@ -2308,13 +2264,6 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   .view.anim .rs-sky, .view.anim .rs-path, .view.anim .rs-dome { animation: dw-in 1.2s ease-out .1s backwards; }
   .rs-star.tw { animation: twinkle 3.8s ease-in-out infinite; animation-delay: var(--d); }
   /* now and then, a shooting star */
-  .sk-shoot { animation: shoot 21s linear infinite; animation-delay: calc(var(--s) + 2.5s); }
-  @keyframes shoot {
-    0% { opacity: 0; stroke-dasharray: 1; stroke-dashoffset: 1; }
-    .4% { opacity: 1; }
-    1.8% { opacity: 1; stroke-dasharray: 1; stroke-dashoffset: 0; }
-    4.5%, 100% { opacity: 0; stroke-dasharray: 1; stroke-dashoffset: 0; }
-  }
 }
 
 /* ================= THE LIGHT OF THE WEEK (v4.77) =================== */
@@ -2956,4 +2905,95 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   @keyframes dw-bloom { from { opacity: 0; transform: scale(.6) rotate(-30deg); } }
   .view.anim .daywheel.in .dw-sec { animation: dw-in 1s var(--ease-soft) 2.2s backwards, dw-spin 60s linear calc(var(--s, 0) * -1s) infinite; }
   .view.anim .daywheel.in .figcaption, .view.anim .daywheel.in :is(figcaption, .dw-sunline) { animation: dw-up .8s var(--ease-out) 1.4s backwards; }
+}
+
+/* ================= THE FIRMAMENT OF THE BLOCK (v4.92) ============== */
+/* One section for the night sky on the Plan page: an astronomical plate.
+   Light only from the one red and white; the ground is near-black. */
+.sky { margin: 16px -6px 6px; }
+.sky svg { display: block; width: 100%; height: auto; border-radius: 14px; }
+.sk-z0 { stop-color: var(--chrome-bg); }
+.sk-z1 { stop-color: color-mix(in srgb, var(--text) 3%, var(--chrome-bg)); }
+.sk-z2 { stop-color: color-mix(in srgb, var(--text) 7%, var(--chrome-bg)); }
+.sk-dawn-a { stop-color: var(--accent-fill); stop-opacity: .34; }
+.sk-dawn-m { stop-color: var(--accent-fill); stop-opacity: .08; }
+.sk-dawn-b { stop-color: var(--accent-fill); stop-opacity: 0; }
+.sk-glow-a { stop-color: var(--accent); stop-opacity: .55; }
+.sk-glow-b { stop-color: var(--accent); stop-opacity: 0; }
+.sk-hw-a { stop-color: var(--text); stop-opacity: .5; }
+.sk-hw-m { stop-color: var(--text); stop-opacity: .12; }
+.sk-hw-b { stop-color: var(--text); stop-opacity: 0; }
+.sk-hr-a { stop-color: var(--accent); stop-opacity: .6; }
+.sk-hr-m { stop-color: var(--accent); stop-opacity: .16; }
+.sk-hr-b { stop-color: var(--accent); stop-opacity: 0; }
+.sk-tail-a { stop-color: var(--text); stop-opacity: .9; }
+.sk-tail-b { stop-color: var(--text); stop-opacity: 0; }
+.sk-veil-a { stop-color: var(--chrome-bg); stop-opacity: 0; }
+.sk-veil-b { stop-color: var(--chrome-bg); stop-opacity: .5; }
+/* the field and the Milky Way */
+.sk-f { fill: var(--text); opacity: .22; }
+.sk-f.m { opacity: .42; }
+.sk-f.b { opacity: .8; }
+.sk-way { fill: none; stroke-linecap: round; }
+.sk-way.wide { stroke: color-mix(in srgb, var(--text) 9%, transparent); stroke-width: 46; }
+.sk-way.core { stroke: color-mix(in srgb, var(--text) 10%, transparent); stroke-width: 12; }
+.sk-lane { fill: none; stroke: var(--chrome-bg); stroke-width: 4; stroke-linecap: round; opacity: .55; }
+.sk-wd { fill: var(--text); opacity: .42; }
+/* the moon every week */
+.sk-moon .mo-dark { fill: color-mix(in srgb, var(--text) 8%, var(--chrome-bg)); stroke: color-mix(in srgb, var(--text) 24%, transparent); stroke-width: .4; }
+.sk-moon .mo-lit { fill: color-mix(in srgb, var(--text) 82%, transparent); }
+.sk-mo.full .mo-lit { fill: var(--text); }
+/* the runs */
+.sk-star.easy { fill: color-mix(in srgb, var(--text) 78%, transparent); }
+.sk-star.long { fill: var(--text); }
+.sk-star.hard { fill: var(--accent); }
+.sk-halo.easy { opacity: .55; }
+.sk-spike { fill: var(--text); opacity: .7; }
+.sk-line { fill: none; stroke: color-mix(in srgb, var(--text) 38%, transparent); stroke-width: .5; }
+.sk-comet { fill: none; stroke: url(#sk-tail); stroke-width: 1.2; stroke-linecap: round; }
+.sk-ahead { fill: var(--t3); opacity: .5; }
+.sk-ahead.long { fill: var(--t2); opacity: .55; }
+.sk-ahead.hard { fill: var(--accent); opacity: .45; }
+/* now, the race, the ground */
+.sk-now { stroke: color-mix(in srgb, var(--text) 55%, transparent); stroke-width: .6; stroke-dasharray: 1 2.5; }
+.sk-now-t { fill: var(--text); font: 700 6.5px var(--mono); letter-spacing: .2em; }
+.sk-sun { fill: var(--accent-fill); }
+.sk-ray { fill: none; stroke: var(--accent); stroke-width: .9; stroke-linecap: round; opacity: .55; }
+.sk-moon.race .mo-lit { fill: var(--text); }
+.sk-hills { fill: var(--chrome-bg); }
+.sk-horizon { stroke: color-mix(in srgb, var(--text) 16%, transparent); stroke-width: .5; }
+.sk-lab { fill: var(--t3); font: 400 7.5px var(--mono); letter-spacing: .16em; }
+.sk-lab.end { text-anchor: end; fill: var(--accent); }
+.sk-shoot { opacity: 0; }
+.sk-shoot path { fill: none; stroke: url(#sk-tail); stroke-width: 1; stroke-linecap: round; }
+.sk-shoot circle { fill: var(--text); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* ambient: stars breathe, now and then a shooting star */
+  .sk-star.tw { animation: sk-twinkle 5.2s ease-in-out infinite; animation-delay: var(--d); transform-box: fill-box; transform-origin: center; }
+  @keyframes sk-twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 45% { opacity: .45; transform: scale(.82); } }
+  .sk-shoot { animation: sk-shoot 23s var(--ease-soft) infinite; animation-delay: calc(var(--s) + 3s); transform-box: fill-box; }
+  @keyframes sk-shoot {
+    0% { opacity: 0; transform: translate(-30px, -12px); }
+    .6% { opacity: 1; }
+    3% { opacity: 1; transform: translate(0, 0); }
+    4.2%, 100% { opacity: 0; transform: translate(6px, 2.4px); }
+  }
+  /* arrival, once: the night deepens, the Milky Way rises, the moons come
+     up week by week, the runs appear in the order they were run, the
+     constellation is drawn, comets streak, and the race dawns */
+  .view.anim .sky .sk-fieldg { animation: dw-in 1.4s var(--ease-soft) backwards; }
+  .view.anim .sky .sk-wayg { animation: sk-rise 1.8s var(--ease-out) .1s backwards; }
+  @keyframes sk-rise { from { opacity: 0; transform: translateY(8px); } }
+  .view.anim .sky .sk-mo { animation: dw-in .6s var(--ease-soft) backwards; animation-delay: calc(var(--i) * 30ms + .3s); }
+  .view.anim .sky :is(.sk-star, .sk-halo, .sk-spike) { animation: sk-pop .7s var(--ease-spring) backwards; animation-delay: calc(var(--t) * 1.4s + .4s); transform-box: fill-box; transform-origin: center; }
+  @keyframes sk-pop { from { opacity: 0; transform: scale(.2); } }
+  .view.anim .sky .sk-line { animation: dw-arc .6s var(--ease-inout) backwards; animation-delay: calc(var(--t) * 1.4s + .9s); }
+  .view.anim .sky .sk-comet { animation: dw-arc .7s var(--ease-out) backwards; animation-delay: calc(var(--t) * 1.4s + .6s); }
+  .view.anim .sky .sk-ahead { animation: dw-in .8s var(--ease-soft) 1.6s backwards; }
+  .view.anim .sky .sk-dawng { animation: sk-dawn 1.8s var(--ease-out) 1.5s backwards; }
+  @keyframes sk-dawn { from { opacity: 0; transform: translateY(18px); } }
+  .view.anim .sky .sk-dawnfill { animation: dw-in 2.2s var(--ease-soft) 1.2s backwards; }
+  .view.anim .sky .sk-racemoon { animation: dw-in 1.2s var(--ease-soft) 2.2s backwards; }
+  .view.anim .sky :is(.sk-now, .sk-now-t) { animation: dw-in .8s var(--ease-soft) 1.9s backwards; }
 }

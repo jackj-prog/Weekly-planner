@@ -1534,3 +1534,29 @@ stylesheet section, "THE DAY CLOCK (v4.91)", painted only with tokens.
   the gloria blooms. Ambient loops only on art (stars, gloria, comet),
   all behind `prefers-reduced-motion`.
 157 browser checks (sweep included), 16,257 plan checks, no overflow, a11y clean; render time unchanged.
+
+## The firmament of the block — v4.92, 1 October (Claude)
+
+User: "do the same with all animations + nightsky, refine make more
+intricate and bring up to the commercial grade level". `skyHTML` was
+rebuilt as an astronomical plate, and its CSS consolidated into one
+section ("THE FIRMAMENT OF THE BLOCK (v4.92)"), tokens only:
+- depth — a black zenith falling to a faint horizon, low hills, the future
+  beyond NOW veiled, the race's dawn reddening the far right;
+- the Milky Way in three layers (wide glow, core, dark dust lane) with
+  320 of its own tiny stars, over a 150-star background field in three
+  magnitudes;
+- each recorded run a star sized by distance with a soft halo; long runs
+  (and anything 21 km+) carry tapered four-point diffraction spikes;
+- the long runs joined as a constellation, the lines stopping short of
+  each star as on a chart; a comet on each new longest run, its tail as
+  long as the gain;
+- the moon each week at its real phase along the top (was: full and new
+  only);
+- the race as a sunrise over the hills with fifteen rays and the waning
+  moon above it in a halo.
+Motion: stars breathe (opacity and scale), a shooting star now has a head
+and travels its path; arrival plays the night deepening, the Milky Way
+rising, the moons week by week, the runs in the order they were run, the
+constellation drawn, the comets, and the dawn last.
+161 browser checks (sweep included), 16,260 plan checks, no overflow, a11y clean.

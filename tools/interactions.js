@@ -522,6 +522,15 @@ async function cinema() {
   t = await open('2026-10-07', '12:00', SEED); await t.page.click('.day-nav .nav[data-d="1"]');
   check(!(await t.page.$('.daywheel .dw-handg')) && !(await t.page.$('.daywheel.live')), 'another day\u2019s dial has no hand and is not live');
   await t.ctx.close();
+  // v4.92: the firmament of the block
+  t = await open('2026-10-01', '12:00', Object.assign({}, SEED, { 'runlog-2026-09-13': { sec: 7400, hr: 148, km: 19 }, 'runlog-2026-09-06': { sec: 7000, hr: 147, km: 18 } }), 'plan');
+  const fm = await t.page.evaluate(() => { const q = (s) => document.querySelectorAll('.sky ' + s).length;
+    return { moons: q('.sk-mo'), stars: q('.sk-star'), long: q('.sk-star.long'), spikes: q('.sk-spike'), lines: q('.sk-line'), veil: q('.sk-veil'), field: q('.sk-f'), way: q('.sk-wd'), ahead: q('.sk-ahead') }; });
+  check(fm.moons === 30 && fm.field >= 100 && fm.way >= 200, 'the sky carries a moon for every week and a Milky Way of its own stars: ' + JSON.stringify(fm));
+  check(fm.long >= 2 && fm.spikes >= fm.long && fm.lines >= 1, 'the long runs shine with diffraction spikes and are joined as a constellation');
+  check(fm.veil === 1 && fm.ahead > 0, 'the future beyond NOW is veiled, its planned runs faint');
+  noErrors(t, 'firmament');
+  await t.ctx.close();
   // v4.86: the journey's week explorer, the pace spectrum, the week in hours
   t = await open('2026-10-01', '12:00', SEED, 'plan');
   const jd = await t.page.$$eval('.journey-days button', (ns) => ns.map((n) => n.className));
