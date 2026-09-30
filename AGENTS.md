@@ -1645,3 +1645,20 @@ audit of Today (morning, evening, night), Week, Plan and Reference found:
   data/plan.js") loose under the closed archive. It is now a serif coda
   inside the archive after the recovery rows, and speaks to the runner.
 169 browser checks (5 new), 16,269 plan checks.
+
+## Typography pass — v4.96, 1 October (Claude)
+
+Round two of the audit (a long-run Sunday, a gym Monday, the log form,
+focus, the More sheet) turned up only typographic faults, so this release
+is about how text breaks:
+- **Balanced titles.** Card, Now, week-card, focus and chapter titles use
+  `text-wrap: balance`, so "Sunday reading catch-up" breaks as "Sunday
+  reading / catch-up" rather than "…catch- / up". Prose uses `text-wrap:
+  pretty` against lone last words. Both degrade to ordinary wrapping.
+- **Separators stay with the word before.** `glue()` / `tt()` in app.js
+  turn " · " and " — " into a no-break space before the mark, so a wrapped
+  title never opens a line on a bare "·" ("Gym — Legs / microdose · Pull ·
+  Core", not "…microdose / · Pull · Core").
+- **Week-card extras hold together item by item** (`.xb`): "German active
+  study · / Basketball 1v1 + shooting", not "…Basketball 1v1 + / shooting".
+172 browser checks in quick mode (3 new), 16,269 plan checks.

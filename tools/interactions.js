@@ -631,6 +631,15 @@ async function cinema() {
   const xs = await t.page.$$eval('.ref-fold > summary h2', (ns) => ns.map((n) => Math.round(n.getBoundingClientRect().left)));
   check(xs.length >= 10 && new Set(xs).size === 1, 'Reference’s chapter titles share one left edge: ' + [...new Set(xs)].join(','));
   await t.ctx.close();
+  // v4.96: typography — separators stay with the word before, items hold together
+  t = await open('2026-10-05', '15:30', SEED);
+  const gt = await t.page.$eval('.tl-card .c-title', (n) => n.textContent).catch(() => '');
+  check(/Gym — Legs microdose · Pull · Core/.test(gt), 'a title’s separators are glued to the word before: ' + JSON.stringify(gt));
+  check(await t.page.$eval('.tl-card .c-title', (n) => getComputedStyle(n).textWrap === 'balance' || getComputedStyle(n).textWrapStyle === 'balance'), 'card titles wrap in balanced lines');
+  await t.ctx.close();
+  t = await open('2026-10-02', '12:00', SEED, 'week');
+  check(/Basketball 1v1 \+ shooting/.test(await text(t.page, '.wk-day.today .d-extras .xb:last-child')), 'a week card’s extras hold together item by item');
+  await t.ctx.close();
   t = await open('2026-10-01', '12:00', SEED, 'plan');
   check(!/data\/plan\.js/.test(await text(t.page, '#view')) && !!(await t.page.$('.journey-all .journey-coda')), 'the Plan’s coda sits with the recovery rows and names no file');
   await t.ctx.close();

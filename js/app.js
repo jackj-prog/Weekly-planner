@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.95.0';
+  const APP_VERSION = '4.96.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -251,6 +251,10 @@
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
+  /* a separator stays with the word before it, so a wrapped title never
+     opens its second line on a bare "·" or "—" (v4.96) */
+  function glue(html) { return String(html).replace(/ ([·—]) /g, '\u00a0$1 '); }
+  function tt(s) { return glue(esc(s)); }
   function el(html) {
     const t = document.createElement('template');
     t.innerHTML = html.trim();
@@ -464,8 +468,8 @@
           '<span class="q-emb">' + emblemSVG(emblemKind(b)) + '</span>' +
           '<span class="t">' + b.start + '–' + b.end + '</span>' +
           '<div class="quiet-main">' + (b.detail ? '<details class="anchor-detail" data-disclosure="' + esc(iso + '|' + b.id) + '"' +
-          (openDetails.has(iso + '|' + b.id) ? ' open' : '') + '><summary>' + esc(b.title) + '</summary>' +
-          '<div class="detail-body">' + esc(withZones(b.detail)) + '</div></details>' : esc(b.title)) + '</div></div>'
+          (openDetails.has(iso + '|' + b.id) ? ' open' : '') + '><summary>' + tt(b.title) + '</summary>' +
+          '<div class="detail-body">' + esc(withZones(b.detail)) + '</div></details>' : tt(b.title)) + '</div></div>'
         );
         q.dataset.m = b.startMin;
         tl.appendChild(q);
@@ -566,7 +570,7 @@
       '<div class="nn-clock"><span>NOW' + skyGlyph(day.iso, nMin) + '</span><time class="live-clock">' + DB.fmtHM(nMin) + '</time></div><div class="nn-main">';
     if (cur) {
       const pct = Math.round(((nMin - cur.startMin) / (cur.endMin - cur.startMin)) * 100);
-      html += '<div class="nn-title"><span class="nn-emb" style="color:' + emblemTone(cur) + '">' + emblemSVG(emblemKind(cur)) + '</span>' + esc(cur.title) + '</div>' +
+      html += '<div class="nn-title"><span class="nn-emb" style="color:' + emblemTone(cur) + '">' + emblemSVG(emblemKind(cur)) + '</span>' + tt(cur.title) + '</div>' +
         '<div class="nn-time">' + cur.start + '–' + cur.end +
         ' · <span class="nn-left">' + fmtLeft(cur.endMin - nMin) + '</span>' +
         '</div></div><button class="nn-jump" aria-label="Go to current activity">↓</button></div>' +
@@ -578,7 +582,7 @@
     }
     if (next.length) {
       html += '<div class="nn-next"><span class="nn-label">NEXT</span><span class="t">' + next[0].start + '</span><span>' +
-        '<span class="nn-nemb" style="color:' + emblemTone(next[0]) + '">' + emblemSVG(emblemKind(next[0])) + '</span>' + esc(next[0].title) +
+        '<span class="nn-nemb" style="color:' + emblemTone(next[0]) + '">' + emblemSVG(emblemKind(next[0])) + '</span>' + tt(next[0].title) +
         ' <span class="nn-in">' + fmtIn(next[0].startMin - nMin) + '</span></span></div>';
     } else {
       html += '<div class="nn-next"><span class="nn-label">NEXT</span><span>Nothing else scheduled today.</span></div>';
@@ -1088,7 +1092,7 @@
       '<button class="focus-close" aria-label="Close session focus" autofocus>✕</button></header>' +
       '<div class="focus-scroll"><span class="focus-emb' + (emblemKind(block) === 'laurel' ? ' race' : '') + '" style="--cat:' + (CAT_VAR[block.cat] || CAT_VAR.routine) + '">' + emblemSVG(emblemKind(block)) + '</span>' +
       '<p class="focus-date">' + esc(DAY_NAMES[DB.dayIndex(iso)] + ' · ' + fmtShort(iso)) + '</p>' +
-      '<h1 id="focus-title">' + esc(block.title) + '</h1>' +
+      '<h1 id="focus-title">' + tt(block.title) + '</h1>' +
       '<div class="focus-window"><span>' + esc(block.start + '–' + block.end) + '</span><p class="focus-clock"></p></div>' +
       '<div class="focus-content"></div>' +
       '<details class="focus-notes"><summary>Session instructions</summary><p>' + esc(withZones(block.detail)) + '</p>' + paceTableHTML(block.table) + '</details>' +
@@ -1386,7 +1390,7 @@
       missedHTML +
       (iso === today && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso) : '') +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
-      '<div class="h-session">' + esc(r.title) + '</div></div>' +
+      '<div class="h-session">' + tt(r.title) + '</div></div>' +
       '<div class="h-meta"><span class="h-shoe t-' + shoeTier(r.run.shoe) + '"><b>SHOE</b><i class="h-shoe-e">' + emblemSVG(shoeTier(r.run.shoe) === 'race' ? 'laurel' : 'foot') + '</i>' + esc(r.run.shoe) + '</span>' + paceCell +
       '<span><b>WINDOW</b>' + r.start + '–' + r.end + '</span>' + mpCell + '</div>' +
       sessionShapeHTML(r, km, true) +
@@ -2316,7 +2320,7 @@
       '<div class="c-time">' + b.start + (b.end && b.end !== b.start ? '–' + b.end : '') +
       (opts.current ? ' <span class="nowflag">· NOW</span>' : '') +
       (opts.past && !isDone && !opts.skipped && !opts.slim ? ' <span class="c-late">· not ticked</span>' : '') + '</div>' +
-      '<div class="c-title">' + esc(b.title) + '</div>' +
+      '<div class="c-title">' + tt(b.title) + '</div>' +
       /* the day's run lives on the run card above; its row here is a slim
          pointer that keeps the run's ⋯ actions (move, niggle, ill) (v4.88) */
       (opts.slim
@@ -2439,7 +2443,7 @@
     const card = el(
       '<div class="tl-card skipped" style="--cat:' + cat + '">' +
       '<div class="c-main"><div class="c-time">' + b.start + '–' + b.end + '</div>' +
-      '<div class="c-title">' + esc(b.title) + '</div>' +
+      '<div class="c-title">' + tt(b.title) + '</div>' +
       '<div class="moved-tag">→ moved to ' + esc(movedLabel(iso, b.id)) + '</div></div>' +
       '<div class="c-side"><button class="more-btn" aria-label="Undo move">↩</button></div></div>'
     );
@@ -3061,14 +3065,14 @@
         barHtml = '<i class="d-bar' + (done[day.run.id] || runLogged ? ' done' : ovr.skip[day.run.id] || ovr.moved[day.run.id] ? ' off' : '') +
           '" style="width:' + ((km / maxKm) * 100).toFixed(1) + '%"></i>';
         runHtml = {
-          run: '<div class="d-run">' + esc(day.run.title) + '</div>' +
-            '<div class="d-extras">' + esc(day.run.run.shoe) + extraBits(day, ovr) + '</div>' + statusHtml + embRow,
+          run: '<div class="d-run">' + tt(day.run.title) + '</div>' +
+            '<div class="d-extras">' + glue(esc(day.run.run.shoe) + extraBits(day, ovr)) + '</div>' + statusHtml + embRow,
           km: (km === Math.round(km) ? km : km.toFixed(1)) + '<small>km</small>',
         };
       } else {
         cls += ' no-run';
         runHtml = {
-          run: '<div class="d-run rest">No run</div><div class="d-extras">' + (extraBits(day, ovr).replace(/^ · /, '') || esc(dayHeadline(day))) + '</div>' + statusHtml + embRow,
+          run: '<div class="d-run rest">No run</div><div class="d-extras">' + glue(extraBits(day, ovr).replace(/^ · /, '') || esc(dayHeadline(day))) + '</div>' + statusHtml + embRow,
           km: '—',
         };
       }
@@ -3118,7 +3122,8 @@
       if (same[0] !== x) return;
       out.push((x.head + ' ' + same.map((y) => y.tail).filter(Boolean).join(' + ')).trim());
     });
-    return out.length ? ' · ' + esc(out.join(' · ')) : '';
+    /* each item holds together on its line where it fits (v4.96) */
+    return out.length ? ' · ' + out.map((x) => '<span class="xb">' + esc(x) + '</span>').join(' · ') : '';
   }
 
   /* ================= plan view ================= */

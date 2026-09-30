@@ -3069,3 +3069,13 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   .tl-now::before { animation: now-breathe 3.2s var(--ease-soft) infinite; }
   @keyframes now-breathe { 0%, 100% { box-shadow: 0 0 0 3px var(--glow-red-soft), 0 0 12px var(--glow-red); } 50% { box-shadow: 0 0 0 6px transparent, 0 0 18px var(--glow-red); } }
 }
+
+/* ================= TYPOGRAPHY PASS (v4.96) ========================== */
+/* titles wrap into balanced lines ("Sunday reading / catch-up", never
+   "catch- / up"); prose avoids a lone last word. Both are progressive:
+   a browser without them wraps as before */
+.c-title, .nownext .nn-title, .wk-day .d-run, .session-focus h1, .ref-fold > summary h2,
+.sheet-item b, .key-row h3, .journey h2, .h-missed p, .tl-quiet summary { text-wrap: balance; }
+.c-title, .wk-day .d-run, .session-focus h1 { hyphens: manual; }
+.detail-body, .detail-body p, .ref-note, .ref-body p, .c-detail, .journey-coda, .wk-note, .wk-sub { text-wrap: pretty; }
+.wk-day .d-extras .xb { display: inline-block; max-width: 100%; }
