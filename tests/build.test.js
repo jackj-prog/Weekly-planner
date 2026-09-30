@@ -824,6 +824,15 @@ section('shortcut targets');
   ok(mf.shortcuts.every((sc) => /^\.\/\?view=(week|plan)$/.test(sc.url)),
     'shortcut urls target views the app can actually open');
   ok(mf.shortcuts.every((sc) => sc.icons && sc.icons.length), 'each shortcut carries an icon');
+  /* The icon (v4.94) is the day clock, drawn in the app's own palette: every
+     hex it uses must be a value the stylesheet declares in :root. */
+  const iconSvg = fs.readFileSync(path.join(__dirname, '../icons/icon.svg'), 'utf8');
+  const rootCss = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8');
+  const palette = new Set((rootCss.slice(rootCss.indexOf(':root {'), rootCss.indexOf('}', rootCss.indexOf(':root {'))).match(/#[0-9a-fA-F]{6}\b/g) || []).map((h) => h.toLowerCase()));
+  const foreign = [...new Set((iconSvg.match(/#[0-9a-fA-F]{6}\b/g) || []).map((h) => h.toLowerCase()))].filter((h) => !palette.has(h));
+  ok(foreign.length === 0, 'the app icon paints only with palette colours' + (foreign.length ? ' — found ' + foreign.join(', ') : ''));
+  ok(/id="hand"/.test(iconSvg) && /id="sky"/.test(iconSvg), 'the app icon is the day clock: sky ring and Breguet hand');
+  ['icon-180.png', 'icon-512.png'].forEach((f) => ok(fs.statSync(path.join(__dirname, '../icons', f)).size > 4000, 'icons/' + f + ' is rendered'));
 }
 
 /* ---- 7a8. Basketball is training (v3.4) ---- */

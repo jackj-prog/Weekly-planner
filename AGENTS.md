@@ -1605,3 +1605,21 @@ retokenised; a test forbids new ones outside `:root`), and a final
 Also: the last thirteen shadows from the retired teal palette became
 token shadows, so no colour outside `:root` survives in the app.
 164 browser checks (sweep included), 16,265 plan checks, no overflow, a11y clean.
+
+## The app icon is the day clock — v4.94, 1 October (Claude)
+
+User: "Feel like we need an equally cool icon for the app now too". The old
+icon (a calendar and a stick runner) predated the Book of Hours layer. The
+new one is the v4.91 day clock as the app's face: midnight at the top and
+noon at the bottom, the night sky above with stars and a crescent moon,
+daylight below, the sun on the evening horizon, a quarter-hour bezel, the
+ring of lights three-quarters lit, the rose window at the heart, and the
+one red Breguet hand pointing at 17:10, the evening run. Palette values
+only (a test checks every hex in icons/icon.svg against :root).
+- `tools/make-icon-svg.js` generates `icons/icon.svg` (computed geometry);
+  `tools/make-icons.js` renders the 180/512 PNGs and now falls back to
+  playwright-core with the preinstalled Chromium.
+- iOS keeps a Home Screen icon from install time: to see the new one,
+  back up (Reference → Data → Copy backup), remove the app, add it again
+  from Safari, and Restore — removing a Home Screen web app also removes
+  its storage.

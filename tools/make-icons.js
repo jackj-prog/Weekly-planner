@@ -10,23 +10,23 @@
 const fs = require('fs');
 const path = require('path');
 
-let chromium;
-try {
-  ({ chromium } = require('playwright'));
-} catch (e) {
-  try {
-    ({ chromium } = require('/opt/node22/lib/node_modules/playwright'));
-  } catch (e2) {
-    console.error('playwright not found — install it (dev-only) or export the SVG by hand.');
-    process.exit(1);
-  }
+let chromium, launchOpts = {};
+for (const mod of ['playwright', '/opt/node22/lib/node_modules/playwright', 'playwright-core']) {
+  try { ({ chromium } = require(mod)); break; } catch (e) { /* try the next */ }
 }
+if (!chromium) {
+  console.error('playwright not found — install it (dev-only) or export the SVG by hand.');
+  process.exit(1);
+}
+/* playwright-core ships no browser: use the preinstalled one when present */
+const exe = process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+if (fs.existsSync(exe)) launchOpts = { executablePath: exe, args: ['--no-sandbox'] };
 
 const ICONS = path.join(__dirname, '..', 'icons');
 const svg = fs.readFileSync(path.join(ICONS, 'icon.svg'), 'utf8');
 
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(launchOpts);
   for (const size of [180, 512]) {
     const page = await browser.newPage({ viewport: { width: size, height: size } });
     await page.setContent(

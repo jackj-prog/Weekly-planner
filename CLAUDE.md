@@ -228,6 +228,9 @@ star with a halo (spikes on the long runs), the long runs a constellation,
 comets as long as each new longest run's gain, the moon every week at its
 real phase, the future veiled past NOW, and the race a sunrise under the
 waning moon.
+**The icon (v4.94)** is the day clock itself: night sky above, daylight
+below, the sun on the evening horizon, the bezel, the rose window and the
+one red hand at 17:10 — palette colours only.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every
