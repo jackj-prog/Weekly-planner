@@ -246,6 +246,8 @@ line and a Copy backup button at the foot of the Week.
 **The leg dose (v5.0):** §6's three-tier rule is a choice on Monday's
 session (Normal · Halve · Upper only, `PLAN.legDose`), stored per date in
 `ovr-ISO.legs`; it rewrites the sets or drops the leg movements for that day.
+**v5.0.1:** no resting-HR prompt on race morning; the log form asks for
+gels (Long, Race) and the decoupling split (Long) only where they apply.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

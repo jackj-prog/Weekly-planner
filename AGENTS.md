@@ -1729,3 +1729,14 @@ head between sets. It is now a choice on the session:
 - Maintenance weeks (legs already one set) offer Normal · Upper only; a
   session without leg work has no chooser.
 192 browser checks (8 new), 16,273 plan checks.
+
+## Asking only what applies — v5.0.1, 1 October (Claude)
+
+- **Race morning does not ask for a resting HR.** Nerves lift the reading
+  and the call has been made; the prompt was noise at 05:10 on the day.
+- **The log form asks for gels and the half-by-half split only on long
+  runs.** An easy 5 km was offered "Gels taken", "First-half pace" and
+  "Second-half HR" (decoupling is computed for long runs only). Gels show
+  for Long or Race, the split for Long; changing Run type shows or hides
+  them in place, and a group that already holds a value is never hidden.
+197 browser checks (4 new), 16,273 plan checks.

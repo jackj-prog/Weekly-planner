@@ -595,6 +595,7 @@ async function cinema() {
   await t.ctx.close();
   t = await open('2027-01-24', '05:30', SEED);
   check(/sunrise 06:5\d .* Nicosia time/.test(await text(t.page, '.dw-sunline')), 'race morning is drawn in Nicosia time, sunrise just after the gun');
+  check(!(await t.page.$('.hero .h-rhr')), 'race morning does not ask for a resting HR');
   check(/sun up by km\s2/.test(await text(t.page, '.hero .runsky .rs-line')) && !!(await t.page.$('.hero .runsky .rs-moon')),
     'race morning: the gun in the twilight under the waning moon, the sun up in km 2');
   check(!!(await t.page.$('.nownext.sky-night .nn-sky.night .g-moon')) && (await t.page.$$('.nownext .nn-stars circle')).length >= 10,
@@ -686,6 +687,17 @@ async function cinema() {
   t = await open('2026-10-07', '19:35', SEED);
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
+  await t.ctx.close();
+  // v5.0.1: the log form asks for gels and the half split only on long runs
+  t = await open('2026-10-01', '18:10', SEED);
+  await t.page.click('button.h-log'); await t.page.click('.log-extra > summary');
+  const vis = async () => t.page.evaluate(() => ({ gels: !!document.querySelector('[data-log-field="gels"]').offsetParent, half: !!(document.querySelector('[data-log-field="hr2"]') || {}).offsetParent }));
+  let v = await vis();
+  check(!v.gels && !v.half, 'an easy run is not asked for gels or a half-by-half split');
+  await t.page.selectOption('.log-class', 'long'); v = await vis();
+  check(v.gels && v.half, 'choosing Long brings both back');
+  await t.page.selectOption('.log-class', 'race'); v = await vis();
+  check(v.gels && !v.half, 'a race asks for gels, not decoupling');
   await t.ctx.close();
   // v4.99: an overdue backup gets one quiet line at the foot of the Week
   t = await open('2026-10-01', '12:00', SEED, 'week');

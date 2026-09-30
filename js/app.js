@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.0.0';
+  const APP_VERSION = '5.0.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -949,6 +949,8 @@
       '<input data-log-field="' + key + '" aria-label="' + label + '" inputmode="' + inputmode + '" value="' + esc(value == null ? '' : value) + '" placeholder="—">' +
       '<small>' + unit + '</small>' + (step ? '<button type="button" data-log-step="' + key + '" data-dir="1" aria-label="Increase ' + label + '">+</button>' : '') + '</span></label>';
     const clock = n => n ? recordTime(n) : '';
+    const has = (v) => v != null && v !== '' && v !== 0;
+    const longish = (c) => c === 'long' || c === 'race';
     const classes = ['unclassified', 'recovery', 'easy', 'long', 'quality', 'race'];
     const isMpDay = !!(day.run && DB.isMpSession(day.run.title));
     const p = d.preview;
@@ -972,15 +974,20 @@
       '<label class="log-field">Run type<select class="log-class" aria-label="Run type">' + classes.map(c =>
         '<option value="' + c + '"' + (c === d.cls ? ' selected' : '') + '>' + (c === 'unclassified' ? 'Not classified' : c[0].toUpperCase() + c.slice(1)) + '</option>').join('') + '</select></label>' +
       '<details class="log-extra"' + (d.extraOpen || (isMpDay && d.extraOpen !== false) ? ' open' : '') + '><summary>' + (isMpDay ? 'Marathon-pace segment, conditions &amp; more' : 'Conditions &amp; optional measurements') + '</summary>' +
-      field('temp', 'Feels like', d.temp, 'decimal', '°C', true) + field('gels', 'Gels taken', d.gels, 'numeric', 'gels', true) +
+      field('temp', 'Feels like', d.temp, 'decimal', '°C', true) +
+      /* gels and the half-by-half split only mean something on a long run:
+         a 5 km easy run is not asked for them (v5.0.1). They show for Long
+         or Race, or whenever they already hold a value */
+      '<div class="log-when-long"' + (longish(d.cls) || has(d.gels) ? '' : ' hidden') + '>' + field('gels', 'Gels taken', d.gels, 'numeric', 'gels', true) + '</div>' +
       (isMpDay ? '<p class="log-note">Marathon-pace segment: its distance, pace and average HR only. The app places the HR in your zones (§10). A track import fills a “last N @ MP” finish for you.</p>' +
         field('mpKm', 'MP distance', d.mpKm, 'decimal', 'km', true) +
         field('mpPaceSec', 'MP pace', clock(d.mpPaceSec), 'text', '/km', true) +
         field('mpHr', 'MP average HR', d.mpHr, 'numeric', 'bpm', true) :
+      '<div class="log-when-long" data-long-only' + (d.cls === 'long' || has(d.halfPaceSec) || has(d.hr2) ? '' : ' hidden') + '>' +
       '<p class="log-note">For a decoupling estimate, enter measured first-half pace and second-half HR. Leave blank if unavailable.</p>' +
       (d.stream ? '<p class="log-note">Half-run analysis uses the imported track when coverage permits. Gaps leave it unavailable.</p>' :
       field('halfPaceSec', 'First-half pace', clock(d.halfPaceSec), 'text', '/km', true) +
-      field('hr2', 'Second-half HR', d.hr2, 'numeric', 'bpm', true))) +
+      field('hr2', 'Second-half HR', d.hr2, 'numeric', 'bpm', true)) + '</div>') +
       '<label class="log-exclude"><input type="checkbox" class="log-x"' + (d.x ? ' checked' : '') + '>' +
       '<span><b>Leave out of trends</b><small>Lost, hilly, ill, hungover or a different route. The run still counts for distance; it just isn\u2019t compared.</small></span></label>' +
       '</details>' +
@@ -1040,7 +1047,13 @@
       setField(key, Math.max(key === 'temp' ? -60 : key === 'gels' ? 0 : steps[key], value));
       render();
     }));
-    wrap.querySelector('.log-class').addEventListener('change', e => { d.cls = e.target.value; });
+    wrap.querySelector('.log-class').addEventListener('change', e => {
+      d.cls = e.target.value;
+      wrap.querySelectorAll('.log-when-long').forEach((g) => {
+        const filled = Array.from(g.querySelectorAll('input')).some((i) => i.value.trim() !== '');
+        g.hidden = !(filled || (g.hasAttribute('data-long-only') ? d.cls === 'long' : longish(d.cls)));
+      });
+    });
     wrap.querySelector('.log-x').addEventListener('change', e => { d.x = e.target.checked; remember(); });
     wrap.querySelector('.log-parse').addEventListener('click', () => { remember(); d.preview = window.RunImport.parseText(d.paste); render(); });
     wrap.querySelector('.log-file').addEventListener('change', async event => {
@@ -1438,7 +1451,8 @@
       (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button>') + '</div>' +
       (just === r.id && isDone ? '<i class="h-sweep" aria-hidden="true"></i><div class="completion-note" role="status">✓ Run banked</div>' : '') +
       missedHTML +
-      (iso === today && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso) : '') +
+      /* not on race morning: nerves lift the reading and the call is made (v5.0.1) */
+      (iso === today && !isRace && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso) : '') +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + tt(r.title) + '</div></div>' +
       '<div class="h-meta"><span class="h-shoe t-' + shoeTier(r.run.shoe) + '"><b>SHOE</b><i class="h-shoe-e">' + emblemSVG(shoeTier(r.run.shoe) === 'race' ? 'laurel' : 'foot') + '</i>' + esc(r.run.shoe) + '</span>' + paceCell +
