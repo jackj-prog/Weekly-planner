@@ -648,6 +648,19 @@ async function cinema() {
   await t.page.click('[data-nav="week"]');
   check(await t.page.$eval('.wk-jump', (n) => n.open), 'its Why stays open across a re-render');
   await t.ctx.close();
+  // v4.98: the Training log's runs are a ledger, one ruled line each
+  t = await open('2026-10-01', '12:00', SEED, 'ref');
+  const lg = await t.page.$$eval('#ref-log .ledger tbody tr', (rs) => rs.map((r) => ({ c: r.className, cells: r.children.length, mark: !!r.querySelector('.lg-mark svg') })));
+  check(lg.length === 6 && lg.every((r) => r.cells === 5 && r.mark) && lg.filter((r) => r.c === 'lg-long').length === 1,
+    'recent runs sit in a five-column ledger, each marked by class: ' + lg.map((r) => r.c).join(' '));
+  check(/^RUN ?KM ?PACE ?HR ?EF$/i.test((await text(t.page, '#ref-log .ledger thead')).trim()), 'the ledger is headed Run · km · Pace · HR · EF');
+  check(!(await t.page.$('.run-entry')), 'the old stacked run cards are gone');
+  await t.page.evaluate(() => document.querySelectorAll('details.ref-fold').forEach((d) => { d.open = true; }));
+  const inits = await t.page.$$eval('.ref-card + .ref-note:not(.no-init), .shoe-plates + .ref-note:not(.no-init)', (ns) =>
+    ns.map((n) => { const f = n.firstChild; return f && f.nodeType === 3 ? f.textContent.trim().slice(0, 12) : '<' + (f && f.nodeName) + '>'; }));
+  const bad = inits.filter((x) => !/^[A-Z][a-z]/.test(x));
+  check(inits.length >= 3 && bad.length === 0, 'an illuminated initial only ever opens a word, never a label or an abbreviation: ' + inits.join(' | '));
+  await t.ctx.close();
   t = await open('2026-10-01', '12:00', SEED, 'plan');
   check(!/data\/plan\.js/.test(await text(t.page, '#view')) && !!(await t.page.$('.journey-all .journey-coda')), 'the Plan’s coda sits with the recovery rows and names no file');
   await t.ctx.close();

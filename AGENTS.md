@@ -1675,3 +1675,20 @@ this week plans 42, 2.1× that"), the caveat and `returnRule.note` behind
 with its object ("@ threshold"), so "Quality run — 5×3 min @ threshold"
 breaks after the dash instead of between 5×3 and min.
 176 browser checks (3 new), 16,269 plan checks.
+
+## The ledger — v4.98, 1 October (Claude)
+
+Reference, every chapter open, audited:
+- **The Training log's recent runs are a ledger.** Ten stacked cards
+  (date, then Pace / Avg HR / EF each with its own label) took a screen and
+  a half. Now a five-column table (Run · km · Pace · HR · EF), fourteen
+  runs, one ruled line each: the winged foot in the run's class colour,
+  hard paces in red, long-run distances in white, notes (temperature, not
+  in trends, MP) small under the date, the heat-corrected pace under the
+  pace. Nine dead `.run-entry` rules removed.
+- **Illuminated initials open words, not labels.** The drop cap on a
+  chapter's first note had been splitting "EF = …" into E + F, "Wk 14:"
+  into W + k, "Last logged run:" and "Now (Wk 14):" likewise. Readouts that
+  open on a bold label are `no-init`; the EF note now opens "Efficiency
+  factor (EF) is…". A browser check asserts every initial opens a word.
+180 browser checks (4 new), 16,269 plan checks.

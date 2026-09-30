@@ -1228,14 +1228,6 @@ body { background: var(--paper); }
 .ref-list li { font-size: 14px; line-height: 1.6; padding-block: 14px; }
 .ref-list li::before { top: 14px; }
 .data-actions button, .zedit { min-height: 44px; }
-.run-entry { padding: 16px 2px; border-bottom: 1px solid var(--line); }
-.run-entry:last-child { border-bottom: 0; }
-.run-entry-head { display: flex; gap: 12px; align-items: center; font-size: 14px; }
-.run-entry-head .tmp { margin-left: auto; }
-.run-entry-metrics { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; margin-top: 12px; font-family: var(--mono); font-size: 17px; }
-.run-entry-metrics > span { min-width: 0; }
-.run-entry-metrics small { display: block; font-family: var(--body); font-size: 12px; color: var(--t2); margin-bottom: 3px; }
-.run-entry-metrics .adj { display: block; font-size: 12px; margin-top: 3px; }
 
 
 /* Type roles. Inter owns language; mono is opt-in on a data value or label. */
@@ -1306,7 +1298,6 @@ body { font-size: var(--type-body); line-height: var(--leading-body); }
 .ptable th, .ptable .pt-title, .dc-h { font-family: var(--body); font-size: var(--type-label); line-height: 1.5; letter-spacing: normal; text-transform: none; }
 .st-v, .h-log .lg-pace, .zrow .zk, .zrow .zb, .wkring .rg-t b { font-family: var(--mono); }
 .stat span { font-family: var(--body); font-size: 11px; letter-spacing: normal; text-transform: none; }
-.run-entry-metrics .adj { font-family: var(--body); }
 .c-plan .xn { white-space: normal; overflow: visible; }
 .c-plan .xr { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 10px; padding-block: 10px; }
 .c-plan .xn { grid-column: 1; font-weight: 600; }
@@ -3086,3 +3077,21 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .c-title, .wk-day .d-run, .session-focus h1 { hyphens: manual; }
 .detail-body, .detail-body p, .ref-note, .ref-body p, .c-detail, .journey-coda, .wk-note, .wk-sub { text-wrap: pretty; }
 .wk-day .d-extras .xb { display: inline-block; max-width: 100%; }
+
+/* ================= THE LEDGER (v4.98) ============================== */
+/* the Training log's recent runs, one ruled line each */
+.ledger { width: 100%; border-collapse: collapse; font: 400 14px/1.3 var(--mono); font-variant-numeric: tabular-nums; color: var(--t2); }
+.ledger th, .ledger td { padding: 10px 3px; text-align: right; vertical-align: baseline; border-bottom: 1px solid var(--line); }
+.ledger thead th { padding: 0 3px 8px; font: 500 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--t3); }
+.ledger th:first-child { text-align: left; padding-left: 0; }
+.ledger td:last-child, .ledger th:last-child { padding-right: 0; }
+.ledger tbody th { font: 600 14px/1.3 var(--body); color: var(--text); white-space: nowrap; }
+.ledger tbody th small { display: block; margin: 3px 0 0 22px; font: 400 11.5px/1.35 var(--body); color: var(--t2); white-space: normal; }
+.ledger tbody th small i { font-style: normal; }
+.ledger tbody th small .hot { color: var(--accent); }
+.ledger .lg-mark { display: inline-block; width: 15px; height: 15px; margin-right: 7px; vertical-align: -2px; }
+.ledger td b { font-weight: 700; color: var(--text); }
+.ledger .adj { display: block; margin-top: 3px; font: 400 11px var(--body); color: var(--t3); }
+.ledger tr.lg-hard td:nth-child(3) { color: var(--accent); }
+.ledger tr.lg-long td:nth-child(2) { color: var(--text); font-weight: 700; }
+.ledger tbody tr:last-child > * { border-bottom: 0; }

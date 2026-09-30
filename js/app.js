@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.97.0';
+  const APP_VERSION = '4.98.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -3601,7 +3601,7 @@
     const bm = PLAN.benchmark;
     return el(
       '<div class="ref"><h2>Easy pace by phase</h2>' + paceLadderHTML(bands, live) + '<div class="ref-card">' + rows + '</div>' +
-      '<div class="ref-note"><b>Now (Wk ' + wk + '):</b> band ' + esc(live.band) +
+      '<div class="ref-note no-init"><b>Now (Wk ' + wk + '):</b> band ' + esc(live.band) +
       '/km · a clear, 7/10 day should return <b>' + esc(live.good) + '</b>. ' + esc(live.note) + '</div>' +
       '<div class="ref-note"><b>Benchmark:</b> ' + esc(bm.slot) + '. ' + esc(bm.log) + '<br>' +
       bm.conditions.map((c) => '· ' + esc(c)).join('<br>') + '</div>' +
@@ -3643,7 +3643,7 @@
       g.kcal + ' kcal · ' + g.sodiumMg + ' mg sodium. So the interval you choose ' +
       '<i>is</i> the carb rate:</div>' +
       '<div class="ref-card fuel">' + rows + '</div>' +
-      '<div class="ref-note">' + live + '</div>' +
+      '<div class="ref-note no-init">' + live + '</div>' +
       '<div class="ref-note">' + esc(g.targetNote) + '</div>' +
       '<div class="ref-note"><b>Salt is the gap.</b> ' + esc(g.sodiumNote) + '</div>' +
       (g.caffeine ? '<div class="ref-note"><b>Caffeine.</b> ' + esc(g.caffeine) + '</div>' : '') +
@@ -3827,23 +3827,31 @@
         }).join('') +
         '<div class="dc-k">below Z3: the prescribed pace is too slow · Z3: it fits · Z4: too fast for this stage</div></div>';
     }
-    const rows = entries.slice(-10).reverse().map((e) =>
-      '<article class="run-entry"><div class="run-entry-head"><b>' + esc(fmtShort(e.iso)) +
-      (e.hard ? ' <i class="dot" style="background:var(--accent)" title="hard session"></i>' : '') +
-      '</b><span>' + e.km + ' km</span>' +
-      (e.temp != null ? ' <i class="tmp' + (e.tooHot ? ' hot' : '') + '">' + e.temp + '°</i>' : '') +
-      (e.x ? ' <i class="tmp xout">not in trends</i>' : '') +
-      (e.mp ? ' <i class="tmp xout">MP' + (e.mpHr ? ' logged' : ' · easy part not logged') + '</i>' : '') +
-      '</div><div class="run-entry-metrics"><span><small>Pace /km</small>' + esc(e.pace || '—') +
-      (e.adj ? '<i class="adj">→ ' + esc(e.adj) + '</i>' : '') + '</span>' +
-      '<span><small>Avg HR</small>' + (e.hr || '—') + '</span>' +
-      '<span><small>EF</small><b>' + fmtEf(e.ef) + '</b></span></div></article>'
-    ).join('');
+    /* The recent runs as a ledger, one ruled line each (v4.98): ten cards
+       of three stacked figures took a screen and a half to say what a
+       column of fourteen rows says at a glance. The mark is the run's class
+       in its colour (red hard, white long, grey easy), as everywhere else. */
+    const markTone = (c) => c === 'quality' || c === 'race' ? 'var(--accent)' : c === 'long' ? 'var(--text)' : c === 'recovery' ? 'var(--t3)' : 'var(--cat-run)';
+    const kmTxt = (k) => String(Math.round(k * 100) / 100);
+    const rows = '<table class="ledger"><thead><tr><th scope="col">Run</th><th scope="col">km</th><th scope="col">Pace</th>' +
+      '<th scope="col">HR</th><th scope="col">EF</th></tr></thead><tbody>' +
+      entries.filter((e) => e.iso <= todayISO()).slice(-14).reverse().map((e) => {
+        const notes = [
+          e.temp != null ? '<i class="tmp' + (e.tooHot ? ' hot' : '') + '">' + e.temp + '°</i>' : '',
+          e.x ? '<i class="xout">not in trends</i>' : '',
+          e.mp ? '<i class="xout">MP' + (e.mpHr ? ' logged' : ' · easy part not logged') + '</i>' : '',
+        ].filter(Boolean).join(' · ');
+        return '<tr class="lg-' + (e.hard ? 'hard' : e.cls === 'long' ? 'long' : 'easy') + '"><th scope="row">' +
+          '<i class="lg-mark" style="color:' + markTone(e.cls) + '">' + emblemSVG(e.cls === 'race' ? 'laurel' : 'foot') + '</i>' +
+          esc(fmtShort(e.iso)) + (notes ? '<small>' + notes + '</small>' : '') + '</th>' +
+          '<td>' + kmTxt(e.km) + '</td><td>' + esc(e.pace || '—') + (e.adj ? '<small class="adj">→ ' + esc(e.adj) + '</small>' : '') + '</td>' +
+          '<td>' + (e.hr || '—') + '</td><td><b>' + fmtEf(e.ef) + '</b></td></tr>';
+      }).join('') + '</tbody></table>';
     return el(
       '<div class="ref"><h2>Training log</h2>' + spark +
       '<div class="ref-card">' + rows + '</div>' +
-      '<div class="ref-note">EF = metres per minute ÷ avg HR — bold number, higher is fitter. ' +
-      'Compare like with like: easy runs against easy runs (hard days are dotted), and mind ' +
+      '<div class="ref-note">Efficiency factor (EF) is metres per minute ÷ average HR — the bold figure; higher is fitter. ' +
+      'Compare like with like: easy runs against easy runs (hard days are marked red), and mind ' +
       'heat — EF reads low above ~18 °C. Rising EF at the same easy effort is exactly what ' +
       'the §10 bands are waiting for.</div>' +
       '<div class="ref-note">The <b>→ pace</b> beside a warm run is what it would have been at ' +
@@ -3924,7 +3932,7 @@
       const last = hist[hist.length - 1];
       const z = DB.zoneOf(last.hr, rest, max);
       if (z) {
-        recent = '<div class="ref-note"><b>Last logged run:</b> ' + esc(fmtShort(last.iso)) +
+        recent = '<div class="ref-note no-init"><b>Last logged run:</b> ' + esc(fmtShort(last.iso)) +
           ' at ' + last.hr + ' bpm → <b>' + esc(z.name) + '</b> (' +
           Math.round(((last.hr - rest) / (max - rest)) * 100) + '% HRR).</div>';
       }
