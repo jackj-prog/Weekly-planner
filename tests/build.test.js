@@ -1442,6 +1442,18 @@ section('palette contrast (WCAG AA)');
     ok(/<span class="c-emb/.test(appSrc) && /<span class="q-emb">/.test(appSrc) && /class="d-embs" aria-hidden="true"/.test(appSrc) && /focus-emb/.test(appSrc),
       'emblems mark the timeline, the Week\u2019s day cards and the focus screen');
     ok(/emblemSVG\(kind, cls\)[\s\S]{0,80}aria-hidden="true"/.test(appSrc), 'emblems are decorative and hidden from assistive technology');
+    /* v4.85: Now/Next and the run card carry emblems; the shoes are plates
+       whose counts come from the plan, not from names in the renderer. */
+    ok(/class="nn-emb"/.test(appSrc) && /class="nn-nemb"/.test(appSrc) && /class="h-mark">' \+ emblemSVG\(emblemKind\(r\)\)/.test(appSrc),
+      'Now, Next and the run card’s label carry their emblems');
+    ok(/querySelector\('\.h-tagtxt'\)\.textContent = 'RUN LOGGED'/.test(appSrc), 'a logged run relabels its tag without disturbing the emblem');
+    const shoeFn = appSrc.slice(appSrc.indexOf('function buildShoeSection'), appSrc.indexOf('function buildOdoSection'));
+    ok(shoeFn.length > 0 && /PLAN\.shoes\.map/.test(shoeFn) && /DB\.pro4Status/.test(shoeFn) && !/Ghost|Evo|Pro 4/.test(shoeFn),
+      'the shoe plates read every shoe from the plan and name none in code');
+    const shoeKm = {};
+    for (let i = 0; i < 210; i++) { const d = DB.buildDay(DB.addDays(PLAN.blocks[0].start, i)); if (d.run) shoeKm[d.run.run.shoe] = (shoeKm[d.run.run.shoe] || 0) + d.run.run.km; }
+    ok(PLAN.shoes.filter((s) => !/race/i.test(s.job)).every((s) => Object.keys(shoeKm).some((k) => s.shoe.endsWith(k) && shoeKm[k] > 100)),
+      'every training shoe matches the runs the plan prescribes in it');
     ok(/function dressSheet/.test(appSrc) && /if \(open\) dressSheet\(\)/.test(appSrc), 'the More sheet is dressed as plates each time it opens');
     ok(/restMoonHTML\(iso\)/.test(appSrc) && !/class="rest-mark"/.test(appSrc), 'a rest day shows the night\u2019s moon, not a pause mark');
     ok(/focus-' \+ skyKind\(block\)/.test(appSrc) && /runSkyHTML\(iso, block, skyKind\(block\), 'f'/.test(appSrc), 'run focus is lit in the run\u2019s colour and shows the sun\u2019s arc');

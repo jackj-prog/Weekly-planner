@@ -422,6 +422,20 @@ async function cinema() {
   t = await open('2026-10-01', '12:00', SEED, 'week');
   check((await t.page.$$('.wk-days .wk-day .d-embs')).length === 7, 'every day card carries its sessions as emblems');
   await t.ctx.close();
+  // v4.85: now and next by emblem, the run card's mark, the shoes as plates
+  t = await open('2026-09-30', '17:30', SEED);
+  check(!!(await t.page.$('.nownext .nn-title .nn-emb svg')) && !!(await t.page.$('.nownext .nn-next .nn-nemb svg')), 'Now and Next carry their activities’ emblems');
+  check(!!(await t.page.$('.hero .h-tag .h-mark svg')) && /TODAY’S RUN/.test(await text(t.page, '.hero .h-tagtxt')), 'the run card’s label carries its emblem');
+  await t.ctx.close();
+  t = await open('2026-09-24', '20:00', SEED);
+  check((await text(t.page, '.hero .h-tagtxt')) === 'RUN LOGGED' && !!(await t.page.$('.hero .h-mark svg')), 'a logged run relabels its card and keeps the emblem');
+  await t.ctx.close();
+  t = await open('2026-10-01', '12:00', SEED, 'ref');
+  const plates = await t.page.$$eval('#ref-shoes .shoe-plate', (ns) => ns.map((n) => ({ cls: n.className, num: n.querySelector('.sp-num').textContent })));
+  check(plates.length === 3 && plates.filter((p) => /t-race/.test(p.cls)).length === 1 && /^\d+ of \d+ km banked · \d+ runs$/.test(plates[0].num) &&
+    /km before the gun/.test(plates[2].num), 'the shoes are plates, each counting what the block asks of it: ' + plates.map((p) => p.num).join(' | '));
+  noErrors(t, 'shoe plates');
+  await t.ctx.close();
   t = await open('2026-12-25', '12:00', SEED);
   check((await text(t.page, '.daywheel .dw-count')) === 'REST' && !/0\/0/.test(await text(t.page, '.daywheel')), 'a day with nothing to tick reads REST, not 0/0');
   await t.ctx.close();

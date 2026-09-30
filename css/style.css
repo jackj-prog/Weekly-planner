@@ -2124,7 +2124,8 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 @keyframes tc-gloria { from { opacity: 0; transform: rotate(-12deg) scale(.7); } to { opacity: 1; transform: none; } }
 
 /* -- Reference: each section's first note opens with an illuminated initial -- */
-.ref-card + .ref-note::first-letter {
+.ref-card + .ref-note::first-letter,
+.shoe-plates + .ref-note::first-letter {
   float: left; margin: 4px 10px 0 0; padding: 7px 9px 3px;
   font: 400 3.1em/.8 var(--serif); color: var(--accent);
   border: 1px solid var(--line); border-radius: 3px; background: var(--surface);
@@ -2688,3 +2689,43 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .session-focus.focus-long .focus-emb { border-color: var(--text); color: var(--text); }
 .focus-working .focus-emb { display: none; }
 .daywheel figcaption i.lg-e svg { width: 16px; height: 16px; }
+
+/* ================= SHOE PLATES · NOW'S EMBLEM (v4.85) ============== */
+/* Now / Next: what you are doing, and what comes next, by its emblem */
+.nownext .nn-emb { float: left; width: 20px; height: 20px; margin: 1px 8px 0 0; filter: drop-shadow(0 0 5px color-mix(in srgb, currentColor 45%, transparent)); }
+.nownext .nn-emb .emb { stroke-width: 1.6; }
+.nownext .nn-nemb { display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; }
+.nownext .nn-nemb .emb { stroke-width: 1.7; }
+/* the run card's label carries the winged foot — or the laurel */
+.hero .h-mark { display: inline-flex; align-items: center; gap: 7px; }
+.hero .h-mark .emb { width: 16px; height: 16px; flex: none; stroke-width: 1.7; }
+.hero.cls-quality .h-mark .emb { color: var(--accent); filter: drop-shadow(0 0 5px var(--glow-red)); }
+.hero.cls-long .h-mark .emb { filter: drop-shadow(0 0 5px var(--glow-white-hot)); }
+/* Shoes: three plates, one per tier, lit like the runs they carry */
+.shoe-plates { display: grid; gap: 10px; }
+.shoe-plate {
+  --tone: var(--t2); --glow: var(--glow-white-soft);
+  position: relative; display: flex; gap: 14px; align-items: flex-start; overflow: hidden;
+  padding: 16px 16px 15px; border: 1px solid var(--line); border-radius: 14px;
+  background-image: var(--grain), radial-gradient(80% 120% at 0% 0%, var(--glow), transparent 60%), var(--hero-base);
+}
+.shoe-plate.t-quality { --tone: var(--text); --glow: var(--glow-white); }
+.shoe-plate.t-race { --tone: var(--accent); --glow: var(--glow-red); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.sp-emb {
+  flex: none; width: 40px; height: 40px; padding: 7px; border-radius: 50%;
+  border: 1.5px solid var(--tone); color: var(--tone); background: var(--paper);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--tone) 30%, transparent);
+}
+.sp-emb .emb { stroke-width: 1.5; }
+.sp-body { flex: 1; min-width: 0; }
+.sp-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; padding-right: 26px; }
+.sp-name { font-family: var(--display); font-weight: 800; font-size: 17px; line-height: 1.2; color: var(--text); }
+.sp-size { font-family: var(--mono); font-size: 11px; color: var(--t2); letter-spacing: .04em; }
+.sp-job { margin-top: 3px; font-size: 13.5px; line-height: 1.45; color: var(--t2); }
+.sp-bar { position: relative; height: 4px; margin: 12px 0 8px; border-radius: 2px; background: color-mix(in srgb, var(--tone) 16%, transparent); }
+.sp-bar i { display: block; height: 100%; min-width: 2px; border-radius: 2px; background: var(--tone); box-shadow: 0 0 8px color-mix(in srgb, var(--tone) 55%, transparent); }
+.sp-num { font-family: var(--mono); font-size: 11.5px; line-height: 1.55; color: var(--t2); }
+.sp-num b { font-size: 13px; color: var(--tone); }
+.shoe-plate.t-easy .sp-num b { color: var(--text); }
+.sp-no { position: absolute; top: 12px; right: 14px; font: 400 17px/1 var(--serif); color: var(--t3); }
+.shoe-plate.t-race .sp-no { color: var(--accent); }

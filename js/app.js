@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.84.0';
+  const APP_VERSION = '4.85.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -561,7 +561,7 @@
       '<div class="nn-clock"><span>NOW' + skyGlyph(day.iso, nMin) + '</span><time class="live-clock">' + DB.fmtHM(nMin) + '</time></div><div class="nn-main">';
     if (cur) {
       const pct = Math.round(((nMin - cur.startMin) / (cur.endMin - cur.startMin)) * 100);
-      html += '<div class="nn-title">' + esc(cur.title) + '</div>' +
+      html += '<div class="nn-title"><span class="nn-emb" style="color:' + emblemTone(cur) + '">' + emblemSVG(emblemKind(cur)) + '</span>' + esc(cur.title) + '</div>' +
         '<div class="nn-time">' + cur.start + '–' + cur.end +
         ' · <span class="nn-left">' + fmtLeft(cur.endMin - nMin) + '</span>' +
         '</div></div><button class="nn-jump" aria-label="Go to current activity">↓</button></div>' +
@@ -572,7 +572,8 @@
         '<div class="nn-bar" aria-hidden="true"><i style="width:0%"></i></div>';
     }
     if (next.length) {
-      html += '<div class="nn-next"><span class="nn-label">NEXT</span><span class="t">' + next[0].start + '</span><span>' + esc(next[0].title) +
+      html += '<div class="nn-next"><span class="nn-label">NEXT</span><span class="t">' + next[0].start + '</span><span>' +
+        '<span class="nn-nemb" style="color:' + emblemTone(next[0]) + '">' + emblemSVG(emblemKind(next[0])) + '</span>' + esc(next[0].title) +
         ' <span class="nn-in">' + fmtIn(next[0].startMin - nMin) + '</span></span></div>';
     } else {
       html += '<div class="nn-next"><span class="nn-label">NEXT</span><span>Nothing else scheduled today.</span></div>';
@@ -1345,7 +1346,8 @@
     const hero = el(
       '<section class="hero cls-' + esc(DB.runClass(r)) + (isRace ? ' race' : '') + (redLetter ? ' red-letter' : '') + (isDone ? ' done' : '') + (isSkipped ? ' skipped' : '') + (just === r.id ? ' just' : '') + '">' +
       '<i class="h-art" aria-hidden="true"></i>' +
-      '<div class="h-top"><div class="h-tag">' + (isRace ? 'RACE DAY' : redLetter ? 'RED-LETTER DAY' : 'TODAY’S RUN') +
+      '<div class="h-top"><div class="h-tag"><span class="h-mark">' + emblemSVG(emblemKind(r)) +
+      '<span class="h-tagtxt">' + (isRace ? 'RACE DAY' : redLetter ? 'RED-LETTER DAY' : 'TODAY’S RUN') + '</span></span>' +
       '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : isSkipped ? 'Skipped' : isMovedOut ? 'Moved to ' + movedLabel(iso, r.id) :
         unresolved ? (iso < today ? 'Not recorded' : 'Window passed · not recorded') :
         (r.movedFrom ? 'Moved from ' + fmtShort(r.movedFrom) + ' · ' : 'Scheduled · ') + r.start) + '</span></div>' +
@@ -1413,7 +1415,7 @@
     if (recap && !editing) {
       hero.classList.add('has-recap');
       const top = hero.querySelector('.h-top');
-      top.querySelector('.h-tag').firstChild.textContent = 'RUN LOGGED';
+      top.querySelector('.h-tagtxt').textContent = 'RUN LOGGED';
       top.querySelector('.h-state').textContent = fmtShort(iso);
       const planned = el('<details class="recap-plan" data-disclosure="' + iso + '|recap-plan"' + (openDetails.has(iso + '|recap-plan') ? ' open' : '') + '><summary>View planned session <span>' + kmTxt + ' km</span></summary><div></div></details>');
       Array.from(hero.children).filter(n => n !== top).forEach(n => planned.querySelector('div').appendChild(n));
@@ -2113,6 +2115,16 @@
   }
   function emblemSVG(kind, cls) {
     return '<svg class="emb ' + (cls || '') + '" viewBox="0 0 24 24" aria-hidden="true">' + (EMBLEMS[kind] || EMBLEMS.fleuron) + '</svg>';
+  }
+  /* an emblem's ink: a run keeps its class (red hard, white long), every
+     other activity its category colour */
+  function emblemTone(b) {
+    if (b.run) {
+      const c = DB.runClass(b);
+      if (c === 'race' || c === 'quality') return 'var(--accent)';
+      if (c === 'long') return 'var(--text)';
+    }
+    return CAT_VAR[b.cat] || CAT_VAR.routine;
   }
 
   function buildCard(b, done, iso, opts) {
@@ -3032,18 +3044,7 @@
     view.appendChild(section('ref-zones', buildZoneSection()));
     view.appendChild(section('ref-log', buildTrainingLogSection()));
     view.appendChild(buildRecalSection());
-    /* shoes wear their tier: easy / quality / race */
-    const shoeTone = (job) => /race/i.test(job) ? 'var(--accent)'
-      : /quality|MP/i.test(job) ? 'var(--phase-build)' : 'var(--cat-run)';
-    view.appendChild(el(
-      '<div class="ref">' +
-      '<h2>Shoes</h2><div class="ref-card">' +
-      PLAN.shoes.map((s) =>
-        '<div class="ref-row"><span><i class="dot" style="background:' + shoeTone(s.job) + '"></i>' +
-        esc(s.shoe + ' · ' + s.size) + '</span><span class="v">' + esc(s.job) + '</span></div>').join('') + '</div>' +
-      '<div class="ref-note">' + esc(PLAN.pro4Budget) + '</div>' +
-      '</div>'
-    ));
+    view.appendChild(buildShoeSection());
     view.appendChild(buildOdoSection());
     view.appendChild(section('ref-fuel', buildFuelSection()));
     view.appendChild(el(
@@ -3622,6 +3623,49 @@
       render();
     }));
     return wrap;
+  }
+
+  /* The shoes as plates (v4.85): each wears its tier (easy grey, quality
+     light, race red), its emblem and a count of what the block asks of
+     it — every run prescribed in that shoe alone, and how much of it is
+     banked. The race shoe is counted against its lifetime cap instead,
+     because for that shoe the budget is the whole point. */
+  function buildShoeSection() {
+    const today = todayISO(), b = PLAN.blocks[0];
+    const fmt = (n) => (n === Math.round(n) ? String(n) : n.toFixed(1));
+    const tally = {};
+    for (let i = 0; i < b.weeks * 7; i++) {
+      const iso = DB.addDays(b.start, i), day = DB.buildDay(iso);
+      if (!day.run) continue;
+      const t = tally[day.run.run.shoe] || (tally[day.run.run.shoe] = { runs: 0, km: 0, banked: 0 });
+      t.runs++; t.km += day.run.run.km;
+      if (iso <= today) t.banked += DB.recordedKm(day, getDone(iso), getRunLogEntry(iso));
+    }
+    const p4 = DB.pro4Status(getDone, today);
+    const plates = PLAN.shoes.map((s, i) => {
+      const tier = /race/i.test(s.job) ? 'race' : /quality|MP/i.test(s.job) ? 'quality' : 'easy';
+      const key = Object.keys(tally).find((k) => s.shoe.endsWith(k));
+      const t = key ? tally[key] : { runs: 0, km: 0, banked: 0 };
+      let bar, line;
+      if (tier === 'race') {
+        const next = p4.outings.find((o) => !o.done && !o.optional && o.iso >= today);
+        bar = Math.min(1, p4.used / p4.cap);
+        line = '<b>' + fmt(p4.used) + '</b> of ≈' + p4.cap + ' km before the gun' +
+          (next ? '<br>Next · Wk ' + next.wk + ' ' + esc(next.label.replace(/\s*\(.*\)$/, '').toLowerCase()) + ', ' + esc(fmtShort(next.iso)) : '');
+      } else {
+        bar = t.km ? Math.min(1, t.banked / t.km) : 0;
+        line = '<b>' + Math.round(t.banked) + '</b> of ' + Math.round(t.km) + ' km banked · ' + t.runs + ' runs';
+      }
+      return '<div class="shoe-plate t-' + tier + '">' +
+        '<span class="sp-emb">' + emblemSVG(tier === 'race' ? 'laurel' : 'foot') + '</span>' +
+        '<div class="sp-body"><div class="sp-head"><b class="sp-name">' + esc(s.shoe) + '</b><span class="sp-size">' + esc(s.size) + '</span></div>' +
+        '<div class="sp-job">' + esc(s.job) + '</div>' +
+        '<div class="sp-bar" aria-hidden="true"><i style="width:' + (bar * 100).toFixed(1) + '%"></i></div>' +
+        '<div class="sp-num">' + line + '</div></div>' +
+        '<b class="sp-no" aria-hidden="true">' + roman(i + 1) + '</b></div>';
+    }).join('');
+    return el('<div class="ref"><h2>Shoes</h2><div class="shoe-plates">' + plates + '</div>' +
+      '<div class="ref-note">' + esc(PLAN.pro4Budget) + '</div></div>');
   }
 
   function buildOdoSection() {

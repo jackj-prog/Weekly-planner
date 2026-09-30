@@ -1349,3 +1349,27 @@ screen. All `aria-hidden` — the titles and labels already say it. Tests
 check that every category maps to a drawn emblem and that each surface
 carries them.
 112 browser checks (sweep included), 16,231 plan checks, no overflow, a11y clean.
+
+## Emblems on Now and the run card; the shoes as plates — v4.85, 1 October (Claude)
+
+User: "continue visual upgrades". Three places that still read plain:
+- **Now / Next** now shows the emblem of what you are doing (beside the
+  title, lit in its own colour — red for the quality run and the race's
+  laurel, white for the long run, the category colour otherwise) and a
+  small emblem before what comes next. `emblemTone(b)` in app.js holds
+  that rule so every surface inks a run the same way.
+- **The run card's label** ("TODAY'S RUN", "RED-LETTER DAY", "RACE DAY")
+  carries the winged foot, or the laurel on key days and the race; red on
+  the quality day. The label text lives in `.h-tagtxt`, so the logged-run
+  recap relabels it ("RUN LOGGED") without disturbing the emblem.
+- **Reference · Shoes** was a dotted list with ragged, bold job text. It is
+  now three plates, one per tier (easy grey, quality white, race red), each
+  with an emblem roundel, a Roman numeral, size, job, and a bar of what the
+  block asks of it: every run the plan prescribes in that shoe alone, and
+  how much of that is banked (logged km where a log exists, the plan's km
+  for a tick). The race shoe is counted against its lifetime cap instead —
+  km spent before the gun, and the next planned outing — from the same
+  `DB.pro4Status` the odometer uses. The renderer names no shoe: plates
+  come from `PLAN.shoes`, runs match by the shoe's own name. The budget
+  note below keeps its illuminated initial.
+117 browser checks (sweep included), 16,235 plan checks, no overflow, a11y clean.

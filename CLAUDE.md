@@ -184,6 +184,11 @@ water for the day's own hours. They stand on the timeline's spine (a
 roundel for cards, bare for quiet rows), in the clock's legend, as a row
 under each Week day card (lit once done), and above a session's title in
 focus. Decorative and aria-hidden; the text says the same.
+**v4.85:** Now/Next wears the emblem of what you are doing and of what
+comes next, the run card's label carries the winged foot (the laurel on
+key days and the race), and Reference's shoes are three plates by tier —
+grey, white, red — each counting the km the block asks of it and how much
+is banked; the race shoe counts against its cap.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`
