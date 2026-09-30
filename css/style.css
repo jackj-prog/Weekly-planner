@@ -3129,3 +3129,8 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .hero .h-meta .h-gels .g-times i { font-style: normal; white-space: nowrap; padding-top: 5px; border-top: 1px solid color-mix(in srgb, var(--text) 22%, transparent); }
 .hero .h-meta .h-gels .g-times i small { display: block; margin-bottom: 1px; font-size: 9.5px; letter-spacing: .08em; color: var(--t2); }
 .hero.race .h-meta .h-gels .g-times i small { color: inherit; opacity: .75; }
+.focus-gels { margin: 22px 0 6px; }
+.focus-gels > span { display: block; margin-bottom: 10px; font: 400 11px var(--mono); color: var(--t2); letter-spacing: .08em; }
+.focus-gels .g-times { display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 10px 12px; font: 400 18px var(--mono); font-variant-numeric: tabular-nums; }
+.focus-gels .g-times i { font-style: normal; white-space: nowrap; padding-top: 6px; border-top: 1px solid var(--line); }
+.focus-gels .g-times i small { display: block; margin-bottom: 2px; font-size: 10px; letter-spacing: .08em; color: var(--t2); }

@@ -1798,3 +1798,14 @@ this Sunday). Race morning lists all nine from the gun (07:10 … 10:30).
   race text already states; a test asserts they match `raceText`. No
   fuelling prescription changed.
 207 browser checks (2 new), 16,277 plan checks (4 new).
+
+## Gels in Focus; zones hold together — v5.0.7, 1 October (Claude)
+
+- **Session Focus for a run carries the gel schedule too** — the screen
+  most likely to be open during the run — as the same numbered clock
+  times, under the session's shape.
+- **A zone and its range never break apart.** `withZones()` joins "Z3"
+  to "(154–169)" with a no-break space and the dash with word joiners, so
+  Focus's heart rate no longer read "MP in Z3 (154– / 169)". The test's
+  mirror of the substitution was updated and a check ties it to app.js.
+209 browser checks (2 new), 16,278 plan checks.

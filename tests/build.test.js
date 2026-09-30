@@ -1128,11 +1128,13 @@ section('hr zones');
     const expand = (s, rest, max) => {
       const zs = DB.hrZones(rest, max);
       return String(s).replace(/\bZ([1-5])\b/g, (m0, n) =>
-        zs[+n - 1] ? 'Z' + n + ' (' + zs[+n - 1].lo + '–' + zs[+n - 1].hi + ')' : m0);
+        zs[+n - 1] ? 'Z' + n + '\u00a0(' + zs[+n - 1].lo + '\u2060–\u2060' + zs[+n - 1].hi + ')' : m0);
     };
-    ok(expand('Run at Z4 threshold', 50, 190) === 'Run at Z4 (162–176) threshold',
+    ok(/'Z' \+ n \+ '\\u00a0\(' \+ z\.lo \+ '\\u2060–\\u2060' \+ z\.hi/.test(require('fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8')),
+      'the app expands zones with the same unbreakable joins as this mirror');
+    ok(expand('Run at Z4 threshold', 50, 190) === 'Run at Z4\u00a0(162\u2060–\u2060176) threshold',
       'zone tokens expand to the fixture’s own bpm, got ' + expand('Run at Z4 threshold', 50, 190));
-    ok(expand('the Z2 band', 50, 190).indexOf('(134–148)') > 0, 'Z2 expands to the right band');
+    ok(expand('the Z2 band', 50, 190).indexOf('(134\u2060–\u2060148)') > 0, 'Z2 expands to the right band');
     ok(expand('Zone 4 and AZ4B', 50, 190) === 'Zone 4 and AZ4B',
       'only standalone tokens expand — never a fragment inside another word');
   }

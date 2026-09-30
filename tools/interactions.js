@@ -695,6 +695,11 @@ async function cinema() {
   t = await open('2027-01-24', '05:10', SEED);
   check((await t.page.$$('.hero .h-gels .g-times i')).length === 9 && /IX\s*10:30/.test(await text(t.page, '.hero .h-gels')), 'race morning lists nine gels, the last at 10:30');
   await t.ctx.close();
+  t = await open('2026-10-04', '07:45', SEED);
+  await t.page.click('.hero .session-focus-open');
+  check((await t.page.$$('.session-focus .focus-gels .g-times i')).length === 4, 'Focus carries the same four gel times');
+  check(/Z3\u00a0\(\d+\u2060–\u2060\d+\)/.test(await t.page.$eval('.session-focus .focus-hr strong', (n) => n.textContent)), 'a zone and its range are joined so they never break apart');
+  await t.ctx.close();
   // v5.0.5: an empty device mid-block says why and offers the restore
   t = await open('2026-10-01', '12:00', {}, 'week');
   check(/No history on this device/.test(await text(t.page, '.bk-nudge.restore')), 'an empty device explains its blank week');

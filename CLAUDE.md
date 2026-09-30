@@ -258,6 +258,8 @@ longest run · the last four weeks' average against plan.
 this device" and a Restore button.
 **v5.0.6 (rule 4 on the card):** a long run's and race day's gels sit on
 the run card's ruled line as numbered clock times, not minutes in Details.
+**v5.0.7:** Focus carries the gel times too; a zone and its bpm range
+("Z3 (154–169)") never break across lines.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.0.6';
+  const APP_VERSION = '5.0.7';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -313,7 +313,8 @@
     if (!zs) return String(text);
     return String(text).replace(/\bZ([1-5])\b/g, (m0, n) => {
       const z = zs[Number(n) - 1];
-      return z ? 'Z' + n + ' (' + z.lo + '–' + z.hi + ')' : m0;
+      /* a zone and its range never break apart ("Z3 (154– / 169)") (v5.0.7) */
+      return z ? 'Z' + n + '\u00a0(' + z.lo + '\u2060–\u2060' + z.hi + ')' : m0;
     });
   }
 
@@ -1265,6 +1266,8 @@
           const z = c === 'race' ? null : c === 'long' ? (mp ? 'Z2 · MP in Z3' : 'Z2') : c === 'quality' ? (mp ? 'Z3' : 'Z4') : c === 'recovery' ? 'Z1' : 'Z2';
           return z ? '<div class="focus-hr"><span>HEART RATE</span><strong>' + esc(withZones(z)) + '</strong></div>' : ''; })() +
         '</div>' + sessionShapeHTML(block, block.run.km) +
+        (block.run.gelsAt && block.run.gelsAt.length ? '<div class="focus-gels"><span>GELS · ' + block.run.gelsAt.length + '</span><div class="g-times">' +
+          block.run.gelsAt.map((m, k) => '<i><small>' + roman(k + 1) + '</small>' + DB.fmtHM((block.startMin + m) % 1440) + '</i>').join('') + '</div></div>' : '') +
         runSkyHTML(iso, block, skyKind(block), 'f', iso === todayISO() ? nowMin() : null) +
         '<div class="focus-run-brief">' + detailHTML(detail, iso + '|focus', false) + paceTableHTML(block.table) + '</div>';
     }
