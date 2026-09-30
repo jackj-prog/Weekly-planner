@@ -1680,6 +1680,16 @@ for (const wk of [23, 24, 28]) {
  ok(/altered running mechanics: skip the lower-body work/.test(gym.detail), 'wk ' + wk + ' retains the pain rule during maintenance');
  ok(gym.plan.length === 5 && gym.plan[0].sets === '1 × 5 @ 3 RIR', 'wk ' + wk + ' retains the authored reduced template');
 }
+section('gels as a schedule (rule 4)');
+{
+ const g = PLAN.gels;
+ ok(new RegExp('every ' + g.raceInterval + ' min · ' + g.raceCount + ' gels', 'i').test(g.raceText), 'race gel numbers are the race text\u2019s own: ' + g.raceText);
+ const race = DB.buildDay('2027-01-24').blocks.find(b => b.run && /MARATHON/.test(b.title));
+ ok(race && race.run.gelsAt.length === 9 && race.run.gelsAt[8] === 225, 'race day carries nine gels, the last at 225 min');
+ const sun = DB.buildDay('2026-10-04').run;
+ ok(sun.run.gelsAt && sun.run.gelsAt.join() === '35,70,105,140' && /TODAY: 4 gels, at 35, 70, 105 and 140 min/.test(sun.detail), 'a long run\u2019s schedule matches its text');
+ ok(!DB.buildDay('2026-10-01').run.run.gelsAt, 'an easy run has no gels');
+}
 section('leg dose (three-tier rule)');
 {
  const d = PLAN.legDose;

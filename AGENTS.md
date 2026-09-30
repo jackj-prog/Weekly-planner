@@ -1783,3 +1783,18 @@ Home Screen install keeps its own storage — restore a backup to bring your
 runs and ticks across. [Restore]", which opens Reference → Data with the
 paste box ready. It disappears as soon as anything is stored.
 205 browser checks (3 new), 16,273 plan checks.
+
+## Gels on the card — v5.0.6, 1 October (Claude)
+
+Rule 4 says the card converts the gel rate into that day's schedule
+"(count + clock times)". The schedule existed, but as minutes-into-the-run
+("TODAY: 4 gels, at 35, 70, 105 and 140 min") at the end of the collapsed
+Details. It is now a row on the run card's ruled line: **GELS · 4**, then
+each gel numbered I–IV over its clock time (09:05 · 09:40 · 10:15 · 10:50
+this Sunday). Race morning lists all nine from the gun (07:10 … 10:30).
+- `DB` carries the minutes on the run block (`run.gelsAt`), from the same
+  loop that writes the TODAY text, so the two cannot disagree.
+- `PLAN.gels.raceInterval` / `raceCount` (25, 9) structure the numbers the
+  race text already states; a test asserts they match `raceText`. No
+  fuelling prescription changed.
+207 browser checks (2 new), 16,277 plan checks (4 new).

@@ -3122,3 +3122,10 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .dose-tag { margin-left: 6px; padding: 1px 7px; border: 1px solid var(--line); border-radius: 99px; font: 500 11px var(--body); font-style: normal; color: var(--t2); vertical-align: 2px; }
 .bk-nudge.restore { margin: 0 0 14px; }
 .bk-nudge.restore p b { color: var(--text); }
+
+/* ================= GELS ON THE CARD (v5.0.6) ======================= */
+/* a small ruled grid of clock times, each numbered, four or five to a row */
+.hero .h-meta .h-gels .g-times { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 8px 10px; font: 400 15px var(--mono); font-variant-numeric: tabular-nums; }
+.hero .h-meta .h-gels .g-times i { font-style: normal; white-space: nowrap; padding-top: 5px; border-top: 1px solid color-mix(in srgb, var(--text) 22%, transparent); }
+.hero .h-meta .h-gels .g-times i small { display: block; margin-bottom: 1px; font-size: 9.5px; letter-spacing: .08em; color: var(--t2); }
+.hero.race .h-meta .h-gels .g-times i small { color: inherit; opacity: .75; }

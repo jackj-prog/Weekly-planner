@@ -396,6 +396,7 @@ const PLAN = {
     minRunMin: 90,  interval: 35, text: 'Gel every 35–40 min (~39 g carbs/h) — learning the skill',
     longRunMin: 150, longInterval: 30, longText: 'Gel every 30 min (~46 g carbs/h) — practise the race rate',
     raceText: 'Gel every 25 min · 9 gels · ~55 g carbs/h',
+    raceInterval: 25, raceCount: 9,   // the same two numbers, for race day's schedule
     /* Reference-page maths. Figures are per 40 g gel at 57 g carbs /
        100 g — re-derive these if the brand changes. */
     gelG: 40, carbG: 23, kcal: 91, sodiumMg: 19,

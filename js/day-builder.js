@@ -142,6 +142,7 @@
         if (n > 0) {
           const at = [];
           for (let i = 1; i <= n; i++) at.push(i * iv);
+          spec.gelsAt = at;
           spec.detail += ' · TODAY: ' + n + (n === 1 ? ' gel' : ' gels') +
             ', at ' + at.slice(0, -1).join(', ') + (n > 1 ? ' and ' : '') +
             at[at.length - 1] + ' min';
@@ -600,7 +601,7 @@
           detail: spec.km + ' km · ' + spec.shoe + ' · ' + spec.detail + (dark ? ' · ' + dark : ''),
           cat: 'run', doable: true,
         });
-        runBlock.run = { km: spec.km, shoe: spec.shoe, slot: entry.run, hard: spec.hard };
+        runBlock.run = { km: spec.km, shoe: spec.shoe, slot: entry.run, hard: spec.hard, gelsAt: spec.gelsAt || null };
         out.push(runBlock);
         out.push(mk(start + dur, start + dur + pace.showerMin, { title: 'Shower', cat: 'routine', quiet: true }));
         prevEnd = start + dur + pace.showerMin;
@@ -659,6 +660,9 @@
           km: entry.runKm, shoe: entry.shoe || 'Ghost', slot: 'fixed',
           hard: entry.runKm > 20 || /parkrun|marathon|all-out|time trial/i.test(b.title),
           estPace: entry.estPace || null,
+          /* race day's gels as a schedule, from the same numbers as its text */
+          gelsAt: /marathon/i.test(b.title) && PLAN.gels && PLAN.gels.raceInterval
+            ? Array.from({ length: PLAN.gels.raceCount }, (_, i) => (i + 1) * PLAN.gels.raceInterval) : null,
         };
       }
       out.push(b);

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.0.5';
+  const APP_VERSION = '5.0.6';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1407,6 +1407,10 @@
       : mp.kind === 'tail' ? (mp.from === mp.fromLate ? 'km ' + mp.from + '–' + kmTxt : 'from km ' + mp.from + '–' + mp.fromLate)
       : (mp.lo === mp.hi ? mp.lo : mp.lo + '–' + mp.hi) + ' km';
     const mpCell = mp ? '<span class="h-mp"><b>MARATHON PACE</b>' + esc(mp.pace + ' · ' + mpWhere) + '</span>' : '';
+    /* rule 4: the rate as today's schedule, in clock times (v5.0.6) */
+    const gAt = r.run.gelsAt;
+    const gelCell = gAt && gAt.length ? '<span class="h-mp h-gels"><b>GELS · ' + gAt.length + '</b><span class="g-times">' +
+      gAt.map((m, k) => '<i><small>' + roman(k + 1) + '</small>' + DB.fmtHM((r.startMin + m) % 1440) + '</i>').join('') + '</span></span>' : '';
 
     /* Zones are the plan's whole prescription mechanism, and on a fresh
        install — which includes every Home Screen install, since those get
@@ -1467,7 +1471,7 @@
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + tt(r.title) + '</div></div>' +
       '<div class="h-meta"><span class="h-shoe t-' + shoeTier(r.run.shoe) + '"><b>SHOE</b><i class="h-shoe-e">' + emblemSVG(shoeTier(r.run.shoe) === 'race' ? 'laurel' : 'foot') + '</i>' + esc(r.run.shoe) + '</span>' + paceCell +
-      '<span><b>WINDOW</b>' + r.start + '–' + r.end + '</span>' + mpCell + '</div>' +
+      '<span><b>WINDOW</b>' + r.start + '–' + r.end + '</span>' + mpCell + gelCell + '</div>' +
       sessionShapeHTML(r, km, true) +
       runSkyHTML(iso, r, skyKind(r), 'h', iso === today ? nowMin() : null) +
       '<div class="h-detail">' + detailHTML(detail, iso + '|hero', false) + '</div>' +

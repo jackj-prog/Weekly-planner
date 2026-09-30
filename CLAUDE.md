@@ -256,6 +256,8 @@ up at 07:00" instead of "Off the clock".
 longest run · the last four weeks' average against plan.
 **v5.0.5:** an empty device mid-block opens the Week with "No history on
 this device" and a Restore button.
+**v5.0.6 (rule 4 on the card):** a long run's and race day's gels sit on
+the run card's ruled line as numbered clock times, not minutes in Details.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

@@ -688,6 +688,13 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.0.6: the gel schedule is on the run card, in clock times
+  t = await open('2026-10-04', '07:45', SEED);
+  check((await text(t.page, '.hero .h-gels')).replace(/\s+/g, '') === 'GELS·4I09:05II09:40III10:15IV10:50', 'Sunday’s card lists four gels at their clock times: ' + await text(t.page, '.hero .h-gels'));
+  await t.ctx.close();
+  t = await open('2027-01-24', '05:10', SEED);
+  check((await t.page.$$('.hero .h-gels .g-times i')).length === 9 && /IX\s*10:30/.test(await text(t.page, '.hero .h-gels')), 'race morning lists nine gels, the last at 10:30');
+  await t.ctx.close();
   // v5.0.5: an empty device mid-block says why and offers the restore
   t = await open('2026-10-01', '12:00', {}, 'week');
   check(/No history on this device/.test(await text(t.page, '.bk-nudge.restore')), 'an empty device explains its blank week');
