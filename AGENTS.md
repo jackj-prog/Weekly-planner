@@ -1201,3 +1201,28 @@ frame, and a gradient that did not look like sky. Redrawn from scratch:
   mark on the dotted path after sunset), moved by the minute clock.
 - Same caption line; "km 2" no longer breaks across lines.
 89 browser checks (sweep included), 16,210 plan checks, no overflow, a11y clean.
+
+## Uniqueness pass: the sun in the timeline, the moon in the week, Reference as a book — v4.78, 1 October (Claude)
+
+User asked to keep inducing uniqueness where the app still looked bland.
+The three blandest places were the Today timeline (a grey spine and a
+list), the Week's day cards (a generic list), and Reference (a button grid
+and plain headings). Same theme, real data:
+- **The timeline keeps the sun's hours.** Sunrise and sunset get their own
+  quiet rows in time order among the day's rows (a half-sun glyph on the
+  spine, serif italic, a dotted leader): "Sunrise 07:06 · first light 06:33",
+  "Sunset 18:44 · dark by 19:18" (civil dawn and dusk, the edges that matter
+  for a headtorch). They are ordered correctly against NOW and the gap
+  rows (`flushSun`). The spine is painted in the day's light
+  (`paintSpine`): every row carries its minute in `data-m`, and the spine
+  is a gradient from each row's light level, bright through the daylight
+  and dim through the night; a ResizeObserver repaints it when a
+  disclosure changes the timeline's height.
+- **The Week keeps the moon.** Each day card carries that date's moon
+  phase under the date, as a Book of Hours calendar page does.
+- **Reference is a book.** The six-button grid became a Contents page
+  listing all twelve chapters, each with its red Roman numeral, built from
+  the chapters themselves so it cannot drift; every chapter heading
+  carries its numeral; the subtitle reads "Your training field guide, in
+  XII chapters"; the rules of the block are numbered I–X in the serif.
+95 browser checks (sweep included), 16,213 plan checks, no overflow, a11y clean.

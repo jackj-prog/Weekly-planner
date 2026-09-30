@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.77.2';
+  const APP_VERSION = '4.78.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -431,19 +431,34 @@
       tl.appendChild(card);
     });
 
+    /* The sun keeps its own hours in the timeline (v4.78): sunrise and
+       sunset sit in their places among the day's rows, and the spine takes
+       the real light — bright through the day, dim through the night. */
+    const skyPl = DB.skyPlace(iso), skySt = skyPl ? DB.sunTimes(iso, skyPl.lat, skyPl.lon, skyPl.offsetMin) : null;
+    const sunRows = skySt && skySt.rise != null && skySt.set != null
+      ? [{ m: skySt.rise, kind: 'rise' }, { m: skySt.set, kind: 'set' }] : [];
+    const flushSun = (limit) => {
+      while (sunRows.length && sunRows[0].m < limit) {
+        const r = sunRows.shift();
+        tl.appendChild(el(sunRowHTML(r.kind, skySt, skyPl, r.m))); }
+    };
+    const nowRow = () => el('<div class="tl-now" data-m="' + nMin + '">NOW ' + DB.fmtHM(nMin) + '</div>');
     let prevEnd = null;
     for (const b of day.blocks) {
       if (prevEnd !== null && b.startMin - prevEnd >= 40) {
-        tl.appendChild(el('<div class="tl-gap">' + fmtGap(b.startMin - prevEnd) + '</div>'));
+        flushSun(prevEnd + 1);
+        tl.appendChild(el('<div class="tl-gap" data-m="' + prevEnd + '">' + fmtGap(b.startMin - prevEnd) + '</div>'));
       }
       prevEnd = b.endMin;
       if (!nowPlaced && nMin < b.startMin) {
-        tl.appendChild(el('<div class="tl-now">NOW ' + DB.fmtHM(nMin) + '</div>'));
+        flushSun(nMin + 1);
+        tl.appendChild(nowRow());
         nowPlaced = true;
       }
+      flushSun(b.startMin);
       const isCurrent = isToday && nMin >= b.startMin && nMin < b.endMin;
       if (isCurrent) {
-        tl.appendChild(el('<div class="tl-now">NOW ' + DB.fmtHM(nMin) + '</div>'));
+        tl.appendChild(nowRow());
         nowPlaced = true;
       }
 
@@ -455,19 +470,57 @@
           (openDetails.has(iso + '|' + b.id) ? ' open' : '') + '><summary>' + esc(b.title) + '</summary>' +
           '<div class="detail-body">' + esc(withZones(b.detail)) + '</div></details>' : esc(b.title)) + '</div></div>'
         );
+        q.dataset.m = b.startMin;
         tl.appendChild(q);
       } else {
-        tl.appendChild(buildCard(b, done, iso, { current: isCurrent, skipped: !!ovr.skip[b.id], moved: null, movedOut: !!ovr.moved[b.id], just: just === b.id }));
+        const card = buildCard(b, done, iso, { current: isCurrent, skipped: !!ovr.skip[b.id], moved: null, movedOut: !!ovr.moved[b.id], just: just === b.id });
+        card.dataset.m = b.startMin;
+        tl.appendChild(card);
       }
     }
-    if (!nowPlaced) tl.appendChild(el('<div class="tl-now">NOW ' + DB.fmtHM(nMin) + '</div>'));
+    if (!nowPlaced) { flushSun(nMin + 1); tl.appendChild(nowRow()); }
+    flushSun(Infinity);
     /* stagger index → cascading entrance (CSS, motion-gated) */
     Array.prototype.forEach.call(tl.children, (c, i) => c.style.setProperty('--i', i));
     view.appendChild(tl);
+    if (skySt && skySt.rise != null) {
+      paintSpine(tl, skySt);
+      if ('ResizeObserver' in window) new ResizeObserver(() => paintSpine(tl, skySt)).observe(tl);
+    }
 
     /* weight input just opened — put the cursor in it */
     const wi = view.querySelector('.xw-in');
     if (wi) { wi.focus(); wi.select(); }
+  }
+
+  /* a sunrise or sunset row for the timeline: the sun on the spine, the
+     time, and the edge of the light that matters (first light, full dark) */
+  function sunRowHTML(kind, st, place, m) {
+    const rise = kind === 'rise';
+    const text = rise ? 'Sunrise ' + DB.fmtHM(st.rise) + (st.dawn != null ? '\u00a0· first light ' + DB.fmtHM(st.dawn) : '')
+      : 'Sunset ' + DB.fmtHM(st.set) + (st.dusk != null ? '\u00a0· dark by ' + DB.fmtHM(st.dusk) : '');
+    let rays = '';
+    for (let k = 1; k < 6; k++) {
+      const t = Math.PI + k * Math.PI / 6;
+      rays += 'M' + (8 + 5.2 * Math.cos(t)).toFixed(1) + ' ' + (9 + 5.2 * Math.sin(t)).toFixed(1) + ' L' + (8 + 7.6 * Math.cos(t)).toFixed(1) + ' ' + (9 + 7.6 * Math.sin(t)).toFixed(1) + ' ';
+    }
+    return '<div class="tl-sun ' + kind + '" data-m="' + m + '"><svg class="tl-sunglyph" viewBox="0 0 16 12" aria-hidden="true">' +
+      '<path class="r" d="' + rays + '"/><path class="d" d="M4.6 9 A3.4 3.4 0 0 1 11.4 9 Z"/><path class="h" d="M0 9.5 L16 9.5"/></svg>' +
+      '<span>' + esc(text + placeTime(place)) + '</span></div>';
+  }
+  /* the timeline's spine in the real light: each row's own minute sets
+     its brightness, and the gradient runs between them */
+  function paintSpine(tl, st) {
+    const H = tl.offsetHeight;
+    if (!H || H < 40) return;
+    const stops = [];
+    Array.prototype.forEach.call(tl.children, (c) => {
+      const m = Number(c.dataset.m);
+      if (c.dataset.m == null || !Number.isFinite(m)) return;
+      const y = c.offsetTop + 12, L = DB.lightLevel(st, m);
+      stops.push('color-mix(in srgb, var(--t2) ' + Math.round(L * 78) + '%, var(--line)) ' + Math.max(0, Math.min(100, (y - 10) / (H - 20) * 100)).toFixed(1) + '%');
+    });
+    if (stops.length > 1) tl.style.setProperty('--spine', 'linear-gradient(180deg, ' + stops.join(', ') + ')');
   }
 
   // Show one intact source clause; keep the remaining source text on tap.
@@ -2687,7 +2740,9 @@
 
       const row = el(
         '<button class="' + cls + '"' + (iso === real ? ' aria-current="date"' : '') + '>' +
-        '<span class="d-date"><b>' + DAY_SHORT[i] + '</b><span>' + d.getDate() + '</span></span>' +
+        /* a Book of Hours calendar page keeps the moon beside each date */
+        '<span class="d-date"><b>' + DAY_SHORT[i] + '</b><span>' + d.getDate() + '</span>' +
+        '<svg class="d-moon" viewBox="0 0 12 12" aria-hidden="true">' + moonSVG(6, 6, 4.4, DB.moonPhase(iso), 'dm') + '</svg></span>' +
         '<span class="d-main">' + runHtml.run + '</span>' +
         '<span class="d-right"><span class="d-km">' + runHtml.km + '</span>' +
         '<span class="d-done' + (dueCount && doneCount === dueCount ? ' all' : '') + '">' +
@@ -2843,9 +2898,9 @@
       : cd.weeks === 0 ? cd.rem + ' DAY' + (cd.rem === 1 ? '' : 'S') + ' TO THE GUN'
       : cd.weeks + 'W ' + cd.rem + 'D TO THE GUN';
     view.appendChild(el('<div class="ref ref-heading" id="ref-top"><h1>Reference</h1><p>Your training field guide</p></div>'));
-    const index = el('<nav class="ref-index" aria-label="Reference sections">' +
-      [['paces', 'Paces'], ['zones', 'HR zones'], ['log', 'Run log'], ['fuel', 'Fuelling'], ['app', 'App status'], ['data', 'Backup']]
-        .map(([id, label]) => '<button data-ref-target="ref-' + id + '">' + label + '<span aria-hidden="true">↗</span></button>').join('') + '</nav>');
+    /* The field guide is a book (v4.78): a contents page, filled in below
+       once the chapters exist, and each chapter numbered in red. */
+    const index = el('<nav class="ref-index" aria-label="Reference chapters"><h2 class="rc-h">Contents</h2><div class="rc-list"></div></nav>');
     index.addEventListener('click', (event) => {
       const button = event.target.closest('[data-ref-target]');
       if (!button) return;
@@ -2919,16 +2974,20 @@
     });
     // Move live nodes into native disclosures so their existing controls keep
     // their event handlers. Every section remains reachable from the index.
+    let chapters = 0;
     Array.from(view.children).filter(node => node.matches('div.ref:not(.ref-heading)')).forEach(node => {
       const heading = node.querySelector('h2'); if (!heading) return;
       const title = heading.textContent;
       const id = node.id || 'ref-' + title.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+      const chapter = roman(++chapters);
       const fold = el('<details class="ref-fold" id="' + esc(id) + '" data-disclosure="' + esc(id) +
-        '"><summary><h2>' + esc(title) + '</h2><span aria-hidden="true">+</span></summary></details>');
+        '"><summary><b class="chap" aria-hidden="true">' + chapter + '</b><h2>' + esc(title) + '</h2><span aria-hidden="true">+</span></summary></details>');
+      index.querySelector('.rc-list').appendChild(el('<button data-ref-target="' + esc(id) + '"><b aria-hidden="true">' + chapter + '</b><span>' + esc(title) + '</span></button>'));
       fold.open = openDetails.has(id);
       node.removeAttribute('id'); node.removeAttribute('tabindex'); heading.remove();
       node.before(fold); fold.appendChild(node);
     });
+    view.querySelector('.ref-heading p').textContent = 'Your training field guide, in ' + roman(chapters) + ' chapters';
   }
 
   /* ---- tune-up recalibrator (§10, advisory — the plan file stays canonical) ---- */

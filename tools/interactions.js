@@ -343,6 +343,24 @@ async function cinema() {
   t = await open('2026-10-06', '22:10', Object.assign({}, SEED, { 'done-2026-10-06': { 't1710-run': true, 't1930-study': true, 't2200-reading': true } }));
   check(/complete/.test(await t.page.getAttribute('.daywheel', 'class')) && !!(await t.page.$('.daywheel .dw-gloria')), 'a finished day earns the gloria');
   await t.ctx.close();
+  // v4.78: the timeline keeps the sun's hours; the week keeps the moon; Reference is a book
+  t = await open('2026-10-01', '12:00', SEED);
+  const sunRows = await t.page.$$eval('.tl .tl-sun', (ns) => ns.map((n) => n.textContent));
+  check(sunRows.length === 2 && /^Sunrise 07:0\d\s· first light 06:3\d$/.test(sunRows[0]) && /^Sunset 18:4\d\s· dark by 19:1\d$/.test(sunRows[1]),
+    'the timeline carries sunrise and sunset in their places: ' + sunRows.join(' | '));
+  check(/linear-gradient/.test(await t.page.$eval('.tl', (n) => n.style.getPropertyValue('--spine'))), 'the timeline spine is painted in the day\u2019s light');
+  await t.ctx.close();
+  t = await open('2026-10-01', '12:00', SEED, 'week');
+  check((await t.page.$$('.wk-days .wk-day .d-moon')).length === 7, 'every day of the week keeps its moon');
+  await t.ctx.close();
+  t = await open('2026-10-01', '12:00', SEED, 'ref');
+  const contents = await t.page.$$eval('.ref-index .rc-list button', (ns) => ns.map((n) => n.textContent));
+  check(contents.length === (await t.page.$$('.ref-fold')).length && contents.length >= 10 && /^IPaces$/.test(contents[0]) && /^XII/.test(contents[11] || ''),
+    'Reference opens on a contents page, one numbered entry per chapter');
+  await t.page.click('.ref-index [data-ref-target="ref-fuel"]');
+  check(await t.page.$eval('#ref-fuel', (n) => n.open) && /^VIII$/.test(await text(t.page, '#ref-fuel > summary .chap')), 'a contents entry opens its numbered chapter');
+  noErrors(t, 'reference book');
+  await t.ctx.close();
   t = await open('2026-12-25', '12:00', SEED);
   check((await text(t.page, '.daywheel .dw-count')) === 'REST' && !/0\/0/.test(await text(t.page, '.daywheel')), 'a day with nothing to tick reads REST, not 0/0');
   await t.ctx.close();

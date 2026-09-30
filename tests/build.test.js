@@ -1415,6 +1415,11 @@ section('palette contrast (WCAG AA)');
       'the noon sun: high at midsummer, low at midwinter (' + altAt('2026-06-21', 'noon').toFixed(0) + '\u00b0 / ' + altAt('2026-12-21', 'noon').toFixed(0) + '\u00b0)');
     ok(/runSkyGeom\(iso, rs, a, b\)/.test(appSrc) && /rs-dome/.test(appSrc) && /rs-sunnow/.test(appSrc) && !/rs-frame/.test(appSrc),
       'the run card draws the day\u2019s sun arc, not a box');
+    /* The uniqueness pass (v4.78). */
+    ok(/flushSun\(b\.startMin\)/.test(appSrc) && /function sunRowHTML/.test(appSrc) && /function paintSpine/.test(appSrc),
+      'the timeline keeps sunrise and sunset in order among its rows, and paints its spine in the light');
+    ok(/class="d-moon"/.test(appSrc), 'the Week calendar keeps the moon beside each date');
+    ok(/class="chap"/.test(appSrc) && /rc-list/.test(appSrc) && /counter\(rule, upper-roman\)/.test(css), 'Reference is a book: contents, numbered chapters, rules in numerals');
     /* The light of the week (v4.77): the moon keeps its real hours. */
     const circ = (a, b) => Math.abs(((((a - b) % 1440) + 1440 + 720) % 1440) - 720);
     const fullArc = DB.moonArc('2027-01-22', nic), newArc = DB.moonArc('2026-10-10', home);

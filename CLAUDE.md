@@ -146,6 +146,13 @@ Sunday · 3 of 5 runs finish after sunset"). The dial's moon now keeps its
 real hours — drawn at its highest with a dotted arc from moonrise to
 moonset (`DB.moonArc`), in the daylight when it is new — and a finished day
 earns a gloria of rays round the count in the rose window.
+**Uniqueness pass (v4.78):** the Today timeline keeps the sun's hours —
+sunrise (with first light) and sunset (with full dark) sit in their places
+among the rows, and the spine is painted in the day's light, bright through
+the day and dim through the night. The Week's day cards keep the moon
+beside each date, as a Book of Hours calendar page does. Reference is a
+book: a contents page with every chapter in red Roman numerals, numbered
+chapter headings, and the rules of the block as I–X.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`
