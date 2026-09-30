@@ -152,7 +152,12 @@ among the rows, and the spine is painted in the day's light, bright through
 the day and dim through the night. The Week's day cards keep the moon
 beside each date, as a Book of Hours calendar page does. Reference is a
 book: a contents page with every chapter in red Roman numerals, numbered
-chapter headings, and the rules of the block as I–X.
+chapter headings, and the rules of the block as I–X. **v4.79:** the More
+sheet is two illustrated plates (the journey as a small night sky with its
+real totals and red sunrise; Reference as an illuminated R); a rest day's
+emblem is the night's real moon, named ("Waning gibbous"); and a run's
+session focus is lit in the run's colour (red hard, white long) and carries
+the sun's arc.
 Red-letter days (the key days) have a ruled run card; a week with every
 planned run done is stamped with a red wax seal; completed days in the
 distance profile are lit candles. The serif is the system stack `--serif`

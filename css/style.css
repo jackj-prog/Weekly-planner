@@ -2463,3 +2463,41 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 /* the rules of the block are numbered like commandments */
 .ref-list:not(.qs) li { padding-left: 38px; }
 .ref-list:not(.qs) li::before { content: counter(rule, upper-roman); position: static; float: left; width: 32px; margin-left: -38px; font-family: var(--serif); font-size: 15px; font-weight: 400; letter-spacing: .02em; }
+
+/* ================= PLATES, MOON, STAGE (v4.79) ===================== */
+/* the More sheet: two illustrated plates */
+.sheet-item[data-nav="plan"], .sheet-item[data-nav="ref"] {
+  display: flex; align-items: center; gap: 14px; min-height: 74px; padding: 10px 14px 10px 10px;
+  background-image: var(--grain), var(--hero-base); position: relative; overflow: hidden;
+}
+.sp-t { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sp-t b { font: 800 16px/1.2 var(--display); letter-spacing: -.01em; color: var(--text); }
+.sp-t small { font: 400 12px/1.3 var(--mono); color: var(--t2); letter-spacing: .02em; }
+.sp-art { flex: 0 0 96px; width: 96px; height: 52px; border-radius: 8px; background: var(--chrome-bg); }
+.sp-stars circle { fill: var(--text); opacity: .75; }
+.sp-sunglow { fill: var(--glow-red); opacity: .6; filter: blur(4px); }
+.sp-sun { fill: var(--accent-fill); }
+.sp-hz { stroke: var(--line); stroke-width: 1; }
+.sp-init {
+  flex: 0 0 96px; height: 52px; display: grid; place-items: center; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--chrome-bg);
+  font: 400 40px/1 var(--serif); color: var(--accent); text-shadow: 0 0 18px var(--glow-red);
+}
+
+/* a rest day's emblem: the night's moon, named */
+.rest-moon { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rest-moon svg { width: 46px; height: 46px; overflow: visible; filter: drop-shadow(0 0 10px var(--glow-white)); }
+.rest-moon small { font: 400 9px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--t2); }
+.rm .mo-dark { fill: var(--chrome-bg); stroke: var(--t3); stroke-width: .8; }
+.rm .mo-lit { fill: var(--text); }
+
+/* session focus: a stage light in the run's own colour, and film grain */
+.session-focus.focus-hard, .session-focus.focus-race {
+  background-image: var(--grain), radial-gradient(120% 45% at 100% 0%, var(--glow-red), transparent 62%);
+}
+.session-focus.focus-long { background-image: var(--grain), radial-gradient(120% 45% at 100% 0%, var(--glow-white), transparent 62%); }
+.session-focus.focus-easy { background-image: var(--grain), radial-gradient(120% 40% at 100% 0%, var(--glow-white-soft), transparent 62%); }
+.session-focus:is(.focus-hard, .focus-race, .focus-long, .focus-easy) :is(.focus-header, .focus-footer) { background: transparent; }
+.session-focus .runsky { margin: 22px 0 6px; }
+.session-focus.focus-hard .focus-distance, .session-focus.focus-race .focus-distance { text-shadow: 0 0 40px var(--glow-red); }
+.session-focus.focus-long .focus-distance { text-shadow: 0 0 40px var(--glow-white); }

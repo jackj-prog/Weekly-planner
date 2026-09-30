@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '4.78.0';
+  const APP_VERSION = '4.79.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -386,7 +386,7 @@
       }
       const rest = el('<section class="resthero" aria-label="No run scheduled">' +
         '<span class="rest-wm" aria-hidden="true">REST</span>' +
-        '<div class="rest-kicker"><span>OFF THE RUN</span><span class="rest-mark" aria-hidden="true"></span></div>' +
+        '<div class="rest-kicker"><span>OFF THE RUN</span>' + restMoonHTML(iso) + '</div>' +
         '<h2>No run.<br>Still on plan.</h2>' +
         (restBlock ? detailHTML(restBlock.title + (restBlock.detail ? ' · ' + restBlock.detail : ''), iso + '|rest', false) : '') +
         (nextRun ? '<button class="rest-next"><span><small>Next planned run · ' + esc(fmtShort(nextRun.iso)) + '</small>' +
@@ -493,6 +493,19 @@
     if (wi) { wi.focus(); wi.select(); }
   }
 
+  /* the moon's phase by name, from DB.moonPhase */
+  function moonName(mp) {
+    const p = mp.phase;
+    return p < 0.03 || p > 0.97 ? 'New moon' : p < 0.22 ? 'Waxing crescent' : p < 0.28 ? 'First quarter'
+      : p < 0.47 ? 'Waxing gibbous' : p < 0.53 ? 'Full moon' : p < 0.72 ? 'Waning gibbous' : p < 0.78 ? 'Last quarter' : 'Waning crescent';
+  }
+  /* A rest day's emblem (v4.79): the night's real moon, named, where a
+     generic pause mark used to sit. Rest is what the night is for. */
+  function restMoonHTML(iso) {
+    const mp = DB.moonPhase(iso);
+    return '<span class="rest-moon"><svg viewBox="0 0 48 48" aria-hidden="true">' + moonSVG(24, 24, 15, mp, 'rm') + '</svg>' +
+      '<small>' + esc(moonName(mp)) + '</small></span>';
+  }
   /* a sunrise or sunset row for the timeline: the sun on the spine, the
      time, and the edge of the light that matters (first light, full dark) */
   function sunRowHTML(kind, st, place, m) {
@@ -1067,7 +1080,7 @@
   function openSessionFocus(block, iso, trigger) {
     if (focusedSession) return;
     const exercises = block.cat === 'gym' && block.plan ? block.plan : [];
-    const dialog = el('<dialog class="session-focus' + (exercises.length ? ' is-gym' : '') + '" aria-labelledby="focus-title">' +
+    const dialog = el('<dialog class="session-focus' + (exercises.length ? ' is-gym' : '') + (block.run ? ' focus-' + skyKind(block) : '') + '" aria-labelledby="focus-title">' +
       '<div class="focus-shell"><header class="focus-header"><span>SESSION FOCUS</span><button class="focus-back" hidden>← Session brief</button>' +
       '<button class="focus-close" aria-label="Close session focus" autofocus>✕</button></header>' +
       '<div class="focus-scroll"><p class="focus-date">' + esc(DAY_NAMES[DB.dayIndex(iso)] + ' · ' + fmtShort(iso)) + '</p>' +
@@ -1162,6 +1175,7 @@
       dialog.querySelector('.focus-content').innerHTML = '<div class="focus-distance">' + esc(String(block.run.km)) + '<span>km</span></div>' +
         '<div class="focus-run-facts">' + (pace ? '<div class="focus-pace"><span>PACE</span><strong>' + esc(pace) + '</strong></div>' : '') +
         '<div><span>SHOE</span><strong>' + esc(block.run.shoe) + '</strong></div></div>' +
+        runSkyHTML(iso, block, skyKind(block), 'f', iso === todayISO() ? nowMin() : null) +
         '<div class="focus-run-brief">' + detailHTML(detail, iso + '|focus', false) + paceTableHTML(block.table) + '</div>';
     }
     doneBtn.addEventListener('click', () => {
@@ -3699,7 +3713,26 @@
   /* ---- navigation ---- */
   /* The sheet's open state has to be announced, not just drawn: aria-haspopup
      says a menu exists, only aria-expanded says whether it is currently open. */
+  /* The More sheet as two illustrated plates (v4.79): the journey as a
+     small night sky with the block's real totals and its red sunrise, and
+     Reference as an illuminated initial over its chapters. */
+  function dressSheet() {
+    const plan = document.querySelector('.sheet-item[data-nav="plan"]'), ref = document.querySelector('.sheet-item[data-nav="ref"]');
+    if (!plan || !ref) return;
+    const j = DB.trainingJourney(getDone, getRunLogEntry, todayISO());
+    let sky = '';
+    for (let k = 0; k < 30; k++) {
+      const x = 4 + artSeed('sheet:' + k) * 84, y = 4 + artSeed('sheet:' + k + 'y') * 34;
+      sky += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (0.4 + artSeed('sheet:' + k + 'r') * 0.9).toFixed(2) + '"/>';
+    }
+    plan.innerHTML = '<svg class="sp-art" viewBox="0 0 96 52" aria-hidden="true"><g class="sp-stars">' + sky + '</g>' +
+      '<circle class="sp-sunglow" cx="84" cy="46" r="20"/><circle class="sp-sun" cx="84" cy="46" r="7"/><path class="sp-hz" d="M0 46 L96 46"/></svg>' +
+      '<span class="sp-t"><b>Your training journey</b><small>' + (Math.round(j.recorded * 10) / 10) + ' km · ' + j.runs + ' runs recorded</small></span>';
+    ref.innerHTML = '<span class="sp-init" aria-hidden="true">R</span>' +
+      '<span class="sp-t"><b>Reference</b><small>Paces · zones · shoes · fuelling · rules</small></span>';
+  }
   function setSheet(open) {
+    if (open) dressSheet();
     document.getElementById('sheet-backdrop').classList.toggle('hidden', !open);
     const more = document.querySelector('[data-nav="more"]');
     if (more) more.setAttribute('aria-expanded', open ? 'true' : 'false');

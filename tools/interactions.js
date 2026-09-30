@@ -361,6 +361,22 @@ async function cinema() {
   check(await t.page.$eval('#ref-fuel', (n) => n.open) && /^VIII$/.test(await text(t.page, '#ref-fuel > summary .chap')), 'a contents entry opens its numbered chapter');
   noErrors(t, 'reference book');
   await t.ctx.close();
+  // v4.79: the More sheet's plates, a rest day's moon, the focus stage
+  t = await open('2026-10-02', '12:00', SEED);
+  check(/^(New moon|Waxing crescent|First quarter|Waxing gibbous|Full moon|Waning gibbous|Last quarter|Waning crescent)$/.test(await text(t.page, '.resthero .rest-moon small')),
+    'a rest day carries the night\u2019s moon, named: ' + await text(t.page, '.resthero .rest-moon small'));
+  await t.page.click('[data-nav="more"]');
+  check(/Your training journey\s*[\d.]+ km · \d+ runs recorded/.test(await text(t.page, '.sheet-item[data-nav="plan"]')) && !!(await t.page.$('.sheet-item[data-nav="ref"] .sp-init')),
+    'the More sheet opens on two illustrated plates with the real totals');
+  await t.page.click('.sheet-item[data-nav="ref"]');
+  check(!!(await t.page.$('.ref-index')), 'the Reference plate still opens Reference');
+  noErrors(t, 'plates');
+  await t.ctx.close();
+  t = await open('2026-09-30', '16:55', SEED);
+  await t.page.click('.hero .session-focus-open');
+  check(/focus-hard/.test(await t.page.getAttribute('.session-focus', 'class')) && !!(await t.page.$('.session-focus .runsky .rs-sunnow')),
+    'a hard session\u2019s focus is lit red and carries the sun\u2019s arc');
+  await t.ctx.close();
   t = await open('2026-12-25', '12:00', SEED);
   check((await text(t.page, '.daywheel .dw-count')) === 'REST' && !/0\/0/.test(await text(t.page, '.daywheel')), 'a day with nothing to tick reads REST, not 0/0');
   await t.ctx.close();

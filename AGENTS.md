@@ -1226,3 +1226,22 @@ and plain headings). Same theme, real data:
   carries its numeral; the subtitle reads "Your training field guide, in
   XII chapters"; the rules of the block are numbered I–X in the serif.
 95 browser checks (sweep included), 16,213 plan checks, no overflow, a11y clean.
+
+## Plates, the rest-day moon, the focus stage — v4.79, 1 October (Claude)
+
+User asked to keep finding bland spots. Three more, same theme:
+- **The More sheet** was two plain buttons. It is dressed each time it
+  opens (`dressSheet`) as two illustrated plates: "Your training journey"
+  beside a small night sky with a red sunrise and the block's real totals
+  ("317.6 km · 53 runs recorded", from `DB.trainingJourney`), and
+  "Reference" beside an illuminated red R over its chapters. The markup in
+  index.html is unchanged, so navigation and a11y names still work.
+- **A rest day's emblem** was a generic pause mark. It is now the night's
+  real moon at its phase, glowing, with its name underneath
+  (`moonName`: new, waxing crescent, first quarter … waning crescent).
+- **Session focus for a run** was flat black. It is now lit in the run's
+  own colour from the top corner (red for hard and race, white for long,
+  a faint white for easy, with film grain), the distance glows to match,
+  and the sun's arc sits under pace and shoe (the run card's drawing,
+  with the sun riding it on today). Gym focus is unchanged.
+100 browser checks (sweep included), 16,217 plan checks, no overflow, a11y clean.

@@ -1420,6 +1420,11 @@ section('palette contrast (WCAG AA)');
       'the timeline keeps sunrise and sunset in order among its rows, and paints its spine in the light');
     ok(/class="d-moon"/.test(appSrc), 'the Week calendar keeps the moon beside each date');
     ok(/class="chap"/.test(appSrc) && /rc-list/.test(appSrc) && /counter\(rule, upper-roman\)/.test(css), 'Reference is a book: contents, numbered chapters, rules in numerals');
+    ok(/function dressSheet/.test(appSrc) && /if \(open\) dressSheet\(\)/.test(appSrc), 'the More sheet is dressed as plates each time it opens');
+    ok(/restMoonHTML\(iso\)/.test(appSrc) && !/class="rest-mark"/.test(appSrc), 'a rest day shows the night\u2019s moon, not a pause mark');
+    ok(/focus-' \+ skyKind\(block\)/.test(appSrc) && /runSkyHTML\(iso, block, skyKind\(block\), 'f'/.test(appSrc), 'run focus is lit in the run\u2019s colour and shows the sun\u2019s arc');
+    ok(['New moon', 'Waxing crescent', 'First quarter', 'Waxing gibbous', 'Full moon', 'Waning gibbous', 'Last quarter', 'Waning crescent'].every((n) => appSrc.includes("'" + n + "'")),
+      'the moon has all eight of its names');
     /* The light of the week (v4.77): the moon keeps its real hours. */
     const circ = (a, b) => Math.abs(((((a - b) % 1440) + 1440 + 720) % 1440) - 720);
     const fullArc = DB.moonArc('2027-01-22', nic), newArc = DB.moonArc('2026-10-10', home);
