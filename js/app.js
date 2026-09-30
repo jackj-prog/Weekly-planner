@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.0.8';
+  const APP_VERSION = '5.0.9';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -3348,8 +3348,15 @@
   function renderRef() {
     const view = document.getElementById('view');
     view.innerHTML = '';
-    const refRow = (k, v) => '<div class="ref-row pace-row' + (/^\d+:\d+\s*\/km$/.test(v) ? ' numeric' : '') +
-      '"><span>' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>';
+    /* a pace reads as a figure with its unit beside it, small; "see below"
+       becomes a way to get there (v5.0.9) */
+    const refRow = (k, v) => {
+      const num = v.match(/^(\d+:\d+)\s*(\/km)$/);
+      const val = num ? esc(num[1]) + '<small class="u">' + esc(num[2]) + '</small>'
+        : /\bsee below\b/.test(v) ? esc(v.replace(/\s*—?\s*see below\b/, '')) + ' <button class="ref-jump" data-ref-jump="ref-easy-pace-by-phase">Easy pace by phase ↓</button>'
+        : esc(v);
+      return '<div class="ref-row pace-row' + (num ? ' numeric' : '') + '"><span>' + esc(k) + '</span><span class="v">' + val + '</span></div>';
+    };
     const section = (id, node) => { node.id = id; node.tabIndex = -1; return node; };
     /* the race gets a statement card, not a table */
     const cd = DB.raceCountdown(todayISO());
@@ -3390,13 +3397,20 @@
         '</details>'
       ));
     }
-    view.appendChild(el(
+    const paces = el(
       '<div class="ref" id="ref-paces" tabindex="-1">' +
       '<h2>Paces</h2>' + paceSpectrumHTML() + '<div class="ref-card pace-card">' +
       PLAN.paces.map((p) => refRow(p.type, withZones(p.pace))).join('') + '</div>' +
       '<div class="ref-note">' + esc(PLAN.recalibration) + '</div>' +
       '</div>'
-    ));
+    );
+    paces.querySelectorAll('[data-ref-jump]').forEach((j) => j.addEventListener('click', () => {
+      const target = document.getElementById(j.dataset.refJump);
+      if (!target) return;
+      if (target.tagName === 'DETAILS') target.open = true;
+      (target.querySelector('summary') || target).focus({ preventScroll: true }); target.scrollIntoView({ block: 'start' });
+    }));
+    view.appendChild(paces);
     view.appendChild(buildEasyBandSection());
     view.appendChild(section('ref-zones', buildZoneSection()));
     view.appendChild(section('ref-log', buildTrainingLogSection()));

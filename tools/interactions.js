@@ -688,6 +688,14 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.0.9: the Paces card — units small, "see below" a way there
+  t = await open('2026-10-01', '12:00', SEED, 'ref');
+  await t.page.evaluate(() => { document.getElementById('ref-paces').open = true; });
+  check(/^5:20\/km$/.test((await text(t.page, '#ref-paces .pace-row.numeric .v')).trim()) && !!(await t.page.$('#ref-paces .pace-row.numeric .v small.u')), 'a pace reads 5:20 with its unit set small');
+  await t.page.click('#ref-paces .ref-jump'); await t.page.waitForTimeout(150);
+  check(await t.page.evaluate(() => { const d = document.getElementById('ref-easy-pace-by-phase'); return !!(d && d.open); }), '"Easy pace by phase ↓" opens that chapter');
+  noErrors(t, 'paces card');
+  await t.ctx.close();
   // v5.0.8: the load-jump note waits for last week to finish
   t = await open('2026-10-01', '12:00', SEED, 'week');
   await t.page.click('.wk-head .nav[data-d="7"]');

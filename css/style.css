@@ -3134,3 +3134,8 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .focus-gels .g-times { display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 10px 12px; font: 400 18px var(--mono); font-variant-numeric: tabular-nums; }
 .focus-gels .g-times i { font-style: normal; white-space: nowrap; padding-top: 6px; border-top: 1px solid var(--line); }
 .focus-gels .g-times i small { display: block; margin-bottom: 2px; font-size: 10px; letter-spacing: .08em; color: var(--t2); }
+
+/* ================= PACES CARD (v5.0.9) ============================= */
+.pace-row.numeric .v small.u { margin-left: 4px; font: 400 13px var(--body); letter-spacing: 0; color: var(--t2); }
+.pace-row .ref-jump { display: inline-flex; align-items: center; min-height: 44px; margin: -12px 0 -12px 6px; padding: 0 2px; border: 0; background: none;
+  font: 400 13px var(--body); color: var(--t2); text-decoration: underline; text-underline-offset: 4px; }

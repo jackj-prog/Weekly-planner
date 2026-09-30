@@ -1820,3 +1820,14 @@ note now fires only once the previous week has ended.
 only looked empty in a full-page screenshot because its columns arrive
 when scrolled into view.)
 210 browser checks (1 new), 16,278 plan checks.
+
+## The Paces card — v5.0.9, 1 October (Claude)
+
+- A pace reads as a figure with its unit small beside it ("5:20" in the
+  mono display, "/km" in small grey body type), not "5:20  /km" with the
+  unit as large as the number.
+- "by phase — see below" pointed at a chapter that is folded shut further
+  down the book. It is now "by phase" and a link, "Easy pace by phase ↓",
+  that opens and scrolls to that chapter (listener on the Paces chapter's
+  own node, so re-renders don't stack handlers on #view).
+213 browser checks (3 new), 16,278 plan checks.
