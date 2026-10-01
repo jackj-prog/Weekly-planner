@@ -1998,3 +1998,17 @@ That completes the nine pieces the user asked for ("all"): stained glass
 (v5.4), the replay (v5.5), the seal stamped (v5.6), the pen and the gel
 candle (v5.7) and the wreath (v5.8).
 247 browser checks (2 new), 16,279 plan checks.
+
+## Narrow screens; the Kalendar's light — v5.8.1, 1 October (Claude)
+
+- **Below ~370px** (an SE, or any iPhone set to Display Zoom) the run
+  card's ruled line clipped its figures ("Evo", "6:07–", "08:30–"). It now
+  wraps: shoe and pace share a row, the window takes the next.
+- **The Kalendar's year** moves above the month name, small and spaced, so
+  "December" no longer runs under the next-month button at 320px.
+- **The month's light** reads sensibly at a solstice: December now says
+  "shortest day the 21st, 7h 44m" instead of a net "days shorten by 0h
+  17m"; under an hour reads "17 min". The month's light is measured at the
+  1st's place throughout — the race trip's three days in Nicosia had made
+  "the 24th" January's longest day.
+250 browser checks (3 new), 16,279 plan checks.

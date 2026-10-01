@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.8.0';
+  const APP_VERSION = '5.8.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -3722,14 +3722,27 @@
       rows.push({ iso, d, di: DB.dayIndex(iso), plan, rec, past, off, tone, mp, quarter, key: keyAt[iso] || '', feast: feasts[iso.slice(5)] || '' });
     }
     /* the light across the month */
-    const pl = DB.skyPlace(ym + '-01'), plEnd = DB.skyPlace(ym + '-' + days);
+    const pl = DB.skyPlace(ym + '-01');
     const st0 = pl ? DB.sunTimes(ym + '-01', pl.lat, pl.lon, pl.offsetMin) : null;
-    const st1 = plEnd ? DB.sunTimes(ym + '-' + days, plEnd.lat, plEnd.lon, plEnd.offsetMin) : null;
+    const st1 = pl ? DB.sunTimes(ym + '-' + days, pl.lat, pl.lon, pl.offsetMin) : null;
     let light = '';
     if (st0 && st1 && st0.set != null && st1.set != null) {
-      const len0 = st0.set - st0.rise, len1 = st1.set - st1.rise, dl = len1 - len0;
-      light = 'Sunset ' + DB.fmtHM(st0.set) + ' on the 1st, ' + DB.fmtHM(st1.set) + ' by the ' + days + (days === 31 ? 'st' : 'th') +
-        ' · days ' + (dl < 0 ? 'shorten' : 'lengthen') + ' by ' + Math.floor(Math.abs(dl) / 60) + 'h\u00a0' + String(Math.abs(dl) % 60).padStart(2, '0') + 'm';
+      const dur = (n) => n >= 60 ? Math.floor(n / 60) + 'h\u00a0' + String(n % 60).padStart(2, '0') + 'm' : n + '\u00a0min';
+      const ord = (n) => n + (n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th');
+      const lens = [];
+      for (let d = 1; d <= days; d++) {
+        /* one place for the whole month (the 1st's), or the race trip's
+           three days in Nicosia read as January's longest */
+        const iso = ym + '-' + String(d).padStart(2, '0'), t = pl && DB.sunTimes(iso, pl.lat, pl.lon, pl.offsetMin);
+        lens.push(t && t.rise != null && t.set != null ? t.set - t.rise : null);
+      }
+      const ok = lens.filter((v) => v != null), lo = Math.min(...ok), hi = Math.max(...ok);
+      const iLo = lens.indexOf(lo), iHi = lens.indexOf(hi), dl = lens[days - 1] - lens[0];
+      /* a month that turns at a solstice says so; otherwise the net change */
+      const turn = iLo > 0 && iLo < days - 1 ? 'shortest day the ' + ord(iLo + 1) + ', ' + dur(lo)
+        : iHi > 0 && iHi < days - 1 ? 'longest day the ' + ord(iHi + 1) + ', ' + dur(hi) : '';
+      light = 'Sunset ' + DB.fmtHM(st0.set) + ' on the 1st, ' + DB.fmtHM(st1.set) + ' by the ' + ord(days) + ' · ' +
+        (turn || 'days ' + (dl < 0 ? 'shorten' : 'lengthen') + ' by ' + dur(Math.abs(dl)));
     }
     const wks = rows.map((r) => DB.resolveBlock(r.iso)).filter((c) => c.block && c.block.id === 'marathon').map((c) => c.week);
     const wkLine = wks.length ? 'Weeks ' + Math.min(...wks) + '–' + Math.max(...wks) + ' of the block' : '';
@@ -3740,8 +3753,8 @@
     const name = MONTH_NAMES[m - 1], sign = ((PLAN.hours && PLAN.hours.zodiac) || [])[m - 1] || '';
     const head = el('<header class="kl-head">' +
       '<button class="nav" data-m="-1" aria-label="Previous month">‹</button>' +
-      '<div class="kl-title"><h1><span class="kl-init" aria-hidden="true">' + name[0] + '</span><span class="kl-rest" aria-hidden="true">' + name.slice(1) + '</span>' +
-      '<span class="sr">' + name + ' ' + y + '</span></h1><span class="kl-year" aria-hidden="true">' + roman(y) + '</span></div>' +
+      '<div class="kl-title"><span class="kl-year" aria-hidden="true">' + roman(y) + '</span><h1><span class="kl-init" aria-hidden="true">' + name[0] + '</span><span class="kl-rest" aria-hidden="true">' + name.slice(1) + '</span>' +
+      '<span class="sr">' + name + ' ' + y + '</span></h1></div>' +
       '<button class="nav" data-m="1" aria-label="Next month">›</button></header>');
     head.querySelectorAll('[data-m]').forEach((b) => b.addEventListener('click', () => {
       state.kalMonth = shiftMonth(ym, Number(b.dataset.m)); window.scrollTo(0, 0); render();

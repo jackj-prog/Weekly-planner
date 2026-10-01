@@ -3213,12 +3213,12 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 
 .kl-head { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 10px; margin: 2px 2px 6px; }
 .kl-head .nav { min-width: 44px; min-height: 44px; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; font-size: 17px; color: var(--text); }
-.kl-title { display: flex; align-items: baseline; justify-content: center; gap: 10px; min-width: 0; }
+.kl-title { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
 .kl-title h1 { display: flex; align-items: flex-end; margin: 0; font: 900 30px/1 var(--display); letter-spacing: -.03em; color: var(--text); }
 .kl-init { display: inline-grid; place-items: center; width: 40px; height: 40px; margin-right: 2px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface);
   font: 400 34px/1 var(--serif); color: var(--accent); letter-spacing: 0; text-shadow: 0 0 14px var(--glow-red); }
 .kl-rest { padding-bottom: 2px; }
-.kl-year { font: italic 400 14px var(--serif); color: var(--t2); letter-spacing: .04em; }
+.kl-year { font: italic 400 13px/1 var(--serif); color: var(--t2); letter-spacing: .14em; }
 .kl-sign { display: grid; justify-items: center; gap: 2px; }
 .kl-sign span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line);
   font: 400 18px/1 var(--serif); color: var(--text); box-shadow: 0 0 12px var(--glow-white-soft); }
@@ -3358,4 +3358,15 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   .wr-fire { animation: gc-flick 1.8s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
   .wr-candle:nth-of-type(2n) .wr-fire { animation-duration: 1.4s; animation-delay: -.5s; }
   .wr-glow { animation: gc-glow 2.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+}
+
+/* ================= NARROW SCREENS (v5.8.1) ========================= */
+/* below ~370px (an SE, or a phone set to Display Zoom) the run card's
+   ruled line cannot hold three figures side by side: shoe and pace share
+   a row and the window takes the next */
+@media (max-width: 369px) {
+  .hero .h-meta { grid-template-columns: 1fr 1fr; justify-content: stretch; row-gap: 12px; }
+  .hero .h-meta > span:nth-child(3):not(.h-mp) { padding-left: 0; border-left: 0; }
+  .kl-title h1 { font-size: 26px; }
+  .kl-init { width: 34px; height: 34px; font-size: 29px; }
 }

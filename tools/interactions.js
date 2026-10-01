@@ -694,6 +694,18 @@ async function cinema() {
   const ink = await t.page.$$eval('.session-focus .focus-emb.ink .emb path', (ns) => ns.map((n) => n.getAttribute('pathLength') + n.getAttribute('style')));
   check(ink.length === 3 && ink.every((x, k) => x === '1--p:' + k), 'each stroke of the emblem is numbered for the pen: ' + ink.join(' | '));
   await t.ctx.close();
+  // v5.8.1: narrow screens, and the Kalendar's light at a solstice
+  t = await open('2026-10-04', '07:45', SEED);
+  await t.page.setViewportSize({ width: 320, height: 700 }); await t.page.waitForTimeout(150);
+  const clip = await t.page.$$eval('.hero .h-meta > span', (ns) => ns.filter((n) => n.scrollWidth > n.clientWidth + 1 || n.getBoundingClientRect().right > document.documentElement.clientWidth).length);
+  check(clip === 0, 'at 320px the run card\u2019s ruled line wraps instead of clipping its figures');
+  await t.ctx.close();
+  t = await open('2026-12-01', '12:00', SEED);
+  await t.page.click('[data-nav="more"]'); await t.page.click('.sheet-item[data-nav="kal"]');
+  check(/shortest day the 21st, 7h\s\d\dm/.test(await text(t.page, '.kl-light')), 'December names the shortest day: ' + await text(t.page, '.kl-light'));
+  await t.page.click('.kl-head .nav[data-m="1"]');
+  check(/days lengthen by (\d+h\s\d\dm|\d+\smin)$/.test(await text(t.page, '.kl-light')), 'January says the days lengthen');
+  await t.ctx.close();
   // v5.8: the countdown wreath — a candle each Sunday for four, the red one at the gun
   const wreath = async (date, time) => { const tt = await open(date, time, SEED);
     const r = await tt.page.evaluate(() => { const w = document.querySelector('.day-head .bb-wreath'); return w && { on: w.querySelectorAll('.wr-candle.on:not(.centre)').length, centre: !!w.querySelector('.wr-candle.centre.on') }; });
