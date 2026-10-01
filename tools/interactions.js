@@ -496,7 +496,7 @@ async function cinema() {
   t = await open('2026-10-11', '07:00', SEED);
   check(!!(await t.page.$('.hero .sess-shape.l .ss-seg.mp')) && !(await t.page.$('.hero .sess-shape figcaption')), 'an MP long run shows its kilometres, its words left to the MP line');
   await t.page.click('.hero .session-focus-open');
-  check(/km 1–18 easy · km 19–24 at MP 5:20/.test(await text(t.page, '.session-focus .sess-shape figcaption')) && /^Z2.*MP in Z3/.test(await text(t.page, '.session-focus .focus-hr strong')),
+  check(/km 1–18 easy · km 19–24 at MP 5:20/.test(await text(t.page, '.session-focus .sess-shape figcaption')) && /^Easy Z2.*MP Z3/.test((await t.page.$$eval('.session-focus .focus-hr strong', (ns) => ns.map((n) => n.textContent.replace(/\s+/g, ' ')))).join(' ')),
     'focus carries the shape in words and the heart rate the run is prescribed by');
   noErrors(t, 'session shape');
   await t.ctx.close();
@@ -861,7 +861,7 @@ async function cinema() {
   t = await open('2026-10-04', '07:45', SEED);
   await t.page.click('.hero .session-focus-open');
   check((await t.page.$$('.session-focus .focus-gels .g-times i')).length === 4, 'Focus carries the same four gel times');
-  check(/Z3\u00a0\(\d+\u2060–\u2060\d+\)/.test(await t.page.$eval('.session-focus .focus-hr strong', (n) => n.textContent)), 'a zone and its range are joined so they never break apart');
+  check(/Z3\u00a0\(\d+\u2060–\u2060\d+\)/.test((await t.page.$$eval('.session-focus .focus-hr strong', (ns) => ns.map((n) => n.textContent))).join(' ')), 'a zone and its range are joined so they never break apart');
   await t.ctx.close();
   // v5.0.5: an empty device mid-block says why and offers the restore
   t = await open('2026-10-01', '12:00', {}, 'week');

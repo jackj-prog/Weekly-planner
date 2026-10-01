@@ -427,7 +427,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .h-zoneset {
   display: block; width: 100%; margin-top: 10px; min-height: 44px;
   padding: 10px 12px; border-radius: 8px; text-align: left; cursor: pointer;
-  background: rgba(255,255,255,0.10); border: 1px dashed rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.28);
   color: #fff; font-family: var(--body); font-size: 13px; font-weight: 600;
 }
 .wk-days { display: flex; flex-direction: column; gap: 7px; }
@@ -540,6 +540,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   box-shadow: 0 12px 30px color-mix(in srgb, var(--accent) 38%, transparent);
 }
 .rc-kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.92; }
+.rc-kicker { display: flex; align-items: center; gap: 7px; }
+.rc-laurel { flex: none; width: 17px; height: 17px; color: var(--text); filter: drop-shadow(0 0 4px var(--glow-white)); }
 .rc-where { font-family: var(--body); font-size: 11px; opacity: 0.78; margin-top: 2px; }
 .rc-goal { font-family: var(--display); font-weight: 900; font-size: 54px; line-height: 1.08; letter-spacing: -0.01em; }
 .rc-goal small { font-family: var(--mono); font-size: 13px; font-weight: 400; margin-left: 10px; opacity: 0.92; letter-spacing: 0; }
@@ -873,7 +875,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   display: block; width: 100%; margin-top: 10px; padding: 8px 10px;
   font-family: var(--body); font-size: 12px; font-weight: 700; text-align: left;
   background: rgba(255, 255, 255, 0.10); color: inherit;
-  border: 1px dashed rgba(255, 255, 255, 0.35); border-radius: 8px; cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.28); border-radius: 8px; cursor: pointer;
 }
 .h-log.logged { border-style: solid; }
 .h-log .lg-pace { font-size: 14px; }
@@ -1096,7 +1098,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hero .h-guard { font-size: 14px; }
 /* Morning resting HR: optional, one row, compared with your own usual. */
 .h-rhr { margin-top: 12px; border-radius: 12px; background: rgba(255,255,255,.08); }
-.h-rhr.add { display: block; width: 100%; min-height: 44px; padding: 10px 12px; text-align: left; border: 1px dashed rgba(255,255,255,.35); color: #fff; font-family: var(--body); font-size: 14px; font-weight: 600; cursor: pointer; }
+.h-rhr.add { display: block; width: 100%; min-height: 44px; padding: 10px 12px; text-align: left; border: 1px solid rgba(255,255,255,.28); color: #fff; font-family: var(--body); font-size: 14px; font-weight: 600; cursor: pointer; }
 .h-rhr.add small, .h-rhr-read small { display: block; font-size: 12px; font-weight: 400; color: var(--chrome-text); margin-top: 2px; }
 .h-rhr-read { display: block; width: 100%; min-height: 44px; padding: 10px 12px; text-align: left; background: none; border: 0; color: #fff; font-family: var(--body); font-size: 14px; cursor: pointer; }
 .h-rhr-read b { font-family: var(--mono); }
@@ -1375,6 +1377,10 @@ summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; b
 /* a quiet row with a disclosure keeps the rhythm of one without: the 44px
    target stays, but it hangs into the gaps instead of pushing them (v4.95) */
 .tl-quiet .anchor-detail summary { min-height: 0; padding-block: 11px; margin-block: -11px; }
+/* a card's disclosure keeps its 44px tap target but hangs it into the
+   card's padding, so a card ending in "Session details +" ends there (v5.9.2) */
+.tl-card .session-detail summary { min-height: 0; padding-block: 12px; margin-block: -12px; }
+.tl-card .session-detail[open] .detail-body { margin-top: 8px; }
 .anchor-detail[open] summary::after { content: '−'; }
 .tl-card .tick { width: auto; min-width: 112px; padding: 0 12px; border-radius: 8px; color: var(--t2); border-width: 1px; font-size: 16px; }
 .tl-card .tick span { font-size: 14px; font-weight: 600; }
@@ -2358,15 +2364,16 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .ref-index { display: block; margin-bottom: 22px; padding: 14px 16px 8px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
 .ref-index .rc-h { margin: 0 0 6px; font: italic 400 15px var(--serif); color: var(--t2); letter-spacing: .02em; }
 .ref-index .rc-h::after { display: none; }
-.ref-index .rc-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+.ref-index .rc-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 10px; }
 .ref-index button {
   display: flex; align-items: baseline; justify-content: flex-start; gap: 8px; min-height: 40px; padding: 8px 0;
   border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: none;
   font: 500 13.5px/1.3 var(--body); color: var(--text); text-align: left;
 }
 .ref-index button:nth-last-child(-n+2) { border-bottom: 0; }
-.ref-index button b { flex: 0 0 29px; font: 400 14px/1 var(--serif); color: var(--accent); letter-spacing: 0; }
-.ref-index button { font-size: 13px; gap: 5px; }
+.ref-index button b { flex: 0 0 26px; font: 400 13.5px/1 var(--serif); color: var(--accent); letter-spacing: 0; }
+/* every chapter on one line at 390px, so the rows keep one rhythm (v5.9.2) */
+.ref-index button { font-size: 12.5px; gap: 4px; }
 .ref-index button span { color: var(--text); }
 .ref-fold > summary .chap { flex: 0 0 36px; margin-right: -6px; font: 400 19px/1 var(--serif); color: var(--accent); letter-spacing: .02em; }
 .ref-fold > summary h2 { flex: 1; }
@@ -2788,6 +2795,9 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 /* a rest day's moon keeps its earthshine: the unlit disc faintly ashen */
 .rm .mo-dark { fill: color-mix(in srgb, var(--text) 10%, var(--chrome-bg)); stroke: color-mix(in srgb, var(--text) 38%, transparent); }
 .focus-run-facts .focus-hr strong { font-size: 17px; }
+.focus-run-facts .focus-hr strong { display: block; }
+.focus-run-facts .focus-hr strong + strong { margin-top: 5px; }
+.focus-run-facts .focus-hr em { display: inline-block; min-width: 48px; font: 400 11px var(--mono); font-style: normal; letter-spacing: .08em; text-transform: uppercase; color: var(--t2); }
 
 
 /* ================= THE DAY CLOCK (v4.91) =========================== */
@@ -3104,7 +3114,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 
 /* ================= BACKUP NUDGE (v4.99) ============================ */
 .data-actions button.go { background: var(--text); color: var(--paper); border-color: var(--text); }
-.bk-nudge { display: flex; align-items: center; gap: 12px; margin: 14px 0 4px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 12px; }
+.bk-nudge { display: flex; align-items: center; gap: 12px; margin: 14px 0 4px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; }
 .bk-nudge p { flex: 1; margin: 0; font-size: 13px; line-height: 1.45; color: var(--t2); text-wrap: pretty; }
 .bk-nudge p b { color: var(--accent); font-weight: 600; }
 .bk-nudge.done p b { color: var(--text); }
@@ -3415,3 +3425,14 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .kl-wk span:first-child { font: italic 400 13px var(--serif); letter-spacing: .04em; text-transform: none; color: var(--t2); }
 .kl-wk b { color: var(--text); font-weight: 700; }
 .kl-wk + .kl-row.mon { border-top: 0; }
+
+/* ================= POLISH (v5.9.2) ================================= */
+/* one close control everywhere: a round ✕ */
+.rl-x, .focus-close {
+  width: 48px; height: 48px; min-width: 48px; min-height: 48px; flex: 0 0 48px; padding: 0;
+  display: inline-grid; place-items: center; border-radius: 50%; font: 400 20px/1 var(--body);
+}
+/* one arrow: a button that opens something carries its ↗ at the right edge */
+.resthero + .runlogger > .h-log > span[aria-hidden] { float: right; font-size: 22px; line-height: 1.1; }
+.resthero + .runlogger > .h-log > small { display: block; margin-top: 3px; font-size: 13px; font-weight: 400; color: var(--t2); }
+

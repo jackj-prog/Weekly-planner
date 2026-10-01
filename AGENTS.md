@@ -2086,3 +2086,30 @@ Second item of the visual sweep.
   white, and "✓ completed" is a small flame and "Done".
 256 browser checks, 16,279 plan checks.
 
+## Polish pass — v5.9.2, 1 October (Claude)
+
+The rest of the visual sweep, one fix each:
+- **Card dead space.** A card ending in "Session details +" carried ~25px
+  of empty space under it: the summary's 44px minimum height sat below its
+  text. The tap target now hangs into the card's padding (12px each way,
+  negative margin), so the card ends at its last line (1v1: 130 → 105px)
+  and the target is still 43px.
+- **Race card:** the 🇨🇾 flag in the kicker (app code) is the laurel
+  emblem, white on the red card. The ✈️/🇨🇾 in three plan titles are plan
+  content and wait on the owner.
+- **Close:** the log form's and the zone editor's ✕ were rounded squares
+  beside Focus's round ✕; all three are the same 48px circle now.
+- **Arrows:** "Ran today? Add a run ↗" set its arrow inline after the
+  words while every other opening button carries it at the right edge.
+- **Dashed means off.** Rest days, skipped and missed keep their dashes;
+  the prompts (morning resting HR, zone setup, the log button's base, the
+  backup nudge) take a solid hairline.
+- **Focus heart rate** for an MP long run was "Z2 (138–154) · MP in Z3
+  (154–169)" breaking mid-phrase in heavy mono; it is two labelled lines,
+  "EASY Z2 (138–154)" and "MP Z3 (154–169)".
+- **Reference contents:** "Easy pace by phase" and "Tune-up recalibrator"
+  wrapped, so two rows stood taller than the rest. A narrower numeral
+  column and gap, at 12.5px, keep all twelve chapters on one 40px row at
+  390px.
+256 browser checks, 16,279 plan checks.
+

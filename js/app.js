@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.9.1';
+  const APP_VERSION = '5.9.2';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1510,8 +1510,12 @@
         /* the heart rate the run is prescribed by, from the zone model and
            the athlete's own zones when set (v4.90) */
         (() => { const c = DB.runClass(block), mp = /@\s*MP/.test(block.title);
-          const z = c === 'race' ? null : c === 'long' ? (mp ? 'Z2 · MP in Z3' : 'Z2') : c === 'quality' ? (mp ? 'Z3' : 'Z4') : c === 'recovery' ? 'Z1' : 'Z2';
-          return z ? '<div class="focus-hr"><span>HEART RATE</span><strong>' + esc(withZones(z)) + '</strong></div>' : ''; })() +
+          /* an MP long run has two: a labelled line each, never one line
+             broken mid-phrase (v5.9.2) */
+          const lines = c === 'race' ? [] : c === 'long' ? (mp ? [['Easy', 'Z2'], ['MP', 'Z3']] : [['', 'Z2']])
+            : c === 'quality' ? [['', mp ? 'Z3' : 'Z4']] : [['', c === 'recovery' ? 'Z1' : 'Z2']];
+          return lines.length ? '<div class="focus-hr"><span>HEART RATE</span>' + lines.map(([lab, z]) =>
+            '<strong>' + (lab ? '<em>' + lab + '</em> ' : '') + esc(withZones(z)) + '</strong>').join('') + '</div>' : ''; })() +
         '</div>' + sessionShapeHTML(block, block.run.km, false, { lit: !!getDone(iso)[block.id] || (getRunLogEntry(iso) || {}).sec > 0 }) +
         (block.run.gelsAt && block.run.gelsAt.length ? '<div class="focus-gels">' + gelCandleHTML(block, iso) + '<div><span>GELS · ' + block.run.gelsAt.length + '</span><div class="g-times">' +
           block.run.gelsAt.map((m, k) => '<i><small>' + roman(k + 1) + '</small>' + DB.fmtHM((block.startMin + m) % 1440) + '</i>').join('') + '</div><p class="gc-next" role="status"></p></div></div>' : '') +
@@ -3962,7 +3966,7 @@
     view.appendChild(index);
     view.appendChild(el(
       '<div class="race-card">' +
-      '<div class="rc-kicker">🇨🇾 ' + esc(PLAN.race.name) + '</div>' +
+      '<div class="rc-kicker"><i class="rc-laurel">' + emblemSVG('laurel') + '</i>' + esc(PLAN.race.name) + '</div>' +
       '<div class="rc-where">' + esc(fmtDate(PLAN.race.date)) + ' · gun ' + esc(PLAN.race.gun) +
       (PLAN.race.city ? ' · ' + esc(PLAN.race.city) : '') + '</div>' +
       '<div class="rc-goal">' + esc(PLAN.race.goal) + '<small>' + esc(PLAN.race.goalPace) + '</small></div>' +

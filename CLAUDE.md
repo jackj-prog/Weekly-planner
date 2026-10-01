@@ -283,6 +283,11 @@ and minute (none after sunset). Since v5.9.1 it is a small fixed dial in
 the card's lower right corner, fading out towards the text, its shadow
 graded from the gnomon's foot to its tip; the Week's lit candles burn on
 their wicks.
+**v5.9.2 (polish):** one close control (a round ✕), one arrow (↗ at a
+button's right edge), dashed borders only where they mean "off" (prompts
+take a solid hairline), a card's disclosure hangs its tap target into the
+padding, Focus gives an MP long run's heart rate a labelled line each, the
+race card carries the laurel, and Reference's contents keep one row height.
 **The Kalendar (v5.4):** a month on one page, from the More sheet — a line
 per day with the run as a stroke (outline planned, filled banked, dashed
 missed), key days and feasts in red, the moon's quarters, the light's
