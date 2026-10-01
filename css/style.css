@@ -3443,4 +3443,6 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .nownext .nn-next, .nownext .nn-tmrw, .nownext .nn-time {
   text-shadow: 0 0 3px var(--nn-ground), 0 0 6px var(--nn-ground), 0 0 10px var(--nn-ground);
 }
+/* a next title that wraps hangs under its first word, not under its emblem */
+.nownext .nn-next > span:has(> .nn-nemb:first-child) { padding-left: 20px; text-indent: -20px; }
 

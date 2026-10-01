@@ -291,6 +291,9 @@ race card carries the laurel, and Reference's contents keep one row height.
 **v5.9.3:** in its own window the run card says "Under way · until 17:43",
 not "Scheduled"; the Now card's words keep a halo of the card's ground so a
 line over the sundial reads cleanly.
+**v5.9.4:** a wrapped Next title hangs under its first word, not its
+emblem; the Now card's stars keep off its edge; a title that already names
+its distance ("~21 km") is not given it again.
 **The Kalendar (v5.4):** a month on one page, from the More sheet — a line
 per day with the run as a stroke (outline planned, filled banked, dashed
 missed), key days and feasts in red, the moon's quarters, the light's

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.9.3';
+  const APP_VERSION = '5.9.4';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -785,6 +785,9 @@
   }
 
   const nnKm = (k) => String(Math.round(k * 10) / 10);
+  /* a title that already names its distance ("Long 22", "~21 km") is not
+     given it again (v5.9.4) */
+  const namesKm = (b) => new RegExp('\\b' + b.run.km + '\\b').test(b.title) || /\d\s*km\b/.test(b.title);
   function buildNowNext(day) {
     const nMin = nowMin();
     const cur = day.blocks.find((b) => nMin >= b.startMin && nMin < b.endMin);
@@ -797,7 +800,7 @@
     if (cur) {
       const pct = Math.round(((nMin - cur.startMin) / (cur.endMin - cur.startMin)) * 100);
       html += '<div class="nn-title"><span class="nn-emb" style="color:' + emblemTone(cur) + '">' + emblemSVG(emblemKind(cur)) + '</span>' + tt(cur.title) + '</div>' +
-        '<div class="nn-time">' + cur.start + '–' + cur.end + (cur.run && !new RegExp('\\b' + cur.run.km + '\\b').test(cur.title) ? ' · ' + nnKm(cur.run.km) + '\u00a0km' : '') +
+        '<div class="nn-time">' + cur.start + '–' + cur.end + (cur.run && !namesKm(cur) ? ' · ' + nnKm(cur.run.km) + '\u00a0km' : '') +
         ' · <span class="nn-left">' + fmtLeft(cur.endMin - nMin) + '</span>' +
         '</div></div><button class="nn-jump" aria-label="Go to current activity">↓</button></div>' +
         '<div class="nn-bar" aria-hidden="true"><i style="width:' + pct + '%"></i></div>';
@@ -820,7 +823,7 @@
     if (next.length) {
       html += '<div class="nn-next"><span class="nn-label">NEXT</span><span class="t">' + next[0].start + '</span><span>' +
         '<span class="nn-nemb" style="color:' + emblemTone(next[0]) + '">' + emblemSVG(emblemKind(next[0])) + '</span>' + tt(next[0].title) +
-        (next[0].run && !new RegExp('\\b' + next[0].run.km + '\\b').test(next[0].title) ? ' <span class="nn-km">· ' + nnKm(next[0].run.km) + '\u00a0km</span>' : '') +
+        (next[0].run && !namesKm(next[0]) ? ' <span class="nn-km">· ' + nnKm(next[0].run.km) + '\u00a0km</span>' : '') +
         ' <span class="nn-in">' + fmtIn(next[0].startMin - nMin) + '</span></span></div>';
     } else if (!(day.blocks.length && nMin >= day.blocks[day.blocks.length - 1].endMin)) {
       html += '<div class="nn-next"><span class="nn-label">NEXT</span><span>Nothing else scheduled today.</span></div>';
@@ -2432,7 +2435,7 @@
     if (light === 'day') return '';
     let s = '';
     for (let k = 0; k < (light === 'night' ? 22 : 8); k++) {
-      const x = artSeed(iso + ':nn:' + k) * 360, y = artSeed(iso + ':nn:' + k + 'y') * 130;
+      const x = 10 + artSeed(iso + ':nn:' + k) * 340, y = 8 + artSeed(iso + ':nn:' + k + 'y') * 114;   // kept off the card's edge
       s += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (0.5 + artSeed(iso + ':nn:' + k + 'r') * 0.8).toFixed(2) + '"/>';
     }
     return '<svg class="nn-stars" viewBox="0 0 360 130" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + s + '</svg>';

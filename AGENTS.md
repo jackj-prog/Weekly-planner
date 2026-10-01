@@ -2129,3 +2129,23 @@ Two things still read wrong:
   falls; elsewhere the halo is invisible.
 257 browser checks (1 new), 16,279 plan checks.
 
+## Key-day mornings — v5.9.4, 1 October (Claude)
+
+The sweep's second half went through the days that matter most (the
+tune-up half, race morning, the first recovery day). Three small things:
+- On the tune-up morning Next read "TUNE-UP HALF — ~21 km, raced honest ·
+  21.1 km": the distance appended (v5.0.10) when the title did not contain
+  the exact figure, though it named "~21 km". A title that names any
+  distance in km is not given another (`namesKm`).
+- That title wrapped, and its second line started under the laurel rather
+  than under "TUNE-UP". A Next title led by its emblem now hangs (padding
+  plus a negative indent), so a wrapped line aligns with its first word.
+- The Now card's stars were scattered across the whole viewBox, so one
+  could sit on the card's border and read as a speck of dirt. They keep
+  10px off the sides and 8px off the top and bottom.
+- Still for the owner: the plan carries four emoji in titles and details —
+  "Fly to Cyprus ✈️", "RACE DAY 🇨🇾", "MARATHON — 42.2 km 🇨🇾" and
+  "CELEBRATE ☀️". They render as full-colour glyphs against the one-red
+  palette; removing them is a plan.js content edit awaiting a yes.
+257 browser checks, 16,279 plan checks.
+

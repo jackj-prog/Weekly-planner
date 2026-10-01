@@ -5,7 +5,7 @@
    ========================================================================== */
 'use strict';
 
-const CACHE_VERSION = 'week-os-v5.9.3';
+const CACHE_VERSION = 'week-os-v5.9.4';
 const ASSETS = [
   './',
   './index.html',
