@@ -3160,3 +3160,28 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   @keyframes sg-glow { from { opacity: 0; } to { opacity: .55; } }
 }
 .run-recap .sess-shape { margin: 16px 0 4px; }
+
+/* ================= THE GROWING BORDER (v5.2) ======================= */
+/* a vine round the timeline's spine; the day's sessions are its flowers */
+.tl > .vine { position: absolute; left: -6px; top: 0; pointer-events: none; overflow: visible; }
+.vine .vn-stem { fill: none; stroke: color-mix(in srgb, var(--t3) 55%, transparent); stroke-width: 1.1; stroke-linecap: round; }
+.vine .vn-leaf { fill: color-mix(in srgb, var(--t3) 30%, transparent); stroke: color-mix(in srgb, var(--t3) 60%, transparent); stroke-width: .6; }
+.vine .vn-flower .vn-petals ellipse { fill: var(--vc); fill-opacity: .92; stroke: var(--paper); stroke-width: .7; }
+.vine .vn-flower .vn-eye { fill: var(--paper); stroke: var(--vc); stroke-width: .9; }
+.vine .vn-flower { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--vc) 45%, transparent)); }
+.vine .vn-bud path { fill: color-mix(in srgb, var(--t3) 45%, var(--paper)); stroke: var(--t3); stroke-width: .8; }
+.vine .vn-bud .vn-sepal { fill: none; }
+.vine .vn-twig path { fill: none; stroke: var(--t3); stroke-width: 1.1; stroke-linecap: round; }
+.vine .vn-ahead path { fill: var(--paper); stroke: color-mix(in srgb, var(--t3) 80%, transparent); stroke-width: .8; }
+.vine .vn-curl { fill: none; stroke: var(--t2); stroke-width: 1.2; stroke-linecap: round; }
+.vine .vn-rose ellipse { fill: var(--text); stroke: var(--paper); stroke-width: .6; }
+.vine .vn-fin { filter: drop-shadow(0 0 5px var(--glow-white-hot)); }
+@media (prefers-reduced-motion: no-preference) {
+  .vine .vn-flower.bloom .vn-petals { animation: vn-bloom 760ms var(--ease-spring) both; transform-box: fill-box; transform-origin: center; }
+  .vine .vn-flower.bloom .vn-eye { animation: vn-eye 500ms var(--ease-out) 260ms both; }
+  .vine .vn-fin.new .vn-curl { stroke-dasharray: 1; animation: vn-curl 900ms var(--ease-out) 400ms both; }
+  .vine .vn-fin.new .vn-rose { animation: vn-bloom 700ms var(--ease-spring) 1100ms both; transform-box: fill-box; transform-origin: center; }
+  @keyframes vn-bloom { from { transform: scale(0) rotate(-60deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes vn-eye { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes vn-curl { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+}

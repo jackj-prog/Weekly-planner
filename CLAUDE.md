@@ -270,6 +270,10 @@ the run card's ruled line as numbered clock times, not minutes in Details.
 lancet windows — red glass for reps and marathon pace, white for long, grey
 for easy, piers for the jogs — dark before the run, lit once it is done,
 the light flooding in pane by pane on the moment it is ticked or saved.
+**The growing border (v5.2):** a vine winds round Today's spine; each
+session done opens a flower in its colour (once, on the tick), a missed one
+stays a bud, a skipped one a bare twig, and a finished day ends in a curl
+and a white rose.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

@@ -688,6 +688,17 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.2: the growing border — flowers for done sessions, buds for missed
+  t = await open('2026-09-29', '22:40', Object.assign({}, SEED, { 'done-2026-09-29': { 't1930-study': true }, 'runlog-2026-09-29': { sec: 2665, hr: 145, km: 7.32 } }));
+  const vn = await t.page.evaluate(() => { const v = document.querySelector('.tl > .vine'); return v && { flowers: v.querySelectorAll('.vn-flower').length, buds: v.querySelectorAll('.vn-bud').length, fin: !!v.querySelector('.vn-fin'), bloom: v.querySelectorAll('.bloom').length }; });
+  check(vn && vn.flowers === 2 && vn.buds === 1 && !vn.fin && vn.bloom === 0, 'the vine flowers for the run and study, keeps a bud for the unticked read, no flourish yet: ' + JSON.stringify(vn));
+  await t.page.click('.tl-card:has-text("Read") .tick');
+  const vn2 = await t.page.evaluate(() => { const v = document.querySelector('.tl > .vine'); return { flowers: v.querySelectorAll('.vn-flower').length, bloom: v.querySelectorAll('.vn-flower.bloom').length, fin: !!v.querySelector('.vn-fin.new') }; });
+  check(vn2.flowers === 3 && vn2.bloom === 1 && vn2.fin, 'ticking the last session opens its flower and ends the vine in a flourish: ' + JSON.stringify(vn2));
+  await t.page.click('.day-nav [data-d="1"]'); await t.page.click('.day-nav [data-d="-1"]');
+  check((await t.page.$$('.tl > .vine .vn-flower')).length === 3 && (await t.page.$$('.tl > .vine .bloom, .tl > .vine .vn-fin.new')).length === 0, 'coming back to the day shows the flowers open, without opening them again');
+  noErrors(t, 'growing border');
+  await t.ctx.close();
   // v5.1: the session as a stained-glass window — dark before, lit when done
   t = await open('2026-10-07', '17:50', SEED);
   check(!!(await t.page.$('.hero .sess-shape svg.sg')) && !(await t.page.$('.hero .sess-shape svg.sg.lit')) && (await t.page.$$('.hero .sg .sg-pane')).length >= 20,

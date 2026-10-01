@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.1.0';
+  const APP_VERSION = '5.2.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -531,14 +531,81 @@
     Array.prototype.forEach.call(tl.children, (c, i) => c.style.setProperty('--i', i));
     view.appendChild(tl);
     view.appendChild(el(dayWheelHTML(day, done, iso, isToday, ovr)));
-    if (skySt && skySt.rise != null) {
-      paintSpine(tl, skySt);
-      if ('ResizeObserver' in window) new ResizeObserver(() => paintSpine(tl, skySt)).observe(tl);
-    }
+    const vineFresh = { first: true };
+    paintVine(tl, vineFresh);
+    if (skySt && skySt.rise != null) paintSpine(tl, skySt);
+    if ('ResizeObserver' in window) new ResizeObserver(() => { if (skySt && skySt.rise != null) paintSpine(tl, skySt); paintVine(tl, vineFresh); }).observe(tl);
 
     /* weight input just opened — put the cursor in it */
     const wi = view.querySelector('.xw-in');
     if (wi) { wi.focus(); wi.select(); }
+  }
+
+  /* The growing border (v5.2). A Book of Hours page carries a vine in its
+     margin; here it winds round the timeline's spine, and the day's
+     sessions are its flowers. A session done opens a rosette in its own
+     colour, one whose time passed unticked stays a closed bud, a skipped
+     one is a bare twig, and one still to come is a small furled bud. When
+     every session of the day is done the vine ends in a flourish. A flower
+     opens (once) at the moment its session is ticked — never on a
+     re-render or a resize. Purely decorative; the cards say it in words. */
+  function paintVine(tl, fresh) {
+    const H = tl.offsetHeight;
+    if (!H || H < 60) return;
+    if (!fresh.first && fresh.h === H) return;     // a resize observer's first call, or nothing moved
+    fresh.h = H;
+    const old = tl.querySelector(':scope > .vine');
+    if (old) old.remove();
+    const X = 11.5, f = (v) => v.toFixed(1);
+    const kids = Array.prototype.filter.call(tl.children, (c) => !c.classList.contains('vine'));
+    const nodes = [], avoid = [];
+    kids.forEach((c) => {
+      const top = c.offsetTop, h = c.offsetHeight;
+      avoid.push(top + (c.classList.contains('tl-card') ? 26 : 14));
+      if (!c.dataset.vine) return;
+      const y = Math.min(top + h - 10, top + Math.max(60, h / 2));
+      nodes.push({ y, state: c.dataset.vine, tone: c.style.getPropertyValue('--vc') || 'var(--t2)', bloom: fresh.first && c.dataset.bloom === '1' });
+      avoid.push(y);
+    });
+    const counted = nodes.filter((n) => n.state !== 'skip');
+    const complete = counted.length > 0 && counted.every((n) => n.state === 'done');
+    const end = H - 12;
+    /* the stem: a slow sine round the spine */
+    let stem = 'M' + X + ' 8';
+    for (let y = 12; y <= (complete ? H : end); y += 4) stem += ' L' + f(X + 3.2 * Math.sin(y / 13)) + ' ' + y;
+    /* leaves where nothing else stands, alternating sides */
+    let leaves = '', side = 1;
+    for (let y = 40; y < end - 20; y += 34) {
+      if (avoid.some((a) => Math.abs(a - y) < 20)) continue;
+      const x0 = X + 3.2 * Math.sin(y / 13), dx = side * 7;
+      leaves += '<path class="vn-leaf" d="M' + f(x0) + ' ' + y + ' Q' + f(x0 + dx * 0.55) + ' ' + (y - 6) + ' ' + f(x0 + dx) + ' ' + (y - 3) +
+        ' Q' + f(x0 + dx * 0.5) + ' ' + (y + 1.5) + ' ' + f(x0) + ' ' + y + ' Z"/>';
+      side = -side;
+    }
+    let sprigs = '';
+    nodes.forEach((n) => {
+      const y = n.y;
+      if (n.state === 'done') {
+        let petals = '';
+        for (let k = 0; k < 5; k++) petals += '<ellipse cx="0" cy="-4.2" rx="2.9" ry="4.3" transform="rotate(' + (k * 72) + ')"/>';
+        sprigs += '<g class="vn-flower' + (n.bloom ? ' bloom' : '') + '" style="--vc:' + n.tone + '" transform="translate(' + X + ' ' + f(y) + ')">' +
+          '<g class="vn-petals">' + petals + '</g><circle class="vn-eye" r="1.7"/></g>';
+      } else if (n.state === 'bud') {
+        sprigs += '<g class="vn-bud" transform="translate(' + X + ' ' + f(y) + ')"><path d="M0 -5.5 C3 -2.5 3 2 0 3.5 C-3 2 -3 -2.5 0 -5.5 Z"/><path class="vn-sepal" d="M-3 2.5 L0 5 L3 2.5"/></g>';
+      } else if (n.state === 'skip') {
+        sprigs += '<g class="vn-twig" transform="translate(' + X + ' ' + f(y) + ')"><path d="M0 0 L6 -5 M3 -2.5 L4.5 0.5"/></g>';
+      } else {
+        sprigs += '<g class="vn-ahead" transform="translate(' + X + ' ' + f(y) + ')"><path d="M0 -4 C2.2 -1.8 2.2 1.5 0 2.8 C-2.2 1.5 -2.2 -1.8 0 -4 Z"/></g>';
+      }
+    });
+    /* the day finished: the vine curls into a volute with a white rose */
+    /* it hangs just below the last row, clear of NOW and lights out */
+    const fin = complete ? '<g class="vn-fin' + (fresh.first && nodes.some((n) => n.bloom) ? ' new' : '') + '" transform="translate(' + X + ' ' + (H + 10) + ')">' +
+      '<path class="vn-curl" pathLength="1" d="M0 -10 C0 -2 8 0 9 -5 C10 -10 3 -12 2 -7 C1.5 -4.5 4.5 -4 5 -6"/>' +
+      '<g class="vn-rose" transform="translate(0 3) scale(1.35)">' + [0, 72, 144, 216, 288].map((a) => '<ellipse cx="0" cy="-2.8" rx="2" ry="3" transform="rotate(' + a + ')"/>').join('') + '</g></g>' : '';
+    tl.insertAdjacentHTML('afterbegin', '<svg class="vine" aria-hidden="true" width="24" height="' + H + '" viewBox="0 0 24 ' + H + '">' +
+      '<path class="vn-stem" d="' + stem + '"/>' + leaves + sprigs + fin + '</svg>');
+    fresh.first = false;
   }
 
   /* the moon's phase by name, from DB.moonPhase */
@@ -2458,6 +2525,11 @@
     const legDrop = !!(opts.moved && legDropFor(b, iso));
     const legRe = legDrop ? new RegExp(PLAN.moveRules.legPattern, 'i') : null;
     const dose = b.plan && !opts.moved ? legDose(iso, b) : 'full';
+    /* the border's sprig for this session (v5.2): a flower once done, a
+       closed bud if its time passed unticked, a bare twig if skipped */
+    const bloomed = isDone || !!(b.run && (getRunLogEntry(iso) || {}).sec > 0);
+    const vine = opts.skipped ? 'skip' : bloomed ? 'done' : opts.past ? 'bud' : 'ahead';
+    const vineTone = b.run ? emblemTone(b) : cat;
     const card = el(
       '<div class="tl-card' + (isDone ? ' done' : '') + (opts.skipped ? ' skipped' : '') + (opts.current ? ' current' : '') + (opts.just ? ' just' : '') +
         (opts.past ? ' past' : '') + (opts.slim ? ' slim' : '') + '" style="--cat:' + cat + '">' +
@@ -2579,6 +2651,9 @@
       });
       inp.addEventListener('blur', commit);
     });
+    card.dataset.vine = vine;
+    card.style.setProperty('--vc', vineTone);
+    if (opts.just && bloomed) card.dataset.bloom = '1';
     return card;
   }
 

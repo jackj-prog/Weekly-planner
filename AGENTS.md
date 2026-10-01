@@ -1871,3 +1871,23 @@ plan's own words:
 Tokens only (the light stops are `--text`); motion behind
 `prefers-reduced-motion`.
 222 browser checks (5 new), 16,278 plan checks.
+
+## The growing border — v5.2, 1 October (Claude)
+
+A Book of Hours page carries a vine in its margin. Today's timeline now
+has one, winding round the spine (`paintVine`, measured after layout like
+`paintSpine`), with the day's sessions as its flowers:
+- a session done (ticked, or its run logged) opens a five-petal rosette
+  in its own colour (the run in its class colour: red hard, white long);
+- one whose time passed unticked stays a closed grey bud; a skipped one is
+  a bare twig; one still to come is a small furled bud;
+- grey leaves fill the stem where nothing else stands;
+- when every session of the day is done the vine ends below the last row
+  in a curl and a white rose.
+A flower opens (spring, 760 ms) only at the moment its session is ticked,
+and the flourish draws only when that tick completes the day; navigating
+back, re-rendering or resizing shows them already open. The resize
+observer repaints only when the timeline's height changes (its first call
+would otherwise have wiped the animation). Cards carry `data-vine` /
+`--vc`; the vine is aria-hidden — the cards say it in words.
+226 browser checks (3 new), 16,278 plan checks.
