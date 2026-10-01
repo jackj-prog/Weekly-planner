@@ -1363,7 +1363,7 @@ section('palette contrast (WCAG AA)');
     ok(!/localStorage/.test(tcFn), 'title card plays on every launch — no once-a-day gate (user’s call, v4.69.1)');
     ok(/\.titlecard\s*\{[^}]*pointer-events:\s*none/.test(css), 'title card never takes a tap');
     /* Art (v4.72): the wheel and the sky are pictures with a spoken summary. */
-    ok(/<figure class="daywheel[^"]*' \+ [^;]*role="img" aria-label=|<figure class="daywheel" role="img" aria-label=/.test(appSrc) && /<figure class="sky" role="img" aria-label=/.test(appSrc),
+    ok(/<figure class="daywheel[^"]*' \+ [^;]*role="img" aria-label=|<figure class="daywheel" role="img" aria-label=/.test(appSrc) && /<figure class="sky"[^>]*>' \+\s*'<svg viewBox="0 0 ' \+ W \+ ' ' \+ H \+ '" preserveAspectRatio="xMidYMid meet" role="img" aria-label=/.test(appSrc),
       'the day wheel and the night sky carry text alternatives');
     ok(/\.hero \.h-art \{[^}]*pointer-events:\s*none/.test(css), 'run card textures never take a tap');
     /* Book of Hours (v4.73): the Latin is plan content and lives in plan.js;

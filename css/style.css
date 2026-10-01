@@ -3260,3 +3260,30 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .kl-row.today { position: relative; }
 .kl-row.today::before { content: ""; position: absolute; inset: 1px -8px; border: 1px solid var(--accent); border-radius: 8px; box-shadow: 0 0 12px var(--glow-red-soft); pointer-events: none; }
 .kl-cap { margin: 10px 0 4px; }
+
+/* ================= REPLAY THE BLOCK (v5.5) ========================= */
+.sky .fig-cap { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 10px; }
+.sk-capt { font-variant-numeric: tabular-nums; }
+.sk-play { min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 22px; background: var(--surface);
+  font: 400 12px var(--mono); letter-spacing: .08em; color: var(--text); }
+.sk-sweep { opacity: 0; pointer-events: none; }
+.sk-sweep path { stroke: var(--text); stroke-width: .8; opacity: .7; }
+@media (prefers-reduced-motion: reduce) { .sk-play { display: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  #view .sky.replay { --D: 7s; }
+  #view .sky.replay :is(.sk-fieldg, .sk-wayg) { animation: rp-in 1.2s var(--ease-soft) backwards; }
+  #view .sky.replay .sk-mo { animation: rp-in .5s var(--ease-soft) backwards; animation-delay: calc(min(var(--t) / var(--nowf), 1) * var(--D)); }
+  #view .sky.replay :is(.sk-star, .sk-halo, .sk-spike) { animation: rp-pop .55s var(--ease-spring) backwards; animation-delay: calc(var(--t) / var(--nowf) * var(--D)); transform-box: fill-box; transform-origin: center; }
+  #view .sky.replay .sk-line { animation: rp-arc .5s var(--ease-inout) backwards; animation-delay: calc(var(--t) / var(--nowf) * var(--D) + .3s); }
+  #view .sky.replay .sk-comet { animation: rp-arc .6s var(--ease-out) backwards; animation-delay: calc(var(--t) / var(--nowf) * var(--D) + .2s); }
+  #view .sky.replay :is(.sk-ahead, .sk-veil, .sk-now, .sk-now-t, .sk-racemoon) { animation: rp-in .9s var(--ease-soft) backwards; animation-delay: var(--D); }
+  #view .sky.replay .sk-dawng { animation: rp-dawn 1.6s var(--ease-out) backwards; animation-delay: calc(var(--D) + .3s); }
+  #view .sky.replay .sk-sweep { animation: sk-sweep var(--D) linear forwards; }
+  /* the replay's own keyframes: an animation that keeps its name is not
+     restarted by a new delay, it carries on from the arrival's clock */
+  @keyframes rp-in { from { opacity: 0; } }
+  @keyframes rp-pop { from { opacity: 0; transform: scale(.2); } }
+  @keyframes rp-arc { from { stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; } 12% { opacity: 1; } to { stroke-dasharray: 1; stroke-dashoffset: 0; } }
+  @keyframes rp-dawn { from { opacity: 0; transform: translateY(18px); } }
+  @keyframes sk-sweep { 0% { opacity: 0; transform: translateX(0); } 4% { opacity: 1; } 96% { opacity: 1; } 100% { opacity: 0; transform: translateX(calc(var(--sx) * 1px)); } }
+}

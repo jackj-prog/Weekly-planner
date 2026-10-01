@@ -688,6 +688,19 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.5: replay the block — the sky's arrival on a slow clock, counted beneath it
+  t = await open('2026-10-01', '12:00', SEED, 'plan');
+  await t.page.click('.sky .sk-play');
+  await t.page.waitForTimeout(1500);
+  const rp = await t.page.evaluate(() => { const f = document.querySelector('.sky'), st = f.querySelectorAll('.sk-star');
+    const late = Array.from(st).find((s) => parseFloat(s.style.getPropertyValue('--t')) > 0.35);
+    return { on: f.classList.contains('replay'), cap: f.querySelector('.sk-capt').textContent, lateName: late && getComputedStyle(late).animationName, nowf: f.style.getPropertyValue('--nowf') }; });
+  check(rp.on && /^\d+ \w{3} · [\d.]+ km · \d+ runs$/.test(rp.cap) && rp.lateName === 'rp-pop' && Number(rp.nowf) > 0.3,
+    'Replay re-runs the sky on its own keyframes and counts the block up beneath it: ' + JSON.stringify(rp));
+  await t.page.waitForTimeout(6200);
+  check(/^1 Oct · [\d.]+ km · \d+ runs$/.test(await text(t.page, '.sky .sk-capt')), 'the count ends on today');
+  noErrors(t, 'replay');
+  await t.ctx.close();
   // v5.4: the Kalendar — the month on one page
   t = await open('2026-10-01', '12:00', SEED);
   await t.page.click('[data-nav="more"]'); await t.page.click('.sheet-item[data-nav="kal"]');

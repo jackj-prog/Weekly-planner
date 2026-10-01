@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.4.0';
+  const APP_VERSION = '5.5.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -2794,7 +2794,7 @@
     journey.weeks.forEach((w, k) => {
       const iso = DB.addDays(w.start, 3), mp = DB.moonPhase(iso), x = X(k * 7 + 3);
       const full = mp.lit > 0.93, nw = mp.lit < 0.07;
-      moons += '<g class="sk-mo' + (full ? ' full' : nw ? ' new' : '') + '" style="--i:' + k + '">' +
+      moons += '<g class="sk-mo' + (full ? ' full' : nw ? ' new' : '') + '" style="--i:' + k + ';--t:' + (x / W).toFixed(3) + '">' +
         (full ? '<circle class="sk-mohalo" fill="url(#sk-hw)" cx="' + f1(x) + '" cy="10" r="8"/>' : '') + moonSVG(x, 10, 3, mp, 'sk-moon') + '</g>';
     });
     /* the runs */
@@ -2854,10 +2854,16 @@
       '<g class="sk-shoot" style="--s:' + s + 's"><path d="M' + x + ' ' + y + ' L' + (x + 46) + ' ' + (y + 18) + '"/><circle cx="' + (x + 46) + '" cy="' + (y + 18) + '" r=".9"/></g>').join('');
     const raceMoon = '<g class="sk-racemoon"><circle fill="url(#sk-hw)" cx="' + f1(sunX - 56) + '" cy="' + (HZ - 84) + '" r="13"/>' + moonSVG(sunX - 56, HZ - 84, 4.4, DB.moonPhase(days[n - 1].iso), 'sk-moon race') + '</g>';
     const veil = todayX != null ? '<rect class="sk-veil" x="' + f1(todayX) + '" y="0" width="' + f1(W - todayX) + '" height="' + HZ + '" fill="url(#sk-veil)"/>' : '';
-    return '<figure class="sky" role="img" aria-label="The block as a night sky: ' + ran + ' runs recorded as stars, ' +
+    /* the replay (v5.5): a line sweeps the sky from the first day
+       to NOW, and each star appears as the line passes the day it was run */
+    const nowf = todayX != null ? Math.max(0.05, todayX / W) : 1;
+    const sweep = '<g class="sk-sweep" style="--sx:' + f1(todayX != null ? todayX : W - 20) + '"><path d="M0 18 L0 ' + HZ + '"/></g>';
+    /* the picture carries its own description, so the figure's Replay
+       button stays reachable (a role="img" figure hides its contents) */
+    return '<figure class="sky" style="--nowf:' + nowf.toFixed(3) + '">' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The block as a night sky: ' + ran + ' runs recorded as stars, ' +
       'long runs joined as a constellation, comet tails on each new longest run, the moon each week at its phase along the top, ' +
       'and the race as a sunrise at the far right under a waning moon.">' +
-      '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
       '<defs><linearGradient id="sk-depth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="sk-z0"/><stop offset=".75" class="sk-z1"/><stop offset="1" class="sk-z2"/></linearGradient>' +
       '<radialGradient id="sk-dawn" cx="1" cy="1" r="0.62"><stop offset="0" class="sk-dawn-a"/><stop offset=".5" class="sk-dawn-m"/><stop offset="1" class="sk-dawn-b"/></radialGradient>' +
       '<radialGradient id="sk-glow"><stop offset="0" class="sk-glow-a"/><stop offset="1" class="sk-glow-b"/></radialGradient>' +
@@ -2878,10 +2884,11 @@
         '<text class="sk-now-t" x="' + f1(todayX + 4) + '" y="29">NOW</text>' : '') +
       '<g clip-path="url(#sk-above)" class="sk-dawng"><circle class="sk-sunglow" cx="' + f1(sunX) + '" cy="' + HZ + '" r="64" fill="url(#sk-glow)"/>' +
       '<path class="sk-ray" d="' + rays + '"/><circle class="sk-sun" cx="' + f1(sunX) + '" cy="' + HZ + '" r="15"/></g>' +
-      '<path class="sk-hills" d="' + hills + '"/><path class="sk-horizon" d="M0 ' + HZ + ' L' + W + ' ' + HZ + '"/>' +
+      sweep + '<path class="sk-hills" d="' + hills + '"/><path class="sk-horizon" d="M0 ' + HZ + ' L' + W + ' ' + HZ + '"/>' +
       '<text class="sk-lab" x="14" y="' + (HZ + 20) + '">' + esc(fmtShort(days[0].iso)).toUpperCase() + '</text>' +
       '<text class="sk-lab end" x="' + (W - 14) + '" y="' + (HZ + 20) + '">GUN · ' + esc(String(PLAN.race.gun)) + '</text>' +
-      '</svg><figcaption class="fig-cap"><span class="fig">Fig. I</span> The firmament of the block</figcaption></figure>';
+      '</svg><figcaption class="fig-cap"><span class="fig">Fig. I</span> <span class="sk-capt">The firmament of the block</span>' +
+      (ran ? '<button class="sk-play" aria-label="Replay the block, run by run">▶ Replay</button>' : '') + '</figcaption></figure>';
   }
 
   /* the journey in three facts rather than a sentiment (v5.0.4): weeks
@@ -2926,6 +2933,31 @@
       '<div class="journey-phases">'+Object.entries(block.phases).map(([name,range])=>'<button data-journey-week="'+range[0]+'">'+esc(name)+'</button>').join('')+'</div>'+
       '<div class="journey-scrub"><button data-journey-step="-1" aria-label="Previous journey week">‹</button><label><span class="journey-range-label">Explore the weeks</span><input type="range" min="1" max="'+weeks.length+'" step="1" value="'+initial+'" aria-label="Explore training week"></label><button data-journey-step="1" aria-label="Next journey week">›</button></div>'+
       '<div class="journey-selected"></div></div><details class="journey-method"><summary>Where these numbers come from</summary><p>Scheduled kilometres come from the resolved daily sessions, including race day. Recorded kilometres use saved run distance, or scheduled distance for a completion tick or older log without a distance. Future entries are excluded. Weeks elapsed measures calendar time, not completed training.</p></details></section>');
+    /* the replay: restart the sky's arrival on its own slow clock, and count
+       the block up beneath it — the date the sweep has reached, the km and
+       runs banked by then */
+    const play = root.querySelector('.sk-play');
+    if (play) {
+      const fig = root.querySelector('.sky'), capt = fig.querySelector('.sk-capt'), D = 7000;
+      const allDays = weeks.reduce((a, w) => a.concat(w.days), []);
+      const upto = allDays.filter((d) => d.iso <= today);
+      const cum = []; let km = 0, n = 0;
+      upto.forEach((d) => { if (d.recorded > 0) { km += d.recorded; n++; } cum.push([d.iso, km, n]); });
+      let raf = 0;
+      play.addEventListener('click', () => {
+        if (!cum.length) return;
+        cancelAnimationFrame(raf);
+        fig.classList.remove('replay'); void fig.offsetWidth; fig.classList.add('replay');
+        const t0 = performance.now();
+        const step = (now) => {
+          const p = Math.min(1, (now - t0) / D), c = cum[Math.min(cum.length - 1, Math.floor(p * (cum.length - 1)))];
+          capt.textContent = fmtShort(c[0]) + ' · ' + fmt(c[1]) + ' km · ' + c[2] + ' runs';
+          if (p < 1) raf = requestAnimationFrame(step);
+          else setTimeout(() => { capt.textContent = 'The firmament of the block'; }, 2600);
+        };
+        raf = requestAnimationFrame(step);
+      });
+    }
     const range=root.querySelector('input[type="range"]');
     function paint(value) {
       const week=weeks[Math.max(0,Math.min(weeks.length-1,Number(value)-1))]; state.journeyWeek=week.wk;

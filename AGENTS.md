@@ -1929,3 +1929,25 @@ sheet's new middle plate (the month, today's date and tonight's moon):
   selector so iOS does not draw an emoji);
 - ‹ › and a swipe move a month; a tap on a day opens it in Today.
 234 browser checks (7 new), 16,279 plan checks.
+
+## Replay the block — v5.5, 1 October (Claude)
+
+The firmament's caption carries a **▶ Replay** button. It replays the
+block in about seven seconds: the sky dims and comes back, a fine line
+sweeps from 29 June to NOW, each run's star (halo, spikes) pops as the
+line passes the day it was run, comets streak on each new longest run,
+the constellation draws behind them, the week's moons come up overhead,
+and at the end the future's planned runs, the veil, NOW and the race's
+dawn arrive. Beneath, the caption counts the block up with the sweep
+("28 Jul · 62.2 km · 16 runs" … "1 Oct · 331.9 km · 55 runs"), then
+returns to its title.
+- Delay per element = `--t / --nowf × 7 s` (`--t` is each element's x
+  over the plate's width, `--nowf` NOW's), so the sweep reaches NOW at 7 s.
+- **The replay needs its own keyframe names** (`rp-in`, `rp-pop`,
+  `rp-arc`, `rp-dawn`): an animation that keeps its name when its delay
+  changes is not restarted — it carries on from the arrival's clock, so
+  stars ahead of the sweep were already lit.
+- Only on a tap; hidden under `prefers-reduced-motion`.
+- The plate's description moved from the figure (`role="img"` hides all
+  of a figure's contents, which would have hidden the button) to its svg.
+237 browser checks (3 new), 16,279 plan checks.
