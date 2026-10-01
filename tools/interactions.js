@@ -694,6 +694,14 @@ async function cinema() {
   const ink = await t.page.$$eval('.session-focus .focus-emb.ink .emb path', (ns) => ns.map((n) => n.getAttribute('pathLength') + n.getAttribute('style')));
   check(ink.length === 3 && ink.every((x, k) => x === '1--p:' + k), 'each stroke of the emblem is numbered for the pen: ' + ink.join(' | '));
   await t.ctx.close();
+  // v5.8: the countdown wreath — a candle each Sunday for four, the red one at the gun
+  const wreath = async (date, time) => { const tt = await open(date, time, SEED);
+    const r = await tt.page.evaluate(() => { const w = document.querySelector('.day-head .bb-wreath'); return w && { on: w.querySelectorAll('.wr-candle.on:not(.centre)').length, centre: !!w.querySelector('.wr-candle.centre.on') }; });
+    await tt.ctx.close(); return r; };
+  const w0 = await wreath('2026-12-26', '12:00'), w1 = await wreath('2026-12-27', '12:00'), w3 = await wreath('2027-01-12', '12:00'),
+    w4 = await wreath('2027-01-24', '06:00'), w5 = await wreath('2027-01-24', '07:30');
+  check(w0 === null && w1.on === 1 && w3.on === 3 && !w3.centre, 'the wreath appears on the first of the four Sundays and lights a candle each Sunday: ' + JSON.stringify([w0, w1, w3]));
+  check(w4.on === 4 && !w4.centre && w5.centre, 'on race morning the red centre candle is lit at the gun');
   // v5.7: the gel candle burns down through the run
   const candle = async (time) => { const tt = await open('2026-10-04', time, SEED); await tt.page.click('.hero .session-focus-open');
     const r = await tt.page.evaluate(() => { const c = document.querySelector('.session-focus .gel-candle');

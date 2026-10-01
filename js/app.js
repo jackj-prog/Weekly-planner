@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.7.0';
+  const APP_VERSION = '5.8.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -396,7 +396,7 @@
     const raceDay = cd && cd.days === 0 && day.run;
     const bb = !cd || cd.past ? ''
       : '<span class="bb" aria-hidden="true"><span class="bb-num">' + (raceDay ? esc(String(day.run.run.km)) : cd.days) +
-        '</span><span class="bb-cap">' + (raceDay ? 'KM · TODAY' : cd.days === 1 ? 'DAY TO THE GUN' : 'DAYS TO THE GUN') + '</span></span>';
+        '</span>' + wreathHTML(cd, iso) + '<span class="bb-cap">' + (raceDay ? 'KM · TODAY' : cd.days === 1 ? 'DAY TO THE GUN' : 'DAYS TO THE GUN') + '</span></span>';
     const light = day.run ? DB.runClass(day.run) : 'rest';
     const head = el(
       '<div class="day-head light-' + esc(light) + '">' + bb + '<div class="day-nav">' +
@@ -1864,6 +1864,39 @@
       '<path id="sl-arc-' + week + '" d="M50 20 A30 30 0 1 1 49.9 20" fill="none"/>' +
       '<text class="sl-legend"><textPath href="#sl-arc-' + week + '" textLength="186" lengthAdjust="spacing">' + esc(legend.toUpperCase().replace(/U/g, 'V')) + ' · ' + roman(week) + ' ·</textPath></text>' +
       '<text class="sl-num" x="50" y="58">' + roman(week) + '</text></svg></span>';
+  }
+
+  /* The countdown wreath (v5.8). An Advent wreath keeps four Sundays and
+     lights a candle on each; the race has its own four — 27 Dec, 3, 10 and
+     17 January — and its centre candle, red, is lit at the gun on the
+     fifth. From the first of those Sundays the countdown numeral on Today
+     stands over the wreath: evergreen in the greys, white candles lit one
+     a week, the red one waiting in the middle. Decorative, like the
+     numeral above it. */
+  function wreathHTML(cd, iso) {
+    if (!cd || cd.past || cd.days > 28) return '';
+    const lit = [1, 2, 3, 4].map((k) => cd.days <= 7 * (5 - k));
+    const gun = DB.parseHM(String(PLAN.race.gun));
+    const centre = cd.days === 0 && (iso < todayISO() || nowMin() >= gun);
+    const cx = 50, cy = 36, rx = 38, ry = 8, f1 = (v) => v.toFixed(1);
+    let leaves = '';
+    for (let k = 0; k < 44; k++) {
+      const a = (k / 44) * Math.PI * 2, x = cx + rx * Math.cos(a), y = cy + ry * Math.sin(a);
+      const rot = (a * 180 / Math.PI + 90 + (k % 2 ? 28 : -28)).toFixed(0);
+      leaves += '<ellipse class="wr-leaf' + (k % 3 ? '' : ' l') + '" cx="' + f1(x) + '" cy="' + f1(y) + '" rx="4.4" ry="1.6" transform="rotate(' + rot + ' ' + f1(x) + ' ' + f1(y) + ')"/>';
+    }
+    const flame = (x, top) => '<g class="wr-flame"><circle class="wr-glow" cx="' + f1(x) + '" cy="' + f1(top - 5) + '" r="3.6"/>' +
+      '<path class="wr-fire" d="M' + f1(x) + ' ' + f1(top - 9) + ' C' + f1(x + 2.6) + ' ' + f1(top - 5.5) + ' ' + f1(x + 2.2) + ' ' + f1(top - 2) + ' ' + f1(x) + ' ' + f1(top - 1.2) +
+      ' C' + f1(x - 2.2) + ' ' + f1(top - 2) + ' ' + f1(x - 2.6) + ' ' + f1(top - 5.5) + ' ' + f1(x) + ' ' + f1(top - 9) + ' Z"/></g>';
+    const candle = (x, base, h, on, cls) => '<g class="wr-candle' + (cls ? ' ' + cls : '') + (on ? ' on' : '') + '"><rect x="' + f1(x - 2.4) + '" y="' + f1(base - h) + '" width="4.8" height="' + h + '" rx=".8"/>' +
+      '<path class="wr-wick" d="M' + f1(x) + ' ' + f1(base - h) + ' L' + f1(x) + ' ' + f1(base - h - 1.6) + '"/>' + (on ? flame(x, base - h - 0.6) : '') + '</g>';
+    /* four places round the ring, each at its own x so no flame stands in
+       front of another; lit in turn, front-left, left, back-right, right */
+    const pos = [110, 200, 290, 20].map((d) => [cx + rx * Math.cos(d * Math.PI / 180), cy + ry * Math.sin(d * Math.PI / 180)]);
+    const back = [1, 2], front = [0, 3];
+    const order = (ks, hScale) => ks.map((k) => candle(pos[k][0], pos[k][1], 13 * hScale, lit[k])).join('');
+    return '<svg class="bb-wreath" viewBox="0 0 100 50">' + order(back, 0.88) +
+      '<g class="wr-ring">' + leaves + '</g>' + candle(cx, cy + 1, 19, centre, 'centre') + order(front, 1) + '</svg>';
   }
 
   /* ---- "Previously": Monday opens with last week in one card ----

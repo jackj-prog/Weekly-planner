@@ -1981,3 +1981,20 @@ Two pieces for Session Focus:
   runs with the Focus clock each minute. The flame flickers only while
   burning, behind `prefers-reduced-motion`.
 245 browser checks (4 new), 16,279 plan checks.
+
+## The countdown wreath — v5.8, 1 October (Claude)
+
+An Advent wreath keeps four Sundays and lights a candle on each before
+the feast. The race has its own four — 27 Dec, 3, 10 and 17 January — and
+from the first of them Today's countdown numeral stands over a wreath
+(`wreathHTML`): evergreen in the greys, four white candles placed round
+the ring at their own x so no flame hides another, one more lit each
+Sunday (candle k lit when `days ≤ 7 × (5 − k)`), and the red centre
+candle lit at the gun on race morning (`PLAN.race.gun`). Flames flicker
+behind `prefers-reduced-motion`; decorative and aria-hidden like the
+numeral it stands under.
+That completes the nine pieces the user asked for ("all"): stained glass
+(v5.1), the growing border (v5.2), the sundial (v5.3), the Kalendar
+(v5.4), the replay (v5.5), the seal stamped (v5.6), the pen and the gel
+candle (v5.7) and the wreath (v5.8).
+247 browser checks (2 new), 16,279 plan checks.

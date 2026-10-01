@@ -3341,3 +3341,21 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   @keyframes gc-flick { 0% { transform: scale(1, 1) rotate(0); } 40% { transform: scale(.9, 1.08) rotate(-3deg); } 70% { transform: scale(1.05, .94) rotate(2deg); } 100% { transform: scale(.96, 1.04) rotate(-1deg); } }
   @keyframes gc-glow { from { opacity: .75; } to { opacity: 1; transform: scale(1.12); } }
 }
+
+/* ================= THE COUNTDOWN WREATH (v5.8) ===================== */
+.bb-wreath { display: block; width: 96px; height: 48px; margin: -6px 0 2px; overflow: visible; }
+.wr-leaf { fill: color-mix(in srgb, var(--t3) 55%, var(--paper)); stroke: color-mix(in srgb, var(--t2) 40%, transparent); stroke-width: .3; }
+.wr-leaf.l { fill: color-mix(in srgb, var(--t2) 60%, var(--paper)); }
+.wr-candle rect { fill: color-mix(in srgb, var(--text) 30%, var(--paper)); }
+.wr-candle.on rect { fill: color-mix(in srgb, var(--text) 92%, var(--paper)); }
+.wr-candle.centre rect { fill: color-mix(in srgb, var(--accent) 40%, var(--paper)); }
+.wr-candle.centre.on rect { fill: var(--accent-fill); }
+.wr-wick { stroke: var(--t3); stroke-width: .7; stroke-linecap: round; }
+.wr-fire { fill: color-mix(in srgb, var(--text) 85%, var(--accent)); }
+.wr-glow { fill: var(--glow-red-soft); }
+.day-head .bb:has(.bb-wreath) .bb-num { margin-bottom: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .wr-fire { animation: gc-flick 1.8s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
+  .wr-candle:nth-of-type(2n) .wr-fire { animation-duration: 1.4s; animation-delay: -.5s; }
+  .wr-glow { animation: gc-glow 2.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+}
