@@ -286,6 +286,9 @@ first day to NOW, each star lighting as it passes, the block counted up
 beneath in the caption.
 **The seal, stamped (v5.6):** the tick that completes the week presses
 the wax seal onto the run card, once, with a splash.
+**The pen and the candle (v5.7):** Focus inks its emblem stroke by stroke;
+beside the gel times an hour candle burns down through the run, a ring per
+gel, the next one lit and named ("Gel III in 23 min").
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

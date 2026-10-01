@@ -688,6 +688,22 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.7: Focus opens with its emblem drawn by the pen, stroke by stroke
+  t = await open('2026-10-04', '07:45', SEED);
+  await t.page.click('.hero .session-focus-open');
+  const ink = await t.page.$$eval('.session-focus .focus-emb.ink .emb path', (ns) => ns.map((n) => n.getAttribute('pathLength') + n.getAttribute('style')));
+  check(ink.length === 3 && ink.every((x, k) => x === '1--p:' + k), 'each stroke of the emblem is numbered for the pen: ' + ink.join(' | '));
+  await t.ctx.close();
+  // v5.7: the gel candle burns down through the run
+  const candle = async (time) => { const tt = await open('2026-10-04', time, SEED); await tt.page.click('.hero .session-focus-open');
+    const r = await tt.page.evaluate(() => { const c = document.querySelector('.session-focus .gel-candle');
+      return { cls: c.getAttribute('class'), past: c.querySelectorAll('.gc-ring.past').length, next: (c.querySelector('.gc-ring.next') || {}).dataset ? c.querySelector('.gc-ring.next').dataset.k : null,
+        line: document.querySelector('.session-focus .gc-next').textContent, spent: Number(c.querySelector('.gc-spent').getAttribute('height')) }; });
+    await tt.ctx.close(); return r; };
+  const cb = await candle('08:00'), cd = await candle('09:52'), ca = await candle('11:30');
+  check(/before/.test(cb.cls) && cb.past === 0 && cb.spent <= 1, 'before the run the candle stands whole and unlit');
+  check(/during/.test(cd.cls) && cd.past === 2 && cd.next === '2' && cd.line === 'Gel III in 23 min' && cd.spent > 50, 'mid-run it has burnt past two rings and names the next gel: ' + JSON.stringify(cd));
+  check(/after/.test(ca.cls) && ca.past === 4 && ca.line === '', 'after the run it is burnt down');
   // v5.6: the seal is stamped onto the run card the moment the week is sealed
   const wk12 = Object.assign({}, SEED, { 'runlog-2026-09-16': { sec: 2300, hr: 160, km: 7 } });
   delete wk12['runlog-2026-09-20'];

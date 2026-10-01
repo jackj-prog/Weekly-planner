@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.6.0';
+  const APP_VERSION = '5.7.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1231,14 +1231,67 @@
     if (!focusedSession) return;
     const { dialog, block, iso } = focusedSession;
     dialog.querySelector('.focus-clock').textContent = focusWindow(block, iso, todayISO(), nowMin());
+    refreshGelCandle(dialog, block, iso);
+  }
+  /* The gel candle (v5.7). An hour candle, the kind marked in rings to
+     tell the time as it burned: as tall as the run, a ring at each gel,
+     the flame at now. During the run it burns down — the wax above the
+     flame is spent, the ring it is about to reach is lit, and the line
+     under the times says how long until it. Before the run it stands
+     whole and unlit; after, it is burnt down with a curl of smoke. */
+  function gelCandleState(block, iso) {
+    const today = todayISO(), n = nowMin(), dur = block.endMin - block.startMin;
+    const phase = iso < today ? 'after' : iso > today ? 'before' : n < block.startMin ? 'before' : n >= block.endMin ? 'after' : 'during';
+    const into = phase === 'during' ? n - block.startMin : phase === 'after' ? dur : 0;
+    const gels = block.run.gelsAt || [];
+    const next = phase === 'during' ? gels.findIndex((m) => m > into) : -1;
+    return { phase, into, dur, gels, next };
+  }
+  function gelCandleHTML(block, iso) {
+    const st = gelCandleState(block, iso);
+    const TOP = 22, BOT = 156, X = 30, W = 16, H = BOT - TOP;
+    const y = (m) => TOP + (m / st.dur) * H;
+    const rings = st.gels.map((m, k) => '<g class="gc-ring" data-k="' + k + '"><path d="M' + (X - W / 2 - 2) + ' ' + y(m).toFixed(1) + ' L' + (X + W / 2 + 2) + ' ' + y(m).toFixed(1) + '"/>' +
+      '<text x="' + (X + W / 2 + 6) + '" y="' + (y(m) + 3).toFixed(1) + '">' + roman(k + 1) + '</text></g>').join('');
+    return '<svg class="gel-candle" viewBox="0 0 60 176" aria-hidden="true" data-top="' + TOP + '" data-h="' + H + '">' +
+      '<rect class="gc-wax" x="' + (X - W / 2) + '" y="' + TOP + '" width="' + W + '" height="' + H + '" rx="2"/>' +
+      '<rect class="gc-spent" x="' + (X - W / 2 - 1) + '" y="' + (TOP - 1) + '" width="' + (W + 2) + '" height="0"/>' +
+      rings + '<path class="gc-dish" d="M' + (X - 18) + ' ' + (BOT + 2) + ' Q' + X + ' ' + (BOT + 12) + ' ' + (X + 18) + ' ' + (BOT + 2) + ' Z"/>' +
+      '<g class="gc-flame"><path class="gc-wick" d="M' + X + ' 0 L' + X + ' -5"/><path class="gc-fire" d="M' + X + ' -21 C' + (X + 6) + ' -13 ' + (X + 5) + ' -6 ' + X + ' -4 C' + (X - 5) + ' -6 ' + (X - 6) + ' -13 ' + X + ' -21 Z"/>' +
+      '<circle class="gc-glow" cx="' + X + '" cy="-12" r="10"/></g>' +
+      '<path class="gc-smoke" d="M' + X + ' 0 C' + (X - 6) + ' -8 ' + (X + 6) + ' -14 ' + X + ' -24"/></svg>';
+  }
+  function refreshGelCandle(root, block, iso) {
+    const svg = root.querySelector('.gel-candle');
+    if (!svg || !block.run || !block.run.gelsAt) return;
+    const st = gelCandleState(block, iso), top = Number(svg.dataset.top), H = Number(svg.dataset.h);
+    const burnt = (st.into / st.dur) * H, fy = top + burnt;
+    svg.classList.remove('before', 'during', 'after'); svg.classList.add(st.phase);
+    svg.querySelector('.gc-spent').setAttribute('height', Math.max(0, burnt + 1).toFixed(1));
+    const fl = svg.querySelector('.gc-flame'), sm = svg.querySelector('.gc-smoke');
+    fl.setAttribute('transform', 'translate(0 ' + (st.phase === 'before' ? top : fy).toFixed(1) + ')');
+    sm.setAttribute('transform', 'translate(0 ' + fy.toFixed(1) + ')');
+    svg.querySelectorAll('.gc-ring').forEach((r) => {
+      const k = Number(r.dataset.k), m = st.gels[k];
+      r.classList.toggle('past', st.into >= m && st.phase !== 'before');
+      r.classList.toggle('next', k === st.next);
+    });
+    const line = root.querySelector('.gc-next');
+    if (line) line.textContent = st.phase === 'during'
+      ? (st.next >= 0 ? 'Gel ' + roman(st.next + 1) + ' in ' + (st.gels[st.next] - st.into) + ' min' : 'Last gel taken — bring it home')
+      : st.phase === 'before' ? 'The candle is lit when the run starts' : '';
   }
   function openSessionFocus(block, iso, trigger) {
     if (focusedSession) return;
+    let inkN = 0;
     let exercises = block.cat === 'gym' && block.plan ? dosedPlan(iso, block).filter((p) => !p.off) : [];
     const dialog = el('<dialog class="session-focus' + (exercises.length ? ' is-gym' : '') + (block.run ? ' focus-' + skyKind(block) : '') + '" aria-labelledby="focus-title">' +
       '<div class="focus-shell"><header class="focus-header"><span>SESSION FOCUS</span><button class="focus-back" hidden>← Session brief</button>' +
       '<button class="focus-close" aria-label="Close session focus" autofocus>✕</button></header>' +
-      '<div class="focus-scroll"><span class="focus-emb' + (emblemKind(block) === 'laurel' ? ' race' : '') + '" style="--cat:' + (CAT_VAR[block.cat] || CAT_VAR.routine) + '">' + emblemSVG(emblemKind(block)) + '</span>' +
+      /* the emblem is drawn by the pen as focus opens (v5.7): each stroke
+         inks in order, then the roundel's light comes up */
+      '<div class="focus-scroll"><span class="focus-emb ink' + (emblemKind(block) === 'laurel' ? ' race' : '') + '" style="--cat:' + (CAT_VAR[block.cat] || CAT_VAR.routine) + '">' +
+        emblemSVG(emblemKind(block)).replace(/<path /g, () => '<path pathLength="1" style="--p:' + (inkN++) + '" ') + '</span>' +
       '<p class="focus-date">' + esc(DAY_NAMES[DB.dayIndex(iso)] + ' · ' + fmtShort(iso)) + '</p>' +
       '<h1 id="focus-title">' + tt(block.title) + '</h1>' +
       '<div class="focus-window"><span>' + esc(block.start + '–' + block.end) + '</span><p class="focus-clock"></p></div>' +
@@ -1352,8 +1405,8 @@
           const z = c === 'race' ? null : c === 'long' ? (mp ? 'Z2 · MP in Z3' : 'Z2') : c === 'quality' ? (mp ? 'Z3' : 'Z4') : c === 'recovery' ? 'Z1' : 'Z2';
           return z ? '<div class="focus-hr"><span>HEART RATE</span><strong>' + esc(withZones(z)) + '</strong></div>' : ''; })() +
         '</div>' + sessionShapeHTML(block, block.run.km, false, { lit: !!getDone(iso)[block.id] || (getRunLogEntry(iso) || {}).sec > 0 }) +
-        (block.run.gelsAt && block.run.gelsAt.length ? '<div class="focus-gels"><span>GELS · ' + block.run.gelsAt.length + '</span><div class="g-times">' +
-          block.run.gelsAt.map((m, k) => '<i><small>' + roman(k + 1) + '</small>' + DB.fmtHM((block.startMin + m) % 1440) + '</i>').join('') + '</div></div>' : '') +
+        (block.run.gelsAt && block.run.gelsAt.length ? '<div class="focus-gels">' + gelCandleHTML(block, iso) + '<div><span>GELS · ' + block.run.gelsAt.length + '</span><div class="g-times">' +
+          block.run.gelsAt.map((m, k) => '<i><small>' + roman(k + 1) + '</small>' + DB.fmtHM((block.startMin + m) % 1440) + '</i>').join('') + '</div><p class="gc-next" role="status"></p></div></div>' : '') +
         runSkyHTML(iso, block, skyKind(block), 'f', iso === todayISO() ? nowMin() : null) +
         '<div class="focus-run-brief">' + detailHTML(detail, iso + '|focus', false) + paceTableHTML(block.table) + '</div>';
     }

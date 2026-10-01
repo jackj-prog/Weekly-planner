@@ -1965,3 +1965,19 @@ render of that day shows the card clean (the seal lives on the Week and
 on Monday's card as before). The first render of a week only learns its
 state, so opening an already-sealed week stamps nothing.
 240 browser checks (3 new), 16,279 plan checks.
+
+## The pen and the candle — v5.7, 1 October (Claude)
+
+Two pieces for Session Focus:
+- **The pen draws the emblem.** As Focus opens, the session's emblem
+  inks itself stroke by stroke (`pathLength="1"`, a dash that runs out,
+  each stroke 0.42 s after the last), then its roundel's light comes up.
+- **The gel candle.** Beside the gel times, an hour candle as tall as the
+  run, a red ring at each gel (numbered I, II …), the flame at now. Before
+  the run it stands whole and unlit ("The candle is lit when the run
+  starts"); during it the wax above the flame is spent, the rings already
+  passed turn grey, the next one is lit, and a line says "Gel III in 23
+  min"; after, it is burnt down with a curl of smoke. `refreshGelCandle`
+  runs with the Focus clock each minute. The flame flickers only while
+  burning, behind `prefers-reduced-motion`.
+245 browser checks (4 new), 16,279 plan checks.

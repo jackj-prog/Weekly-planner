@@ -3122,8 +3122,8 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .hero .h-meta .h-gels .g-times i { font-style: normal; white-space: nowrap; padding-top: 5px; border-top: 1px solid color-mix(in srgb, var(--text) 22%, transparent); }
 .hero .h-meta .h-gels .g-times i small { display: block; margin-bottom: 1px; font-size: 9.5px; letter-spacing: .08em; color: var(--t2); }
 .hero.race .h-meta .h-gels .g-times i small { color: inherit; opacity: .75; }
-.focus-gels { margin: 22px 0 6px; }
-.focus-gels > span { display: block; margin-bottom: 10px; font: 400 11px var(--mono); color: var(--t2); letter-spacing: .08em; }
+.focus-gels { margin: 22px 0 6px; display: grid; grid-template-columns: 60px 1fr; gap: 14px; align-items: start; }
+.focus-gels > div > span { display: block; margin-bottom: 10px; font: 400 11px var(--mono); color: var(--t2); letter-spacing: .08em; }
 .focus-gels .g-times { display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 10px 12px; font: 400 18px var(--mono); font-variant-numeric: tabular-nums; }
 .focus-gels .g-times i { font-style: normal; white-space: nowrap; padding-top: 6px; border-top: 1px solid var(--line); }
 .focus-gels .g-times i small { display: block; margin-bottom: 2px; font-size: 10px; letter-spacing: .08em; color: var(--t2); }
@@ -3304,4 +3304,40 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
     100% { transform: rotate(-14deg) scale(1); }
   }
   @keyframes seal-splash { from { opacity: .7; transform: scale(.7); } to { opacity: 0; transform: scale(1.45); } }
+}
+
+/* ================= THE PEN DRAWS THE EMBLEM (v5.7) ================== */
+@media (prefers-reduced-motion: no-preference) {
+  .focus-emb.ink .emb path { stroke-dasharray: 1; animation: ink-draw .85s var(--ease-inout) backwards; animation-delay: calc(var(--p) * .42s + .2s); }
+  .focus-emb.ink { animation: ink-roundel .5s var(--ease-soft) backwards; }
+  .focus-emb.ink::after { content: none; }
+  @keyframes ink-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes ink-roundel { from { box-shadow: 0 0 0 transparent; border-color: transparent; } }
+}
+
+/* ================= THE GEL CANDLE (v5.7) =========================== */
+.gel-candle { width: 60px; height: 176px; overflow: visible; }
+.gc-wax { fill: color-mix(in srgb, var(--text) 86%, var(--hero-bg)); }
+.gc-spent { fill: var(--paper); }
+.gc-ring path { stroke: var(--accent); stroke-width: 1.2; }
+.gc-ring text { font: italic 400 9px var(--serif); fill: var(--t2); }
+.gc-ring.past path { stroke: var(--t3); }
+.gc-ring.past text { fill: var(--t3); }
+.gc-ring.next path { stroke-width: 2; filter: drop-shadow(0 0 4px var(--glow-red)); }
+.gc-ring.next text { fill: var(--accent); font-weight: 700; }
+.gc-dish { fill: color-mix(in srgb, var(--t3) 50%, var(--paper)); }
+.gc-wick { stroke: var(--t3); stroke-width: 1.2; stroke-linecap: round; }
+.gc-fire { fill: var(--text); }
+.gc-glow { fill: var(--glow-red-soft); }
+.gel-candle .gc-smoke { fill: none; stroke: var(--t3); stroke-width: 1; stroke-linecap: round; opacity: 0; }
+.gel-candle.before .gc-fire, .gel-candle.before .gc-glow, .gel-candle.after .gc-fire, .gel-candle.after .gc-glow { display: none; }
+.gel-candle.after .gc-smoke { opacity: .6; }
+.gel-candle.during .gc-fire { fill: color-mix(in srgb, var(--text) 85%, var(--accent)); }
+.gc-next { margin: 10px 0 0; font: 400 13px var(--body); color: var(--t2); }
+.gc-next:empty { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .gel-candle.during .gc-fire { animation: gc-flick 1.7s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
+  .gel-candle.during .gc-glow { animation: gc-glow 2.3s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+  @keyframes gc-flick { 0% { transform: scale(1, 1) rotate(0); } 40% { transform: scale(.9, 1.08) rotate(-3deg); } 70% { transform: scale(1.05, .94) rotate(2deg); } 100% { transform: scale(.96, 1.04) rotate(-1deg); } }
+  @keyframes gc-glow { from { opacity: .75; } to { opacity: 1; transform: scale(1.12); } }
 }
