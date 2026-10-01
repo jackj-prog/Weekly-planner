@@ -1891,3 +1891,18 @@ observer repaints only when the timeline's height changes (its first call
 would otherwise have wiped the animation). Cards carry `data-vine` /
 `--vc`; the vine is aria-hidden — the cards say it in words.
 226 browser checks (3 new), 16,278 plan checks.
+
+## The sundial — v5.3, 1 October (Claude)
+
+The Now card carries a horizontal sundial engraved faintly behind it
+(`nnDialHTML`), set for the day's place (home, or Nicosia on the race
+trip): hour lines from VI to VI laid out as a real dial lays them out
+(tan θ = sin φ · tan 15t, crowding toward noon), Roman numerals at VI ·
+IX · XII · III · VI, half-hour ticks, the gnomon on the noon line, and its
+shadow along the hour line of the true solar time (solar noon = the
+midpoint of sunrise and sunset), as long as `1/tan(altitude)` — long and
+west in the morning, short at noon, long and east in the evening. While
+the sun is down the plate dims and casts nothing (the card's stars take
+over). `refreshDial()` moves the shadow each minute from `refreshClock`
+without re-rendering. Art behind data: low-alpha tokens, aria-hidden.
+228 browser checks (2 new), 16,278 plan checks.

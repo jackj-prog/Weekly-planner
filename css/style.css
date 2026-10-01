@@ -2241,7 +2241,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 
 /* the Now card wears the sky outside: day, twilight, or night with stars */
 .nownext { position: relative; isolation: isolate; overflow: hidden; }
-.nownext > :not(.nn-stars) { position: relative; z-index: 1; }
+.nownext > :not(.nn-stars):not(.nn-dial) { position: relative; z-index: 1; }
 .nn-stars { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; }
 .nn-stars circle { fill: var(--text); opacity: .32; }
 .nownext.sky-day { background-image: radial-gradient(70% 120% at 100% 0%, var(--glow-white-soft), transparent 70%); }
@@ -3185,3 +3185,14 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   @keyframes vn-eye { from { opacity: 0; } to { opacity: 1; } }
   @keyframes vn-curl { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 }
+
+/* ================= THE SUNDIAL (v5.3) ============================== */
+.nn-dial { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; }
+.nn-dial .nd-face { fill: color-mix(in srgb, var(--text) 3%, transparent); }
+.nn-dial.sunlit .nd-face { fill: color-mix(in srgb, var(--text) 6%, transparent); }
+.nn-dial .nd-rim, .nn-dial .nd-lines, .nn-dial .nd-ticks { fill: none; stroke: color-mix(in srgb, var(--text) 11%, transparent); stroke-width: .8; }
+.nn-dial .nd-ticks { stroke-width: .6; }
+.nn-dial .nd-nums text { font: italic 400 10px var(--serif); fill: color-mix(in srgb, var(--text) 20%, transparent); text-anchor: middle; }
+.nn-dial .nd-gnomon { fill: color-mix(in srgb, var(--text) 30%, transparent); }
+.nn-dial .nd-shadow { fill: var(--chrome-bg); opacity: .9; }
+.nownext.sky-night .nn-dial, .nownext.sky-twi .nn-dial { opacity: .6; }

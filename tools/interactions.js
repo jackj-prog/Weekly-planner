@@ -688,6 +688,15 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.3: the sundial behind the Now card — the shadow where the real sun puts it
+  const dialAt = async (time) => { const tt = await open('2026-10-01', time, SEED);
+    const r = await tt.page.evaluate(() => { const d = document.querySelector('.nownext .nn-dial'); if (!d) return null;
+      const sh = d.querySelector('.nd-shadow'), m = (sh.getAttribute('transform') || '').match(/rotate\((-?[\d.]+)/);
+      return { lit: d.classList.contains('sunlit'), ang: m ? Number(m[1]) : null, lines: d.querySelectorAll('.nd-nums text').length }; });
+    await tt.ctx.close(); return r; };
+  const am = await dialAt('08:30'), pm = await dialAt('16:55'), nt = await dialAt('21:30');
+  check(am && am.lit && am.ang < -40 && pm.lit && pm.ang > 40 && am.lines === 5, 'morning shadow falls west, afternoon east: ' + JSON.stringify([am, pm]));
+  check(nt && !nt.lit && nt.ang == null, 'after sunset the dial casts no shadow');
   // v5.2: the growing border — flowers for done sessions, buds for missed
   t = await open('2026-09-29', '22:40', Object.assign({}, SEED, { 'done-2026-09-29': { 't1930-study': true }, 'runlog-2026-09-29': { sec: 2665, hr: 145, km: 7.32 } }));
   const vn = await t.page.evaluate(() => { const v = document.querySelector('.tl > .vine'); return v && { flowers: v.querySelectorAll('.vn-flower').length, buds: v.querySelectorAll('.vn-bud').length, fin: !!v.querySelector('.vn-fin'), bloom: v.querySelectorAll('.bloom').length }; });

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.2.0';
+  const APP_VERSION = '5.3.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -672,7 +672,7 @@
     nowKey = day.iso + '|' + (cur ? cur.id : '-') + '|' + (next[0] ? next[0].id : '-') +
       (day.run && nMin > day.run.endMin + MISSED_GRACE_MIN ? '|late' : '') + skyKey(day.iso, nMin);
     const sky = skyNow(day.iso, nMin).light;
-    let html = '<section class="nownext sky-' + sky + '" aria-label="Now and next">' + nnStarsHTML(day.iso, nMin) + '<div class="nn-current">' +
+    let html = '<section class="nownext sky-' + sky + '" aria-label="Now and next">' + nnStarsHTML(day.iso, nMin) + nnDialHTML(day.iso, nMin) + '<div class="nn-current">' +
       '<div class="nn-clock"><span>NOW' + skyGlyph(day.iso, nMin) + '</span><time class="live-clock">' + DB.fmtHM(nMin) + '</time></div><div class="nn-main">';
     if (cur) {
       const pct = Math.round(((nMin - cur.startMin) / (cur.endMin - cur.startMin)) * 100);
@@ -2223,6 +2223,63 @@
     }
     return '<svg class="nn-stars" viewBox="0 0 360 130" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + s + '</svg>';
   }
+  /* The sundial (v5.3). The Now card carries a horizontal sundial engraved
+     faintly behind it, set for the place (home, or Nicosia for the race
+     trip): hour lines from VI to VI laid out as a real dial lays them out
+     (tan θ = sin φ · tan 15t, so they crowd toward noon), the gnomon on the
+     noon line, and the gnomon's shadow where the real sun puts it — along
+     the hour line of the true solar time, as long as the sun is low. While
+     the sun is down the dial is dark and casts nothing. Art behind data:
+     faint, aria-hidden, and moved each minute without a re-render. */
+  const DIAL = { cx: 250, cy: 124, R: 112, g: 24 };
+  function dialShadow(iso, n) {
+    const pl = DB.skyPlace(iso);
+    if (!pl) return null;
+    const st = DB.sunTimes(iso, pl.lat, pl.lon, pl.offsetMin);
+    if (st.rise == null || st.set == null) return null;
+    const alt = DB.sunAltitude(iso, pl.lat, st, n);
+    if (alt == null || alt < 0.6) return null;
+    const rad = Math.PI / 180, t = (n - (st.rise + st.set) / 2) / 60;
+    const ang = Math.atan2(Math.sin(pl.lat * rad) * Math.sin(15 * t * rad), Math.cos(15 * t * rad)) / rad;
+    return { ang, len: Math.min(DIAL.R * 0.97, DIAL.g / Math.tan(alt * rad)) };
+  }
+  function dialShadowPath(sh) {
+    const { cx, cy } = DIAL, w = Math.max(1.2, Math.min(3.2, sh.len / 34));
+    return 'M' + (cx - 0.8) + ' ' + cy + ' L' + (cx - w).toFixed(1) + ' ' + (cy - sh.len).toFixed(1) + ' L' + (cx + w).toFixed(1) + ' ' + (cy - sh.len).toFixed(1) + ' L' + (cx + 0.8) + ' ' + cy + ' Z';
+  }
+  function nnDialHTML(iso, n) {
+    const pl = DB.skyPlace(iso), lat = pl ? pl.lat : 52;
+    const { cx, cy, R } = DIAL, rad = Math.PI / 180, sl = Math.sin(lat * rad);
+    const ha = (h) => Math.atan2(sl * Math.sin(15 * (h - 12) * rad), Math.cos(15 * (h - 12) * rad)) / rad;
+    const pt = (a, r) => (cx + r * Math.sin(a * rad)).toFixed(1) + ' ' + (cy - r * Math.cos(a * rad)).toFixed(1);
+    let lines = '', ticks = '', nums = '';
+    for (let h = 5; h <= 19; h += 0.5) {
+      const a = ha(h);
+      if (h % 1 === 0) lines += 'M' + pt(a, 20) + ' L' + pt(a, R - 15) + ' ';
+      ticks += 'M' + pt(a, R - 11) + ' L' + pt(a, R - (h % 1 ? 7 : 4)) + ' ';
+    }
+    [[6, 'VI'], [9, 'IX'], [12, 'XII'], [15, 'III'], [18, 'VI']].forEach(([h, r]) => {
+      const [x, y] = pt(ha(h), R - 24).split(' ');
+      nums += '<text x="' + x + '" y="' + (Number(y) + 3) + '">' + r + '</text>';
+    });
+    const sh = dialShadow(iso, n);
+    return '<svg class="nn-dial' + (sh ? ' sunlit' : '') + '" viewBox="0 0 360 130" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">' +
+      '<path class="nd-face" d="M' + (cx - R) + ' ' + cy + ' A' + R + ' ' + R + ' 0 0 1 ' + (cx + R) + ' ' + cy + ' Z"/>' +
+      '<path class="nd-rim" d="M' + (cx - R) + ' ' + cy + ' A' + R + ' ' + R + ' 0 0 1 ' + (cx + R) + ' ' + cy + ' M' + (cx - R + 12) + ' ' + cy + ' A' + (R - 12) + ' ' + (R - 12) + ' 0 0 1 ' + (cx + R - 12) + ' ' + cy + '"/>' +
+      '<path class="nd-lines" d="' + lines + '"/><path class="nd-ticks" d="' + ticks + '"/><g class="nd-nums">' + nums + '</g>' +
+      '<path class="nd-shadow" d="' + (sh ? dialShadowPath(sh) + '" transform="rotate(' + sh.ang.toFixed(2) + ' ' + cx + ' ' + cy + ')' : '') + '"/>' +
+      '<path class="nd-gnomon" d="M' + (cx - 2.2) + ' ' + cy + ' L' + cx + ' ' + (cy - 30) + ' L' + (cx + 2.2) + ' ' + cy + ' Z"/></svg>';
+  }
+  function refreshDial(iso, n) {
+    const svg = document.querySelector('.nownext .nn-dial'), path = svg && svg.querySelector('.nd-shadow');
+    if (!path) return;
+    const sh = dialShadow(iso, n);
+    svg.classList.toggle('sunlit', !!sh);
+    if (!sh) { path.setAttribute('d', ''); path.removeAttribute('transform'); return; }
+    path.setAttribute('d', dialShadowPath(sh));
+    path.setAttribute('transform', 'rotate(' + sh.ang.toFixed(2) + ' ' + DIAL.cx + ' ' + DIAL.cy + ')');
+  }
+
   /* ---- the day clock (v4.91): a statement piece ----
      An astronomical watch face for one day, read from the outside in:
        · the canonical hours engraved round the rim, the clock hours and a
@@ -4732,6 +4789,7 @@
     const hg = document.querySelector('.dw-handg');
     if (hg) hg.style.transform = 'rotate(' + handAngle(n).toFixed(2) + 'deg)';
     refreshRunSky(n);
+    refreshDial(iso, n);
     const line = document.querySelector('.tl-now');
     if (line) line.textContent = 'NOW ' + DB.fmtHM(n);
   }
