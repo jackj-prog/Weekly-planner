@@ -759,7 +759,9 @@ async function cinema() {
   await t.page.click('.kl-head .nav[data-m="-1"]');
   const sep = await t.page.evaluate(() => ({ rows: document.querySelectorAll('.kl-row').length, got: document.querySelectorAll('.kl-got').length, miss: document.querySelectorAll('.kl-plan.miss').length, tally: document.querySelector('.kl-tally').textContent }));
   check(sep.rows === 30 && sep.got >= 5 && /km recorded · \d+ of \d+ runs$/.test(sep.tally), 'September shows what was banked against what was asked: ' + JSON.stringify(sep));
-  await t.page.click('.kl-row:nth-child(20)');
+  const wks = await t.page.$$eval('.kl-wk', (ns) => ns.map((n) => n.textContent));
+  check(wks.length === 5 && /^Week X[\d.]+ of 38 km$/.test(wks[0]) && /^Week XIV/.test(wks[4]), 'each week of the month is ruled off with its number and km: ' + wks.join(' | '));
+  await t.page.click('.kl-row[aria-label^="Sunday 20 September"]');
   check(/Sunday 20 Sep/.test(await text(t.page, '.day-head h1')), 'a day opens on a tap');
   await t.page.click('[data-nav="more"]'); await t.page.click('.sheet-item[data-nav="kal"]');
   for (let k = 0; k < 4; k++) await t.page.click('.kl-head .nav[data-m="-1"]');

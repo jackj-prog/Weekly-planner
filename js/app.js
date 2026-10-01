@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.8.1';
+  const APP_VERSION = '5.8.2';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -3764,7 +3764,27 @@
       (wkLine || light ? '<p class="kl-light">' + esc([wkLine, light].filter(Boolean).join(' · ')) + '</p>' : '') + '</div>' +
       (sign ? '<div class="kl-sign" role="img" aria-label="' + esc('The sun enters ' + sign) + '"><span>' + ZODIAC_GLYPH[m - 1] + '\uFE0E</span><small>' + esc(sign) + '</small></div>' : '') + '</div>'));
     const list = el('<div class="kl-page" role="list"></div>');
-    rows.forEach((r) => {
+    /* each week of the block is ruled off with its number and its km, as a
+       ledger would carry its subtotals (v5.8.2) */
+    const weekLine = (iso) => {
+      const c = DB.resolveBlock(iso);
+      if (!c.block || c.block.id !== 'marathon') return '';
+      let pk = 0, rk = 0;
+      for (let i = 0; i < 7; i++) {
+        const di = DB.addDays(iso, i), dd = DB.buildDay(di);
+        pk += dd.run ? dd.run.run.km : 0;
+        if (di <= today) rk += DB.recordedKm(dd, getDone(di), getRunLogEntry(di));
+      }
+      const w = c.week, row = c.block.weekTable[w - 1];
+      const tag = row && row.cutback ? ' · cutback' : row && row.key ? ' · key' : '';
+      const km = iso > today ? fmt(pk) + ' km planned' : '<b>' + fmt(rk) + '</b> of ' + fmt(pk) + ' km';
+      return '<div class="kl-wk" role="presentation"><span>Week ' + roman(w) + tag + '</span><span>' + km + '</span></div>';
+    };
+    rows.forEach((r, i) => {
+      if (r.di === 0 || i === 0) {
+        const line = weekLine(DB.addDays(r.iso, -r.di));
+        if (line) list.appendChild(el(line));
+      }
       const w = (k) => (k / top * 100).toFixed(1) + '%';
       const miss = r.plan && r.past && r.iso < today && !r.rec && !r.off;
       let bar = '';

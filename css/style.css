@@ -3370,3 +3370,10 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   .kl-title h1 { font-size: 26px; }
   .kl-init { width: 34px; height: 34px; font-size: 29px; }
 }
+/* the Kalendar's week subtotals */
+.kl-wk { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-top: 6px; padding: 8px 0 4px; border-top: 1px solid var(--line);
+  font: 400 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--t3); }
+.kl-wk:first-child { margin-top: 0; border-top: 0; padding-top: 4px; }
+.kl-wk span:first-child { font: italic 400 13px var(--serif); letter-spacing: .04em; text-transform: none; color: var(--t2); }
+.kl-wk b { color: var(--text); font-weight: 700; }
+.kl-wk + .kl-row.mon { border-top: 0; }

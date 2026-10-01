@@ -280,7 +280,8 @@ and minute (none after sunset).
 **The Kalendar (v5.4):** a month on one page, from the More sheet — a line
 per day with the run as a stroke (outline planned, filled banked, dashed
 missed), key days and feasts in red, the moon's quarters, the light's
-change, the month's km and the sign the sun enters.
+change, the month's km and the sign the sun enters; each week ruled off
+with its number and km (v5.8.2).
 **Replay (v5.5):** a tap replays the firmament — a line sweeps from the
 first day to NOW, each star lighting as it passes, the block counted up
 beneath in the caption.

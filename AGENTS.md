@@ -2012,3 +2012,13 @@ candle (v5.7) and the wreath (v5.8).
   1st's place throughout — the race trip's three days in Nicosia had made
   "the 24th" January's longest day.
 250 browser checks (3 new), 16,279 plan checks.
+
+## The Kalendar's weeks — v5.8.2, 1 October (Claude)
+
+The Kalendar's Monday rules carried nothing. Each week of the block is now
+ruled off with its number in Roman (italic serif) and its subtotal, as a
+ledger carries its subtotals: "Week XI · 36.8 of 41 km" for a past or
+current week, "46 km planned" ahead, with "cutback" or "key" beside the
+number where the plan says so. A week straddling the month shows its full
+total. Rows are found by label in the tests now that the page interleaves.
+251 browser checks (1 new), 16,279 plan checks.
