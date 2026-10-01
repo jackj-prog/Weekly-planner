@@ -2113,3 +2113,19 @@ The rest of the visual sweep, one fix each:
   390px.
 256 browser checks, 16,279 plan checks.
 
+## Second sweep — v5.9.3, 1 October (Claude)
+
+A fresh pass over every view (Today at four times of day, Week, Plan,
+Reference, the Kalendar, the More sheet, gym Focus, 360px) after v5.9.2.
+Two things still read wrong:
+- **The run card said "Scheduled · 17:10" at 17:40**, in the middle of the
+  run. Inside its window it now says "Under way · until 17:43"; between the
+  window's end and the missed-run grace it says "Window ended 17:43"; after
+  that the existing missed-run question takes over as before.
+- **The Now card's next line ran over the sundial** ("in 30 min" sat on its
+  hour lines and shadow). The card's words now carry a soft halo of the
+  card's own ground (`--nn-ground`: the surface by day, chrome at night),
+  the way a map label is haloed, so they read cleanly wherever the dial
+  falls; elsewhere the halo is invisible.
+257 browser checks (1 new), 16,279 plan checks.
+

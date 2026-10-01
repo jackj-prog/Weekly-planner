@@ -791,6 +791,10 @@ async function cinema() {
   const am = await dialAt('08:30'), pm = await dialAt('16:55'), nt = await dialAt('21:30');
   check(am && am.lit && am.ang < -40 && pm.lit && pm.ang > 40 && am.lines === 3, 'morning shadow falls west, afternoon east: ' + JSON.stringify([am, pm]));
   check(nt && !nt.lit && nt.ang == null, 'after sunset the dial casts no shadow');
+  // v5.9.3: in its own window the run is under way, not scheduled
+  { const lv = await open('2026-10-01', '17:20', SEED);
+    check((await text(lv.page, '.hero .h-state')) === 'Under way · until 17:43', 'during its window the run card says it is under way: ' + await text(lv.page, '.hero .h-state'));
+    await lv.ctx.close(); }
   // v5.2: the growing border — flowers for done sessions, buds for missed
   t = await open('2026-09-29', '22:40', Object.assign({}, SEED, { 'done-2026-09-29': { 't1930-study': true }, 'runlog-2026-09-29': { sec: 2665, hr: 145, km: 7.32 } }));
   const vn = await t.page.evaluate(() => { const v = document.querySelector('.tl > .vine'); return v && { flowers: v.querySelectorAll('.vn-flower').length, buds: v.querySelectorAll('.vn-bud').length, fin: !!v.querySelector('.vn-fin'), bloom: v.querySelectorAll('.bloom').length }; });

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.9.2';
+  const APP_VERSION = '5.9.3';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1681,6 +1681,9 @@
     const today = todayISO();
     const windowPassed = iso < today || (iso === today && nowMin() > r.endMin + MISSED_GRACE_MIN);
     const unresolved = !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut && windowPassed;
+    /* during its own window the run is not "Scheduled" any more (v5.9.3) */
+    const nm = nowMin(), live = iso === today && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut && !unresolved && nm >= r.startMin;
+    const liveLabel = live ? (nm < r.endMin ? 'Under way · until ' + r.end : 'Window ended ' + r.end) : '';
     const missedNote = (PLAN.missedRun && PLAN.missedRun.note) || '';
     const missedHTML = unresolved
       ? '<div class="h-missed" role="group" aria-label="Did this run happen?"><p><b>Did it happen?</b> ' +
@@ -1707,7 +1710,7 @@
       '<div class="h-top"><div class="h-tag"><span class="h-mark">' + emblemSVG(emblemKind(r)) +
       '<span class="h-tagtxt">' + (isRace ? 'RACE DAY' : redLetter ? 'RED-LETTER DAY' : runDayLabel(iso)) + '</span></span>' +
       '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : isSkipped ? 'Skipped' : isMovedOut ? 'Moved to ' + movedLabel(iso, r.id) :
-        unresolved ? (iso < today ? 'Not recorded' : 'Window passed · not recorded') :
+        unresolved ? (iso < today ? 'Not recorded' : 'Window passed · not recorded') : live ? liveLabel :
         (r.movedFrom ? 'Moved from ' + fmtShort(r.movedFrom) + ' · ' : 'Scheduled · ') + r.start) + '</span></div>' +
       /* A saved log already counts as done everywhere else (week status,
          totals, the wall), so a logged run shows that instead of offering a

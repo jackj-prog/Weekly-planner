@@ -288,6 +288,9 @@ button's right edge), dashed borders only where they mean "off" (prompts
 take a solid hairline), a card's disclosure hangs its tap target into the
 padding, Focus gives an MP long run's heart rate a labelled line each, the
 race card carries the laurel, and Reference's contents keep one row height.
+**v5.9.3:** in its own window the run card says "Under way · until 17:43",
+not "Scheduled"; the Now card's words keep a halo of the card's ground so a
+line over the sundial reads cleanly.
 **The Kalendar (v5.4):** a month on one page, from the More sheet — a line
 per day with the run as a stroke (outline planned, filled banked, dashed
 missed), key days and feasts in red, the moon's quarters, the light's

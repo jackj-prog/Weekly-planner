@@ -3436,3 +3436,11 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .resthero + .runlogger > .h-log > span[aria-hidden] { float: right; font-size: 22px; line-height: 1.1; }
 .resthero + .runlogger > .h-log > small { display: block; margin-top: 3px; font-size: 13px; font-weight: 400; color: var(--t2); }
 
+/* the Now card's words keep a halo of the card's own ground, so a line
+   that runs over the sundial still reads cleanly (v5.9.3) */
+.nownext { --nn-ground: var(--surface); }
+.nownext.sky-night { --nn-ground: var(--chrome-bg); }
+.nownext .nn-next, .nownext .nn-tmrw, .nownext .nn-time {
+  text-shadow: 0 0 3px var(--nn-ground), 0 0 6px var(--nn-ground), 0 0 10px var(--nn-ground);
+}
+
