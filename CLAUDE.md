@@ -266,6 +266,10 @@ the run card's ruled line as numbered clock times, not minutes in Details.
 **v5.0.10:** Now/Next name the run's distance ("Easy run · 5 km").
 **v5.0.11:** Monday's Previously card counts a run on an unplanned day
 ("3 of 5 runs + 1 extra").
+**Stained glass (v5.1):** a quality or MP session's shape is a row of
+lancet windows — red glass for reps and marathon pace, white for long, grey
+for easy, piers for the jogs — dark before the run, lit once it is done,
+the light flooding in pane by pane on the moment it is ticked or saved.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

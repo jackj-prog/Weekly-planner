@@ -1847,3 +1847,27 @@ Monday's Previously card read "3 of 5 runs" over four filled bars: the
 unplanned Friday run counted in the km and drew a bar, but not in the
 words. It now reads "3 of 5 runs + 1 extra · long run not recorded".
 217 browser checks (1 new), 16,278 plan checks.
+
+## The session as stained glass — v5.1, 1 October (Claude)
+
+User: "all" (the nine visual ideas). First, the stained-glass window.
+A quality or marathon-pace session's shape (v4.90's bar) is now drawn as
+a row of lancet windows with stone mullions — `glassWindowHTML(segs)`,
+fed by the same segments `sessionShapeHTML` always derived from the
+plan's own words:
+- each segment's width is to scale (minutes for a quality run, km for an
+  MP long run), divided into lancets about 11 px wide; easy glass grey,
+  long white, the reps and marathon pace in red glass, an uncertain range
+  ("last 14–16") half-glazed; a jog of unstated length is a stone pier
+  with an oculus (still `.ss-jog`); diamond quarries in lead over every
+  pane; a stone sill under the row.
+- **Dark before, lit after.** Until the run is done the glass has nothing
+  behind it (dim). Once ticked or logged it is lit: red panes glow
+  through an SVG blur filter, white light falls from the top of each pane.
+- **The light floods in once**, pane by pane left to right, at the moment
+  the run is ticked done on the card (`just`) or first saved
+  (`state.justLit`, consumed by the recap); never on a re-render.
+- It appears on the run card, in Focus, and in the logged-run recap.
+Tokens only (the light stops are `--text`); motion behind
+`prefers-reduced-motion`.
+222 browser checks (5 new), 16,278 plan checks.

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.0.11';
+  const APP_VERSION = '5.1.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -824,6 +824,7 @@
 
   function buildRunRecap(day, iso, report) {
     const r = report.current;
+    const lit = state.justLit === iso; state.justLit = null;
     const hrLabel = value => Number.isFinite(value) && value > 0 ? String(value) : '—';
     const fmt = loggedDistance;
     const pace = DB.paceOf(r.km, r.sec);
@@ -855,6 +856,8 @@
       '<p class="recap-subtitle">' + tt(day.run ? day.run.title : 'Unplanned run') +
       (r.estimatedKm ? ' · distance from plan' : '') + '</p>' +
       '<div class="recap-metrics"><div><span>TIME</span><b>' + recordTime(r.sec) + '</b></div><div><span>PACE / KM</span><b>' + pace + '</b></div><div><span>AVG HR</span><b>' + hrLabel(r.hr) + '</b></div></div>' +
+      /* the session's window, lit now that it is done — flooding in on the save itself (v5.1) */
+      (day.run ? sessionShapeHTML(day.run, day.run.run.km, true, { lit: true, lighting: lit }) : '') +
       longRunOverHTML(day, iso, r) +
       awards.map(a => '<article class="recap-award"><span class="recap-seal" aria-hidden="true">✦</span><div><h3>' + esc(a.label) + '</h3><strong>' + esc(a.value) + '</strong><p>' + esc(a.detail) + '</p></div></article>').join('') +
       (report.runCount === 1 ? '<p class="recap-baseline">Your history starts here. Future runs build the comparison.</p>' : '') +
@@ -1113,7 +1116,9 @@
       else { delete entry.mpKm; delete entry.mpPaceSec; delete entry.mpHr; }
       try { localStorage.setItem(logKey(iso), JSON.stringify(entry)); }
       catch (e) { wrap.querySelector('.log-error').textContent = 'Could not save on this device. Keep this form open and free some storage, then try again.'; return; }
-      state.runLogEdit = null; state.runLogDraft = null; render();
+      state.runLogEdit = null; state.runLogDraft = null;
+      if (!saved || !(saved.sec > 0)) state.justLit = iso;   // the window floods with light on the first save
+      render();
       if (!saved || !(saved.sec > 0)) celebrate(iso, day);   // first save only, never on edits
       const recapHeading = view.querySelector('.run-recap h2');
       if (recapHeading) { recapHeading.focus({ preventScroll: true }); recapHeading.scrollIntoView({ block: 'start' }); }
@@ -1267,7 +1272,7 @@
         (() => { const c = DB.runClass(block), mp = /@\s*MP/.test(block.title);
           const z = c === 'race' ? null : c === 'long' ? (mp ? 'Z2 · MP in Z3' : 'Z2') : c === 'quality' ? (mp ? 'Z3' : 'Z4') : c === 'recovery' ? 'Z1' : 'Z2';
           return z ? '<div class="focus-hr"><span>HEART RATE</span><strong>' + esc(withZones(z)) + '</strong></div>' : ''; })() +
-        '</div>' + sessionShapeHTML(block, block.run.km) +
+        '</div>' + sessionShapeHTML(block, block.run.km, false, { lit: !!getDone(iso)[block.id] || (getRunLogEntry(iso) || {}).sec > 0 }) +
         (block.run.gelsAt && block.run.gelsAt.length ? '<div class="focus-gels"><span>GELS · ' + block.run.gelsAt.length + '</span><div class="g-times">' +
           block.run.gelsAt.map((m, k) => '<i><small>' + roman(k + 1) + '</small>' + DB.fmtHM((block.startMin + m) % 1440) + '</i>').join('') + '</div></div>' : '') +
         runSkyHTML(iso, block, skyKind(block), 'f', iso === todayISO() ? nowMin() : null) +
@@ -1477,7 +1482,7 @@
       '<div class="h-session">' + tt(r.title) + '</div></div>' +
       '<div class="h-meta"><span class="h-shoe t-' + shoeTier(r.run.shoe) + '"><b>SHOE</b><i class="h-shoe-e">' + emblemSVG(shoeTier(r.run.shoe) === 'race' ? 'laurel' : 'foot') + '</i>' + esc(r.run.shoe) + '</span>' + paceCell +
       '<span><b>WINDOW</b>' + r.start + '–' + r.end + '</span>' + mpCell + gelCell + '</div>' +
-      sessionShapeHTML(r, km, true) +
+      sessionShapeHTML(r, km, true, { lit: isDone || e.sec > 0, lighting: just === r.id && isDone }) +
       runSkyHTML(iso, r, skyKind(r), 'h', iso === today ? nowMin() : null) +
       '<div class="h-detail">' + detailHTML(detail, iso + '|hero', false) + '</div>' +
       zonePrompt +
@@ -1912,10 +1917,13 @@
      kilometres to scale, easy in white and the MP stretch in red, a range
      ("last 14–16") drawn solid for the certain part and faint for the
      rest. Anything the title does not describe gets no bar at all. */
-  function sessionShapeHTML(r, kmTotal, quiet) {
+  function sessionShapeHTML(r, kmTotal, quiet, opts) {
+    opts = opts || {};
     const t = String(r.title || ''), d = String(r.detail || '');
     const cls = DB.runClass(r);
     const fmt = (n) => (n === Math.round(n) ? String(n) : n.toFixed(1));
+    const segs = [];
+    let cap = '', kind = '';
     if (cls === 'quality') {
       const rep = t.match(/(\d+)\s*[×x]\s*(\d+)\s*min/) || (t.match(/Tempo\s+(\d+)\s*min/) ? [null, '1', t.match(/Tempo\s+(\d+)\s*min/)[1]] : null);
       if (!rep) return '';
@@ -1923,36 +1931,88 @@
       const wuM = d.match(/warm up (\d+) min/i), wu = wuM ? Number(wuM[1]) : 0;
       const zone = /@\s*MP/.test(t) ? 'MP' : 'Z4';
       const rest = Math.max(0, (r.endMin - r.startMin) - wu - n * min);
-      let segs = wu ? '<i class="ss-seg easy" style="flex:' + wu + '"></i>' : '';
-      for (let k = 0; k < n; k++) segs += (k ? '<i class="ss-jog"></i>' : '') + '<i class="ss-seg hard" style="flex:' + min + '"></i>';
-      if (rest > 0) segs += '<i class="ss-seg easy" style="flex:' + rest + '"></i>';
-      const cap = (wu ? wu + '′ easy · ' : '') + (n > 1 ? n + ' × ' + min + '′ ' + zone + ', jog between' : min + '′ ' + zone) + ' · easy to ' + fmt(kmTotal) + '\u00a0km';
-      return '<figure class="sess-shape q" role="img" aria-label="' + esc('Session shape: ' + cap) + '"><div class="ss-bar" aria-hidden="true">' + segs + '</div>' +
-        '<figcaption>' + esc(cap) + '</figcaption></figure>';
-    }
-    const mp = DB.mpShape(t, kmTotal);
-    if (!mp) return '';
-    let segs = '', cap = '';
-    if (mp.kind === 'tail') {
-      const firm = kmTotal - mp.fromLate + 1, soft = mp.fromLate - mp.from;
-      segs = '<i class="ss-seg long" style="flex:' + (mp.from - 1) + '"></i>' + (soft ? '<i class="ss-seg mp soft" style="flex:' + soft + '"></i>' : '') +
-        '<i class="ss-seg mp" style="flex:' + firm + '"></i>';
-      cap = 'km 1–' + (mp.from - 1) + ' easy · ' + (soft ? 'MP from km ' + mp.from + '–' + mp.fromLate : 'km ' + mp.from + '–' + fmt(kmTotal) + ' at MP') + ' ' + mp.pace;
-    } else if (mp.kind === 'block') {
-      const side = (kmTotal - mp.hi) / 2, soft = mp.hi - mp.lo;
-      segs = '<i class="ss-seg long" style="flex:' + side + '"></i>' + (soft ? '<i class="ss-seg mp soft" style="flex:' + soft / 2 + '"></i>' : '') +
-        '<i class="ss-seg mp" style="flex:' + mp.lo + '"></i>' + (soft ? '<i class="ss-seg mp soft" style="flex:' + soft / 2 + '"></i>' : '') + '<i class="ss-seg long" style="flex:' + side + '"></i>';
-      cap = (mp.lo === mp.hi ? mp.lo : mp.lo + '–' + mp.hi) + ' km at MP ' + mp.pace + ', mid-run';
+      if (wu) segs.push({ k: 'easy', u: wu });
+      for (let j = 0; j < n; j++) { if (j) segs.push({ k: 'jog' }); segs.push({ k: 'hard', u: min }); }
+      if (rest > 0) segs.push({ k: 'easy', u: rest });
+      cap = (wu ? wu + '′ easy · ' : '') + (n > 1 ? n + ' × ' + min + '′ ' + zone + ', jog between' : min + '′ ' + zone) + ' · easy to ' + fmt(kmTotal) + '\u00a0km';
+      kind = 'q';
     } else {
-      const easy = (kmTotal - mp.reps * mp.repKm) / (mp.reps + 1);
-      if (!(easy > 0)) return '';
-      for (let k = 0; k < mp.reps; k++) segs += '<i class="ss-seg long" style="flex:' + easy + '"></i><i class="ss-seg mp" style="flex:' + mp.repKm + '"></i>';
-      segs += '<i class="ss-seg long" style="flex:' + easy + '"></i>';
-      cap = mp.reps + ' × ' + mp.repKm + ' km at MP ' + mp.pace + ' within ' + fmt(kmTotal) + ', spacing yours';
+      const mp = DB.mpShape(t, kmTotal);
+      if (!mp) return '';
+      if (mp.kind === 'tail') {
+        const firm = kmTotal - mp.fromLate + 1, soft = mp.fromLate - mp.from;
+        segs.push({ k: 'long', u: mp.from - 1 });
+        if (soft) segs.push({ k: 'mp soft', u: soft });
+        segs.push({ k: 'mp', u: firm });
+        cap = 'km 1–' + (mp.from - 1) + ' easy · ' + (soft ? 'MP from km ' + mp.from + '–' + mp.fromLate : 'km ' + mp.from + '–' + fmt(kmTotal) + ' at MP') + ' ' + mp.pace;
+      } else if (mp.kind === 'block') {
+        const side = (kmTotal - mp.hi) / 2, soft = mp.hi - mp.lo;
+        segs.push({ k: 'long', u: side });
+        if (soft) segs.push({ k: 'mp soft', u: soft / 2 });
+        segs.push({ k: 'mp', u: mp.lo });
+        if (soft) segs.push({ k: 'mp soft', u: soft / 2 });
+        segs.push({ k: 'long', u: side });
+        cap = (mp.lo === mp.hi ? mp.lo : mp.lo + '–' + mp.hi) + ' km at MP ' + mp.pace + ', mid-run';
+      } else {
+        const easy = (kmTotal - mp.reps * mp.repKm) / (mp.reps + 1);
+        if (!(easy > 0)) return '';
+        for (let j = 0; j < mp.reps; j++) segs.push({ k: 'long', u: easy }, { k: 'mp', u: mp.repKm });
+        segs.push({ k: 'long', u: easy });
+        cap = mp.reps + ' × ' + mp.repKm + ' km at MP ' + mp.pace + ' within ' + fmt(kmTotal) + ', spacing yours';
+      }
+      kind = 'l';
+      quiet = quiet && !opts.caption;   // on the run card the MP line above already says this in words
     }
-    /* on the run card the MP line above already says this in words */
-    return '<figure class="sess-shape l" role="img" aria-label="' + esc('Session shape: ' + cap) + '"><div class="ss-bar" aria-hidden="true">' + segs + '</div>' +
-      (quiet ? '' : '<figcaption>' + esc(cap) + '</figcaption>') + '</figure>';
+    return '<figure class="sess-shape ' + kind + '" role="img" aria-label="' + esc('Session shape: ' + cap) + '">' +
+      glassWindowHTML(segs, opts) + (quiet && kind === 'l' ? '' : '<figcaption>' + esc(cap) + '</figcaption>') + '</figure>';
+  }
+
+  /* The session as a stained-glass window (v5.1): a row of lancets with
+     stone mullions, each segment glazed in its class — easy grey, long
+     white, the hard reps and marathon pace in red glass, an uncertain
+     range ("last 14–16") half-glazed. A jog of unstated length is a stone
+     pier with an oculus. Before the run the glass is dark, with nothing
+     behind it; once the run is done the light comes through, and on the
+     moment it is done it floods in pane by pane, left to right, once. */
+  let glassSeq = 0;
+  function glassWindowHTML(segs, opts) {
+    const id = 'sg' + (++glassSeq);
+    const W = 320, H = 62, TOP = 3, B = H - 8, GAP = 2.2, JOG = 9;
+    const jogs = segs.filter((g) => g.k === 'jog').length;
+    const U = segs.reduce((n, g) => n + (g.u || 0), 0);
+    if (!(U > 0)) return '';
+    const scale0 = (W - jogs * JOG) / U;
+    segs.forEach((g) => { if (g.k !== 'jog') g.n = Math.max(1, Math.round(g.u * scale0 / 11)); });
+    const panes = segs.reduce((n, g) => n + (g.n || 0), 0);
+    const scale = (W - jogs * JOG - (panes - 1 - jogs) * GAP) / U;
+    const f = (v) => v.toFixed(2);
+    let x = 0, k = 0, body = '', prevJog = true;
+    segs.forEach((g) => {
+      if (g.k === 'jog') {
+        body += '<g class="ss-jog"><rect class="sg-pier" x="' + f(x + 1.5) + '" y="' + (TOP + 10) + '" width="' + f(JOG - 3) + '" height="' + (B - TOP - 10) + '" rx="1"/>' +
+          '<circle class="sg-oculus" cx="' + f(x + JOG / 2) + '" cy="' + (TOP + 5) + '" r="2.6"/></g>';
+        x += JOG; prevJog = true; return;
+      }
+      if (!prevJog) x += GAP;
+      const w = g.u * scale / g.n;
+      let glass = '';
+      for (let j = 0; j < g.n; j++) {
+        if (j) x += GAP;
+        const s = TOP + 0.866 * w;
+        const dd = 'M' + f(x) + ' ' + B + ' L' + f(x) + ' ' + f(s) + ' A' + f(w) + ' ' + f(w) + ' 0 0 1 ' + f(x + w / 2) + ' ' + TOP +
+          ' A' + f(w) + ' ' + f(w) + ' 0 0 1 ' + f(x + w) + ' ' + f(s) + ' L' + f(x + w) + ' ' + B + ' Z';
+        glass += '<path class="sg-pane" style="--k:' + (k++) + '" d="' + dd + '"/><path class="sg-quarry" d="' + dd + '" fill="url(#' + id + 'q)"/>' +
+          '<path class="sg-light" d="' + dd + '" fill="url(#' + id + 'l)"/>';
+        x += w;
+      }
+      body += '<g class="ss-seg ' + g.k + '"' + (/hard|mp/.test(g.k) && !/soft/.test(g.k) && opts.lit ? ' filter="url(#' + id + 'g)"' : '') + '>' + glass + '</g>';
+      prevJog = false;
+    });
+    return '<svg class="sg' + (opts.lit ? ' lit' : '') + (opts.lit && opts.lighting ? ' lighting' : '') + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' +
+      '<defs><pattern id="' + id + 'q" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0 V5 M0 0 H5"/></pattern>' +
+      '<linearGradient id="' + id + 'l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="sg-l0"/><stop offset=".55" class="sg-l1"/></linearGradient>' +
+      '<filter id="' + id + 'g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>' +
+      body + '<rect class="sg-sill" x="0" y="' + (B + 1.5) + '" width="' + W + '" height="3" rx="1.5"/></svg>';
   }
 
   function runSkyHTML(iso, run, cls, key, nowAt) {

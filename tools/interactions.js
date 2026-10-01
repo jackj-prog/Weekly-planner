@@ -688,6 +688,19 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.1: the session as a stained-glass window — dark before, lit when done
+  t = await open('2026-10-07', '17:50', SEED);
+  check(!!(await t.page.$('.hero .sess-shape svg.sg')) && !(await t.page.$('.hero .sess-shape svg.sg.lit')) && (await t.page.$$('.hero .sg .sg-pane')).length >= 20,
+    'before the run the window is glazed but dark');
+  await t.page.click('.hero button.h-tick');
+  check(!!(await t.page.$('.hero .sess-shape svg.sg.lit.lighting')), 'ticking the run done floods the window with light');
+  await t.page.click('.tl-card .tick').catch(() => {});
+  check(!(await t.page.$('.hero .sg.lighting')), 'the light floods in once, not on the next re-render');
+  noErrors(t, 'stained glass');
+  await t.ctx.close();
+  t = await open('2026-09-30', '20:00', Object.assign({}, SEED, { 'runlog-2026-09-30': { sec: 2344, hr: 158, km: 7.05 } }));
+  check(!!(await t.page.$('.run-recap .sess-shape svg.sg.lit')) && !(await t.page.$('.run-recap .sg.lighting')), 'a logged run\u2019s recap carries its window, lit');
+  await t.ctx.close();
   // v5.0.11: Previously counts a run on an unplanned day
   t = await open('2026-09-28', '12:00', Object.assign({}, SEED, { 'runlog-2026-09-25': { sec: 1160, hr: 141, km: 2.77 } }));
   check(/\d of 5 runs \+ 1 extra ·/.test(await text(t.page, '.previously .pv-line')), 'an unplanned Friday run is counted as extra: ' + await text(t.page, '.previously .pv-line'));

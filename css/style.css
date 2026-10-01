@@ -2770,13 +2770,6 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .hero.race .t-race .h-shoe-e { color: var(--text); }
 /* the session's shape */
 .sess-shape { margin: 14px 0 2px; }
-.ss-bar { display: flex; align-items: center; gap: 2px; height: 12px; }
-.ss-seg { display: block; height: 8px; min-width: 3px; border-radius: 4px; }
-.ss-seg.easy { background: color-mix(in srgb, var(--cat-run) 42%, transparent); }
-.ss-seg.long { background: color-mix(in srgb, var(--text) 72%, transparent); box-shadow: 0 0 8px var(--glow-white); }
-.ss-seg.hard, .ss-seg.mp { height: 12px; background: var(--accent); box-shadow: 0 0 10px var(--glow-red); }
-.ss-seg.mp.soft { height: 12px; background: repeating-linear-gradient(135deg, var(--accent) 0 3px, transparent 3px 6px); box-shadow: none; opacity: .75; }
-.ss-jog { display: block; flex: 0 0 7px; height: 3px; background: radial-gradient(circle, var(--t2) 1px, transparent 1.4px) 0 0 / 3.5px 3px repeat-x; }
 .sess-shape figcaption { margin-top: 7px; font: 400 11.5px/1.45 var(--mono); color: var(--t2); }
 .hero.race .sess-shape figcaption { color: var(--text); }
 /* focus: the shoe in its tier and the prescribed heart rate */
@@ -3140,3 +3133,30 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .pace-row .ref-jump { display: inline-flex; align-items: center; min-height: 44px; margin: -12px 0 -12px 6px; padding: 0 2px; border: 0; background: none;
   font: 400 13px var(--body); color: var(--t2); text-decoration: underline; text-underline-offset: 4px; }
 .nownext .nn-left, .nownext .nn-in, .nownext .nn-km { white-space: nowrap; }
+
+/* ================= THE STAINED-GLASS WINDOW (v5.1) ================= */
+.sg { display: block; width: 100%; height: auto; overflow: visible; }
+.sg .sg-pane { stroke: var(--chrome-bg); stroke-width: 1.1; stroke-linejoin: round; opacity: .38; }
+.sg .ss-seg.easy .sg-pane { fill: color-mix(in srgb, var(--cat-run) 46%, var(--hero-bg)); }
+.sg .ss-seg.long .sg-pane { fill: color-mix(in srgb, var(--text) 82%, var(--hero-bg)); }
+.sg .ss-seg.hard .sg-pane, .sg .ss-seg.mp .sg-pane { fill: var(--accent); }
+.sg .ss-seg.mp.soft .sg-pane { fill: color-mix(in srgb, var(--accent) 40%, var(--hero-bg)); }
+.sg .sg-quarry { stroke: none; opacity: .5; pointer-events: none; }
+.sg pattern path { stroke: var(--chrome-bg); stroke-width: .55; fill: none; }
+.sg .sg-light { stroke: none; opacity: 0; pointer-events: none; }
+.sg .sg-l0 { stop-color: var(--text); stop-opacity: .5; }
+.sg .sg-l1 { stop-color: var(--text); stop-opacity: 0; }
+.sg .sg-pier { fill: color-mix(in srgb, var(--t3) 38%, var(--hero-bg)); }
+.sg .sg-oculus { fill: none; stroke: color-mix(in srgb, var(--text) 30%, transparent); stroke-width: 1; }
+.sg .sg-sill { fill: color-mix(in srgb, var(--line) 90%, var(--hero-bg)); }
+/* lit: the light behind the glass */
+.sg.lit .sg-pane { opacity: 1; }
+.sg.lit .sg-light { opacity: .55; }
+.sg.lit .ss-seg.easy .sg-pane { fill: color-mix(in srgb, var(--cat-run) 70%, var(--hero-bg)); }
+@media (prefers-reduced-motion: no-preference) {
+  .sg.lighting .sg-pane { animation: sg-pane 900ms var(--ease-soft) both; animation-delay: calc(var(--k) * 32ms + 150ms); }
+  .sg.lighting .sg-light { animation: sg-glow 1400ms var(--ease-soft) both; animation-delay: 300ms; }
+  @keyframes sg-pane { from { opacity: .38; } to { opacity: 1; } }
+  @keyframes sg-glow { from { opacity: 0; } to { opacity: .55; } }
+}
+.run-recap .sess-shape { margin: 16px 0 4px; }
