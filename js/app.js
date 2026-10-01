@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.3.0';
+  const APP_VERSION = '5.4.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -17,6 +17,7 @@
   };
   const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const DAY_SHORT = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   /* Home-screen shortcuts land on a view directly (manifest `shortcuts`,
@@ -3539,6 +3540,109 @@
     view.appendChild(archive);
   }
 
+  /* ================= the Kalendar (v5.4) =================
+     A Book of Hours opens with its calendar: a page to a month, a line to
+     a day, the feasts written in red (the red-letter days), the moon's
+     quarters in the margin and the sign the sun enters at the head. This is
+     that page for the block: each day's run as a stroke as long as its
+     distance in its class's colour (solid once banked, an outline while it
+     is still to come, dashed where it was missed), the key days and feasts
+     in red, the moon at its four quarters, how the light changes across
+     the month, and what the month asked against what it got. A day opens
+     on a tap. */
+  function shiftMonth(ym, d) {
+    let [y, m] = ym.split('-').map(Number);
+    m += d;
+    while (m < 1) { m += 12; y--; }
+    while (m > 12) { m -= 12; y++; }
+    return y + '-' + String(m).padStart(2, '0');
+  }
+  const ZODIAC_GLYPH = ['\u2652', '\u2653', '\u2648', '\u2649', '\u264A', '\u264B', '\u264C', '\u264D', '\u264E', '\u264F', '\u2650', '\u2651'];
+  function renderKal() {
+    const view = document.getElementById('view');
+    view.innerHTML = '';
+    const ym = state.kalMonth || todayISO().slice(0, 7);
+    state.kalMonth = ym;
+    const [y, m] = ym.split('-').map(Number);
+    const days = new Date(y, m, 0).getDate(), today = todayISO();
+    const block = PLAN.blocks[0];
+    const keyAt = {};
+    (PLAN.keyEvents || []).forEach((k) => { keyAt[DB.addDays(block.start, (k.wk - 1) * 7 + k.di)] = k.label; });
+    const feasts = (PLAN.hours && PLAN.hours.feasts) || {};
+    const fmt = (n) => String(Math.round(n * 10) / 10);
+    let planned = 0, got = 0, runsPlanned = 0, runsGot = 0, top = 10;
+    const rows = [];
+    let prevPhase = DB.moonPhase(DB.addDays(ym + '-01', -1)).phase;
+    for (let d = 1; d <= days; d++) {
+      const iso = ym + '-' + String(d).padStart(2, '0');
+      const day = DB.buildDay(iso), plan = day.run ? day.run.run.km : 0;
+      const past = iso <= today;
+      const rec = past ? DB.recordedKm(day, getDone(iso), getRunLogEntry(iso)) : 0;
+      const ovr = getOvr(iso), off = !!(day.run && (ovr.skip[day.run.id] || ovr.moved[day.run.id]));
+      const cls = day.run ? DB.runClass(day.run) : rec > 0 ? 'easy' : '';
+      const tone = cls === 'quality' || cls === 'race' ? 'hard' : cls === 'long' ? 'long' : 'easy';
+      const mp = DB.moonPhase(iso);
+      let quarter = '';
+      [[0, 'New moon'], [0.25, 'First quarter'], [0.5, 'Full moon'], [0.75, 'Last quarter']].forEach(([q, name]) => {
+        if (q === 0 ? mp.phase < prevPhase : prevPhase < q && mp.phase >= q) quarter = name;
+      });
+      prevPhase = mp.phase;
+      planned += plan; got += rec; top = Math.max(top, plan, rec);
+      if (plan) { runsPlanned++; if (rec > 0) runsGot++; }
+      rows.push({ iso, d, di: DB.dayIndex(iso), plan, rec, past, off, tone, mp, quarter, key: keyAt[iso] || '', feast: feasts[iso.slice(5)] || '' });
+    }
+    /* the light across the month */
+    const pl = DB.skyPlace(ym + '-01'), plEnd = DB.skyPlace(ym + '-' + days);
+    const st0 = pl ? DB.sunTimes(ym + '-01', pl.lat, pl.lon, pl.offsetMin) : null;
+    const st1 = plEnd ? DB.sunTimes(ym + '-' + days, plEnd.lat, plEnd.lon, plEnd.offsetMin) : null;
+    let light = '';
+    if (st0 && st1 && st0.set != null && st1.set != null) {
+      const len0 = st0.set - st0.rise, len1 = st1.set - st1.rise, dl = len1 - len0;
+      light = 'Sunset ' + DB.fmtHM(st0.set) + ' on the 1st, ' + DB.fmtHM(st1.set) + ' by the ' + days + (days === 31 ? 'st' : 'th') +
+        ' · days ' + (dl < 0 ? 'shorten' : 'lengthen') + ' by ' + Math.floor(Math.abs(dl) / 60) + 'h\u00a0' + String(Math.abs(dl) % 60).padStart(2, '0') + 'm';
+    }
+    const wks = rows.map((r) => DB.resolveBlock(r.iso)).filter((c) => c.block && c.block.id === 'marathon').map((c) => c.week);
+    const wkLine = wks.length ? 'Weeks ' + Math.min(...wks) + '–' + Math.max(...wks) + ' of the block' : '';
+    const isPastMonth = ym + '-' + days < today, isFuture = ym + '-01' > today;
+    const tally = !runsPlanned ? 'No runs planned this month'
+      : isFuture ? '<b>' + fmt(planned) + '</b> km planned · ' + runsPlanned + ' runs'
+      : '<b>' + fmt(got) + '</b> of ' + fmt(planned) + ' km recorded · ' + runsGot + ' of ' + runsPlanned + ' runs' + (isPastMonth ? '' : ' so far');
+    const name = MONTH_NAMES[m - 1], sign = ((PLAN.hours && PLAN.hours.zodiac) || [])[m - 1] || '';
+    const head = el('<header class="kl-head">' +
+      '<button class="nav" data-m="-1" aria-label="Previous month">‹</button>' +
+      '<div class="kl-title"><h1><span class="kl-init" aria-hidden="true">' + name[0] + '</span><span class="kl-rest" aria-hidden="true">' + name.slice(1) + '</span>' +
+      '<span class="sr">' + name + ' ' + y + '</span></h1><span class="kl-year" aria-hidden="true">' + roman(y) + '</span></div>' +
+      '<button class="nav" data-m="1" aria-label="Next month">›</button></header>');
+    head.querySelectorAll('[data-m]').forEach((b) => b.addEventListener('click', () => {
+      state.kalMonth = shiftMonth(ym, Number(b.dataset.m)); window.scrollTo(0, 0); render();
+    }));
+    view.appendChild(head);
+    view.appendChild(el('<div class="kl-sub"><div><p class="kl-tally">' + tally + '</p>' +
+      (wkLine || light ? '<p class="kl-light">' + esc([wkLine, light].filter(Boolean).join(' · ')) + '</p>' : '') + '</div>' +
+      (sign ? '<div class="kl-sign" role="img" aria-label="' + esc('The sun enters ' + sign) + '"><span>' + ZODIAC_GLYPH[m - 1] + '\uFE0E</span><small>' + esc(sign) + '</small></div>' : '') + '</div>'));
+    const list = el('<div class="kl-page" role="list"></div>');
+    rows.forEach((r) => {
+      const w = (k) => (k / top * 100).toFixed(1) + '%';
+      const miss = r.plan && r.past && r.iso < today && !r.rec && !r.off;
+      let bar = '';
+      if (r.plan) bar += '<i class="kl-plan ' + r.tone + (r.off ? ' off' : miss ? ' miss' : '') + '" style="width:' + w(r.plan) + '"></i>';
+      if (r.rec) bar += '<i class="kl-got ' + r.tone + '" style="width:' + w(Math.min(r.rec, top)) + '"></i>';
+      const note = r.key ? '<span class="kl-note key">' + esc(r.key) + '</span>' : r.feast ? '<span class="kl-note feast">' + esc(r.feast) + '</span>' : '';
+      const km = r.rec ? fmt(r.rec) : r.plan ? fmt(r.plan) : '';
+      const label = DAY_NAMES[r.di] + ' ' + r.d + ' ' + name + (r.plan ? ', ' + fmt(r.plan) + ' km planned' : ', no run') + (r.rec ? ', ' + fmt(r.rec) + ' km recorded' : miss ? ', not recorded' : '') +
+        (r.key ? ', ' + r.key : r.feast ? ', ' + r.feast : '') + (r.quarter ? ', ' + r.quarter : '');
+      const row = el('<button class="kl-row' + (r.iso === today ? ' today' : '') + (r.di === 0 ? ' mon' : '') + (r.iso < today ? ' past' : '') + (r.key || r.feast ? ' red' : '') + '" role="listitem" aria-label="' + esc(label) + '">' +
+        '<span class="kl-d" aria-hidden="true">' + r.d + '</span><span class="kl-w" aria-hidden="true">' + DAY_SHORT[r.di][0] + '</span>' +
+        '<span class="kl-m" aria-hidden="true">' + (r.quarter ? '<svg viewBox="0 0 12 12">' + moonSVG(6, 6, 4.6, r.mp, 'klmo') + '</svg>' : '') + '</span>' +
+        '<span class="kl-bar" aria-hidden="true">' + (bar || '<i class="kl-rest-dot"></i>') + '</span>' +
+        '<span class="kl-km' + (r.rec ? ' got' : '') + '" aria-hidden="true">' + km + '</span>' + (note ? note.replace('<span class="kl-note', '<span aria-hidden="true" class="kl-note') : '') + '</button>');
+      row.addEventListener('click', () => { state.view = 'today'; state.dateISO = r.iso; state.expanded = null; window.scrollTo(0, 0); render(); });
+      list.appendChild(row);
+    });
+    view.appendChild(list);
+    view.appendChild(el('<p class="fig-cap kl-cap"><span class="fig">Fig.</span> The Kalendar of ' + esc(name) + '</p>'));
+  }
+
   /* ================= reference view ================= */
   function renderRef() {
     const view = document.getElementById('view');
@@ -4648,11 +4752,12 @@
     renderHeader();
     document.querySelectorAll('.tab').forEach((t) => {
       t.classList.toggle('active', t.getAttribute('data-nav') === state.view ||
-        (t.getAttribute('data-nav') === 'more' && (state.view === 'plan' || state.view === 'ref')));
+        (t.getAttribute('data-nav') === 'more' && (state.view === 'plan' || state.view === 'ref' || state.view === 'kal')));
     });
     if (state.view === 'today') renderToday();
     else if (state.view === 'week') renderWeek();
     else if (state.view === 'plan') renderPlan();
+    else if (state.view === 'kal') renderKal();
     else renderRef();
 
     /* stagger the view's sections so arrival cascades everywhere */
@@ -4661,7 +4766,7 @@
 
     /* fade content in on real navigation only — never on tick re-renders */
     const viewKey = state.view + '|' +
-      (state.view === 'today' ? state.dateISO : state.view === 'week' ? state.weekAnchor : '');
+      (state.view === 'today' ? state.dateISO : state.view === 'week' ? state.weekAnchor : state.view === 'kal' ? state.kalMonth : '');
     if (viewKey !== lastViewKey) {
       /* Paging through days or weeks slides in the direction of travel, so
          the gesture and the screen agree; any other arrival just fades. */
@@ -4712,6 +4817,13 @@
       '<span class="sp-t"><b>Your training journey</b><small>' + (Math.round(j.recorded * 10) / 10) + ' km · ' + j.runs + ' runs recorded</small></span>';
     ref.innerHTML = '<span class="sp-init" aria-hidden="true">R</span>' +
       '<span class="sp-t"><b>Reference</b><small>Paces · zones · shoes · fuelling · rules</small></span>';
+    const kal = document.querySelector('.sheet-item[data-nav="kal"]');
+    if (kal) {
+      const t = todayISO(), [y, m] = t.split('-').map(Number);
+      kal.innerHTML = '<span class="sp-kal" aria-hidden="true"><b>' + esc(MONTH_NAMES[m - 1].slice(0, 3)) + '</b><i>' + Number(t.slice(8)) + '</i>' +
+        '<svg viewBox="0 0 12 12">' + moonSVG(6, 6, 4.6, DB.moonPhase(t), 'sp-moon') + '</svg></span>' +
+        '<span class="sp-t"><b>The Kalendar</b><small>' + esc(MONTH_NAMES[m - 1]) + ' on one page</small></span>';
+    }
   }
   let sheetTimer = null;
   function setSheet(open) {
@@ -4735,6 +4847,7 @@
       if (nav === 'close') return;
       if (nav === 'today') { state.dateISO = todayISO(); state.expanded = null; }
       if (nav === 'week') state.weekAnchor = mondayOf(state.dateISO || todayISO());
+      if (nav === 'kal') state.kalMonth = todayISO().slice(0, 7);
       state.view = nav;
       window.scrollTo(0, 0);
       render();
@@ -4854,6 +4967,9 @@
       render();
     } else if (state.view === 'week') {
       state.weekAnchor = DB.addDays(state.weekAnchor || mondayOf(todayISO()), dir * 7);
+      render();
+    } else if (state.view === 'kal') {
+      state.kalMonth = shiftMonth(state.kalMonth || todayISO().slice(0, 7), dir);
       render();
     }
   }, { passive: true });

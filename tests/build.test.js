@@ -1682,6 +1682,11 @@ for (const wk of [23, 24, 28]) {
  ok(/altered running mechanics: skip the lower-body work/.test(gym.detail), 'wk ' + wk + ' retains the pain rule during maintenance');
  ok(gym.plan.length === 5 && gym.plan[0].sets === '1 × 5 @ 3 RIR', 'wk ' + wk + ' retains the authored reduced template');
 }
+section('the Kalendar (v5.4)');
+{
+ const z = PLAN.hours && PLAN.hours.zodiac;
+ ok(Array.isArray(z) && z.length === 12 && z[0] === 'Aquarius' && z[9] === 'Scorpio', 'the Kalendar names the sign the sun enters each month');
+}
 section('gels as a schedule (rule 4)');
 {
  const g = PLAN.gels;

@@ -277,6 +277,10 @@ and a white rose.
 **The sundial (v5.3):** the Now card has a faint engraved horizontal
 sundial behind it whose gnomon casts the real sun's shadow for the place
 and minute (none after sunset).
+**The Kalendar (v5.4):** a month on one page, from the More sheet — a line
+per day with the run as a stroke (outline planned, filled banked, dashed
+missed), key days and feasts in red, the moon's quarters, the light's
+change, the month's km and the sign the sun enters.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every
@@ -308,8 +312,9 @@ First-principles design is welcome. These behaviours are the intent:
    active, study, reading) renders as full cards.
 4. Tick-off only on doable blocks (runs, gym, XT, German active, study,
    reading). Ticks persist per date. No checkbox on lunch.
-5. Primary navigation: Today + Week. The 30-week plan overview and a
-   reference page (paces/shoes/rules) live behind a secondary menu.
+5. Primary navigation: Today + Week. The 30-week plan overview, the
+   Kalendar (a month on one page, v5.4) and a reference page
+   (paces/shoes/rules) live behind a secondary menu.
 6. A NOW indicator that tracks the clock (minute refresh, date rollover).
 7. Race countdown (weeks + days to gun) always one glance away, plus the
    next KEY date (TT → parkrun → half → rehearsal → race) as a chip on

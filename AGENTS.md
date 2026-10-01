@@ -1906,3 +1906,26 @@ the sun is down the plate dims and casts nothing (the card's stars take
 over). `refreshDial()` moves the shadow each minute from `refreshClock`
 without re-rendering. Art behind data: low-alpha tokens, aria-hidden.
 228 browser checks (2 new), 16,278 plan checks.
+
+## The Kalendar — v5.4, 1 October (Claude)
+
+A Book of Hours opens with its calendar, a page to a month and a line to a
+day. A new view (`state.view = 'kal'`, `renderKal`), reached from the More
+sheet's new middle plate (the month, today's date and tonight's moon):
+- a ruled list of the month's days, a rule before each Monday; each day's
+  run as a stroke to scale with the month's longest — an outline in its
+  class colour while planned (red hard, white long, grey easy), filled
+  once banked (white long runs and red quality runs glow), dashed when
+  missed, dotted when skipped or moved; the km at the end of the line;
+- key days and feasts in red under their line (the literal red-letter
+  days: the parkrun, All Saints, Christmas, St Sebastian …), the date in
+  red too; the moon drawn at its four quarters in the margin;
+- the head: the month with an illuminated initial and its year in Roman
+  numerals; under it what the month asked against what it got ("152.7 of
+  169 km recorded · 19 of 22 runs"), the block weeks it spans and how the
+  light changes ("Sunset 19:54 on the 1st, 18:47 by the 30th · days
+  shorten by 1h 54m"), beside a roundel with the sign the sun enters
+  (`PLAN.hours.zodiac`, English names; the glyph with a text-presentation
+  selector so iOS does not draw an emoji);
+- ‹ › and a swipe move a month; a tap on a day opens it in Today.
+234 browser checks (7 new), 16,279 plan checks.

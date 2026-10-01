@@ -688,6 +688,26 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.4: the Kalendar — the month on one page
+  t = await open('2026-10-01', '12:00', SEED);
+  await t.page.click('[data-nav="more"]'); await t.page.click('.sheet-item[data-nav="kal"]');
+  const kal = await t.page.evaluate(() => ({ rows: document.querySelectorAll('.kl-row').length, today: (document.querySelector('.kl-row.today .kl-d') || {}).textContent,
+    red: Array.from(document.querySelectorAll('.kl-row.red')).map((r) => r.querySelector('.kl-d').textContent + ' ' + r.querySelector('.kl-note').textContent),
+    moons: document.querySelectorAll('.kl-m svg').length, sign: (document.querySelector('.kl-sign small') || {}).textContent, title: document.querySelector('.kl-title .sr').textContent }));
+  check(kal.rows === 31 && kal.today === '1' && kal.title === 'October 2026' && kal.sign === 'Scorpio', 'October on one page, today ringed, the sun entering Scorpio: ' + JSON.stringify(kal));
+  check(kal.red.join() === '24 PARKRUN 5K PB' && kal.moons >= 3 && kal.moons <= 5, 'the parkrun is the month\u2019s red-letter day and the moon is marked at its quarters');
+  await t.page.click('.kl-head .nav[data-m="-1"]');
+  const sep = await t.page.evaluate(() => ({ rows: document.querySelectorAll('.kl-row').length, got: document.querySelectorAll('.kl-got').length, miss: document.querySelectorAll('.kl-plan.miss').length, tally: document.querySelector('.kl-tally').textContent }));
+  check(sep.rows === 30 && sep.got >= 5 && /km recorded · \d+ of \d+ runs$/.test(sep.tally), 'September shows what was banked against what was asked: ' + JSON.stringify(sep));
+  await t.page.click('.kl-row:nth-child(20)');
+  check(/Sunday 20 Sep/.test(await text(t.page, '.day-head h1')), 'a day opens on a tap');
+  await t.page.click('[data-nav="more"]'); await t.page.click('.sheet-item[data-nav="kal"]');
+  for (let k = 0; k < 4; k++) await t.page.click('.kl-head .nav[data-m="-1"]');
+  const seen = [];
+  for (let k = 0; k < 9; k++) { seen.push(await t.page.$eval('.kl-title .sr', (n) => n.textContent)); await t.page.click('.kl-head .nav[data-m="1"]'); }
+  check(seen[0] === 'June 2026' && seen[8] === 'February 2027', 'every month from June to February renders: ' + seen.join(', '));
+  noErrors(t, 'kalendar');
+  await t.ctx.close();
   // v5.3: the sundial behind the Now card — the shadow where the real sun puts it
   const dialAt = async (time) => { const tt = await open('2026-10-01', time, SEED);
     const r = await tt.page.evaluate(() => { const d = document.querySelector('.nownext .nn-dial'); if (!d) return null;

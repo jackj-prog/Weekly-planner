@@ -561,6 +561,10 @@ const PLAN = {
       '01-06': 'Epiphany',
       '01-20': 'St Sebastian, patron of athletes',
     },
+    /* The Kalendar's sign for each month (v5.4), as a Book of Hours calendar
+       page shows the sign the sun enters that month: January is Aquarius. */
+    zodiac: ['Aquarius', 'Pisces', 'Aries', 'Taurus', 'Gemini', 'Cancer',
+             'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn'],
     /* A week is sealed when every planned run happened at a real share of
        its distance (shapeRule.shortPct), a dropped Saturday buffer excepted
        (rule 10). The seal's legend reads round its rim. */

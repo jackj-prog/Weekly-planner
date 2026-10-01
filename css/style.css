@@ -3196,3 +3196,67 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .nn-dial .nd-gnomon { fill: color-mix(in srgb, var(--text) 30%, transparent); }
 .nn-dial .nd-shadow { fill: var(--chrome-bg); opacity: .9; }
 .nownext.sky-night .nn-dial, .nownext.sky-twi .nn-dial { opacity: .6; }
+
+/* ================= THE KALENDAR (v5.4) ============================= */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sheet-item[data-nav="kal"] {
+  display: flex; align-items: center; gap: 14px; min-height: 74px; padding: 10px 14px 10px 10px;
+  background-image: var(--grain), var(--hero-base); position: relative; overflow: hidden;
+}
+.sp-kal { position: relative; flex: 0 0 96px; height: 52px; display: grid; grid-template-columns: auto auto; align-items: center; justify-content: center; column-gap: 8px;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--chrome-bg); }
+.sp-kal b { font: 400 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.sp-kal i { font: 400 24px/1 var(--serif); font-style: normal; color: var(--text); }
+.sp-kal svg { position: absolute; top: 6px; right: 7px; width: 11px; height: 11px; }
+.sp-moon .mo-dark, .klmo .mo-dark { fill: var(--chrome-bg); stroke: var(--t3); stroke-width: .8; }
+.sp-moon .mo-lit, .klmo .mo-lit { fill: var(--text); }
+
+.kl-head { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 10px; margin: 2px 2px 6px; }
+.kl-head .nav { min-width: 44px; min-height: 44px; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; font-size: 17px; color: var(--text); }
+.kl-title { display: flex; align-items: baseline; justify-content: center; gap: 10px; min-width: 0; }
+.kl-title h1 { display: flex; align-items: flex-end; margin: 0; font: 900 30px/1 var(--display); letter-spacing: -.03em; color: var(--text); }
+.kl-init { display: inline-grid; place-items: center; width: 40px; height: 40px; margin-right: 2px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface);
+  font: 400 34px/1 var(--serif); color: var(--accent); letter-spacing: 0; text-shadow: 0 0 14px var(--glow-red); }
+.kl-rest { padding-bottom: 2px; }
+.kl-year { font: italic 400 14px var(--serif); color: var(--t2); letter-spacing: .04em; }
+.kl-sign { display: grid; justify-items: center; gap: 2px; }
+.kl-sign span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line);
+  font: 400 18px/1 var(--serif); color: var(--text); box-shadow: 0 0 12px var(--glow-white-soft); }
+.kl-sign small { font: 400 9px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--t2); }
+.kl-sub { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 14px; margin: 4px 2px 14px; }
+.kl-tally { margin: 0; font: 400 15px/1.4 var(--body); color: var(--t2); }
+.kl-tally b { font: 700 18px var(--mono); color: var(--text); }
+.kl-light { margin: 4px 0 0; font: italic 400 14px/1.45 var(--serif); color: var(--t2); text-wrap: pretty; }
+
+/* the page: a ruled list, a line to a day */
+.kl-page { display: grid; padding: 6px 14px; border: 1px solid var(--line); border-radius: 14px; background-image: var(--grain); background-color: var(--surface); }
+.kl-row { display: grid; grid-template-columns: 24px 14px 16px 1fr 34px; grid-template-areas: "d w m bar km" ". . . note note"; align-items: center; column-gap: 6px;
+  width: 100%; min-height: 34px; padding: 5px 0; border: 0; border-radius: 0; background: none; color: var(--text); text-align: left; }
+.kl-row.mon { border-top: 1px solid var(--line); }
+.kl-row:first-child { border-top: 0; }
+.kl-d { grid-area: d; font: 700 14px var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.kl-w { grid-area: w; font: 400 10px var(--mono); color: var(--t3); text-align: center; }
+.kl-m { grid-area: m; display: grid; place-items: center; }
+.kl-m svg { width: 11px; height: 11px; overflow: visible; }
+.kl-bar { grid-area: bar; position: relative; height: 10px; }
+.kl-bar i { position: absolute; left: 0; top: 1px; height: 8px; border-radius: 4px; }
+.kl-plan { border: 1px solid; background: transparent; }
+.kl-plan.easy { border-color: color-mix(in srgb, var(--cat-run) 55%, transparent); }
+.kl-plan.long { border-color: color-mix(in srgb, var(--text) 75%, transparent); }
+.kl-plan.hard { border-color: var(--accent); }
+.kl-plan.miss { border-style: dashed; border-color: var(--t3); opacity: .7; }
+.kl-plan.off { border-style: dotted; border-color: var(--t3); opacity: .5; }
+.kl-got.easy { background: color-mix(in srgb, var(--cat-run) 70%, transparent); }
+.kl-got.long { background: var(--text); box-shadow: 0 0 8px var(--glow-white); }
+.kl-got.hard { background: var(--accent); box-shadow: 0 0 8px var(--glow-red); }
+.kl-rest-dot { left: 2px !important; top: 3.5px !important; width: 3px; height: 3px !important; border-radius: 50%; background: var(--line); }
+.kl-km { grid-area: km; font: 400 12px var(--mono); color: var(--t3); text-align: right; font-variant-numeric: tabular-nums; }
+.kl-km.got { color: var(--text); }
+.kl-note { grid-area: note; margin-top: 1px; font-size: 12px; line-height: 1.3; color: var(--accent); }
+.kl-note.key { font: 700 10.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+.kl-note.feast { font: italic 400 13px var(--serif); }
+.kl-row.red .kl-d { color: var(--accent); }
+.kl-row.past:not(.today) .kl-d { color: var(--t2); }
+.kl-row.today { position: relative; }
+.kl-row.today::before { content: ""; position: absolute; inset: 1px -8px; border: 1px solid var(--accent); border-radius: 8px; box-shadow: 0 0 12px var(--glow-red-soft); pointer-events: none; }
+.kl-cap { margin: 10px 0 4px; }
