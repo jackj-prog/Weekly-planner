@@ -284,6 +284,8 @@ change, the month's km and the sign the sun enters.
 **Replay (v5.5):** a tap replays the firmament — a line sweeps from the
 first day to NOW, each star lighting as it passes, the block counted up
 beneath in the caption.
+**The seal, stamped (v5.6):** the tick that completes the week presses
+the wax seal onto the run card, once, with a splash.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every

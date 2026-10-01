@@ -688,6 +688,17 @@ async function cinema() {
   await t.page.click('.tl-card:has-text("Push") .session-focus-open');
   check(!(await t.page.$('.session-focus .dose')), 'a session without leg work has no dose to choose');
   await t.ctx.close();
+  // v5.6: the seal is stamped onto the run card the moment the week is sealed
+  const wk12 = Object.assign({}, SEED, { 'runlog-2026-09-16': { sec: 2300, hr: 160, km: 7 } });
+  delete wk12['runlog-2026-09-20'];
+  t = await open('2026-09-20', '22:00', wk12);
+  check(!(await t.page.$('.hero .seal')), 'no seal while the long run is outstanding');
+  await t.page.click('[data-missed="done"]');
+  check(!!(await t.page.$('.hero .seal.stamp')) && /Week 12 sealed/.test(await text(t.page, '.hero [role="status"].sr')), 'banking the long run seals the week and stamps the card');
+  await t.page.click('.day-nav [data-d="-1"]'); await t.page.click('.day-nav [data-d="1"]');
+  check(!(await t.page.$('.hero .seal.stamp')), 'the stamp is a moment, not a fixture: coming back, the card is clean');
+  noErrors(t, 'seal stamp');
+  await t.ctx.close();
   // v5.5: replay the block — the sky's arrival on a slow clock, counted beneath it
   t = await open('2026-10-01', '12:00', SEED, 'plan');
   await t.page.click('.sky .sk-play');

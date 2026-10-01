@@ -3287,3 +3287,21 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   @keyframes rp-dawn { from { opacity: 0; transform: translateY(18px); } }
   @keyframes sk-sweep { 0% { opacity: 0; transform: translateX(0); } 4% { opacity: 1; } 96% { opacity: 1; } 100% { opacity: 0; transform: translateX(calc(var(--sx) * 1px)); } }
 }
+
+/* ================= THE SEAL, STAMPED (v5.6) ======================== */
+/* the moment the week is sealed, the seal is pressed onto the run card */
+.hero { position: relative; }
+.hero > .seal.stamp { top: 132px; right: 14px; width: 86px; height: 86px; z-index: 3; }
+.sl-splash { fill: none; stroke: var(--accent); stroke-width: 2; opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .seal.stamp { animation: seal-stamp .62s var(--ease-out) .25s backwards; }
+  .seal.stamp .sl-splash { animation: seal-splash .8s var(--ease-out) .62s backwards; transform-box: fill-box; transform-origin: center; }
+  .seal.stamp :is(.sl-legend, .sl-num, .sl-ring) { animation: rp-in .7s var(--ease-soft) .8s backwards; }
+  @keyframes seal-stamp {
+    0% { opacity: 0; transform: translateY(-40px) rotate(-34deg) scale(2.3); filter: drop-shadow(0 26px 18px var(--shade)); }
+    55% { opacity: 1; transform: translateY(0) rotate(-12deg) scale(.9); filter: drop-shadow(0 2px 2px var(--shade)); }
+    72% { transform: rotate(-15deg) scale(1.05); }
+    100% { transform: rotate(-14deg) scale(1); }
+  }
+  @keyframes seal-splash { from { opacity: .7; transform: scale(.7); } to { opacity: 0; transform: scale(1.45); } }
+}

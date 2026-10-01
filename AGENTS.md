@@ -1951,3 +1951,17 @@ returns to its title.
 - The plate's description moved from the figure (`role="img"` hides all
   of a figure's contents, which would have hidden the button) to its svg.
 237 browser checks (3 new), 16,279 plan checks.
+
+## The seal, stamped — v5.6, 1 October (Claude)
+
+The red wax seal used to appear quietly on the Week and on Monday's
+Previously card. Now the moment a tick or a saved run completes the week
+(`weekSealed` turns true between two renders of the same week —
+`sealSeen[monday]`), the seal is pressed onto the run card: it drops in
+large and turned, lands with a squash, settles at −14°, a ring of red
+splashes out from under it and its legend and numeral come up. A status
+line announces "Week N sealed". It is a moment, not a fixture — the next
+render of that day shows the card clean (the seal lives on the Week and
+on Monday's card as before). The first render of a week only learns its
+state, so opening an already-sealed week stamps nothing.
+240 browser checks (3 new), 16,279 plan checks.

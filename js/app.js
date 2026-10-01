@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.5.0';
+  const APP_VERSION = '5.6.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -418,8 +418,19 @@
 
     /* -- run hero -- */
     const movedRun = day.run ? null : movedInRun(iso);
+    /* The week sealed just now (v5.6): the moment a tick or a saved run
+       completes the week, the wax seal is stamped onto the run card — once.
+       The first render of a week only learns its state; it stamps nothing. */
+    const sealAnchor = mondayOf(iso), sealedNow = weekSealed(sealAnchor);
+    const stampNow = sealSeen[sealAnchor] === false && sealedNow;
+    sealSeen[sealAnchor] = sealedNow;
     if (day.run || movedRun) {
-      view.appendChild(buildHero(movedRun ? { ...day, run: movedRun } : day, done, iso, just));
+      const hero = buildHero(movedRun ? { ...day, run: movedRun } : day, done, iso, just);
+      if (stampNow) {
+        hero.insertAdjacentHTML('beforeend', sealHTML(day.week).replace('<span class="seal"', '<span class="seal stamp"') +
+          '<span class="sr" role="status">Week ' + day.week + ' sealed: every planned run happened.</span>');
+      }
+      view.appendChild(hero);
     } else {
       const restBlock = day.blocks.find((b) => /no run|rest/i.test(b.title));
       let nextRun = null;
@@ -1770,6 +1781,7 @@
      Each planned run recorded at a real share of its distance
      (shapeRule.shortPct); a dropped Saturday buffer is rule 10, not a miss.
      Only for weeks that have ended or whose runs are all done. */
+  const sealSeen = {};
   function weekSealed(anchor) {
     const d0 = DB.buildDay(anchor);
     if (d0.blockId !== 'marathon') return false;
@@ -1794,7 +1806,7 @@
       edge += (k ? ' L' : 'M') + (50 + rr * Math.cos(a)).toFixed(1) + ' ' + (50 + rr * Math.sin(a)).toFixed(1);
     }
     return '<span class="seal" role="img" aria-label="Week ' + week + ' sealed: every planned run happened">' +
-      '<svg viewBox="0 0 100 100" aria-hidden="true"><path class="sl-wax" d="' + edge + ' Z"/>' +
+      '<svg viewBox="0 0 100 100" aria-hidden="true"><circle class="sl-splash" cx="50" cy="50" r="46"/><path class="sl-wax" d="' + edge + ' Z"/>' +
       '<circle class="sl-ring" cx="50" cy="50" r="35"/><circle class="sl-ring" cx="50" cy="50" r="24"/>' +
       '<path id="sl-arc-' + week + '" d="M50 20 A30 30 0 1 1 49.9 20" fill="none"/>' +
       '<text class="sl-legend"><textPath href="#sl-arc-' + week + '" textLength="186" lengthAdjust="spacing">' + esc(legend.toUpperCase().replace(/U/g, 'V')) + ' · ' + roman(week) + ' ·</textPath></text>' +
