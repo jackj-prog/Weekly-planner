@@ -2022,3 +2022,16 @@ current week, "46 km planned" ahead, with "cutback" or "key" beside the
 number where the plan says so. A week straddling the month shows its full
 total. Rows are found by label in the tests now that the page interleaves.
 251 browser checks (1 new), 16,279 plan checks.
+
+## Moved sessions keep their hours — v5.8.3, 1 October (Claude)
+
+- A session moved onto another day headed that day's timeline with "·" for
+  a time, above the 06:00 wake. It now keeps the hours it had (moves store
+  `start`/`end` since v4.66) and takes its place in the day's order — the
+  Wednesday Push moved to Thursday sits at 19:30–20:20 — with past/current
+  states like any card. Moves saved before v4.66 carry no hours and still
+  lead. The day clock counts and draws moved sessions too.
+- **Replay fix:** the first animation frame's timestamp can precede the
+  click's `performance.now()`, which made progress negative and read
+  `cum[-1]` (an intermittent console error). Progress is clamped at 0.
+254 browser checks (2 new), 16,279 plan checks.

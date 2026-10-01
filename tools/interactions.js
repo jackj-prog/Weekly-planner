@@ -694,6 +694,18 @@ async function cinema() {
   const ink = await t.page.$$eval('.session-focus .focus-emb.ink .emb path', (ns) => ns.map((n) => n.getAttribute('pathLength') + n.getAttribute('style')));
   check(ink.length === 3 && ink.every((x, k) => x === '1--p:' + k), 'each stroke of the emblem is numbered for the pen: ' + ink.join(' | '));
   await t.ctx.close();
+  // v5.8.3: a session moved in keeps its hours and its place in the day
+  t = await open('2026-10-01', '12:00', SEED);
+  await t.page.click('.day-nav [data-d="-1"]');
+  await t.page.click('.tl-card:has-text("Push") .more-btn'); await t.page.click('[data-act="movepick"]'); await t.page.click('[data-move-to="2026-10-01"]');
+  await t.page.click('.day-nav [data-d="1"]');
+  const order = await t.page.$$eval('.tl > *', (ns) => ns.map((n) => (n.querySelector('.c-time, .t') || {}).textContent || '').filter(Boolean).map((x) => x.slice(0, 5)));
+  const pi = order.indexOf('19:30');
+  check(pi > 0 && order.slice(0, pi).every((x) => x <= '19:30') && /^19:30–20:20/.test(await text(t.page, '.tl-card:has-text("Push") .c-time')),
+    'the moved Push sits at 19:30 in the day\u2019s order, not at the head of the timeline: ' + order.join(' '));
+  check((await t.page.$$('.daywheel .dw-emb')).length === 4 && /\/4/.test(await text(t.page, '.daywheel .dw-count')), 'the clock counts the moved session among the day\u2019s four');
+  noErrors(t, 'moved in order');
+  await t.ctx.close();
   // v5.8.1: narrow screens, and the Kalendar's light at a solstice
   t = await open('2026-10-04', '07:45', SEED);
   await t.page.setViewportSize({ width: 320, height: 700 }); await t.page.waitForTimeout(150);

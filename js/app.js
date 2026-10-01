@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.8.2';
+  const APP_VERSION = '5.8.3';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -476,13 +476,23 @@
     const nMin = nowMin();
     let nowPlaced = !isToday;
 
-    movedIn.forEach((m) => {
+    /* A session moved in keeps the hours it had (v5.8.3): it takes its place
+       in the day's order instead of heading the timeline with a "·" for a
+       time. Moves saved before v4.66 carry no hours and still lead. */
+    const movedCard = (m) => {
+      const timed = !!(m.start && m.end);
+      const sm = timed ? DB.parseHM(m.start) : -1, em = timed ? DB.parseHM(m.end) : -1;
       const card = buildCard({
         id: m.id, title: m.title, detail: m.detail, plan: m.plan || null, cat: m.cat, run: m.run || null,
-        start: '·', end: '', doable: true,
-      }, done, iso, { moved: m, just: just === m.id, slim: !!(movedRun && m.id === movedRun.id) });
-      tl.appendChild(card);
-    });
+        start: timed ? m.start : '·', end: timed ? m.end : '', doable: true,
+      }, done, iso, { moved: m, just: just === m.id, slim: !!(movedRun && m.id === movedRun.id),
+        past: isToday && timed && em <= nowMin(), current: isToday && timed && nowMin() >= sm && nowMin() < em });
+      if (timed) card.dataset.m = sm;
+      return { sm, card };
+    };
+    const movedQueue = movedIn.map(movedCard).sort((a, b) => a.sm - b.sm);
+    while (movedQueue.length && movedQueue[0].sm < 0) tl.appendChild(movedQueue.shift().card);
+    const flushMoved = (limit) => { while (movedQueue.length && movedQueue[0].sm < limit) tl.appendChild(movedQueue.shift().card); };
 
     /* The sun keeps its own hours in the timeline (v4.78): sunrise and
        sunset sit in their places among the day's rows, and the spine takes
@@ -509,6 +519,7 @@
         nowPlaced = true;
       }
       flushSun(b.startMin);
+      flushMoved(b.startMin + (b.quiet ? 0 : 1));
       const isCurrent = isToday && nMin >= b.startMin && nMin < b.endMin;
 
       const isPast = isToday && b.endMin <= nMin;
@@ -537,7 +548,8 @@
         nowPlaced = true;
       }
     }
-    if (!nowPlaced) { flushSun(nMin + 1); tl.appendChild(nowRow()); }
+    if (!nowPlaced) { flushMoved(nMin + 1); flushSun(nMin + 1); tl.appendChild(nowRow()); }
+    flushMoved(Infinity);
     flushSun(Infinity);
     /* stagger index → cascading entrance (CSS, motion-gated) */
     Array.prototype.forEach.call(tl.children, (c, i) => c.style.setProperty('--i', i));
@@ -2395,7 +2407,10 @@
      Today, a Breguet hand points at now and a small comet circles the
      medallion once a minute. Every mark is data or its frame. */
   function dayWheelHTML(day, done, iso, isToday, ovr) {
-    const blocks = day.blocks.filter((b) => b.endMin > b.startMin);
+    /* a session moved in is on the clock at its own hours too (v5.8.3) */
+    const moved = getMoveIn(iso).filter((m) => m.start && m.end).map((m) => ({ id: m.id, title: m.title, cat: m.cat, run: m.run || null, doable: true,
+      start: m.start, end: m.end, startMin: DB.parseHM(m.start), endMin: DB.parseHM(m.end) }));
+    const blocks = day.blocks.concat(moved).filter((b) => b.endMin > b.startMin).sort((a, b) => a.startMin - b.startMin);
     if (!blocks.length) return '<span hidden></span>';
     const C = WHEEL_C, RN = 119, RS_IN = 107, RS_OUT = 131, R_S = 94, R_Q = 81, R_P = 71, R_M = 62;
     const ang = (m) => (m / 1440) * 2 * Math.PI - Math.PI / 2;
@@ -3048,7 +3063,9 @@
         fig.classList.remove('replay'); void fig.offsetWidth; fig.classList.add('replay');
         const t0 = performance.now();
         const step = (now) => {
-          const p = Math.min(1, (now - t0) / D), c = cum[Math.min(cum.length - 1, Math.floor(p * (cum.length - 1)))];
+          /* a frame's timestamp can precede the click's own clock by a
+             moment, so progress is clamped below as well as above */
+          const p = Math.max(0, Math.min(1, (now - t0) / D)), c = cum[Math.min(cum.length - 1, Math.floor(p * (cum.length - 1)))];
           capt.textContent = fmtShort(c[0]) + ' · ' + fmt(c[1]) + ' km · ' + c[2] + ' runs';
           if (p < 1) raf = requestAnimationFrame(step);
           else setTimeout(() => { capt.textContent = 'The firmament of the block'; }, 2600);
