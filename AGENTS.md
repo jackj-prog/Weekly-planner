@@ -2065,3 +2065,24 @@ daisies and hollow "ahead" buds that read as zeros.
   existing scroll-into-view reveal (the timeline is observed — the clipped
   svg itself never reports as intersecting); reduced motion shows it whole.
 256 browser checks (2 new), 16,279 plan checks.
+
+## The sundial and the candles — v5.9.1, 1 October (Claude)
+
+Second item of the visual sweep.
+- **The sundial** was half the card: a 112-unit dial in a sliced viewBox
+  that grew with the card's height, its hour lines and numerals under the
+  text, "III" behind the ↓ button, and a solid black wedge of a shadow
+  across the progress bar. It is now a fixed 150×78 dial in the lower
+  right corner (R 62), masked to fade out towards the text, with the
+  numerals (IX XII III) engraved in a chapter band between two rims and
+  turned to their hour lines. The shadow is graded from the gnomon's foot
+  to its tip and widens a little as it lengthens, the penumbra.
+- **The distance profile's candles.** A lit candle had lost its wick and
+  its flame floated above it like a map pin. Every run day has a wick; a
+  banked one is charred at the tip and the flame stands on it — taller,
+  white at the heart, red at the edge, in a soft halo — and still flickers.
+- **The legend** matched nothing: Easy was a lighter grey than the bars,
+  Long was grey where the candle is white. Easy is the bar's grey, Long is
+  white, and "✓ completed" is a small flame and "Done".
+256 browser checks, 16,279 plan checks.
+

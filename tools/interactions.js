@@ -789,7 +789,7 @@ async function cinema() {
       return { lit: d.classList.contains('sunlit'), ang: m ? Number(m[1]) : null, lines: d.querySelectorAll('.nd-nums text').length }; });
     await tt.ctx.close(); return r; };
   const am = await dialAt('08:30'), pm = await dialAt('16:55'), nt = await dialAt('21:30');
-  check(am && am.lit && am.ang < -40 && pm.lit && pm.ang > 40 && am.lines === 5, 'morning shadow falls west, afternoon east: ' + JSON.stringify([am, pm]));
+  check(am && am.lit && am.ang < -40 && pm.lit && pm.ang > 40 && am.lines === 3, 'morning shadow falls west, afternoon east: ' + JSON.stringify([am, pm]));
   check(nt && !nt.lit && nt.ang == null, 'after sunset the dial casts no shadow');
   // v5.2: the growing border — flowers for done sessions, buds for missed
   t = await open('2026-09-29', '22:40', Object.assign({}, SEED, { 'done-2026-09-29': { 't1930-study': true }, 'runlog-2026-09-29': { sec: 2665, hr: 145, km: 7.32 } }));

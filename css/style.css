@@ -1185,9 +1185,9 @@ body { background: var(--paper); }
 .profile-day[aria-current] .profile-date { background: var(--text); color: var(--paper); border-radius: 5px; }
 .profile-state { height: 20px; font-size: 10px; color: var(--t2); }
 .profile-legend { display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; margin: 8px 6px 0; font-size: 11px; color: var(--t2); }
-.profile-legend span:not(:last-child)::before { content: ''; display: inline-block; width: 7px; height: 7px; background: var(--cat-run); margin-right: 5px; border-radius: 2px; }
+.profile-legend span:not(:last-child)::before { content: ''; display: inline-block; width: 7px; height: 7px; background: var(--t2); margin-right: 5px; border-radius: 2px; }
 .profile-legend span:nth-child(2)::before { background: var(--accent); }
-.profile-legend span:nth-child(3)::before { background: var(--phase-build); }
+.profile-legend span:nth-child(3)::before { background: var(--text); }
 .wk-days { gap: 8px; }
 .wk-day { padding: 15px 12px; min-height: 82px; border-radius: 12px; }
 .wk-day.past { opacity: 1; }
@@ -2052,15 +2052,25 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .fig-cap .fig { color: var(--t2); }
 
 /* -- the distance profile: a completed day is a lit candle -- */
+/* every run day has a wick; a banked one burns, the flame standing on the
+   wick's charred tip inside a soft halo (v5.9.1: the flame had floated
+   free of a candle with no wick) */
 .profile-track i { position: relative; }
-.profile-day.lit .profile-track i::before {
-  content: ''; position: absolute; left: 50%; top: -17px; width: 10px; height: 10px; margin-left: -5px;
-  border-radius: 50% 0 50% 50%; transform: rotate(-45deg);
-  background: radial-gradient(circle at 30% 70%, var(--text) 0 30%, var(--accent) 68%);
-  box-shadow: 0 0 12px 3px var(--glow-red);
+.profile-day:not(.rest) .profile-track i::after {
+  content: ''; position: absolute; left: 50%; top: -7px; width: 1.5px; height: 7px; margin-left: -.75px;
+  background: var(--t3); border-radius: 1px 1px 0 0;
 }
-.profile-day:not(.lit):not(.rest) .profile-track i::before {
-  content: ''; position: absolute; left: 50%; top: -6px; width: 1.5px; height: 6px; margin-left: -.75px; background: var(--t3);
+.profile-day.lit .profile-track i::after { background: linear-gradient(to bottom, var(--chrome-bg), var(--t3) 70%); }
+.profile-day.lit .profile-track i::before {
+  content: ''; position: absolute; left: 50%; top: -18px; width: 9px; height: 9px; margin-left: -4.5px; z-index: 1;
+  border-radius: 50% 0 50% 50%; transform: scale(.78, 1.3) rotate(-45deg); transform-origin: 50% 50%;
+  background: radial-gradient(circle at 34% 66%, var(--text) 0 26%, color-mix(in srgb, var(--accent) 55%, var(--text)) 46%, var(--accent) 78%);
+  box-shadow: 0 0 6px 1px var(--glow-red), 0 0 16px 6px var(--glow-red-soft);
+}
+.profile-legend span:last-child::before {
+  content: ''; display: inline-block; width: 6px; height: 6px; margin: 0 7px 0 2px; vertical-align: 1px;
+  border-radius: 50% 0 50% 50%; transform: scale(.8, 1.25) rotate(-45deg);
+  background: radial-gradient(circle at 34% 66%, var(--text) 0 24%, var(--accent) 72%); box-shadow: 0 0 6px var(--glow-red);
 }
 
 /* -- earned moments and the title card: an inscription, and a gloria -- */
@@ -2165,10 +2175,10 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   .profile-day.lit:nth-child(2n) .profile-track i::before { animation-duration: 1.5s; animation-delay: -.6s; }
   .profile-day.lit:nth-child(3n) .profile-track i::before { animation-duration: 2.3s; animation-delay: -1.1s; }
   @keyframes flicker {
-    0% { transform: rotate(-45deg) scale(1); opacity: 1; }
-    40% { transform: rotate(-42deg) scale(.9, 1.06); opacity: .82; }
-    70% { transform: rotate(-47deg) scale(1.04, .95); opacity: .95; }
-    100% { transform: rotate(-44deg) scale(.96, 1.04); opacity: .88; }
+    0% { transform: scale(.78, 1.3) rotate(-45deg); opacity: 1; }
+    40% { transform: scale(.72, 1.38) rotate(-42deg); opacity: .84; }
+    70% { transform: scale(.82, 1.24) rotate(-47deg); opacity: .95; }
+    100% { transform: scale(.76, 1.34) rotate(-44deg); opacity: .9; }
   }
   /* the Roman numerals of the key days step in */
   .view.anim .journey-landmarks.in .journey-event-index { animation: numeral-in .7s var(--ease-out) backwards; }
@@ -3207,15 +3217,22 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   @keyframes vn-curl { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 }
 
-/* ================= THE SUNDIAL (v5.3) ============================== */
-.nn-dial { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; }
-.nn-dial .nd-face { fill: color-mix(in srgb, var(--text) 3%, transparent); }
-.nn-dial.sunlit .nd-face { fill: color-mix(in srgb, var(--text) 6%, transparent); }
-.nn-dial .nd-rim, .nn-dial .nd-lines, .nn-dial .nd-ticks { fill: none; stroke: color-mix(in srgb, var(--text) 11%, transparent); stroke-width: .8; }
+/* ================= THE SUNDIAL (v5.3, v5.9.1) ====================== */
+/* a small engraved dial in the corner, fading out towards the text */
+.nn-dial {
+  position: absolute; right: 0; bottom: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 42%);
+  mask-image: linear-gradient(to right, transparent 0%, black 42%);
+}
+.nn-dial .nd-face { fill: color-mix(in srgb, var(--text) 2.5%, transparent); }
+.nn-dial.sunlit .nd-face { fill: color-mix(in srgb, var(--text) 5%, transparent); }
+.nn-dial .nd-rim, .nn-dial .nd-lines, .nn-dial .nd-ticks { fill: none; stroke: color-mix(in srgb, var(--text) 12%, transparent); stroke-width: .7; }
 .nn-dial .nd-ticks { stroke-width: .6; }
-.nn-dial .nd-nums text { font: italic 400 10px var(--serif); fill: color-mix(in srgb, var(--text) 20%, transparent); text-anchor: middle; }
-.nn-dial .nd-gnomon { fill: color-mix(in srgb, var(--text) 30%, transparent); }
-.nn-dial .nd-shadow { fill: var(--chrome-bg); opacity: .9; }
+.nn-dial .nd-nums text { font: italic 400 8px var(--serif); fill: color-mix(in srgb, var(--text) 26%, transparent); text-anchor: middle; }
+.nn-dial .nd-gnomon { fill: color-mix(in srgb, var(--text) 32%, transparent); }
+.nn-dial .nd-shadow { fill: url(#nd-shade); }
+.nn-dial .nd-s0 { stop-color: var(--chrome-bg); stop-opacity: .9; }
+.nn-dial .nd-s1 { stop-color: var(--chrome-bg); stop-opacity: .12; }
 .nownext.sky-night .nn-dial, .nownext.sky-twi .nn-dial { opacity: .6; }
 
 /* ================= THE KALENDAR (v5.4) ============================= */

@@ -279,7 +279,10 @@ twig, one still to come draws nothing, and a finished day ends in a volute
 and a white rose. The stem grows down the day when it scrolls into view.
 **The sundial (v5.3):** the Now card has a faint engraved horizontal
 sundial behind it whose gnomon casts the real sun's shadow for the place
-and minute (none after sunset).
+and minute (none after sunset). Since v5.9.1 it is a small fixed dial in
+the card's lower right corner, fading out towards the text, its shadow
+graded from the gnomon's foot to its tip; the Week's lit candles burn on
+their wicks.
 **The Kalendar (v5.4):** a month on one page, from the More sheet — a line
 per day with the run as a stroke (outline planned, filled banked, dashed
 missed), key days and feasts in red, the moon's quarters, the light's

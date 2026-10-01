@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.9.0';
+  const APP_VERSION = '5.9.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -2438,7 +2438,10 @@
      the hour line of the true solar time, as long as the sun is low. While
      the sun is down the dial is dark and casts nothing. Art behind data:
      faint, aria-hidden, and moved each minute without a re-render. */
-  const DIAL = { cx: 250, cy: 124, R: 112, g: 24 };
+  /* a small dial in the card's lower right corner (v5.9.1: it was half the
+     card, under the text and the button) — fixed size, whatever the card's
+     height */
+  const DIAL = { w: 150, h: 78, cx: 84, cy: 74, R: 62, g: 20 };
   function dialShadow(iso, n) {
     const pl = DB.skyPlace(iso);
     if (!pl) return null;
@@ -2448,34 +2451,38 @@
     if (alt == null || alt < 0.6) return null;
     const rad = Math.PI / 180, t = (n - (st.rise + st.set) / 2) / 60;
     const ang = Math.atan2(Math.sin(pl.lat * rad) * Math.sin(15 * t * rad), Math.cos(15 * t * rad)) / rad;
-    return { ang, len: Math.min(DIAL.R * 0.97, DIAL.g / Math.tan(alt * rad)) };
+    return { ang, len: Math.min(DIAL.R - 14, DIAL.g / Math.tan(alt * rad)) };
   }
+  /* the shadow widens a little as it lengthens (the penumbra), and fades
+     from the gnomon's foot to its tip */
   function dialShadowPath(sh) {
-    const { cx, cy } = DIAL, w = Math.max(1.2, Math.min(3.2, sh.len / 34));
-    return 'M' + (cx - 0.8) + ' ' + cy + ' L' + (cx - w).toFixed(1) + ' ' + (cy - sh.len).toFixed(1) + ' L' + (cx + w).toFixed(1) + ' ' + (cy - sh.len).toFixed(1) + ' L' + (cx + 0.8) + ' ' + cy + ' Z';
+    const { cx, cy } = DIAL, w = Math.max(1.8, Math.min(4.6, 1.6 + sh.len / 15));
+    return 'M' + (cx - 1.4) + ' ' + cy + ' L' + (cx - w).toFixed(1) + ' ' + (cy - sh.len).toFixed(1) + ' Q' + cx + ' ' + (cy - sh.len - w).toFixed(1) + ' ' + (cx + w).toFixed(1) + ' ' + (cy - sh.len).toFixed(1) + ' L' + (cx + 1.4) + ' ' + cy + ' Z';
   }
   function nnDialHTML(iso, n) {
     const pl = DB.skyPlace(iso), lat = pl ? pl.lat : 52;
-    const { cx, cy, R } = DIAL, rad = Math.PI / 180, sl = Math.sin(lat * rad);
-    const ha = (h) => Math.atan2(sl * Math.sin(15 * (h - 12) * rad), Math.cos(15 * (h - 12) * rad)) / rad;
+    const { w, h, cx, cy, R } = DIAL, rad = Math.PI / 180, sl = Math.sin(lat * rad), band = R - 13;
+    const ha = (hr) => Math.atan2(sl * Math.sin(15 * (hr - 12) * rad), Math.cos(15 * (hr - 12) * rad)) / rad;
     const pt = (a, r) => (cx + r * Math.sin(a * rad)).toFixed(1) + ' ' + (cy - r * Math.cos(a * rad)).toFixed(1);
     let lines = '', ticks = '', nums = '';
-    for (let h = 5; h <= 19; h += 0.5) {
-      const a = ha(h);
-      if (h % 1 === 0) lines += 'M' + pt(a, 20) + ' L' + pt(a, R - 15) + ' ';
-      ticks += 'M' + pt(a, R - 11) + ' L' + pt(a, R - (h % 1 ? 7 : 4)) + ' ';
+    for (let hr = 6; hr <= 18; hr += 0.5) {
+      const a = ha(hr);
+      if (hr % 1 === 0) lines += 'M' + pt(a, 9) + ' L' + pt(a, band) + ' ';
+      ticks += 'M' + pt(a, band) + ' L' + pt(a, band - (hr % 1 ? 2.5 : 4.5)) + ' ';
     }
-    [[6, 'VI'], [9, 'IX'], [12, 'XII'], [15, 'III'], [18, 'VI']].forEach(([h, r]) => {
-      const [x, y] = pt(ha(h), R - 24).split(' ');
-      nums += '<text x="' + x + '" y="' + (Number(y) + 3) + '">' + r + '</text>';
+    [[9, 'IX'], [12, 'XII'], [15, 'III']].forEach(([hr, r]) => {
+      const [x, y] = pt(ha(hr), R - 6.5).split(' ');
+      nums += '<text x="' + x + '" y="' + (Number(y) + 2.6) + '" transform="rotate(' + ha(hr).toFixed(1) + ' ' + x + ' ' + y + ')">' + r + '</text>';
     });
     const sh = dialShadow(iso, n);
-    return '<svg class="nn-dial' + (sh ? ' sunlit' : '') + '" viewBox="0 0 360 130" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">' +
-      '<path class="nd-face" d="M' + (cx - R) + ' ' + cy + ' A' + R + ' ' + R + ' 0 0 1 ' + (cx + R) + ' ' + cy + ' Z"/>' +
-      '<path class="nd-rim" d="M' + (cx - R) + ' ' + cy + ' A' + R + ' ' + R + ' 0 0 1 ' + (cx + R) + ' ' + cy + ' M' + (cx - R + 12) + ' ' + cy + ' A' + (R - 12) + ' ' + (R - 12) + ' 0 0 1 ' + (cx + R - 12) + ' ' + cy + '"/>' +
+    const arc = (r) => 'M' + (cx - r) + ' ' + cy + ' A' + r + ' ' + r + ' 0 0 1 ' + (cx + r) + ' ' + cy;
+    return '<svg class="nn-dial' + (sh ? ' sunlit' : '') + '" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" aria-hidden="true">' +
+      '<defs><linearGradient id="nd-shade" x1="0" y1="1" x2="0" y2="0"><stop offset="0" class="nd-s0"/><stop offset="1" class="nd-s1"/></linearGradient></defs>' +
+      '<path class="nd-face" d="' + arc(R) + ' Z"/>' +
+      '<path class="nd-rim" d="' + arc(R) + ' ' + arc(band) + '"/>' +
       '<path class="nd-lines" d="' + lines + '"/><path class="nd-ticks" d="' + ticks + '"/><g class="nd-nums">' + nums + '</g>' +
       '<path class="nd-shadow" d="' + (sh ? dialShadowPath(sh) + '" transform="rotate(' + sh.ang.toFixed(2) + ' ' + cx + ' ' + cy + ')' : '') + '"/>' +
-      '<path class="nd-gnomon" d="M' + (cx - 2.2) + ' ' + cy + ' L' + cx + ' ' + (cy - 30) + ' L' + (cx + 2.2) + ' ' + cy + ' Z"/></svg>';
+      '<path class="nd-gnomon" d="M' + (cx - 1.8) + ' ' + cy + ' L' + cx + ' ' + (cy - 16) + ' L' + (cx + 1.8) + ' ' + cy + ' Z"/></svg>';
   }
   function refreshDial(iso, n) {
     const svg = document.querySelector('.nownext .nn-dial'), path = svg && svg.querySelector('.nd-shadow');
@@ -3550,7 +3557,7 @@
           '<b class="profile-km">' + (km || '—') + '</b><span class="profile-date">' + DAY_SHORT[i] + '</span>' +
           '<span class="profile-state">' + (banked ? '✓' : off ? 'off' : miss ? 'missed' : km ? '' : 'rest') + '</span></button>';
       }).join('') + '</div><div class="profile-legend"><span>Easy / recovery</span><span>Quality / race</span><span>Long</span>' +
-      '<span>✓ completed</span></div>' +
+      '<span>Done</span></div>' +
       (wkKm ? '<p class="log-note">Logged distance, or planned distance for runs ticked done.</p>' : '') + '</section>');
     profile.querySelectorAll('[data-date]').forEach((button) => button.addEventListener('click', () => {
       state.view = 'today'; state.dateISO = button.dataset.date; state.expanded = null;
