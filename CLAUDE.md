@@ -294,11 +294,18 @@ line over the sundial reads cleanly.
 **v5.9.4:** a wrapped Next title hangs under its first word, not its
 emblem; the Now card's stars keep off its edge; a title that already names
 its distance ("~21 km") is not given it again.
-**The Kalendar (v5.4):** a month on one page, from the More sheet — a line
-per day with the run as a stroke (outline planned, filled banked, dashed
-missed), key days and feasts in red, the moon's quarters, the light's
-change, the month's km and the sign the sun enters; each week ruled off
-with its number and km (v5.8.2).
+**The Kalendar (v5.4, redrawn v5.10):** a month on one page, from the More
+sheet, laid out as a Book of Hours calendar page. At its head a tympanum
+built from real data: the zodiac band split on the day the sun enters the
+new sign (`DB.sunLongitude`), every night's moon round the arch, the
+daylight as a glory behind a rising sun (its hours at the 1st and the last
+day), and each day's run as a ray from the sun — as long as its distance,
+grey easy, white long, red hard, faint while planned, lit once banked,
+dashed where missed — the key days starred and a red hand at today. Below
+it the days, a line to each: the date, the night's moon, the session named
+(the key days by their own names in red, feasts beneath, a rest day's
+quarter moon named), the km banked against the km asked, missed days
+struck through, each week ruled off with its number and km (v5.8.2).
 **Replay (v5.5):** a tap replays the firmament — a line sweeps from the
 first day to NOW, each star lighting as it passes, the block counted up
 beneath in the caption.
@@ -342,7 +349,8 @@ First-principles design is welcome. These behaviours are the intent:
 4. Tick-off only on doable blocks (runs, gym, XT, German active, study,
    reading). Ticks persist per date. No checkbox on lunch.
 5. Primary navigation: Today + Week. The 30-week plan overview, the
-   Kalendar (a month on one page, v5.4) and a reference page
+   Kalendar (a month on one page as a Book of Hours calendar, v5.4/v5.10)
+   and a reference page
    (paces/shoes/rules) live behind a secondary menu.
 6. A NOW indicator that tracks the clock (minute refresh, date rollover).
 7. Race countdown (weeks + days to gun) always one glance away, plus the

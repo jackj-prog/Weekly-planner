@@ -1686,6 +1686,12 @@ section('the Kalendar (v5.4)');
 {
  const z = PLAN.hours && PLAN.hours.zodiac;
  ok(Array.isArray(z) && z.length === 12 && z[0] === 'Aquarius' && z[9] === 'Scorpio', 'the Kalendar names the sign the sun enters each month');
+ /* v5.10: the tympanum splits its zodiac band on the day the sun crosses
+    into the next sign, midnight to midnight UT; the almanac's dates */
+ const enters = (iso) => Math.floor(DB.sunLongitude(iso, 0) / 30) !== Math.floor(DB.sunLongitude(iso, 24) / 30);
+ const want = ['2026-07-22', '2026-08-23', '2026-09-23', '2026-10-23', '2026-11-22', '2026-12-21', '2027-01-20'];
+ want.forEach((iso) => ok(enters(iso) && !enters(DB.addDays(iso, -1)) && !enters(DB.addDays(iso, 1)), 'the sun changes sign on ' + iso));
+ ok(Math.abs(DB.sunLongitude('2026-03-20', 15) - 0) < 0.3 || Math.abs(DB.sunLongitude('2026-03-20', 15) - 360) < 0.3, 'the March equinox is the first point of Aries');
 }
 section('gels as a schedule (rule 4)');
 {

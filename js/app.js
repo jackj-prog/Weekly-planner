@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.9.4';
+  const APP_VERSION = '5.10.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -3800,16 +3800,25 @@
     view.appendChild(archive);
   }
 
-  /* ================= the Kalendar (v5.4) =================
-     A Book of Hours opens with its calendar: a page to a month, a line to
-     a day, the feasts written in red (the red-letter days), the moon's
-     quarters in the margin and the sign the sun enters at the head. This is
-     that page for the block: each day's run as a stroke as long as its
-     distance in its class's colour (solid once banked, an outline while it
-     is still to come, dashed where it was missed), the key days and feasts
-     in red, the moon at its four quarters, how the light changes across
-     the month, and what the month asked against what it got. A day opens
-     on a tap. */
+  /* ================= the Kalendar (v5.4, redrawn v5.10) =================
+     A Book of Hours opens with its calendar: a page to a month, with a
+     tympanum at its head (the lunette where the Très Riches Heures paints
+     the sun's chariot under the month's two signs) and below it the days,
+     a line to each, the feasts written in red. This is that page for the
+     block, every mark of it real data:
+       · the tympanum: the zodiac band split on the day the sun enters the
+         new sign; the moon every night at its phase round the arch; the
+         daylight as a glory behind the sun, its edge drawn in by the
+         shortening days (or out by the lengthening ones); and the month's
+         runs as rays from the rising sun, each as long as its distance, in
+         its class's colour, lit once banked, an outline while still to
+         come, dashed where it was missed; the key days starred in red and
+         a red hand at today;
+       · the list: each day named — the session in words, the key days by
+         their own names in red, the feasts beneath — with that night's moon
+         beside every date, the km banked against the km asked, and each
+         week ruled off with its number and subtotal.
+     A day opens on a tap. */
   function shiftMonth(ym, d) {
     let [y, m] = ym.split('-').map(Number);
     m += d;
@@ -3817,7 +3826,145 @@
     while (m > 12) { m -= 12; y++; }
     return y + '-' + String(m).padStart(2, '0');
   }
-  const ZODIAC_GLYPH = ['\u2652', '\u2653', '\u2648', '\u2649', '\u264A', '\u264B', '\u264C', '\u264D', '\u264E', '\u264F', '\u2650', '\u2651'];
+  const ZODIAC_GLYPH = ['♒', '♓', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑'];
+  /* a sign by its ecliptic index (0 = Aries), from the plan's month list
+     (January = Aquarius, so Aries is the third) */
+  const signName = (s) => (((PLAN.hours && PLAN.hours.zodiac) || [])[(s + 2) % 12] || '');
+  const signGlyph = (s) => ZODIAC_GLYPH[(s + 2) % 12] + '︎';
+  const ordinal = (n) => n + (n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th');
+  /* a session's name for the page: the words that tell one day from
+     another, without the shoe in brackets or the generic "Quality run" */
+  function kalName(title) {
+    let t = String(title).replace(/\s*\([^)]*\)\s*$/, '').replace(/\s*\((?:Evo SL|Pro 4)\)/g, '');
+    const parts = t.split(' — ');
+    if (parts.length > 1) t = /^Quality run$/.test(parts[0]) ? parts.slice(1).join(' — ') : /^Long \d+$/.test(parts[0]) ? t : parts[0];
+    /* the km column carries the distance, so "Easy 5" is just Easy */
+    return t.replace(/^Recovery buffer run$/, 'Recovery').replace(/^Easy run$/, 'Easy').replace(/^Easy \d+(?=\s|$)/, 'Easy');
+  }
+  /* the tympanum: an arch of the month, days running left to right over
+     the top as the sun runs across the sky */
+  function kalTympanum(ym, rows, lens, today) {
+    const N = rows.length, W = 360, cx = 180, cy = 180, Ro = 166, Ri = 149, Rm = 140, Rr = 128, r0 = 15;
+    const f = (v) => v.toFixed(1), ang = (t) => Math.PI * (1 - t / N);          // t in days from the 1st's start
+    const at = (r, a) => [cx + r * Math.cos(a), cy - r * Math.sin(a)];
+    const pt = (r, a) => { const p = at(r, a); return f(p[0]) + ' ' + f(p[1]); };
+    const arc = (r, a1, a2, rev) => 'A' + r + ' ' + r + ' 0 0 ' + (rev ? 0 : 1) + ' ' + pt(r, rev ? a1 : a2);
+    let out = '<defs><radialGradient id="kt-glory" cx="' + cx + '" cy="' + cy + '" r="' + Rr + '" gradientUnits="userSpaceOnUse">' +
+      '<stop offset="0" class="kt-g0"/><stop offset="1" class="kt-g1"/></radialGradient>' +
+      '<radialGradient id="kt-sun"><stop offset="0" class="kt-s0"/><stop offset="1" class="kt-s1"/></radialGradient></defs>';
+    /* the lunette's night, and a few fixed stars */
+    out += '<path class="kt-sky" d="M' + (cx - Ro) + ' ' + cy + ' A' + Ro + ' ' + Ro + ' 0 0 1 ' + (cx + Ro) + ' ' + cy + ' Z"/>';
+    let stars = '';
+    for (let k = 0; k < 46; k++) {
+      const r = 34 + artSeed(ym + ':kt:' + k) * (Rm - 44), a = 0.04 + artSeed(ym + ':kt:' + k + 'a') * (Math.PI - 0.08);
+      stars += '<circle cx="' + f(at(r, a)[0]) + '" cy="' + f(at(r, a)[1]) + '" r="' + (0.35 + artSeed(ym + ':kt:' + k + 'r') * 0.75).toFixed(2) + '"/>';
+    }
+    out += '<g class="kt-stars">' + stars + '</g>';
+    /* the glory: the day's light, as a share of the whole day */
+    const okL = lens.filter((v) => v != null);
+    if (okL.length) {
+      const rl = (len) => r0 + (len / 1440) * (Rr - r0) * 1.35;
+      let edge = '';
+      rows.forEach((r, i) => { const len = lens[i] != null ? lens[i] : okL[0]; edge += (i ? ' L' : 'M') + pt(rl(len), ang(i + 0.5)); });
+      const first = lens[0] != null ? lens[0] : okL[0], last = lens[N - 1] != null ? lens[N - 1] : okL[okL.length - 1];
+      const ends = 'M' + pt(rl(first), Math.PI) + ' L' + edge.slice(1) + ' L' + pt(rl(last), 0);
+      out += '<path class="kt-glory" d="' + ends + ' L' + cx + ' ' + cy + ' Z"/><path class="kt-glory-edge" d="' + ends + '"/>';
+      /* the day's length where the glory meets the horizon, 1st and last */
+      const hm = (n) => Math.floor(n / 60) + 'h' + String(Math.round(n % 60)).padStart(2, '0');
+      out += '<path class="kt-ticks" d="M' + f(cx - rl(first)) + ' ' + cy + ' L' + f(cx - rl(first)) + ' ' + (cy + 3) + ' M' + f(cx + rl(last)) + ' ' + cy + ' L' + f(cx + rl(last)) + ' ' + (cy + 3) + '"/>' +
+        '<text class="kt-len" x="' + f(cx - rl(first)) + '" y="' + (cy + 11) + '">' + hm(first) + '</text>' +
+        '<text class="kt-len" x="' + f(cx + rl(last)) + '" y="' + (cy + 11) + '">' + hm(last) + '</text>';
+    }
+    /* the zodiac band: the month's two signs, split where the sun crosses */
+    const clean = [];
+    let from = 0, sign = Math.floor(DB.sunLongitude(rows[0].iso, 0) / 30), enteredOn = null;
+    rows.forEach((r, i) => {
+      const l0 = DB.sunLongitude(r.iso, 0), l24 = DB.sunLongitude(r.iso, 24), l1 = l24 + (l24 < l0 ? 360 : 0);
+      const b = (Math.floor(l0 / 30) + 1) * 30;
+      if (l1 >= b) {
+        const t = i + (b - l0) / (l1 - l0);
+        clean.push({ s: sign, t0: from, t1: t, day: enteredOn });
+        from = t; sign = (sign + 1) % 12; enteredOn = i + 1;
+      }
+    });
+    clean.push({ s: sign, t0: from, t1: N, day: enteredOn });
+    let band = '', labels = '', paths = '';
+    clean.forEach((g, k) => {
+      const a1 = ang(g.t0), a2 = ang(g.t1), span = a1 - a2;
+      if (span <= 0.001) return;
+      band += '<path class="kt-band' + (g.day != null ? ' enter' : '') + '" d="M' + pt(Ro, a1) + ' ' + arc(Ro, a1, a2) + ' L' + pt(Ri, a2) + ' ' + arc(Ri, a1, a2, true) + ' Z"/>';
+      const rt = (Ro + Ri) / 2 - 3.2, id = 'kt-arc-' + ym + '-' + k;
+      paths += '<path id="' + id + '" d="M' + pt(rt, a1) + ' ' + arc(rt, a1, a2) + '"/>';
+      const long = span * rt > 66;
+      labels += '<text class="kt-sign' + (g.day != null ? ' enter' : '') + '"><textPath href="#' + id + '" startOffset="50%" text-anchor="middle">' +
+        '<tspan class="g">' + signGlyph(g.s) + '</tspan>' + (long ? ' ' + esc(signName(g.s)) : '') + '</textPath></text>';
+      if (g.day != null) band += '<path class="kt-ingress" d="M' + pt(Ri - 1, a1) + ' L' + pt(Ro + 1, a1) + '"/>';
+    });
+    out += band + '<path class="kt-rim" d="M' + (cx - Ro) + ' ' + cy + ' A' + Ro + ' ' + Ro + ' 0 0 1 ' + (cx + Ro) + ' ' + cy +
+      ' M' + (cx - Ri) + ' ' + cy + ' A' + Ri + ' ' + Ri + ' 0 0 1 ' + (cx + Ri) + ' ' + cy + '"/>' +
+      '<defs>' + paths + '</defs>' + labels;
+    /* the days round the rim, numbered at the 1st, each Monday and the
+       last, and in red at the key days and feasts */
+    let ticks = '', nums = '', moons = '';
+    const fmtKm = (n) => String(Math.round(n * 10) / 10);
+    rows.forEach((r, i) => {
+      const a = ang(i + 0.5);
+      ticks += 'M' + pt(Ro, a) + ' L' + pt(Ro + (r.di === 0 ? 5 : 3), a) + ' ';
+      if (i === 0 || r.di === 0 || i === N - 1 || r.key || r.feast) {
+        const p = at(Ro + 10, a);
+        nums += '<text class="kt-num' + (r.key || r.feast ? ' red' : '') + '" x="' + f(p[0]) + '" y="' + f(p[1] + 2.5) + '">' + r.d + '</text>';
+      }
+      const q = r.quarter, mr = q ? 4.1 : 2.9, mp = at(Rm, a);
+      moons += moonSVG(mp[0], mp[1], mr, r.mp, 'kt-moon' + (q ? ' q' : '') + (q === 'Full moon' ? ' full' : '') + '" style="--d:' + i);
+    });
+    out += '<path class="kt-ticks" d="' + ticks + '"/>' + nums + '<g class="kt-moons">' + moons + '</g>';
+    /* the rays: each day's run from the sun, as long as its distance */
+    const top = Math.max(10, ...rows.map((r) => Math.max(r.plan, r.rec)));
+    const len = (km) => r0 + 6 + (km / top) * (Rr - r0 - 6);
+    /* a slender ray, widening a little towards its point; the long run and
+       the hard session end in a lozenge, as a monstrance's main rays do */
+    const ray = (a, rTip, cls, d, tone) => {
+      const tw = Math.min(1.5, rTip * Math.PI / N * 0.16), bw = 0.35, rb = r0 + 2.5;
+      const P = (r, w) => f(cx + r * Math.cos(a) + w * Math.sin(a)) + ' ' + f(cy - r * Math.sin(a) + w * Math.cos(a));
+      let d2 = 'M' + P(rb, -bw) + ' L' + P(rTip, -tw) + ' L' + P(rTip + 2.4, 0) + ' L' + P(rTip, tw) + ' L' + P(rb, bw) + ' Z';
+      if (tone !== 'easy') { const lw = tone === 'long' ? 3.1 : 2.6, ll = tone === 'long' ? 5.2 : 4.4, c = rTip + 1;
+        d2 += ' M' + P(c - ll, 0) + ' L' + P(c, -lw) + ' L' + P(c + ll, 0) + ' L' + P(c, lw) + ' Z'; }
+      return '<path class="kt-ray ' + cls + '" style="--d:' + d + '" d="' + d2 + '"/>';
+    };
+    let rays = '', stars2 = '';
+    rows.forEach((r, i) => {
+      const a = ang(i + 0.5);
+      if (!r.plan && !r.rec) { rays += '<path class="kt-rest" d="M' + pt(r0 + 3, a) + ' L' + pt(r0 + 8, a) + '"/>'; return; }
+      if (r.plan && (!r.rec || r.rec < r.plan)) rays += ray(a, len(r.plan), r.tone + (r.off ? ' off' : r.miss ? ' miss' : ' plan'), i, r.tone);
+      if (r.rec) rays += ray(a, len(Math.min(r.rec, top)), r.tone + ' got', i, r.tone);
+      if (r.key) {
+        const p = at(len(Math.max(r.plan, r.rec)) + 9, a), s = 3.4;
+        stars2 += '<path class="kt-key" d="M' + f(p[0]) + ' ' + f(p[1] - s) + ' L' + f(p[0] + s * 0.32) + ' ' + f(p[1] - s * 0.32) + ' L' + f(p[0] + s) + ' ' + f(p[1]) +
+          ' L' + f(p[0] + s * 0.32) + ' ' + f(p[1] + s * 0.32) + ' L' + f(p[0]) + ' ' + f(p[1] + s) + ' L' + f(p[0] - s * 0.32) + ' ' + f(p[1] + s * 0.32) +
+          ' L' + f(p[0] - s) + ' ' + f(p[1]) + ' L' + f(p[0] - s * 0.32) + ' ' + f(p[1] - s * 0.32) + ' Z"/>';
+      }
+    });
+    out += '<g class="kt-rays">' + rays + '</g>' + stars2;
+    /* the sun on the horizon, and the hand at today */
+    let corona = '';
+    for (let k = 1; k < 12; k++) { const a = Math.PI * k / 12; corona += 'M' + pt(r0 + 2.5, a) + ' L' + pt(r0 + 5.5, a) + ' '; }
+    out += '<path class="kt-corona" d="' + corona + '"/><path class="kt-sun" d="M' + (cx - r0) + ' ' + cy + ' A' + r0 + ' ' + r0 + ' 0 0 1 ' + (cx + r0) + ' ' + cy + ' Z"/>' +
+      '<path class="kt-horizon" d="M' + (cx - Ro - 6) + ' ' + cy + ' L' + (cx + Ro + 6) + ' ' + cy + '"/>';
+    const ti = rows.findIndex((r) => r.iso === today);
+    if (ti >= 0) {
+      const a = ang(ti + 0.5), tip = at(Ro + 3, a);
+      out += '<g class="kt-hand" style="--sweep:' + f(180 - a * 180 / Math.PI) + '"><path d="M' + pt(r0 + 1, a) + ' L' + pt(Ro + 1, a) + '"/>' +
+        '<circle cx="' + f(tip[0]) + '" cy="' + f(tip[1]) + '" r="2.6"/></g>';
+    }
+    /* what it says, in words */
+    const enter = clean.find((g) => g.day != null);
+    const full = rows.find((r) => r.quarter === 'Full moon'), nw = rows.find((r) => r.quarter === 'New moon');
+    const planned = rows.reduce((t, r) => t + r.plan, 0), got = rows.reduce((t, r) => t + r.rec, 0);
+    const said = MONTH_NAMES[Number(ym.slice(5)) - 1] + ' ' + ym.slice(0, 4) + ': ' + rows.filter((r) => r.plan).length + ' runs, ' + fmtKm(planned) + ' km planned' +
+      (got ? ', ' + fmtKm(got) + ' recorded' : '') + '. ' + (enter ? 'The sun enters ' + signName(enter.s) + ' on the ' + ordinal(enter.day) + '. ' : '') +
+      (full ? 'Full moon on the ' + ordinal(full.d) + '. ' : '') + (nw ? 'New moon on the ' + ordinal(nw.d) + '.' : '');
+    return { svg: '<svg viewBox="0 0 ' + W + ' ' + (cy + 14) + '" aria-hidden="true">' + out + '</svg>', said: said.trim(), enter };
+  }
   function renderKal() {
     const view = document.getElementById('view');
     view.innerHTML = '';
@@ -3830,7 +3977,7 @@
     (PLAN.keyEvents || []).forEach((k) => { keyAt[DB.addDays(block.start, (k.wk - 1) * 7 + k.di)] = k.label; });
     const feasts = (PLAN.hours && PLAN.hours.feasts) || {};
     const fmt = (n) => String(Math.round(n * 10) / 10);
-    let planned = 0, got = 0, runsPlanned = 0, runsGot = 0, top = 10;
+    let planned = 0, got = 0, runsPlanned = 0, runsGot = 0;
     const rows = [];
     let prevPhase = DB.moonPhase(DB.addDays(ym + '-01', -1)).phase;
     for (let d = 1; d <= days; d++) {
@@ -3838,7 +3985,8 @@
       const day = DB.buildDay(iso), plan = day.run ? day.run.run.km : 0;
       const past = iso <= today;
       const rec = past ? DB.recordedKm(day, getDone(iso), getRunLogEntry(iso)) : 0;
-      const ovr = getOvr(iso), off = !!(day.run && (ovr.skip[day.run.id] || ovr.moved[day.run.id]));
+      const ovr = getOvr(iso), skipped = !!(day.run && ovr.skip[day.run.id]), moved = !!(day.run && ovr.moved[day.run.id]);
+      const off = skipped || moved;
       const cls = day.run ? DB.runClass(day.run) : rec > 0 ? 'easy' : '';
       const tone = cls === 'quality' || cls === 'race' ? 'hard' : cls === 'long' ? 'long' : 'easy';
       const mp = DB.moonPhase(iso);
@@ -3847,40 +3995,39 @@
         if (q === 0 ? mp.phase < prevPhase : prevPhase < q && mp.phase >= q) quarter = name;
       });
       prevPhase = mp.phase;
-      planned += plan; got += rec; top = Math.max(top, plan, rec);
+      planned += plan; got += rec;
       if (plan) { runsPlanned++; if (rec > 0) runsGot++; }
-      rows.push({ iso, d, di: DB.dayIndex(iso), plan, rec, past, off, tone, mp, quarter, key: keyAt[iso] || '', feast: feasts[iso.slice(5)] || '' });
+      const miss = !!(plan && iso < today && !rec && !off);
+      rows.push({ iso, d, di: DB.dayIndex(iso), plan, rec, past, off, skipped, moved, miss, tone, mp, quarter,
+        key: keyAt[iso] || '', feast: feasts[iso.slice(5)] || '', name: day.run ? kalName(day.run.title) : rec ? 'Extra run' : '' });
     }
-    /* the light across the month */
+    /* the light across the month, measured at one place (the 1st's), or
+       the race trip's three days in Nicosia read as January's longest */
     const pl = DB.skyPlace(ym + '-01');
+    const lens = rows.map((r) => {
+      const t = pl && DB.sunTimes(r.iso, pl.lat, pl.lon, pl.offsetMin);
+      return t && t.rise != null && t.set != null ? t.set - t.rise : null;
+    });
     const st0 = pl ? DB.sunTimes(ym + '-01', pl.lat, pl.lon, pl.offsetMin) : null;
     const st1 = pl ? DB.sunTimes(ym + '-' + days, pl.lat, pl.lon, pl.offsetMin) : null;
     let light = '';
-    if (st0 && st1 && st0.set != null && st1.set != null) {
-      const dur = (n) => n >= 60 ? Math.floor(n / 60) + 'h\u00a0' + String(n % 60).padStart(2, '0') + 'm' : n + '\u00a0min';
-      const ord = (n) => n + (n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th');
-      const lens = [];
-      for (let d = 1; d <= days; d++) {
-        /* one place for the whole month (the 1st's), or the race trip's
-           three days in Nicosia read as January's longest */
-        const iso = ym + '-' + String(d).padStart(2, '0'), t = pl && DB.sunTimes(iso, pl.lat, pl.lon, pl.offsetMin);
-        lens.push(t && t.rise != null && t.set != null ? t.set - t.rise : null);
-      }
+    if (st0 && st1 && st0.set != null && st1.set != null && lens.some((v) => v != null)) {
+      const dur = (n) => n >= 60 ? Math.floor(n / 60) + 'h ' + String(n % 60).padStart(2, '0') + 'm' : n + ' min';
       const ok = lens.filter((v) => v != null), lo = Math.min(...ok), hi = Math.max(...ok);
       const iLo = lens.indexOf(lo), iHi = lens.indexOf(hi), dl = lens[days - 1] - lens[0];
       /* a month that turns at a solstice says so; otherwise the net change */
-      const turn = iLo > 0 && iLo < days - 1 ? 'shortest day the ' + ord(iLo + 1) + ', ' + dur(lo)
-        : iHi > 0 && iHi < days - 1 ? 'longest day the ' + ord(iHi + 1) + ', ' + dur(hi) : '';
-      light = 'Sunset ' + DB.fmtHM(st0.set) + ' on the 1st, ' + DB.fmtHM(st1.set) + ' by the ' + ord(days) + ' · ' +
+      const turn = iLo > 0 && iLo < days - 1 ? 'shortest day the ' + ordinal(iLo + 1) + ', ' + dur(lo)
+        : iHi > 0 && iHi < days - 1 ? 'longest day the ' + ordinal(iHi + 1) + ', ' + dur(hi) : '';
+      light = 'Sunset ' + DB.fmtHM(st0.set) + ' on the 1st, ' + DB.fmtHM(st1.set) + ' by the ' + ordinal(days) + ' · ' +
         (turn || 'days ' + (dl < 0 ? 'shorten' : 'lengthen') + ' by ' + dur(Math.abs(dl)));
     }
     const wks = rows.map((r) => DB.resolveBlock(r.iso)).filter((c) => c.block && c.block.id === 'marathon').map((c) => c.week);
-    const wkLine = wks.length ? 'Weeks ' + Math.min(...wks) + '–' + Math.max(...wks) + ' of the block' : '';
+    const wkLine = wks.length ? 'Weeks ' + roman(Math.min(...wks)) + '–' + roman(Math.max(...wks)) + ' of the block' : '';
     const isPastMonth = ym + '-' + days < today, isFuture = ym + '-01' > today;
     const tally = !runsPlanned ? 'No runs planned this month'
       : isFuture ? '<b>' + fmt(planned) + '</b> km planned · ' + runsPlanned + ' runs'
       : '<b>' + fmt(got) + '</b> of ' + fmt(planned) + ' km recorded · ' + runsGot + ' of ' + runsPlanned + ' runs' + (isPastMonth ? '' : ' so far');
-    const name = MONTH_NAMES[m - 1], sign = ((PLAN.hours && PLAN.hours.zodiac) || [])[m - 1] || '';
+    const name = MONTH_NAMES[m - 1];
     const head = el('<header class="kl-head">' +
       '<button class="nav" data-m="-1" aria-label="Previous month">‹</button>' +
       '<div class="kl-title"><span class="kl-year" aria-hidden="true">' + roman(y) + '</span><h1><span class="kl-init" aria-hidden="true">' + name[0] + '</span><span class="kl-rest" aria-hidden="true">' + name.slice(1) + '</span>' +
@@ -3890,9 +4037,14 @@
       state.kalMonth = shiftMonth(ym, Number(b.dataset.m)); window.scrollTo(0, 0); render();
     }));
     view.appendChild(head);
-    view.appendChild(el('<div class="kl-sub"><div><p class="kl-tally">' + tally + '</p>' +
-      (wkLine || light ? '<p class="kl-light">' + esc([wkLine, light].filter(Boolean).join(' · ')) + '</p>' : '') + '</div>' +
-      (sign ? '<div class="kl-sign" role="img" aria-label="' + esc('The sun enters ' + sign) + '"><span>' + ZODIAC_GLYPH[m - 1] + '\uFE0E</span><small>' + esc(sign) + '</small></div>' : '') + '</div>'));
+    view.appendChild(el('<div class="kl-sub"><p class="kl-tally">' + tally + '</p>' + (wkLine ? '<p class="kl-wks">' + esc(wkLine) + '</p>' : '') + '</div>'));
+    /* the tympanum */
+    const ty = kalTympanum(ym, rows, lens, today);
+    const enters = ty.enter ? 'The sun enters ' + signName(ty.enter.s) + ' on the ' + ordinal(ty.enter.day) : '';
+    view.appendChild(el('<figure class="kl-tymp" role="img" aria-label="' + esc(ty.said) + '">' + ty.svg +
+      '<figcaption><span class="kt-key-row" aria-hidden="true"><span><i class="k got"></i>banked</span><span><i class="k plan"></i>planned</span>' +
+      '<span><i class="k miss"></i>missed</span><span><i class="k glory"></i>daylight</span></span>' +
+      '<span class="kl-light">' + esc([enters, light].filter(Boolean).join(' · ')) + '</span></figcaption></figure>'));
     const list = el('<div class="kl-page" role="list"></div>');
     /* each week of the block is ruled off with its number and its km, as a
        ledger would carry its subtotals (v5.8.2) */
@@ -3915,20 +4067,21 @@
         const line = weekLine(DB.addDays(r.iso, -r.di));
         if (line) list.appendChild(el(line));
       }
-      const w = (k) => (k / top * 100).toFixed(1) + '%';
-      const miss = r.plan && r.past && r.iso < today && !r.rec && !r.off;
-      let bar = '';
-      if (r.plan) bar += '<i class="kl-plan ' + r.tone + (r.off ? ' off' : miss ? ' miss' : '') + '" style="width:' + w(r.plan) + '"></i>';
-      if (r.rec) bar += '<i class="kl-got ' + r.tone + '" style="width:' + w(Math.min(r.rec, top)) + '"></i>';
-      const note = r.key ? '<span class="kl-note key">' + esc(r.key) + '</span>' : r.feast ? '<span class="kl-note feast">' + esc(r.feast) + '</span>' : '';
+      const red = !!(r.key || r.feast);
+      const state2 = r.rec ? ' got' : r.off ? ' off' : r.miss ? ' miss' : r.plan && r.iso > today ? ' ahead' : '';
+      const nm = r.key ? esc(r.key) : r.name ? tt(r.name) : r.quarter ? '<em>' + esc(r.quarter) + '</em>' : '';
       const km = r.rec ? fmt(r.rec) : r.plan ? fmt(r.plan) : '';
-      const label = DAY_NAMES[r.di] + ' ' + r.d + ' ' + name + (r.plan ? ', ' + fmt(r.plan) + ' km planned' : ', no run') + (r.rec ? ', ' + fmt(r.rec) + ' km recorded' : miss ? ', not recorded' : '') +
-        (r.key ? ', ' + r.key : r.feast ? ', ' + r.feast : '') + (r.quarter ? ', ' + r.quarter : '');
-      const row = el('<button class="kl-row' + (r.iso === today ? ' today' : '') + (r.di === 0 ? ' mon' : '') + (r.iso < today ? ' past' : '') + (r.key || r.feast ? ' red' : '') + '" role="listitem" aria-label="' + esc(label) + '">' +
+      const offTag = r.skipped ? ' <small>skipped</small>' : r.moved ? ' <small>moved</small>' : '';
+      const label = DAY_NAMES[r.di] + ' ' + r.d + ' ' + name + (r.plan ? ', ' + (r.key || r.name) + ', ' + fmt(r.plan) + ' km planned' : r.rec ? ', extra run' : ', no run') +
+        (r.rec ? ', ' + fmt(r.rec) + ' km recorded' : r.miss ? ', not recorded' : r.skipped ? ', skipped' : r.moved ? ', moved' : '') +
+        (r.feast ? ', ' + r.feast : '') + (r.quarter ? ', ' + r.quarter : '');
+      const row = el('<button class="kl-row ' + (r.plan || r.rec ? r.tone : 'rest') + state2 + (r.iso === today ? ' today' : '') + (r.di === 0 ? ' mon' : '') +
+        (r.iso < today ? ' past' : '') + (red ? ' red' : '') + (r.key ? ' key' : '') + '" role="listitem" aria-label="' + esc(label) + '">' +
         '<span class="kl-d" aria-hidden="true">' + r.d + '</span><span class="kl-w" aria-hidden="true">' + DAY_SHORT[r.di][0] + '</span>' +
-        '<span class="kl-m" aria-hidden="true">' + (r.quarter ? '<svg viewBox="0 0 12 12">' + moonSVG(6, 6, 4.6, r.mp, 'klmo') + '</svg>' : '') + '</span>' +
-        '<span class="kl-bar" aria-hidden="true">' + (bar || '<i class="kl-rest-dot"></i>') + '</span>' +
-        '<span class="kl-km' + (r.rec ? ' got' : '') + '" aria-hidden="true">' + km + '</span>' + (note ? note.replace('<span class="kl-note', '<span aria-hidden="true" class="kl-note') : '') + '</button>');
+        '<span class="kl-m" aria-hidden="true"><svg viewBox="0 0 12 12">' + moonSVG(6, 6, 4.4, r.mp, 'klmo') + '</svg></span>' +
+        '<span class="kl-n" aria-hidden="true">' + nm + offTag + '</span>' +
+        '<span class="kl-km" aria-hidden="true">' + km + '</span>' +
+        (r.feast ? '<span class="kl-note" aria-hidden="true">' + esc(r.feast) + '</span>' : '') + '</button>');
       row.addEventListener('click', () => { state.view = 'today'; state.dateISO = r.iso; state.expanded = null; window.scrollTo(0, 0); render(); });
       list.appendChild(row);
     });
@@ -5082,7 +5235,7 @@
      arrival when it scrolls into view, not while it is still off screen. */
   let artObserver = null;
   function revealArt() {
-    const nodes = document.querySelectorAll('#view .daywheel, #view .wall, #view .journey-landmarks, #view .weeklight, #view .tl');
+    const nodes = document.querySelectorAll('#view .daywheel, #view .wall, #view .journey-landmarks, #view .weeklight, #view .tl, #view .kl-tymp');
     if (!('IntersectionObserver' in window)) { nodes.forEach((n) => n.classList.add('in')); return; }
     /* a quarter in view, or (for the tall timeline) a good stretch of it */
     if (!artObserver) artObserver = new IntersectionObserver((entries) => entries.forEach((e) => {

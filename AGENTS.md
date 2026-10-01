@@ -2149,3 +2149,39 @@ tune-up half, race morning, the first recovery day). Three small things:
   palette; removing them is a plan.js content edit awaiting a yes.
 257 browser checks, 16,279 plan checks.
 
+## The Kalendar, redrawn — v5.10.0, 1 October (Claude)
+
+The owner: the Kalendar "definitely needs work, weakest area of the app".
+It was a 34px row per day with an outline pill as long as the run and
+nothing else — no words, the moon only at its quarters, ~1,400px of thin
+bars that read as a sparse chart rather than a calendar page. Rebuilt as a
+Book of Hours calendar page, every mark real data:
+- **The tympanum** (`kalTympanum`), the arched head-piece of a medieval
+  calendar page. The zodiac band carries the month's two signs, split on
+  the day the sun crosses (new `DB.sunLongitude(iso, hourUT)`, the almanac
+  formula; ingress found midnight to midnight UT, so Scorpio begins on 23
+  October and Capricorn on 21 December, as the almanac has them). Round
+  the arch, every night's moon at its phase, the quarters larger and the
+  full moon haloed. Behind, the daylight as a glory — each day's length as
+  a share of the whole day — with its hours where it meets the horizon on
+  the 1st and the last day. From a rising sun, each day's run as a ray as
+  long as its distance: grey easy, white long, red hard; faint while
+  planned, lit once banked, dashed where missed, dotted where skipped or
+  moved; the long run and the hard session end in a lozenge, as a
+  monstrance's main rays do. Key days are starred in red, the day numbers
+  run round the rim (the 1st, each Monday, the last, and the red-letter
+  days in red), and a red hand stands at today. On arrival the rays grow
+  out of the sun day by day, the moons come up round the arch and the hand
+  sweeps from the 1st to today, once, when the figure scrolls into view.
+- **The day list** names each day: the session in words (`kalName`: "Easy",
+  "Recovery", "Tempo 25 min", "Long 22 — last 6 @ MP"; no "Quality run —",
+  no shoe in brackets, no km the column already gives), the key days by
+  their own names in red, the feasts beneath in italic, and on a rest day
+  the moon's quarter when it falls ("Full moon"). Every date carries that
+  night's moon. Banked km in white with a bead in the class colour, planned
+  km in grey, a missed day struck through, skipped or moved tagged.
+- The caption under the arch says what changed in words: "The sun enters
+  Scorpio on the 23rd · Sunset 18:44 on the 1st, 17:40 by the 31st · days
+  shorten by 1h 56m". The separate sign roundel is gone (the band has it).
+258 browser checks (1 new, 3 rewritten), 16,287 plan checks (8 new).
+

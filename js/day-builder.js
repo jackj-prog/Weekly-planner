@@ -969,6 +969,15 @@
       Math.cos(lat * rad) * Math.cos(dec) * Math.cos(((t - noon) / 4) * rad)) / rad;
     return raw(m) - raw(st.rise);
   }
+  /* The sun's ecliptic longitude in degrees (0 = the first point of
+     Aries) at an hour UT on a date (noon if none), from the low-precision
+     almanac formula — good to a hundredth of a degree, so the day the sun
+     enters a sign comes out right (v5.10: the Kalendar's zodiac band). */
+  function sunLongitude(iso, hourUT) {
+    const n = (Date.parse(iso + 'T00:00:00Z') + (hourUT == null ? 12 : hourUT) * 36e5 - Date.UTC(2000, 0, 1, 12)) / 864e5, rad = Math.PI / 180;
+    const L = 280.460 + 0.9856474 * n, g = (357.528 + 0.9856003 * n) * rad;
+    return (((L + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) % 360) + 360) % 360;
+  }
   function moonArc(iso, place) {
     const mp = moonPhase(iso), rad = Math.PI / 180;
     const n = (Date.parse(iso + 'T12:00:00Z') - Date.UTC(2000, 0, 1, 12)) / 864e5;
@@ -1014,7 +1023,7 @@
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
-    isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
+    isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, sunLongitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

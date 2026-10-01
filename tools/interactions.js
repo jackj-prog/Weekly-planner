@@ -764,13 +764,18 @@ async function cinema() {
   t = await open('2026-10-01', '12:00', SEED);
   await t.page.click('[data-nav="more"]'); await t.page.click('.sheet-item[data-nav="kal"]');
   const kal = await t.page.evaluate(() => ({ rows: document.querySelectorAll('.kl-row').length, today: (document.querySelector('.kl-row.today .kl-d') || {}).textContent,
-    red: Array.from(document.querySelectorAll('.kl-row.red')).map((r) => r.querySelector('.kl-d').textContent + ' ' + r.querySelector('.kl-note').textContent),
-    moons: document.querySelectorAll('.kl-m svg').length, sign: (document.querySelector('.kl-sign small') || {}).textContent, title: document.querySelector('.kl-title .sr').textContent }));
-  check(kal.rows === 31 && kal.today === '1' && kal.title === 'October 2026' && kal.sign === 'Scorpio', 'October on one page, today ringed, the sun entering Scorpio: ' + JSON.stringify(kal));
-  check(kal.red.join() === '24 PARKRUN 5K PB' && kal.moons >= 3 && kal.moons <= 5, 'the parkrun is the month\u2019s red-letter day and the moon is marked at its quarters');
+    red: Array.from(document.querySelectorAll('.kl-row.red')).map((r) => r.querySelector('.kl-d').textContent + ' ' + r.querySelector('.kl-n').textContent),
+    moons: document.querySelectorAll('.kl-m svg').length, quarters: document.querySelectorAll('.kl-tymp .kt-moon.q').length, arch: document.querySelectorAll('.kl-tymp .kt-moon').length,
+    sign: (document.querySelector('.kt-sign.enter') || {}).textContent, light: (document.querySelector('.kl-light') || {}).textContent,
+    rays: document.querySelectorAll('.kl-tymp .kt-ray').length, key: document.querySelectorAll('.kl-tymp .kt-key').length, hand: !!document.querySelector('.kl-tymp .kt-hand'),
+    names: Array.from(document.querySelectorAll('.kl-row .kl-n')).slice(0, 7).map((n) => n.textContent.replace(/\u2060/g, '').replace(/\s+/g, ' ')), title: document.querySelector('.kl-title .sr').textContent }));
+  check(kal.rows === 31 && kal.today === '1' && kal.title === 'October 2026' && /Scorpio/.test(kal.sign) && /^The sun enters Scorpio on the 23rd · /.test(kal.light), 'October on one page, today ringed, the sun entering Scorpio on the 23rd: ' + JSON.stringify(kal));
+  check(kal.red.join() === '24 PARKRUN 5K PB' && kal.moons === 31 && kal.arch === 31 && kal.quarters >= 3 && kal.quarters <= 5, 'the parkrun is the month\u2019s red-letter day, and every night has its moon, the quarters marked on the arch');
+  check(kal.rays === 22 && kal.key === 1 && kal.hand && kal.names.join('|') === 'Easy||Recovery|Long 22 — last 6 @ MP||Easy|Tempo 25 min', 'each run is a ray from the sun, the key day starred, the hand at today, and each day named: ' + kal.names.join('|'));
   await t.page.click('.kl-head .nav[data-m="-1"]');
-  const sep = await t.page.evaluate(() => ({ rows: document.querySelectorAll('.kl-row').length, got: document.querySelectorAll('.kl-got').length, miss: document.querySelectorAll('.kl-plan.miss').length, tally: document.querySelector('.kl-tally').textContent }));
-  check(sep.rows === 30 && sep.got >= 5 && /km recorded · \d+ of \d+ runs$/.test(sep.tally), 'September shows what was banked against what was asked: ' + JSON.stringify(sep));
+  const sep = await t.page.evaluate(() => ({ rows: document.querySelectorAll('.kl-row').length, got: document.querySelectorAll('.kl-row.got').length, miss: document.querySelectorAll('.kl-row.miss').length,
+    lit: document.querySelectorAll('.kl-tymp .kt-ray.got').length, dashed: document.querySelectorAll('.kl-tymp .kt-ray.miss').length, tally: document.querySelector('.kl-tally').textContent }));
+  check(sep.rows === 30 && sep.got >= 5 && sep.lit === sep.got && sep.dashed === sep.miss && /km recorded · \d+ of \d+ runs$/.test(sep.tally), 'September shows what was banked against what was asked, in the rays and the rows alike: ' + JSON.stringify(sep));
   const wks = await t.page.$$eval('.kl-wk', (ns) => ns.map((n) => n.textContent));
   check(wks.length === 5 && /^Week X[\d.]+ of 38 km$/.test(wks[0]) && /^Week XIV/.test(wks[4]), 'each week of the month is ruled off with its number and km: ' + wks.join(' | '));
   await t.page.click('.kl-row[aria-label^="Sunday 20 September"]');
