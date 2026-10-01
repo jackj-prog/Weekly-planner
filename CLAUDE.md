@@ -270,10 +270,13 @@ the run card's ruled line as numbered clock times, not minutes in Details.
 lancet windows — red glass for reps and marathon pace, white for long, grey
 for easy, piers for the jogs — dark before the run, lit once it is done,
 the light flooding in pane by pane on the moment it is ticked or saved.
-**The growing border (v5.2):** a vine winds round Today's spine; each
-session done opens a flower in its colour (once, on the tick), a missed one
-stays a bud, a skipped one a bare twig, and a finished day ends in a curl
-and a white rose.
+**The growing border (v5.2, redrawn v5.9):** the vine IS Today's spine —
+one tapered pen stroke in the day's real light, cut clean round every
+emblem, with ivy leaves on short stalks and tendrils in the gaps; each
+session done opens a heraldic rose on the stem in its colour (once, on the
+tick), a missed one stays a closed bud in its calyx, a skipped one a bare
+twig, one still to come draws nothing, and a finished day ends in a volute
+and a white rose. The stem grows down the day when it scrolls into view.
 **The sundial (v5.3):** the Now card has a faint engraved horizontal
 sundial behind it whose gnomon casts the real sun's shadow for the place
 and minute (none after sunset).

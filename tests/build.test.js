@@ -1538,7 +1538,7 @@ section('palette contrast (WCAG AA)');
     ok(/if \(total && got === total\) \{[^}]*dw-gloria|if \(total && got === total\) \{\s*let rays/.test(appSrc), 'the gloria is earned: only a finished day has one');
     ok(/view\.appendChild\(el\(weekLightHTML\(week7, day0\.week\)\)\)/.test(appSrc) && /<figure class="weeklight" role="img" aria-label=/.test(appSrc),
       'the Week view carries the light of the week, with a spoken summary');
-    ok(/#view \.weeklight'\)/.test(appSrc) && /\.weeklight:not\(\.in\)/.test(css), 'the week figure waits to be scrolled to before it pours in');
+    ok(/#view \.weeklight[',]/.test(appSrc) && /\.weeklight:not\(\.in\)/.test(css), 'the week figure waits to be scrolled to before it pours in');
     ok(!/Per aspera|Festina lente|Plus ultra|Nulla dies/.test(appSrc), 'no Latin lives in app.js (§2: rendering code carries no content)');
     ok(/--serif:/.test(rootSrc) && !/@font-face[^}]*Baskerville/.test(css), 'the serif is a system stack, no new font download');
 

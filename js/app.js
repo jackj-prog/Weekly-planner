@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.8.3';
+  const APP_VERSION = '5.9.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -555,80 +555,176 @@
     Array.prototype.forEach.call(tl.children, (c, i) => c.style.setProperty('--i', i));
     view.appendChild(tl);
     view.appendChild(el(dayWheelHTML(day, done, iso, isToday, ovr)));
-    const vineFresh = { first: true };
-    paintVine(tl, vineFresh);
-    if (skySt && skySt.rise != null) paintSpine(tl, skySt);
-    if ('ResizeObserver' in window) new ResizeObserver(() => { if (skySt && skySt.rise != null) paintSpine(tl, skySt); paintVine(tl, vineFresh); }).observe(tl);
+    const vineFresh = { first: true }, litSky = skySt && skySt.rise != null ? skySt : null;
+    paintVine(tl, vineFresh, litSky);
+    if (litSky) paintSpine(tl, litSky);
+    if ('ResizeObserver' in window) new ResizeObserver(() => { if (litSky) paintSpine(tl, litSky); paintVine(tl, vineFresh, litSky); }).observe(tl);
 
     /* weight input just opened — put the cursor in it */
     const wi = view.querySelector('.xw-in');
     if (wi) { wi.focus(); wi.select(); }
   }
 
-  /* The growing border (v5.2). A Book of Hours page carries a vine in its
-     margin; here it winds round the timeline's spine, and the day's
-     sessions are its flowers. A session done opens a rosette in its own
-     colour, one whose time passed unticked stays a closed bud, a skipped
-     one is a bare twig, and one still to come is a small furled bud. When
-     every session of the day is done the vine ends in a flourish. A flower
-     opens (once) at the moment its session is ticked — never on a
-     re-render or a resize. Purely decorative; the cards say it in words. */
-  function paintVine(tl, fresh) {
+  /* The growing border (v5.2, redrawn v5.9). A Book of Hours page carries
+     a vine in its margin; here the vine IS the timeline's spine: one
+     tapered pen stroke in the day's real light, cut cleanly round every
+     emblem it passes, with ivy leaves on short stalks and tendrils in the
+     gaps. A session done opens a heraldic rose on the stem in its own
+     colour (two rows of petals, barbs between them, a seeded heart); one
+     whose time passed unticked stays a closed bud in its calyx; a skipped
+     one is a bare twig; one still to come is not drawn at all. When every
+     session of the day is done the stem curls into a volute and ends in a
+     white rose. A rose opens (once) at the moment its session is ticked —
+     never on a re-render or a resize. Purely decorative; the cards say it
+     in words. */
+  let vineSeq = 0;
+  const vf = (v) => v.toFixed(1);
+  /* a heraldic rose of radius r at the origin: five barbs, five outer
+     petals with a notch at the lip, five inner petals turned between them,
+     and a seeded heart */
+  function roseSVG(r) {
+    const g = (v) => (v * r).toFixed(2);
+    const petal = (k) => 'M0 0 C' + g(-.64 * k) + ' ' + g(-.2 * k) + ' ' + g(-.72 * k) + ' ' + g(-.93 * k) + ' ' + g(-.25 * k) + ' ' + g(-.99 * k) +
+      ' Q0 ' + g(-.85 * k) + ' ' + g(.25 * k) + ' ' + g(-.99 * k) + ' C' + g(.72 * k) + ' ' + g(-.93 * k) + ' ' + g(.64 * k) + ' ' + g(-.2 * k) + ' 0 0Z';
+    const barb = 'M' + g(-.17) + ' ' + g(-.5) + ' Q' + g(-.2) + ' ' + g(-.86) + ' 0 ' + g(-1.16) + ' Q' + g(.2) + ' ' + g(-.86) + ' ' + g(.17) + ' ' + g(-.5) + 'Z';
+    let s = '';
+    for (let k = 0; k < 5; k++) s += '<path class="vr-barb" transform="rotate(' + (36 + k * 72) + ')" d="' + barb + '"/>';
+    for (let k = 0; k < 5; k++) s += '<path class="vr-outer" transform="rotate(' + (k * 72) + ')" d="' + petal(1) + '"/>';
+    for (let k = 0; k < 5; k++) s += '<path class="vr-inner" transform="rotate(' + (36 + k * 72) + ')" d="' + petal(.6) + '"/>';
+    s += '<circle class="vr-heart" r="' + g(.27) + '"/>';
+    for (let k = 0; k < 6; k++) {
+      const a = k * Math.PI / 3, d = k ? .15 : 0;
+      s += '<circle class="vr-seed" cx="' + g(Math.cos(a) * d) + '" cy="' + g(Math.sin(a) * d) + '" r="' + g(.05) + '"/>';
+    }
+    return s;
+  }
+  /* an ivy leaf on a short stalk, pointing along +x from the stem */
+  const VINE_LEAF = '<path class="vl-stalk" d="M0 0 L3.2 0"/>' +
+    '<path class="vl-blade" d="M2.6 0 C1.6 -2.9 4.6 -4.6 6.4 -2.7 C7.7 -1.5 9.2 -.6 10.8 0 C9.2 .6 7.7 1.5 6.4 2.7 C4.6 4.6 1.6 2.9 2.6 0Z"/>' +
+    '<path class="vl-rib" d="M3.4 0 L8.6 0"/>';
+  /* a tendril: out from the stem and round in a spiral */
+  const VINE_TENDRIL = '<path class="vn-tendril" d="M0 0 C2.6 -1.4 6.2 -1.2 7.4 1.4 C8.4 3.7 6.4 5.6 4.6 4.6 C3.3 3.9 3.8 2.3 5 2.6"/>';
+  function paintVine(tl, fresh, st) {
     const H = tl.offsetHeight;
     if (!H || H < 60) return;
     if (!fresh.first && fresh.h === H) return;     // a resize observer's first call, or nothing moved
     fresh.h = H;
     const old = tl.querySelector(':scope > .vine');
     if (old) old.remove();
-    const X = 11.5, f = (v) => v.toFixed(1);
+    const id = 'vn' + (++vineSeq);
+    /* the svg starts 14px left of the timeline; the stem winds about the
+       spine's axis (4.5px into the timeline) */
+    const OX = 14, ax = (y) => OX + 4.5 + 1.6 * Math.sin(y / 17 + 0.6);
     const kids = Array.prototype.filter.call(tl.children, (c) => !c.classList.contains('vine'));
-    const nodes = [], avoid = [];
+    const holes = [], busy = [], nodes = [];
+    /* where an emblem sits, relative to its row (rows arrive with a
+       transform; the row's own offset does not) */
+    const within = (e, row) => {
+      const a = e.getBoundingClientRect(), b = row.getBoundingClientRect();
+      return { x: OX + row.offsetLeft + a.left - b.left, y: row.offsetTop + a.top - b.top, w: a.width, h: a.height };
+    };
     kids.forEach((c) => {
-      const top = c.offsetTop, h = c.offsetHeight;
-      avoid.push(top + (c.classList.contains('tl-card') ? 26 : 14));
+      const emb = c.querySelector(':scope > .c-emb, :scope > .q-emb, .c-emb');
+      if (emb && emb.offsetWidth) {
+        const p = within(emb, c), r = emb.offsetWidth / 2;
+        holes.push({ cx: p.x + p.w / 2, cy: p.y + p.h / 2, r: r + (emb.classList.contains('c-emb') ? 2.5 : 0.5) });
+      }
+      const sun = c.querySelector('.tl-sunglyph');
+      if (sun) { const p = within(sun, c); holes.push({ x: p.x - 1, y: p.y - 1.5, w: p.w + 2, h: p.h + 3 }); }
+      if (c.classList.contains('tl-now')) {
+        const cs = getComputedStyle(c, '::before'), w = parseFloat(cs.width) || 11;
+        holes.push({ cx: OX + c.offsetLeft + (parseFloat(cs.left) || 0) + w / 2, cy: c.offsetTop + (parseFloat(cs.top) || 0) + w / 2, r: w / 2 + 2.5 });
+      }
       if (!c.dataset.vine) return;
-      const y = Math.min(top + h - 10, top + Math.max(60, h / 2));
+      const top = c.offsetTop, h = c.offsetHeight;
+      const y = Math.max(top + 55, Math.min(top + h - 11, top + Math.max(62, h / 2 + 6)));
       nodes.push({ y, state: c.dataset.vine, tone: c.style.getPropertyValue('--vc') || 'var(--t2)', bloom: fresh.first && c.dataset.bloom === '1' });
-      avoid.push(y);
     });
+    holes.forEach((o) => busy.push(o.r ? [o.cy - o.r - 3, o.cy + o.r + 3] : [o.y - 3, o.y + o.h + 3]));
     const counted = nodes.filter((n) => n.state !== 'skip');
     const complete = counted.length > 0 && counted.every((n) => n.state === 'done');
-    const end = H - 12;
-    /* the stem: a slow sine round the spine */
-    let stem = 'M' + X + ' 8';
-    for (let y = 12; y <= (complete ? H : end); y += 4) stem += ' L' + f(X + 3.2 * Math.sin(y / 13)) + ' ' + y;
-    /* leaves where nothing else stands, alternating sides */
-    let leaves = '', side = 1;
-    for (let y = 40; y < end - 20; y += 34) {
-      if (avoid.some((a) => Math.abs(a - y) < 20)) continue;
-      const x0 = X + 3.2 * Math.sin(y / 13), dx = side * 7;
-      leaves += '<path class="vn-leaf" d="M' + f(x0) + ' ' + y + ' Q' + f(x0 + dx * 0.55) + ' ' + (y - 6) + ' ' + f(x0 + dx) + ' ' + (y - 3) +
-        ' Q' + f(x0 + dx * 0.5) + ' ' + (y + 1.5) + ' ' + f(x0) + ' ' + y + ' Z"/>';
-      side = -side;
+    const yTop = 4, yEnd = complete ? H + 10 : H - 10;
+    /* the stem: a broad-nib stroke that swells on the turns and thins at
+       the crests, tapering to a fine point where it is still growing */
+    const wAt = (y) => {
+      const pen = 1.1 + 0.9 * Math.abs(Math.cos(y / 17 + 0.6));
+      const ease = (t) => { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); };
+      return pen * (0.3 + 0.7 * ease((y - yTop) / 20)) * (complete ? 1 : 0.22 + 0.78 * ease((yEnd - y) / 48));
+    };
+    const lft = [], rgt = [];
+    for (let y = yTop; ; y = Math.min(y + 3, yEnd)) {
+      const x = ax(y), d = (1.6 / 17) * Math.cos(y / 17 + 0.6), n = Math.sqrt(1 + d * d), w = wAt(y) / 2;
+      lft.push(vf(x - w / n) + ' ' + vf(y + (w * d) / n));
+      rgt.push(vf(x + w / n) + ' ' + vf(y - (w * d) / n));
+      if (y >= yEnd) break;
     }
-    let sprigs = '';
-    nodes.forEach((n) => {
-      const y = n.y;
+    const stem = 'M' + lft.join(' L') + ' L' + rgt.reverse().join(' L') + 'Z';
+    /* the sessions: roses on the stem, buds and twigs on side stalks */
+    let marks = '', roses = '';
+    nodes.forEach((n, i) => {
+      const x = ax(n.y), side = i % 2 ? -1 : 1;
       if (n.state === 'done') {
-        let petals = '';
-        for (let k = 0; k < 5; k++) petals += '<ellipse cx="0" cy="-4.2" rx="2.9" ry="4.3" transform="rotate(' + (k * 72) + ')"/>';
-        sprigs += '<g class="vn-flower' + (n.bloom ? ' bloom' : '') + '" style="--vc:' + n.tone + '" transform="translate(' + X + ' ' + f(y) + ')">' +
-          '<g class="vn-petals">' + petals + '</g><circle class="vn-eye" r="1.7"/></g>';
+        const r = 9.5;
+        holes.push({ cx: x, cy: n.y, r: r + 1.2 });
+        busy.push([n.y - r - 5, n.y + r + 5]);
+        roses += '<g class="vn-flower' + (n.bloom ? ' bloom' : '') + '" style="--vc:' + n.tone + '" transform="translate(' + vf(x) + ' ' + vf(n.y) + ') rotate(' + Math.round((n.y * 7) % 72) + ')">' +
+          '<g class="vn-petals">' + roseSVG(r) + '</g></g>';
       } else if (n.state === 'bud') {
-        sprigs += '<g class="vn-bud" transform="translate(' + X + ' ' + f(y) + ')"><path d="M0 -5.5 C3 -2.5 3 2 0 3.5 C-3 2 -3 -2.5 0 -5.5 Z"/><path class="vn-sepal" d="M-3 2.5 L0 5 L3 2.5"/></g>';
+        busy.push([n.y - 18, n.y + 6]);
+        marks += '<g class="vn-bud" style="--vc:' + n.tone + '" transform="translate(' + vf(x) + ' ' + vf(n.y) + ') scale(' + side + ' 1)">' +
+          '<path class="vb-stalk" d="M0 0 C2.2 -.6 4.4 -2.6 5.4 -5.6"/><g transform="translate(5.4 -5.6) rotate(24)">' +
+          '<path class="vb-body" d="M0 0 C-3.7 -1.6 -3.9 -7.2 0 -10.8 C3.9 -7.2 3.7 -1.6 0 0Z"/>' +
+          '<path class="vb-seam" d="M0 -10.8 C1.4 -7.4 1.1 -3.2 -.8 -.9"/>' +
+          '<path class="vb-calyx" d="M0 .6 C-3.5 -.6 -4.5 -4.2 -3.7 -7.6 C-2.5 -4.8 -1.4 -2.7 0 .6Z M0 .6 C3.5 -.6 4.5 -4.2 3.7 -7.6 C2.5 -4.8 1.4 -2.7 0 .6Z"/>' +
+          '<circle class="vb-hip" cy=".9" r="1.3"/></g></g>';
       } else if (n.state === 'skip') {
-        sprigs += '<g class="vn-twig" transform="translate(' + X + ' ' + f(y) + ')"><path d="M0 0 L6 -5 M3 -2.5 L4.5 0.5"/></g>';
-      } else {
-        sprigs += '<g class="vn-ahead" transform="translate(' + X + ' ' + f(y) + ')"><path d="M0 -4 C2.2 -1.8 2.2 1.5 0 2.8 C-2.2 1.5 -2.2 -1.8 0 -4 Z"/></g>';
+        busy.push([n.y - 10, n.y + 5]);
+        marks += '<g class="vn-twig" transform="translate(' + vf(x) + ' ' + vf(n.y) + ') rotate(' + (side > 0 ? -28 : 208) + ')">' +
+          '<path d="M0 0 L11 0 M6 0 L9.4 -3.8 M3.4 0 L5 2.2 M11 -1.4 L11 1.4"/></g>';
       }
     });
-    /* the day finished: the vine curls into a volute with a white rose */
-    /* it hangs just below the last row, clear of NOW and lights out */
-    const fin = complete ? '<g class="vn-fin' + (fresh.first && nodes.some((n) => n.bloom) ? ' new' : '') + '" transform="translate(' + X + ' ' + (H + 10) + ')">' +
-      '<path class="vn-curl" pathLength="1" d="M0 -10 C0 -2 8 0 9 -5 C10 -10 3 -12 2 -7 C1.5 -4.5 4.5 -4 5 -6"/>' +
-      '<g class="vn-rose" transform="translate(0 3) scale(1.35)">' + [0, 72, 144, 216, 288].map((a) => '<ellipse cx="0" cy="-2.8" rx="2" ry="3" transform="rotate(' + a + ')"/>').join('') + '</g></g>' : '';
-    tl.insertAdjacentHTML('afterbegin', '<svg class="vine" aria-hidden="true" width="24" height="' + H + '" viewBox="0 0 24 ' + H + '">' +
-      '<path class="vn-stem" d="' + stem + '"/>' + leaves + sprigs + fin + '</svg>');
+    /* leaves and tendrils where nothing else stands, alternating sides */
+    let leaves = '', side = 1, k = 0;
+    const free = (y) => !busy.some((b) => y > b[0] - 6 && y < b[1] + 6);
+    for (let y = 16; y < yEnd - (complete ? 10 : 30); ) {
+      if (!free(y)) { y += 3; continue; }
+      const x = ax(y), tendril = k % 3 === 2;
+      const rot = side > 0 ? (tendril ? -24 : 28) : (tendril ? 204 : 152);
+      leaves += '<g transform="translate(' + vf(x) + ' ' + y + ') rotate(' + rot + ')' + (tendril ? (side < 0 ? ' scale(1 -1)' : '') : ' scale(1.18)') + '">' +
+        (tendril ? VINE_TENDRIL : '<g class="vn-leaf">' + VINE_LEAF + '</g>') + '</g>';
+      side = -side; k++; y += tendril ? 20 : 17;
+    }
+    /* the growing tip: a fine curl past the stem's point */
+    const ex = ax(yEnd);
+    const tip = complete ? '' : '<path class="vn-tendril" d="M' + vf(ex) + ' ' + (yEnd - 1) + ' c.2 3.6 2.6 6.2 5 5.4 c1.8-.6 1.6-3 .2-3.2 c-1 -.1 -1.3 1 -.6 1.5"/>';
+    /* the day finished: a volute off the stem and a white rose at its end */
+    const fin = complete ? '<g class="vn-fin' + (fresh.first && nodes.some((n) => n.bloom) ? ' new' : '') + '" transform="translate(' + vf(ex) + ' ' + yEnd + ')">' +
+      '<path class="vn-curl" pathLength="1" d="M0 -12 C0 -6.5 4.6 -5.2 7.6 -6.8 C10.6 -8.4 10 -12.6 7 -12.2 C5 -11.9 5.2 -9.6 7 -9.9"/>' +
+      '<g class="vn-rose" transform="translate(0 8) rotate(18)">' + roseSVG(8.5) + '</g></g>' : '';
+    /* the light: each row's own minute sets the stem's brightness there */
+    let paint = '', ink = '';
+    if (st) {
+      const stops = [];
+      kids.forEach((c) => {
+        const m = Number(c.dataset.m);
+        if (c.dataset.m == null || !Number.isFinite(m)) return;
+        const off = Math.max(0, Math.min(1, (c.offsetTop + 12) / H)), last = stops[stops.length - 1];
+        stops.push({ off: last ? Math.max(last.off, off) : off, p: Math.round(DB.lightLevel(st, m) * 82) });
+      });
+      if (stops.length > 1) {
+        paint = '<linearGradient id="' + id + 'g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="' + H + '">' +
+          stops.map((s) => '<stop offset="' + s.off.toFixed(4) + '" style="stop-color:color-mix(in srgb, var(--t2) ' + s.p + '%, var(--vine-dark))"/>').join('') + '</linearGradient>';
+        ink = ' style="--vine-ink:url(#' + id + 'g)"';
+      }
+    }
+    const mask = '<mask id="' + id + 'm" maskUnits="userSpaceOnUse" x="-20" y="-20" width="80" height="' + (H + 80) + '">' +
+      '<rect x="-20" y="-20" width="80" height="' + (H + 80) + '" fill="white"/>' +
+      holes.map((o) => o.r ? '<circle cx="' + vf(o.cx) + '" cy="' + vf(o.cy) + '" r="' + vf(o.r) + '" fill="black"/>'
+        : '<rect x="' + vf(o.x) + '" y="' + vf(o.y) + '" width="' + vf(o.w) + '" height="' + vf(o.h) + '" rx="3" fill="black"/>').join('') + '</mask>';
+    const grow = fresh.first && !!tl.closest('.view.anim');
+    tl.classList.add('vined');
+    tl.insertAdjacentHTML('afterbegin', '<svg class="vine' + (grow ? ' grow' : '') + '" aria-hidden="true" width="40" height="' + H + '" viewBox="0 0 40 ' + H + '"' + ink + '>' +
+      '<defs>' + paint + mask + '</defs><g mask="url(#' + id + 'm)"><path class="vn-stem" d="' + stem + '"/>' + leaves + tip + marks + '</g>' + roses + fin + '</svg>');
     fresh.first = false;
   }
 
@@ -4969,11 +5065,12 @@
      arrival when it scrolls into view, not while it is still off screen. */
   let artObserver = null;
   function revealArt() {
-    const nodes = document.querySelectorAll('#view .daywheel, #view .wall, #view .journey-landmarks, #view .weeklight');
+    const nodes = document.querySelectorAll('#view .daywheel, #view .wall, #view .journey-landmarks, #view .weeklight, #view .tl');
     if (!('IntersectionObserver' in window)) { nodes.forEach((n) => n.classList.add('in')); return; }
+    /* a quarter in view, or (for the tall timeline) a good stretch of it */
     if (!artObserver) artObserver = new IntersectionObserver((entries) => entries.forEach((e) => {
-      if (e.isIntersecting) { e.target.classList.add('in'); artObserver.unobserve(e.target); }
-    }), { threshold: 0.25 });
+      if (e.isIntersecting && (e.intersectionRatio >= 0.25 || e.intersectionRect.height > 140)) { e.target.classList.add('in'); artObserver.unobserve(e.target); }
+    }), { threshold: [0, 0.05, 0.1, 0.15, 0.2, 0.25] });
     nodes.forEach((n) => artObserver.observe(n));
   }
 

@@ -795,6 +795,15 @@ async function cinema() {
   t = await open('2026-09-29', '22:40', Object.assign({}, SEED, { 'done-2026-09-29': { 't1930-study': true }, 'runlog-2026-09-29': { sec: 2665, hr: 145, km: 7.32 } }));
   const vn = await t.page.evaluate(() => { const v = document.querySelector('.tl > .vine'); return v && { flowers: v.querySelectorAll('.vn-flower').length, buds: v.querySelectorAll('.vn-bud').length, fin: !!v.querySelector('.vn-fin'), bloom: v.querySelectorAll('.bloom').length }; });
   check(vn && vn.flowers === 2 && vn.buds === 1 && !vn.fin && vn.bloom === 0, 'the vine flowers for the run and study, keeps a bud for the unticked read, no flourish yet: ' + JSON.stringify(vn));
+  // v5.9: the vine is the spine — lit by the day, cut round every emblem, nothing drawn for what is still to come
+  const vs = await t.page.evaluate(() => { const tl = document.querySelector('.tl'), v = tl.querySelector(':scope > .vine');
+    const holes = v.querySelectorAll('mask circle, mask rect').length - 1, embs = tl.querySelectorAll('.c-emb, .q-emb, .tl-sunglyph').length;
+    return { vined: tl.classList.contains('vined') && getComputedStyle(tl, '::before').display === 'none', lit: /url\(#vn\d+g\)/.test(v.getAttribute('style') || ''),
+      masked: !!v.querySelector('g[mask] > .vn-stem'), holes, embs, leaves: v.querySelectorAll('.vn-leaf').length }; });
+  check(vs.vined && vs.lit && vs.masked && vs.holes >= vs.embs + 2 && vs.leaves > 2, 'the vine replaces the spine, carries the day’s light and is cut round every emblem and rose: ' + JSON.stringify(vs));
+  const ahead = await open('2026-09-29', '09:00', SEED);
+  check((await ahead.page.$$('.tl > .vine .vn-bud, .tl > .vine .vn-flower, .tl > .vine .vn-twig')).length === 0 && !!(await ahead.page.$('.tl > .vine .vn-stem')), 'a morning with nothing done or missed draws the stem alone');
+  await ahead.ctx.close();
   await t.page.click('.tl-card:has-text("Read") .tick');
   const vn2 = await t.page.evaluate(() => { const v = document.querySelector('.tl > .vine'); return { flowers: v.querySelectorAll('.vn-flower').length, bloom: v.querySelectorAll('.vn-flower.bloom').length, fin: !!v.querySelector('.vn-fin.new') }; });
   check(vn2.flowers === 3 && vn2.bloom === 1 && vn2.fin, 'ticking the last session opens its flower and ends the vine in a flourish: ' + JSON.stringify(vn2));

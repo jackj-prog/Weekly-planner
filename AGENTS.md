@@ -2035,3 +2035,33 @@ total. Rows are found by label in the tests now that the page interleaves.
   click's `performance.now()`, which made progress negative and read
   `cum[-1]` (an intermittent console error). Progress is clamped at 0.
 254 browser checks (2 new), 16,279 plan checks.
+
+## The vine, redrawn — v5.9.0, 1 October (Claude)
+
+First item of the visual sweep (the owner: the vine "looks somewhat lower
+quality in comparison with the rest"). The v5.2 vine was a hairline sine
+winding round a separate spine, crossing the dimmed quiet-row emblems (a
+past row's opacity let it show through), with blob leaves, five-ellipse
+daisies and hollow "ahead" buds that read as zeros.
+- **The vine is the spine.** One filled, tapered broad-nib stroke that
+  swells on the turns and thins at the crests, painted with the day's light
+  (the same per-row `DB.lightLevel` stops as the old spine, as an SVG
+  gradient) over a floor that stays visible after dark. `.tl.vined::before`
+  hides the old spine; it remains as the fallback for a timeline too short
+  to draw.
+- **Cut clean round every emblem** with an SVG mask (card roundels, quiet
+  emblems, the sun glyphs, the NOW node, and each rose), so it no longer
+  depends on an opaque background behind a faded row.
+- **Ivy leaves** on short stalks, with a ribbed blade, and **tendrils** in
+  every third free gap, alternating sides, never within reach of an emblem.
+- **A heraldic rose** for a session done: five barbs, five notched outer
+  petals in the session's colour, five inner petals turned between them and
+  lit towards white, a seeded heart. A missed session is a **closed rosebud
+  in its calyx** on a side stalk (a hint of its colour at the lip); a
+  skipped one a bare twig; a session still to come draws nothing. The day
+  done ends in a volute and a white rose, clear of the NOW node.
+- **Motion:** roses still open once on the tick (never on a re-render or a
+  resize). New: on arrival the stem grows down the day, started by the
+  existing scroll-into-view reveal (the timeline is observed — the clipped
+  svg itself never reports as intersecting); reduced motion shows it whole.
+256 browser checks (2 new), 16,279 plan checks.

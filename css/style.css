@@ -3161,28 +3161,49 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 }
 .run-recap .sess-shape { margin: 16px 0 4px; }
 
-/* ================= THE GROWING BORDER (v5.2) ======================= */
-/* a vine round the timeline's spine; the day's sessions are its flowers */
-.tl > .vine { position: absolute; left: -6px; top: 0; pointer-events: none; overflow: visible; }
-.vine .vn-stem { fill: none; stroke: color-mix(in srgb, var(--t3) 55%, transparent); stroke-width: 1.1; stroke-linecap: round; }
-.vine .vn-leaf { fill: color-mix(in srgb, var(--t3) 30%, transparent); stroke: color-mix(in srgb, var(--t3) 60%, transparent); stroke-width: .6; }
-.vine .vn-flower .vn-petals ellipse { fill: var(--vc); fill-opacity: .92; stroke: var(--paper); stroke-width: .7; }
-.vine .vn-flower .vn-eye { fill: var(--paper); stroke: var(--vc); stroke-width: .9; }
-.vine .vn-flower { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--vc) 45%, transparent)); }
-.vine .vn-bud path { fill: color-mix(in srgb, var(--t3) 45%, var(--paper)); stroke: var(--t3); stroke-width: .8; }
-.vine .vn-bud .vn-sepal { fill: none; }
-.vine .vn-twig path { fill: none; stroke: var(--t3); stroke-width: 1.1; stroke-linecap: round; }
-.vine .vn-ahead path { fill: var(--paper); stroke: color-mix(in srgb, var(--t3) 80%, transparent); stroke-width: .8; }
-.vine .vn-curl { fill: none; stroke: var(--t2); stroke-width: 1.2; stroke-linecap: round; }
-.vine .vn-rose ellipse { fill: var(--text); stroke: var(--paper); stroke-width: .6; }
+/* ================= THE GROWING BORDER (v5.2, redrawn v5.9) ========= */
+/* the vine is the spine: one tapered pen stroke in the day's light, cut
+   clean round each emblem; the day's sessions are its roses */
+.tl.vined::before { display: none; }
+.tl > .vine {
+  position: absolute; left: -14px; top: 0; pointer-events: none; overflow: visible;
+  --vine-dark: color-mix(in srgb, var(--t3) 42%, var(--line));
+  --vine-ink: color-mix(in srgb, var(--t2) 45%, var(--vine-dark));
+}
+.vine .vn-stem { fill: var(--vine-ink); }
+.vine .vl-blade { fill: var(--vine-ink); fill-opacity: .85; }
+.vine .vl-stalk, .vine .vn-tendril { fill: none; stroke: var(--vine-ink); stroke-width: .75; stroke-linecap: round; }
+.vine .vl-rib { fill: none; stroke: var(--paper); stroke-width: .55; stroke-linecap: round; opacity: .8; }
+/* the rose: barbs in the stem's grey, outer petals in the session's
+   colour, the inner turn lit towards white, a seeded heart */
+.vine .vr-barb { fill: color-mix(in srgb, var(--vc) 30%, var(--t3)); }
+.vine .vr-outer { fill: var(--vc); stroke: var(--paper); stroke-width: .7; stroke-linejoin: round; }
+.vine .vr-inner { fill: color-mix(in srgb, var(--vc) 62%, var(--text)); stroke: color-mix(in srgb, var(--vc) 55%, var(--paper)); stroke-width: .55; stroke-linejoin: round; }
+.vine .vr-heart { fill: var(--paper); stroke: var(--vc); stroke-width: .6; }
+.vine .vr-seed { fill: color-mix(in srgb, var(--vc) 50%, var(--text)); }
+.vine .vn-flower { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--vc) 40%, transparent)); }
+/* a missed session: a closed bud in its calyx; a skipped one, a bare twig */
+.vine .vb-stalk { fill: none; stroke: var(--t3); stroke-width: .8; stroke-linecap: round; }
+.vine .vb-body { fill: color-mix(in srgb, var(--vc) 32%, var(--paper)); stroke: color-mix(in srgb, var(--vc) 55%, var(--t3)); stroke-width: .6; }
+.vine .vb-seam { fill: none; stroke: color-mix(in srgb, var(--vc) 55%, var(--t3)); stroke-width: .5; stroke-linecap: round; }
+.vine .vb-calyx, .vine .vb-hip { fill: var(--t3); }
+.vine .vn-twig path { fill: none; stroke: var(--t3); stroke-width: .9; stroke-linecap: round; }
+/* the day done: a volute and a white rose */
+.vine .vn-curl { fill: none; stroke: var(--vine-ink); stroke-width: 1.1; stroke-linecap: round; }
+.vine .vn-rose { --vc: var(--text); }
+.vine .vn-rose .vr-inner { fill: var(--text); stroke: color-mix(in srgb, var(--t3) 60%, var(--paper)); }
+.vine .vn-rose .vr-heart { stroke: var(--t3); }
+.vine .vn-rose .vr-seed { fill: var(--t2); }
 .vine .vn-fin { filter: drop-shadow(0 0 5px var(--glow-white-hot)); }
 @media (prefers-reduced-motion: no-preference) {
-  .vine .vn-flower.bloom .vn-petals { animation: vn-bloom 760ms var(--ease-spring) both; transform-box: fill-box; transform-origin: center; }
-  .vine .vn-flower.bloom .vn-eye { animation: vn-eye 500ms var(--ease-out) 260ms both; }
+  /* the stem grows down the day once the timeline is in view */
+  .tl > .vine.grow { clip-path: inset(-30px -30px 100% -30px); }
+  .tl.in > .vine.grow { animation: vn-grow 1400ms var(--ease-out) both; }
+  .vine .vn-flower.bloom .vn-petals { animation: vn-bloom 820ms var(--ease-spring) both; transform-box: fill-box; transform-origin: center; }
   .vine .vn-fin.new .vn-curl { stroke-dasharray: 1; animation: vn-curl 900ms var(--ease-out) 400ms both; }
-  .vine .vn-fin.new .vn-rose { animation: vn-bloom 700ms var(--ease-spring) 1100ms both; transform-box: fill-box; transform-origin: center; }
-  @keyframes vn-bloom { from { transform: scale(0) rotate(-60deg); opacity: 0; } to { transform: none; opacity: 1; } }
-  @keyframes vn-eye { from { opacity: 0; } to { opacity: 1; } }
+  .vine .vn-fin.new .vn-rose { animation: vn-bloom 760ms var(--ease-spring) 1100ms both; transform-box: fill-box; transform-origin: center; }
+  @keyframes vn-grow { from { clip-path: inset(-30px -30px 100% -30px); } to { clip-path: inset(-30px -30px -60px -30px); } }
+  @keyframes vn-bloom { from { transform: scale(0) rotate(-72deg); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes vn-curl { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 }
 
