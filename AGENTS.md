@@ -2396,3 +2396,20 @@ At the owner's request:
 - `docs/AUDIT.md` and `docs/AUDIT-2026-09.md` removed: their findings were
   resolved or carried into `docs/REVIEW-2026-10.md`. References to them above
   are historical; the files are in git history.
+
+## Visual batch 1 — v5.13.0, 2 October (Claude)
+
+A fresh art-director review (15 screens and states at 390 and 320) found the
+most-seen screen — Today on an ordinary easy day — the plainest: the richness
+sat below the fold. Five changes, each shown to the owner as a labelled
+mockup and approved before building:
+- P1 running heads without tiles (Today, Week, Kalendar): ‹ › keep 44px.
+- P2 the Now card's ↓ is a 40px hairline ring with a 44px target (`::after`).
+- P3 phase and cutback chips are outlines in their own colour; the next key
+  date and the red chips keep their fill. The build test now also checks each
+  phase colour as text on the ground (AA).
+- P4 easy/recovery heroes carry `contourPlateSVG()` — 17 irregular contours,
+  an index line every fourth, a trig point; tokens only (currentColor).
+- P5 the resting-HR pill renders after `.h-meta`.
+`batchOne()` in tools/interactions.js pins all five (9 checks). Layout matrix
+re-run; fold check unchanged (13 known afternoon cases).

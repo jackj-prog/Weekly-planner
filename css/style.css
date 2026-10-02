@@ -3780,3 +3780,42 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .sv-code code { font: 400 15px/1.4 var(--mono); color: var(--text); }
 .sv-card .data-actions { flex-wrap: wrap; }
 .sv-card .data-actions button { min-height: 44px; }
+
+/* ================= VISUAL BATCH 1 (v5.13): let the ordinary day lead ==== */
+/* P1 · running heads without tiles: the date, the week and the month read
+   as titles; the chevrons keep their 44px targets and the focus ring */
+.day-nav .nav, .wk-head .nav, .kl-head .nav {
+  width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0 0 4px;
+  border-color: transparent; background: none; border-radius: 999px;
+  font-size: 30px; line-height: 1; color: var(--t2);
+}
+/* P2 · the Now card's jump is a hairline ring, so what you are doing leads;
+   the ring is 40px, the target 44 (the ::after reaches past it) */
+.nn-jump {
+  position: relative; flex: 0 0 40px; width: 40px; height: 40px;
+  border: 1px solid color-mix(in srgb, var(--text) 16%, transparent); border-radius: 999px;
+  background: none; font-size: 17px; color: var(--t2);
+}
+.nn-jump::after { content: ''; position: absolute; inset: -3px; }
+/* P3 · one bright chip: phase and cutback are engraved (an outline in their
+   own colour); the next key date and the red key chips keep their fill */
+.chip.base, .chip.build, .chip.taper, .chip.mut { background: transparent; box-shadow: inset 0 0 0 1px currentColor; }
+.chip.base { color: var(--phase-base); }
+.chip.build { color: var(--phase-build); }
+.chip.taper { color: var(--phase-taper); }
+.chip.mut { color: var(--t2); }
+/* P4 · easy and recovery days: an engraved survey plate in place of the
+   evenly spaced rings, its summit in the open ground right of the distance,
+   fading before the text (contourPlateSVG) */
+.hero.cls-easy .h-art, .hero.cls-recovery .h-art {
+  background: none; color: var(--text);
+  -webkit-mask-image: radial-gradient(105% 58% at 80% 30%, black 30%, transparent 78%);
+  mask-image: radial-gradient(105% 58% at 80% 30%, black 30%, transparent 78%);
+}
+.h-plate { position: absolute; right: -70px; top: 70px; width: 470px; height: 470px; }
+.h-plate .pc { fill: none; stroke: currentColor; stroke-opacity: .085; stroke-width: .8; }
+.h-plate .pc.ix { stroke-opacity: .17; stroke-width: 1.3; }
+.h-plate .pt { fill: none; stroke: currentColor; stroke-opacity: .3; stroke-width: 1; }
+.h-plate .pt-c { fill: currentColor; fill-opacity: .35; }
+/* P5 · the morning's resting-HR pill sits under the run's ruled line */
+.hero > .h-meta + .h-rhr { margin-top: 14px; }

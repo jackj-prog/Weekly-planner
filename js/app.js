@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.12.1';
+  const APP_VERSION = '5.13.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1677,6 +1677,34 @@
     vals.sort((a, b) => a - b);
     return vals[Math.floor(vals.length / 2)];
   }
+  /* The easy day's plate (v5.13): an engraved survey map, the ground covered —
+     nested, irregular contours round a summit, a heavier index line every
+     fourth and a trig point on the top. Grey and white only: easy days stay
+     grey. Computed once, as a smooth closed curve per contour. */
+  let plateSVG = '';
+  function contourPlateSVG() {
+    if (plateSVG) return plateSVG;
+    const cx = 300, cy = 110, N = 40, f = (n) => Math.round(n * 10) / 10;
+    let paths = '';
+    for (let k = 1; k <= 17; k++) {
+      const base = 10 + k * 15.5 + Math.pow(k, 1.35), pts = [];
+      for (let i = 0; i < N; i++) {
+        const t = (i / N) * Math.PI * 2;
+        const r = base * (1 + 0.13 * Math.sin(2 * t + 0.6 + k * 0.11) + 0.07 * Math.sin(3 * t + 1.9 - k * 0.07) +
+          0.035 * Math.sin(5 * t + k * 0.23) + 0.02 * Math.sin(7 * t + 2.2));
+        pts.push([cx + r * Math.cos(t) * 1.18, cy + r * Math.sin(t)]);
+      }
+      let d = 'M' + f(pts[0][0]) + ' ' + f(pts[0][1]);
+      for (let i = 0; i < N; i++) {
+        const a = pts[(i + N - 1) % N], b = pts[i], c = pts[(i + 1) % N], e = pts[(i + 2) % N];
+        d += 'C' + f(b[0] + (c[0] - a[0]) / 6) + ' ' + f(b[1] + (c[1] - a[1]) / 6) + ' ' + f(c[0] - (e[0] - b[0]) / 6) + ' ' + f(c[1] - (e[1] - b[1]) / 6) + ' ' + f(c[0]) + ' ' + f(c[1]);
+      }
+      paths += '<path class="pc' + (k % 4 ? '' : ' ix') + '" d="' + d + 'Z"/>';
+    }
+    plateSVG = '<svg class="h-plate" viewBox="0 0 420 420" focusable="false">' + paths +
+      '<path class="pt" d="M' + cx + ' ' + (cy - 5) + 'l4.5 8h-9z"/><circle class="pt-c" cx="' + cx + '" cy="' + (cy + 0.5) + '" r="1"/></svg>';
+    return plateSVG;
+  }
   function readinessHTML(iso, runStartMin) {
     const g = PLAN.readiness;
     if (!g) return '';
@@ -1692,9 +1720,9 @@
         '<button data-rhr="1" aria-label="Higher resting HR">+</button></span><button class="h-rhr-save" data-rhr="save">Save</button></div>';
     }
     /* The morning's question belongs to the morning (v4.87), and even then it
-       is optional: one pill under the run's state, never a card between the
-       run's name and its distance (v5.11). Brighter before noon, when the
-       reading is worth taking. */
+       is optional: one pill under the run's ruled line (v5.13), never a card
+       between the run's name and its distance (v5.11). Brighter before noon,
+       when the reading is worth taking. */
     if (bpm == null) return '<button class="h-rhr add mini' + (nowMin() < 12 * 60 && iso === todayISO() ? ' am' : '') +
       '" data-rhr="open">+ ' + (nowMin() < 12 * 60 ? 'This morning’s' : 'Morning') + ' resting HR <small>optional</small></button>';
     const delta = usual == null ? null : bpm - usual;
@@ -1816,7 +1844,7 @@
       DB.addDays(PLAN.blocks[0].start, (k.wk - 1) * 7 + k.di) === iso);
     const hero = el(
       '<section class="hero cls-' + esc(DB.runClass(r)) + (isRace ? ' race' : '') + (redLetter ? ' red-letter' : '') + (isDone ? ' done' : '') + (isSkipped ? ' skipped' : '') + (just === r.id ? ' just' : '') + '">' +
-      '<i class="h-art" aria-hidden="true"></i>' +
+      '<i class="h-art" aria-hidden="true">' + (/^(easy|recovery)$/.test(DB.runClass(r)) ? contourPlateSVG() : '') + '</i>' +
       '<div class="h-top"><div class="h-tag"><span class="h-mark">' + emblemSVG(emblemKind(r)) +
       '<span class="h-tagtxt">' + (isRace ? 'RACE DAY' : redLetter ? 'RED-LETTER DAY' : runDayLabel(iso)) + '</span></span>' +
       '<span class="h-state">' + (isDone ? 'Completed' : logged ? 'Run logged' : isSkipped ? 'Skipped' : isMovedOut ? 'Moved to ' + movedLabel(iso, r.id) :
@@ -1833,12 +1861,14 @@
       (isDone ? 'Mark run not done' : 'Mark run done') + '"><span aria-hidden="true">✓</span> ' + (isDone ? 'Done' : 'Mark done') + '</button>') + '</div>' +
       (just === r.id && isDone ? '<i class="h-sweep" aria-hidden="true"></i><div class="completion-note" role="status">✓ Run banked</div>' : '') +
       missedHTML +
-      /* not on race morning: nerves lift the reading and the call is made (v5.0.1) */
-      (iso === today && !isRace && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso, r.startMin) : '') +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + tt(r.title) + '</div></div>' +
       '<div class="h-meta"><span class="h-shoe t-' + shoeTier(r.run.shoe) + '"><b>SHOE</b><i class="h-shoe-e">' + emblemSVG(shoeTier(r.run.shoe) === 'race' ? 'laurel' : 'foot') + '</i>' + esc(r.run.shoe) + '</span>' + paceCell +
       '<span><b>WINDOW</b>' + r.start + '–' + r.end + '</span>' + mpCell + gelCell + '</div>' +
+      /* the run first, then the morning's question: under the ruled line, not
+         between the card's state and its distance (v5.13). Not on race
+         morning: nerves lift the reading and the call is made (v5.0.1) */
+      (iso === today && !isRace && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso, r.startMin) : '') +
       sessionShapeHTML(r, km, true, { lit: isDone || e.sec > 0, lighting: just === r.id && isDone }) +
       runSkyHTML(iso, r, skyKind(r), 'h', iso === today ? nowMin() : null) +
       '<div class="h-detail">' + detailHTML(detail, iso + '|hero', false) + '</div>' +

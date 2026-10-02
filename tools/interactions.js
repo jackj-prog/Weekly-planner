@@ -1132,6 +1132,39 @@ async function coherence() {
   await t.ctx.close();
 }
 
+/* v5.13 (visual batch 1): the ordinary day leads — titles without tiles, a
+   hairline jump that still takes a 44px finger, one bright chip, the easy
+   day's engraved plate, and the run before the morning's question. */
+async function batchOne() {
+  console.log('· visual batch 1: running heads, jump, chips, plate, run first');
+  let t = await open('2026-10-01', '07:40', SEED);
+  const v = await t.page.evaluate(() => {
+    const cs = (s) => getComputedStyle(document.querySelector(s)), box = (s) => document.querySelector(s).getBoundingClientRect();
+    const nav = box('.day-nav .nav[data-d="1"]'), j = box('.nownext .nn-jump');
+    /* a point just outside the 40px ring, still inside the 44px target */
+    const edge = document.elementFromPoint(j.right + 1.5, j.top + j.height / 2);
+    const hero = document.querySelector('.hero'), kids = [...hero.children];
+    return { navBg: cs('.day-nav .nav').backgroundColor, navBd: cs('.day-nav .nav').borderTopColor, navW: Math.round(nav.width), navH: Math.round(nav.height),
+      jumpEdge: !!(edge && edge.closest('.nn-jump')), phaseBg: cs('.day-head .chip.build').backgroundColor, evBg: cs('.day-head .chip.ev').backgroundColor,
+      plate: !!hero.querySelector('.h-art svg.h-plate'), rhrAfterMeta: kids.indexOf(hero.querySelector('.h-rhr')) > kids.indexOf(hero.querySelector('.h-meta')),
+      kmAboveRhr: box('.hero .h-km').bottom < box('.hero .h-rhr').top };
+  });
+  check(/rgba\(0, 0, 0, 0\)|transparent/.test(v.navBg) && /rgba\(0, 0, 0, 0\)|transparent/.test(v.navBd) && v.navW >= 44 && v.navH >= 44, 'the day’s chevrons have no tile and keep a 44px target: ' + JSON.stringify([v.navBg, v.navW, v.navH]));
+  check(v.jumpEdge, 'the Now card’s hairline jump still answers a finger just outside its ring');
+  check(/rgba\(0, 0, 0, 0\)/.test(v.phaseBg) && !/rgba\(0, 0, 0, 0\)/.test(v.evBg), 'the phase chip is an outline; the key-date chip keeps its fill');
+  check(v.plate, 'an easy day’s card carries the engraved plate');
+  check(v.rhrAfterMeta && v.kmAboveRhr, 'the run comes first: the morning’s resting-HR pill sits under the ruled line');
+  noErrors(t, 'batch one (easy day)');
+  await t.ctx.close();
+  t = await open('2026-09-30', '12:00', SEED);
+  check(!(await t.page.$('.hero .h-art svg.h-plate')), 'a quality day keeps its own art, not the plate');
+  await t.ctx.close();
+  t = await open('2026-10-01', '12:00', SEED, 'week');
+  check(await t.page.evaluate(() => /rgba\(0, 0, 0, 0\)/.test(getComputedStyle(document.querySelector('.wk-head .nav')).backgroundColor)), 'the Week’s chevrons have no tile either');
+  noErrors(t, 'batch one (week)');
+  await t.ctx.close();
+}
+
 /* v5.12: Strava, against a fake strava.com (invented runs, invented keys):
    connect through the approval round trip, import a day's run into the form
    and save it, choose between two runs, say so when Strava can't be reached,
@@ -1310,7 +1343,7 @@ async function offline() {
   browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
   server = await serve();
   try {
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, strava, update, sweep, offline]) await run();
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, strava, update, sweep, offline]) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');

@@ -108,7 +108,7 @@ Art (v4.72, the user asked for maximalism over minimalism) is always data:
 the day wheel is today's plan on a 24-hour dial, the night sky is every run
 of the block as a star with race day as a red sunrise, and the run card's
 texture follows the class of run (red speed lines when hard, a white road
-when long, contour rings when easy). Same tokens, same meanings.
+when long, an engraved contour plate when easy — v5.13). Same tokens, same meanings.
 
 **The Book of Hours (v4.73–v4.75).** The user likes an enlightenment and
 traditional Catholic aesthetic; the illuminated Book of Hours is both, and a
@@ -337,6 +337,7 @@ until the tap, the old cache goes, data stays and the new release opens
 offline.
 **Strava import (v5.12, the owner's request):** a run's log form fills from Strava in one tap — Strava's own distance, moving time and average HR, with the time/distance/HR samples put on moving time for the halves, the HR distribution and a "last N @ MP" finish; several runs that day are offered by start time. The owner registers their own Strava API app and enters its Client ID and Secret once in Reference → Strava (chapter XIII). Keys and tokens live only in this phone's storage — never in the repo, never in a backup (the backup takes an allowlist) — and no route is stored. If Strava's answer opens in Safari rather than the Home Screen app, the code is shown to copy across. Only an import needs the network; the service worker leaves other sites alone.
 **v5.12.1 (tidy):** the site publishes only the app (index, manifest, service worker, css, js, data, fonts, icons and the calendar feed) — no docs, tests, tools or agent notes; the plan names no towns; the two superseded audits are gone from docs/ (they remain in git history).
+**v5.13 (visual batch 1, the owner's approval): let the ordinary day lead.** The date, the week and the month are titles, not tiled: their ‹ › keep 44px targets without the bordered boxes. The Now card's jump is a hairline ring (a 44px target past its 40px ring), so what you are doing leads. One bright chip: phase and cutback are outlines in their own colour, the next key date and the red key chips keep their fill. An easy or recovery day's card is an engraved survey plate — nested, irregular contours, a heavier index line every fourth, a trig point on the summit, grey and white only — in place of the evenly spaced rings. The morning's resting-HR pill sits under the run's ruled line, so the distance comes first.
 **v5.9.4:** a wrapped Next title hangs under its first word, not its
 emblem; the Now card's stars keep off its edge; a title that already names
 its distance ("~21 km") is not given it again.

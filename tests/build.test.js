@@ -1313,6 +1313,9 @@ section('palette contrast (WCAG AA)');
     ['--phase-base', '--phase-build', '--phase-taper'].forEach((b) => {
       const r = ratio(set['--ink'], set[b]);
       ok(r >= AA, name + ' chip text on ' + b + ' is ' + r.toFixed(2) + ':1 (needs ' + AA + ')');
+      /* since v5.13 the phase chip is an outline: its colour is the text */
+      const o = ratio(set[b], set['--ink']);
+      ok(o >= AA, name + ' outlined chip ' + b + ' on the ground is ' + o.toFixed(2) + ':1 (needs ' + AA + ')');
     });
   });
 
