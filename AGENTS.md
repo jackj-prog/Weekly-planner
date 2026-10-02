@@ -2355,3 +2355,28 @@ persistence probe (tick, skip, leg dose), and a full-block fold check
   invented ones, matching the file's invented-fixture rule.
 316 browser checks (9 new), 16,295 plan checks. Device-only items are listed in
 docs/REVIEW-2026-10.md, Pass 6.
+
+## Strava import — v5.12.0, 2 October (Claude)
+
+The owner asked for a direct link to Strava. The September audit had ruled
+the Strava API out ("token exchange requires a client secret; there is no
+backend"). Revisited at the owner's request with no backend: the owner
+registers their own Strava API application (free, single-athlete) and types
+its Client ID and Secret into Reference → Strava once. Those and the tokens
+live in this phone's localStorage under `strava` only — the backup's
+`STORE_KEY` allowlist never includes it, and nothing about the athlete is
+stored. `js/strava.js` does the OAuth round trip (redirect back to the app's
+own address, a one-off `state`, scope `read,activity:read_all`), refreshes
+the token itself, lists the day's runs (`Run`, `TrailRun`, `VirtualRun`
+started on that local date) and fetches `time,distance,heartrate,moving`
+streams — never `latlng`. Strava's distance, moving time and average HR fill
+the form (the numbers the owner sees on Strava); the samples, put on moving
+time, feed the existing `RunStream.summarize` for the halves, HR histogram
+and MP tail. iOS may bring Strava's answer back in Safari, whose storage is
+not the Home Screen app's: that copy shows the code to paste across. The
+service worker now ignores cross-origin requests. Not verified from here:
+that strava.com accepts these requests from a browser page (this sandbox
+cannot reach strava.com); every path is tested against a fake Strava —
+`tests/strava.test.js` (callback, key validation, scope guard, exchange,
+refresh, day window, errors, moving-time samples, disconnect) and 22 browser
+checks in `strava()`. 338 browser checks, 16,295 plan checks.

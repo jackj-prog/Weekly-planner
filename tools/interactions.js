@@ -1132,6 +1132,114 @@ async function coherence() {
   await t.ctx.close();
 }
 
+/* v5.12: Strava, against a fake strava.com (invented runs, invented keys):
+   connect through the approval round trip, import a day's run into the form
+   and save it, choose between two runs, say so when Strava can't be reached,
+   hand a code across when another copy of the app started the round trip,
+   keep the keys out of backups, and disconnect. */
+async function strava() {
+  console.log('· Strava import (fake Strava)');
+  const SECRET = 'a1'.repeat(20), fake = { calls: [], fail: false, token: null, auth: null };
+  const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST' };
+  const json = (r, body) => r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: JSON.stringify(body) });
+  const run = (id, iso, hm, km, sec, hr, name) => ({ id, name, sport_type: 'Run', start_date_local: iso + 'T' + hm + ':00Z', distance: km * 1000, moving_time: sec, has_heartrate: true, average_heartrate: hr });
+  const runs = [run(7, '2026-10-01', '17:12', 5.21, 1980, 143.4, 'Evening Run'), run(8, '2026-09-30', '06:40', 3.1, 1200, 139, 'Morning shakeout'),
+    run(9, '2026-09-30', '17:15', 7.42, 2460, 151, 'Threshold'), { id: 10, name: 'Ride', sport_type: 'Ride', start_date_local: '2026-10-01T08:00:00Z', distance: 20000, moving_time: 3600 }];
+  const streams = (id) => { const r = runs.find((x) => x.id === id), n = Math.round(r.moving_time / 5), t = [], d = [], h = [];
+    for (let i = 0; i <= n; i++) { t.push(i * 5); d.push(Math.round(r.distance * i / n * 10) / 10); h.push(i < n / 2 ? 140 : 146); }
+    return { time: { data: t }, distance: { data: d }, heartrate: { data: h }, moving: { data: t.map(() => true) } }; };
+  const route = async (r) => {
+    const req = r.request(), u = new URL(req.url());
+    fake.calls.push(req.method() + ' ' + u.pathname);
+    if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
+    if (fake.fail && u.pathname.startsWith('/api/')) return r.abort('internetdisconnected');
+    if (u.pathname === '/oauth/authorize') {
+      const back = new URL(u.searchParams.get('redirect_uri'));
+      back.search = new URLSearchParams({ state: u.searchParams.get('state'), code: 'fakecode123', scope: 'read,activity:read_all' }).toString();
+      return r.fulfill({ status: 302, headers: { Location: back.href } });
+    }
+    if (u.pathname === '/oauth/token') { fake.token = new URLSearchParams(req.postData() || ''); return json(r, { access_token: 'acc', refresh_token: 'ref', expires_at: 4102444800 }); }
+    if (u.pathname === '/oauth/deauthorize') return json(r, {});
+    if (u.pathname === '/api/v3/athlete/activities') { fake.auth = req.headers().authorization; return json(r, runs); }
+    const m = u.pathname.match(/^\/api\/v3\/activities\/(\d+)\/streams$/);
+    if (m) return json(r, streams(+m[1]));
+    return r.fulfill({ status: 404, headers: cors, body: '{}' });
+  };
+  let t = await open('2026-10-01', '20:00', SEED, 'ref');
+  await t.ctx.route('https://www.strava.com/**', route);
+  await t.page.click('#ref-strava > summary');
+  check(/callback domain 127\.0\.0\.1/.test(await text(t.page, '#ref-strava')), 'setup names this site as the callback domain');
+  check(await t.page.isVisible('[data-sv-in="id"]') && await t.page.$eval('[data-sv-in="secret"]', (i) => i.type === 'password'),
+    'before connecting: the app’s ID, and its secret in a password field');
+  await t.page.fill('[data-sv-in="id"]', '12345');
+  await t.page.fill('[data-sv-in="secret"]', SECRET);
+  await Promise.all([t.page.waitForNavigation({ waitUntil: 'networkidle' }), t.page.click('[data-sv="connect"]')]);
+  await t.page.waitForFunction(() => (JSON.parse(localStorage.getItem('strava') || '{}').access === 'acc'), null, { timeout: 5000 }).catch(() => {});
+  const kept = await t.json('strava');
+  check(kept && kept.access === 'acc' && kept.refresh === 'ref' && kept.scope === 'read,activity:read_all' && !kept.athlete,
+    'the round trip ends connected, with the tokens kept on this phone and nothing about the athlete');
+  check(fake.token && fake.token.get('grant_type') === 'authorization_code' && fake.token.get('code') === 'fakecode123' && fake.token.get('client_secret') === SECRET,
+    'the code is exchanged with the owner’s own keys');
+  check(await t.page.evaluate(() => location.search === '' && !/code=/.test(location.href)), 'the code is taken out of the address at once');
+  await t.page.waitForTimeout(200);
+  check(await t.page.evaluate(() => document.getElementById('ref-strava').open) && /Connected/.test(await text(t.page, '#ref-strava')), 'it lands on the Strava chapter, saying Connected');
+  // the keys never travel in a backup
+  await t.page.evaluate(() => { document.querySelectorAll('details').forEach((d) => { d.open = true; }); try { Object.defineProperty(navigator, 'clipboard', { value: undefined }); } catch (e) { /* fine */ } });
+  await t.page.click('[data-io="export"]');
+  const blob = await t.page.$eval('.data-box', (b) => b.value).catch(() => '');
+  check(/runlog-/.test(blob) && !blob.includes(SECRET) && !/"strava/.test(blob) && !/"acc"/.test(blob), 'a backup carries the runs but never the Strava keys or tokens');
+  // import the day's run
+  await t.page.click('[data-nav="today"]'); await t.page.waitForTimeout(200);
+  check(/Import from Strava or enter the numbers/.test(await text(t.page, '.hero .h-log')), 'once connected, the run card says it can import from Strava');
+  await t.page.click('.hero .h-log');
+  await t.page.click('.log-sv-go');
+  await t.page.waitForFunction(() => /Imported from Strava/.test((document.querySelector('.runlogger .log-note') || {}).textContent || ''), null, { timeout: 5000 }).catch(() => {});
+  const vals = await t.page.evaluate(() => ['km', 'sec', 'hr'].map((k) => document.querySelector('[data-log-field="' + k + '"]').value));
+  check(vals.join('|') === '5.21|33:00|143', 'Strava’s distance, moving time and average HR fill the form: ' + vals.join(' · '));
+  check(fake.auth === 'Bearer acc' && fake.calls.includes('GET /api/v3/activities/7/streams') && !fake.calls.some((c) => /\/activities\/10\//.test(c)),
+    'the day’s run is read with the token; the ride beside it is not');
+  check(/Moving time/.test(await text(t.page, '.runlogger')), 'the time field says moving time, not track time');
+  await t.page.click('.rl-save');
+  const saved = await t.json('runlog-2026-10-01');
+  check(saved && saved.km === 5.21 && saved.sec === 1980 && saved.hr === 143 && saved.stream && saved.stream.source === 'Strava' && Number.isFinite(saved.stream.decPct),
+    'saving keeps Strava’s numbers and the samples’ analysis: ' + JSON.stringify(saved && { km: saved.km, sec: saved.sec, hr: saved.hr, src: saved.stream && saved.stream.source }));
+  check(!JSON.stringify(saved).includes('latlng') && !('lat' in (saved || {})), 'no route is stored');
+  // two runs on one day: choose
+  await t.page.click('.day-nav .nav[data-d="-1"]'); await t.page.waitForTimeout(200);
+  await t.page.click('.hero .h-log'); await t.page.click('.log-sv-go');
+  await t.page.waitForSelector('.log-sv-pick', { timeout: 5000 }).catch(() => {});
+  const picks = await t.page.$$eval('.log-sv-pick', (bs) => bs.map((b) => b.textContent.replace(/\s+/g, ' ').trim()));
+  check(picks.length === 2 && /^06:40 · Morning shakeout/.test(picks[0]) && /^17:15 · Threshold/.test(picks[1]), 'two runs that day are offered by start time: ' + picks.join(' | '));
+  await t.page.click('.log-sv-pick[data-i="1"]');
+  await t.page.waitForFunction(() => /Imported from Strava · Threshold/.test((document.querySelector('.runlogger .log-note') || {}).textContent || ''), null, { timeout: 5000 }).catch(() => {});
+  check(await t.page.$eval('[data-log-field="km"]', (i) => i.value) === '7.42', 'the chosen run fills the form');
+  await t.page.click('.rl-x');
+  // Strava out of reach: said plainly, nothing changed
+  fake.fail = true;
+  await t.page.click('.hero .h-log'); await t.page.click('.log-sv-go');
+  await t.page.waitForFunction(() => /Couldn’t reach Strava/.test((document.querySelector('.runlogger .log-note') || {}).textContent || ''), null, { timeout: 5000 }).catch(() => {});
+  check(/Couldn’t reach Strava/.test(await text(t.page, '.runlogger .log-note')) && !(await t.json('runlog-2026-09-30')), 'an unreachable Strava is said plainly and nothing is saved');
+  await t.page.click('.rl-x'); fake.fail = false;
+  // disconnect
+  await t.page.click('[data-nav="more"]'); await t.page.click('[data-nav="ref"]');
+  await t.page.evaluate(() => { const s = document.getElementById('ref-strava'); s.open = true; s.scrollIntoView(); });
+  await t.page.click('[data-sv="forget"]'); await t.page.waitForTimeout(200);
+  check(!(await t.ls('strava')) && fake.calls.includes('POST /oauth/deauthorize') && /Disconnected/.test(await text(t.page, '#ref-strava')), 'Disconnect removes the keys and tokens and tells Strava');
+  noErrors(t, 'strava');
+  await t.ctx.close();
+  // Strava's answer opened in a copy of the app that didn't start it (Safari, not the Home Screen app)
+  t = await open('2026-10-01', '12:00', SEED);
+  await t.page.goto('http://127.0.0.1:' + server.address().port + '/index.html?state=elsewhere&code=handoff99&scope=read,activity:read_all', { waitUntil: 'networkidle' });
+  check(await t.page.evaluate(() => location.search === '' && document.getElementById('ref-strava').open) && /handoff99/.test(await text(t.page, '.sv-code')) &&
+    !(await t.page.$('[data-sv="here"]')), 'a code this copy cannot finish is shown to copy across, and taken out of the address');
+  await t.page.goto('http://127.0.0.1:' + server.address().port + '/index.html?state=x&error=access_denied', { waitUntil: 'networkidle' });
+  check(/cancelled/.test(await text(t.page, '#ref-strava')) && !(await t.ls('strava')), 'a refusal on Strava changes nothing');
+  check(/^IPaces\+$/.test((await t.page.$$eval('.ref-fold > summary', (s) => s.map((x) => x.textContent.trim())))[0]) &&
+    /^XIIIStrava/.test((await t.page.$$eval('.ref-fold > summary', (s) => s.map((x) => x.textContent.trim()))).pop()), 'Strava is chapter XIII');
+  noErrors(t, 'strava hand-off');
+  await t.ctx.close();
+}
+
 /* v5.11.3: a release arrives — the toast offers it, the page keeps its
    release until the tap, then reloads into the new one; the old cache goes,
    ticks and logs stay, and the new release opens offline. Pages caches
@@ -1202,7 +1310,7 @@ async function offline() {
   browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
   server = await serve();
   try {
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, update, sweep, offline]) await run();
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, strava, update, sweep, offline]) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');

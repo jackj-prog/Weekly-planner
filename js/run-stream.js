@@ -54,7 +54,8 @@
     }
     if (tailKm > 0 && !tail) warnings.push('The final ' + tailKm + ' km could not be read cleanly from this track; enter the MP segment by hand if you have it.');
     if (source === 'GPX') warnings.push('Distance is estimated from GPS points; it may differ from your watch.');
-    warnings.push('Track time includes recorded stops within each segment. Check it against your moving time; editing distance, time or HR removes stream analysis.');
+    /* a moving-time series (Strava's, v5.12) has its stops taken out already */
+    if (!(opts && opts.moving)) warnings.push('Track time includes recorded stops within each segment. Check it against your moving time; editing distance, time or HR removes stream analysis.');
     if (gaps) warnings.push('Gaps or invalid samples found. No half-run comparison is reported.');
     if (segments.length > 1) warnings.push('Separate tracks are not joined across pauses; no half-run comparison is reported.');
     if (missingHR) warnings.push(Math.round(missingHR) + ' seconds have no usable HR. Missing time is excluded from measured zones.');

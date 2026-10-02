@@ -5,7 +5,7 @@
    ========================================================================== */
 'use strict';
 
-const CACHE_VERSION = 'week-os-v5.11.3';
+const CACHE_VERSION = 'week-os-v5.12.0';
 const ASSETS = [
   './',
   './index.html',
@@ -13,6 +13,7 @@ const ASSETS = [
   './js/app.js',
   './js/run-import.js',
   './js/run-stream.js',
+  './js/strava.js',
   './js/day-builder.js',
   './js/ef-chart.js',
   './js/run-progress.js',
@@ -48,6 +49,9 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  /* other sites (Strava, v5.12) go straight to the network: never cached,
+     never answered from the app's cache */
+  if (new URL(event.request.url).origin !== location.origin) return;
   event.respondWith(
     caches.match(event.request, { ignoreSearch: true }).then((hit) => {
       if (hit) return hit;

@@ -3616,19 +3616,19 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 /* One disclosure mark (v5.11, review P6): every fold opens on a "+" at its
    right edge that turns to "×" when open — the Reference chapters' mark —
    where some had a "+", some a native ▶ and some nothing at all. */
-:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare) > summary {
+:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste) > summary {
   position: relative; padding-right: 32px; list-style: none;
 }
-:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .session-plan) > summary::-webkit-details-marker { display: none; }
-:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare) > summary::after {
+:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .session-plan) > summary::-webkit-details-marker { display: none; }
+:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste) > summary::after {
   content: '+'; position: absolute; right: 2px; top: 50%; width: 20px; height: 20px; margin-top: -10px;
   font: 400 20px/20px var(--body); text-align: center; color: var(--t2);
 }
 .session-plan > summary { list-style: none; }
 .session-plan > summary::after { content: '+'; display: inline-block; margin-left: 8px; font: 400 18px/1 var(--body); color: var(--t2); }
-:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .session-plan)[open] > summary::after { transform: rotate(45deg); }
+:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .session-plan)[open] > summary::after { transform: rotate(45deg); }
 @media (prefers-reduced-motion: no-preference) {
-  :is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .session-plan) > summary::after { transition: transform .22s var(--ease-out); }
+  :is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .session-plan) > summary::after { transition: transform .22s var(--ease-out); }
 }
 
 /* Legibility (review F6/F7): what has passed recedes by colour, never by
@@ -3761,3 +3761,22 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
    21px strip of text inside a 41px pill */
 .toast { padding: 0 4px 0 18px; min-height: 44px; }
 .toast button { min-height: 44px; padding: 0 14px; border-radius: 999px; }
+
+/* ================= STRAVA (v5.12) ================================== */
+/* the import is the form's first action once connected; the setup reads
+   like the Data chapter beside it */
+.log-strava { display: grid; gap: 8px; margin: 14px 0 4px; }
+.log-sv-go, .log-sv-pick { min-height: 48px; width: 100%; padding: 10px 14px; border: 1px solid var(--text); border-radius: 10px; background: var(--text); color: var(--paper); font: 600 15px var(--body); text-align: center; }
+.log-sv-pick { display: grid; gap: 2px; text-align: left; background: var(--paper); color: var(--text); border-color: var(--line); }
+.log-sv-pick small { font: 400 12px var(--mono); color: var(--t2); }
+.log-sv-go[disabled], .log-sv-pick[disabled] { opacity: .6; }
+.log-sv-setup { min-height: 44px; width: 100%; padding: 8px 0; margin-bottom: 12px; border: 0; background: none; color: var(--t2); font: 400 14px/1.45 var(--body); text-align: left; text-decoration: underline; text-underline-offset: 3px; }
+.sv-card .ref-note { padding-inline: 0; }
+.sv-field { display: grid; gap: 6px; margin: 10px 0; font: 600 13px var(--body); color: var(--text); }
+.sv-field input { min-height: 44px; box-sizing: border-box; width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--text); font: 400 16px var(--mono); }
+.sv-paste { border-top: 1px solid var(--line); margin-top: 6px; }
+.sv-paste summary { min-height: 44px; padding: 12px 32px 12px 0; box-sizing: border-box; font: 600 13px var(--body); color: var(--t2); cursor: pointer; }
+.sv-code { margin: 8px 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); overflow-wrap: anywhere; }
+.sv-code code { font: 400 15px/1.4 var(--mono); color: var(--text); }
+.sv-card .data-actions { flex-wrap: wrap; }
+.sv-card .data-actions button { min-height: 44px; }

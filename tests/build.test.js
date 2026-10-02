@@ -1190,7 +1190,7 @@ section('hr zones');
      measurement cannot be pasted in unnoticed by anyone — me included. */
   const ALLOWED = ['50/190', '50/100', '0/190'];
   const files = ['../data/plan.js', '../js/day-builder.js', '../js/app.js',
-    '../js/ef-chart.js', '../js/run-progress.js', '../js/run-import.js', '../tests/run-import.test.js', '../js/run-stream.js', '../tests/run-stream.test.js', '../tests/build.test.js'];
+    '../js/ef-chart.js', '../js/run-progress.js', '../js/run-import.js', '../tests/run-import.test.js', '../js/run-stream.js', '../tests/run-stream.test.js', '../js/strava.js', '../tests/strava.test.js', '../tests/build.test.js'];
   {
     /* The browser tool seeds localStorage directly, so its fixture is the
        place a real pair would most easily slip in. */
@@ -1800,5 +1800,8 @@ require('./run-stream.test.js');
 require('./time-input.test.js');
 require('./training-journey.test.js');
 require('./session-focus.test.js');
-console.log('\n' + checks + ' checks, ' + failures + ' failure' + (failures === 1 ? '' : 's'));
-process.exit(failures ? 1 : 0);
+// the Strava test talks to a fake server, so it is awaited before the verdict
+require('./strava.test.js').then(() => {
+  console.log('\n' + checks + ' checks, ' + failures + ' failure' + (failures === 1 ? '' : 's'));
+  process.exit(failures ? 1 : 0);
+}, (e) => { console.error(e); process.exit(1); });

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.11.3';
+  const APP_VERSION = '5.12.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -39,6 +39,9 @@
     hrEdit: false, hrDraft: null,  // resting/max HR steppers on Reference
     movePick: null,            // block id with the move-to-day picker open
     rhrDraft: null,            // morning resting HR being entered on the hero
+    stravaMsg: '',             // Reference → Strava: the last thing that happened
+    stravaCode: null,          // a code from Strava this copy cannot finish with
+    stravaScope: null,
   };
   let nowKey = '';             // today's current|next block ids — minute tick
                                // re-renders only when this changes
@@ -1036,7 +1039,8 @@
     return '<details class="record-method"><summary>Imported track analysis</summary><p>' + esc(stream.source) +
       ' · ' + Math.round(stream.coveredSec/60) + ' min with HR samples.</p>' +
       (Number.isFinite(split) ? '<p>Equal-distance halves: second half ' + (Math.abs(split)<1 ? 'matched the first.' : recordTime(Math.abs(split)) + (split<0 ? ' faster (negative split).' : ' slower.')) + '</p>' : '<p>Half-run comparison unavailable for this track.</p>') +
-      '<p>Track time includes recorded stops. GPS, terrain and missing samples affect comparisons. Only summaries are saved; the route stays out of storage.</p></details>';
+      '<p>' + (stream.source === 'Strava' ? 'Moving time only: stops and pauses are left out, as on Strava.' : 'Track time includes recorded stops.') +
+      ' GPS, terrain and missing samples affect comparisons. Only summaries are saved; the route stays out of storage.</p></details>';
   }
   /* Said on the run itself, the day it happens: a long run well past its
      planned distance or rule 9's time cap, and the share of the week it has
@@ -1129,7 +1133,7 @@
       if (iso > todayISO()) return wrap;
       wrap.innerHTML = '<button class="h-log' + (saved ? ' logged' : '') + '">' +
         (saved ? (hasRecap ? 'Edit run <span aria-hidden="true">↗</span>' : loggedLineHTML(iso, plannedKm)) : day.run
-          ? 'Log this run <span aria-hidden="true">↗</span><small>Paste your run or enter the numbers</small>'
+          ? 'Log this run <span aria-hidden="true">↗</span><small>' + (window.Strava && window.Strava.connected() ? 'Import from Strava or enter the numbers' : 'Paste your run or enter the numbers') + '</small>'
           : (iso === todayISO() ? 'Ran today?' : 'Ran on ' + esc(fmtDate(iso).split(' ')[0]) + '?') + ' <b>Add a run</b> <span aria-hidden="true">↗</span>') + '</button>' +
         (saved && !hasRecap ? earnedHTML(iso) : '');
       if (saved) {
@@ -1221,20 +1225,29 @@
     const isMpDay = !!(day.run && DB.isMpSession(day.run.title));
     const p = d.preview;
     const found = p && p.values;
+    /* Strava (v5.12): one tap fills the form with Strava's own numbers once
+       the owner's API app is connected on this phone; several runs on the
+       day are offered by start time. Not connected: one quiet way there. */
+    const SV = window.Strava, svOn = !!(SV && SV.connected());
+    const svHTML = !svOn ? '' : '<div class="log-strava">' + (d.stravaRuns
+      ? d.stravaRuns.map((r, i) => '<button class="log-sv-pick" data-i="' + i + '"' + (d.stravaBusy ? ' disabled' : '') + '><b>' + esc(r.start + ' · ' + r.name) + '</b><small>' +
+          esc(loggedDistance(Math.round(r.km * 100) / 100) + ' km · ' + recordTime(r.sec) + (r.hr ? ' · ' + Math.round(r.hr) + ' bpm' : '')) + '</small></button>').join('')
+      : '<button class="log-sv-go"' + (d.stravaBusy ? ' disabled aria-busy="true"' : '') + '>' + (d.stravaBusy ? 'Asking Strava…' : 'Import from Strava') + ' <span aria-hidden="true">↗</span></button>') + '</div>';
     wrap.innerHTML = '<div class="h-log form"><div class="log-heading"><h3>Log your run</h3><button class="rl-x" aria-label="Cancel run edit">✕</button></div>' +
-      '<p class="log-note">' + esc(d.note) + '</p>' +
+      '<p class="log-note" role="status">' + esc(d.note) + '</p>' + svHTML +
       '<details class="log-import"' + (d.paste || p ? ' open' : '') + '><summary>Paste or import a run</summary>' +
       '<label for="run-paste">Distance, moving time, average HR and conditions</label>' +
       '<textarea id="run-paste" rows="3" placeholder="distance=8km moving=48:00 HR_avg=140">' + esc(d.paste) + '</textarea>' +
       '<button class="log-parse">Preview values</button>' +
       '<label class="log-file-label">Or import a GPX / TCX activity<input class="log-file" type="file" accept=".gpx,.tcx,application/gpx+xml,application/xml,text/xml"></label>' +
+      (SV && !svOn ? '<button class="log-sv-setup">Import from Strava instead — connect it once in Reference <span aria-hidden="true">↗</span></button>' : '') +
       (p ? '<div class="log-preview" role="status"><b>Found' + (p.date ? ' · ' + esc(p.date) : '') + '</b><p>' +
         [found.km ? Number(found.km.toFixed(3)) + ' km' : 'No distance', found.sec ? clock(found.sec) : 'No time',
           found.hr ? found.hr + ' bpm' : 'No HR', found.temp != null ? found.temp + '°C' : 'No temperature'].map(esc).join(' · ') +
         '</p>' + (found.mpPaceSec ? '<p>Marathon-pace finish · ' + esc(found.mpKm + ' km · ' + DB.fmtPaceSec(found.mpPaceSec) + '/km · ' + found.mpHr + ' bpm') + '</p>' : '') + p.warnings.map(w => '<p>' + esc(w) + '</p>').join('') +
         (p.date && p.date !== iso ? '<p>Open ' + esc(p.date) + ' before importing this activity. No values have been saved.</p>' : Object.keys(found).length ? '<button class="log-use">Use these values</button>' : '') + '</div>' : '') + '</details>' +
       field('km', 'Distance', d.km, 'decimal', 'km', true) +
-      field('sec', d.stream ? 'Track time' : 'Moving time', clock(d.sec), 'text', 'h:mm:ss', false) +
+      field('sec', d.stream && d.stream.source !== 'Strava' ? 'Track time' : 'Moving time', clock(d.sec), 'text', 'h:mm:ss', false) +
       field('paceSec', 'Pace', clock(d.paceSec), 'text', '/km', true) +
       field('hr', 'Average HR', d.hr, 'numeric', 'bpm', true) +
       '<label class="log-field">Run type<select class="log-class" aria-label="Run type">' + classes.map(c =>
@@ -1338,17 +1351,45 @@
       }
       d.paste = ''; render();
     });
-    const use = wrap.querySelector('.log-use');
-    if (use) use.addEventListener('click', () => {
-      const v = d.preview.values;
+    const applyPreview = (pv, note) => {
+      const v = pv.values;
       // Missing observations must not become the plan or an earlier run's weather.
       d.km = v.km || null; d.sec = v.sec || null; d.paceSec = v.paceSec || null;
-      d.hr = v.hr || null; d.temp = v.temp == null ? null : v.temp;
-      d.halfPaceSec = d.hr2 = null; d.stream = d.preview.stream || null;
+      d.hr = v.hr || null; d.temp = v.temp == null ? (pv.source === 'Strava' ? d.temp : null) : v.temp;
+      d.halfPaceSec = d.hr2 = null; d.stream = pv.stream || null;
       if (v.mpPaceSec) { d.mpKm = v.mpKm; d.mpPaceSec = v.mpPaceSec; d.mpHr = v.mpHr; }
-      d.preview = null; d.paste = ''; d.note = 'Imported into the form. Check the numbers, then Save run.';
+      d.preview = null; d.paste = ''; d.note = note;
       render();
+    };
+    const use = wrap.querySelector('.log-use');
+    if (use) use.addEventListener('click', () => applyPreview(d.preview, 'Imported into the form. Check the numbers, then Save run.'));
+    const stale = () => state.runLogDraft !== d || state.runLogEdit !== iso;
+    const svFail = (error) => { if (stale()) return; d.stravaBusy = false; d.note = error && error.message ? error.message : 'Strava import failed.'; render(); };
+    const svUse = (run) => {
+      d.stravaBusy = true; render();
+      SV.importRun(run, { tailKm: day.run ? DB.mpTailKm(day.run.title) : null }).then((pv) => {
+        if (stale()) return;
+        d.stravaBusy = false; d.stravaRuns = null;
+        /* the feels-like temperature is the owner's to add: a watch's own
+           sensor reads the wrist, not the air (§10) */
+        applyPreview(pv, 'Imported from Strava · ' + pv.name + '. Check the numbers, add the feels-like temperature, then Save run.' +
+          (pv.warnings.length ? ' ' + pv.warnings.join(' ') : ''));
+      }, svFail);
+    };
+    const svGo = wrap.querySelector('.log-sv-go');
+    if (svGo) svGo.addEventListener('click', () => {
+      remember(); d.stravaBusy = true; d.note = 'Asking Strava for ' + fmtDate(iso) + '…'; render();
+      SV.runsOn(iso).then((runs) => {
+        if (stale()) return;
+        d.stravaBusy = false;
+        if (!runs.length) { d.note = 'No run on Strava for ' + fmtDate(iso) + ' yet. If it is still uploading, try again in a minute.'; return render(); }
+        if (runs.length > 1) { d.stravaRuns = runs; d.note = 'Strava has ' + runs.length + ' runs on ' + fmtDate(iso) + '. Choose the one to log.'; return render(); }
+        svUse(runs[0]);
+      }, svFail);
     });
+    wrap.querySelectorAll('.log-sv-pick').forEach((b) => b.addEventListener('click', () => { remember(); svUse(d.stravaRuns[+b.dataset.i]); }));
+    const svSetup = wrap.querySelector('.log-sv-setup');
+    if (svSetup) svSetup.addEventListener('click', () => openStravaChapter());
     wrap.querySelector('.rl-x').addEventListener('click', () => { state.runLogEdit = null; state.runLogDraft = null; render(); });
     wrap.querySelector('.rl-save').addEventListener('click', () => {
       if (wrap.querySelector('input:invalid') || d.error || !(d.km > 0 && d.km <= 1000 && d.sec > 0 && d.sec <= 604800) ||
@@ -4322,6 +4363,7 @@
     view.appendChild(section('ref-app', buildDiagSection()));
     view.appendChild(buildCalendarSection());
     view.appendChild(section('ref-data', buildDataSection()));
+    if (window.Strava) view.appendChild(section('ref-strava', buildStravaSection()));
     view.querySelectorAll('[id^="ref-"]:not(#ref-top)').forEach((target) => {
       const back = el('<button class="ref-back">↑ Contents</button>');
       back.addEventListener('click', () => { book.scrollIntoView({ block: 'start' }); const f = book.querySelector('.ref-fold > summary'); if (f) f.focus({ preventScroll: true }); });
@@ -5337,6 +5379,87 @@
     return wrap;
   }
 
+  /* ---- Strava (v5.12): the owner's own API application, on this phone ----
+     Three states: not set up (the app's ID and secret, then Connect); a code
+     came back to a copy of the app that did not start the round trip (copy it
+     across — an iPhone may open Strava's answer in Safari, whose storage is
+     not the Home Screen app's); connected (import from a run's log form). */
+  function openStravaChapter() {
+    state.view = 'ref'; state.runLogEdit = null; state.runLogDraft = null;
+    openDetails.add('ref-strava'); render();
+    const s = document.getElementById('ref-strava');
+    if (s) { s.scrollIntoView({ block: 'start' }); const f = s.querySelector('summary'); if (f) f.focus({ preventScroll: true }); }
+  }
+  function buildStravaSection() {
+    const S = window.Strava, c = S.config(), on = S.connected();
+    const host = location.hostname || 'this site';
+    let body;
+    if (state.stravaCode) {
+      body = '<div class="ref-note"><b>Strava sent a one-time code.</b> This copy of Week OS did not start the connection: on an iPhone, Strava’s answer can open in Safari instead of the Home Screen app. Copy the code, open Week OS from the Home Screen, then Reference → Strava → “Have a code from Strava?”. A code works once, for a few minutes.</div>' +
+        '<div class="sv-code"><code>' + esc(state.stravaCode) + '</code></div>' +
+        '<div class="data-actions"><button data-sv="copy" class="go">Copy code</button>' + (c ? '<button data-sv="here">Finish here instead</button>' : '') + '</div>';
+    } else if (on) {
+      body = '<div class="ref-row"><span>Status</span><span class="v">Connected' + (c.since ? ' · since ' + esc(fmtShort(c.since)) : '') + '</span></div>' +
+        '<div class="ref-note">To import a run, open its card, tap <b>Log this run</b>, then <b>Import from Strava</b>. Strava’s distance, moving time and average HR fill the form; check them, add the feels-like temperature, and Save.</div>' +
+        (c.scope && !/activity:read_all/.test(c.scope) ? '<div class="ref-note">Only runs others can see are shared. For private runs too, disconnect and connect again with every box ticked.</div>' : '') +
+        '<div class="data-actions"><button data-sv="forget">Disconnect Strava</button></div>';
+    } else {
+      body = '<div class="ref-note">Import a day’s run from your own Strava account. Create a free API application at <b>strava.com/settings/api</b> with the callback domain <b>' + esc(host) +
+        '</b>, then enter its Client ID and Client Secret here once. They stay on this phone: never in a backup, never sent anywhere but Strava.</div>' +
+        '<label class="sv-field"><span>Client ID</span><input data-sv-in="id" inputmode="numeric" autocomplete="off" autocapitalize="off" spellcheck="false" value="' + esc(c ? c.id : '') + '" placeholder="12345"></label>' +
+        '<label class="sv-field"><span>Client Secret</span><input data-sv-in="secret" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + (c ? 'Saved — enter to change' : 'Tap “show” on Strava') + '"></label>' +
+        '<div class="data-actions"><button data-sv="connect" class="go">Connect to Strava <span aria-hidden="true">↗</span></button></div>' +
+        '<details class="sv-paste"><summary>Have a code from Strava?</summary>' +
+        '<label class="sv-field"><span>Code</span><input data-sv-in="code" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste the code"></label>' +
+        '<div class="data-actions"><button data-sv="paste">Finish connecting</button></div></details>';
+    }
+    const wrap = el('<div class="ref"><h2>Strava</h2><div class="ref-card data-card sv-card">' + body +
+      '<div class="data-msg sv-msg" role="status">' + esc(state.stravaMsg || '') + '</div></div></div>');
+    const msg = wrap.querySelector('.sv-msg');
+    const say = (t) => { state.stravaMsg = t; msg.textContent = t; };
+    const val = (k) => { const n = wrap.querySelector('[data-sv-in="' + k + '"]'); return n ? n.value.trim() : ''; };
+    /* the status row says Connected; a message saying it again is noise */
+    const done = () => { state.stravaCode = null; state.stravaScope = null; state.stravaMsg = ''; render(); };
+    const act = (k, fn) => { const b = wrap.querySelector('[data-sv="' + k + '"]'); if (b) b.addEventListener('click', fn); };
+    act('connect', () => {
+      try {
+        S.saveApp(val('id'), val('secret') || (c && c.id === val('id') ? c.secret : ''));
+        say('Opening Strava…');
+        location.assign(S.authorizeUrl());
+      } catch (e) { say(e.message); }
+    });
+    act('paste', () => {
+      try { if (val('id') || val('secret')) S.saveApp(val('id'), val('secret') || (c ? c.secret : '')); } catch (e) { return say(e.message); }
+      say('Finishing the connection…');
+      S.exchange(val('code'), null).then(done, (e) => say(e.message));
+    });
+    act('here', () => { say('Finishing the connection…'); S.exchange(state.stravaCode, state.stravaScope).then(done, (e) => say(e.message)); });
+    act('copy', () => {
+      const code = state.stravaCode;
+      (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(code) : Promise.reject())
+        .then(() => say('Code copied. Now open Week OS from the Home Screen.'), () => say('Copy the code above by hand.'));
+    });
+    act('forget', () => {
+      if (!window.confirm('Disconnect Strava? The app keys and the connection are removed from this phone. Runs already logged stay.')) return;
+      S.forget(); state.stravaMsg = 'Disconnected. You can also remove the app at strava.com/settings/apps.'; render();
+    });
+    return wrap;
+  }
+  /* Back from Strava's approval page: the address carries a code (or an
+     error). Take it out of the address at once, open the Strava chapter, and
+     finish there if this copy of the app started the round trip. */
+  function stravaReturn() {
+    const S = window.Strava; if (!S) return;
+    const cb = S.callback(location.search); if (!cb) return;
+    try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { /* fine */ }
+    state.view = 'ref'; openDetails.add('ref-strava');
+    if (cb.error) { state.stravaMsg = 'Strava connection cancelled — nothing changed.'; return; }
+    if (!S.ownsCallback(cb)) { state.stravaCode = cb.code; state.stravaScope = cb.scope; return; }
+    state.stravaMsg = 'Finishing the connection…';
+    S.exchange(cb.code, cb.scope).then(() => { state.stravaMsg = ''; },
+      (e) => { state.stravaMsg = e.message; }).then(() => { if (state.view === 'ref') render(); });
+  }
+
   /* ================= router ================= */
   const openDetails = new Set();
 
@@ -5413,7 +5536,7 @@
       '<circle class="sp-sunglow" cx="84" cy="46" r="20"/><circle class="sp-sun" cx="84" cy="46" r="7"/><path class="sp-hz" d="M0 46 L96 46"/></svg>' +
       '<span class="sp-t"><b>Your training journey</b><small>' + (Math.round(j.recorded * 10) / 10) + ' km · ' + j.runs + ' runs recorded</small></span>';
     ref.innerHTML = '<span class="sp-init" aria-hidden="true">R</span>' +
-      '<span class="sp-t"><b>Reference</b><small>Paces to rules · XII chapters</small></span>';
+      '<span class="sp-t"><b>Reference</b><small>Paces to rules · XIII chapters</small></span>';
     const kal = document.querySelector('.sheet-item[data-nav="kal"]');
     if (kal) {
       const t = todayISO(), [y, m] = t.split('-').map(Number);
@@ -5696,7 +5819,9 @@
     }
   }
 
+  stravaReturn();
   render();
+  if (openDetails.has('ref-strava') && state.view === 'ref') { const s = document.getElementById('ref-strava'); if (s) s.scrollIntoView({ block: 'start' }); }
   titleCard();
   /* This phone holds the only copy: ask the browser to keep it rather than
      clear it under storage pressure (granted silently where it is). */

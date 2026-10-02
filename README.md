@@ -22,6 +22,7 @@ keyed per ISO date.
 | `data/plan.js` | **All routine content.** The 30-week table, day templates with times, special-week overrides, paces, shoes, rules, blocks, the standing default week. Amending the plan = editing this file only. |
 | `js/day-builder.js` | Pure logic: date + plan → a resolved day. Shared by app and tests. |
 | `js/app.js` | Rendering + interaction. Zero plan content. |
+| `js/strava.js` | Optional Strava import (v5.12): the owner's own API app keys and tokens stay in this phone's storage (never in the repo or a backup); a day's run comes in as Strava's summary plus time, distance, HR and moving samples — no route. Tested against a fake Strava in `tests/strava.test.js` and `tools/interactions.js`. |
 | `sw.js` | Service worker. **Bump `CACHE_VERSION` on every deploy** — it drives the "Updated — reload" toast. |
 | `tests/build.test.js` | Headless test: builds all 210 days + the §15 definition-of-done checks. |
 | `icons/icon.svg` | Vector source for the app icon (the day clock, v4.94). |

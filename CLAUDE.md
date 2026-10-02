@@ -335,6 +335,7 @@ target, and the browser suite now takes a release through the toast
 (HTTP cache on, as on Pages) and checks the page keeps its own release
 until the tap, the old cache goes, data stays and the new release opens
 offline.
+**Strava import (v5.12, the owner's request):** a run's log form fills from Strava in one tap — Strava's own distance, moving time and average HR, with the time/distance/HR samples put on moving time for the halves, the HR distribution and a "last N @ MP" finish; several runs that day are offered by start time. The owner registers their own Strava API app and enters its Client ID and Secret once in Reference → Strava (chapter XIII). Keys and tokens live only in this phone's storage — never in the repo, never in a backup (the backup takes an allowlist) — and no route is stored. If Strava's answer opens in Safari rather than the Home Screen app, the code is shown to copy across. Only an import needs the network; the service worker leaves other sites alone.
 **v5.9.4:** a wrapped Next title hangs under its first word, not its
 emblem; the Now card's stars keep off its edge; a title that already names
 its distance ("~21 km") is not given it again.
