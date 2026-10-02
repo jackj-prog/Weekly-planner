@@ -2185,3 +2185,24 @@ Book of Hours calendar page, every mark real data:
   shorten by 1h 56m". The separate sign roundel is gone (the band has it).
 258 browser checks (1 new, 3 rewritten), 16,287 plan checks (8 new).
 
+## The wreath, redrawn — v5.10.1, 1 October (Claude)
+
+The owner, of the countdown wreath: "we both know this does not look good".
+It was 44 grey ellipses round a flat ellipse — a ring of sausage links —
+with flat slab candles floating at their own heights and an unlit maroon
+block in the middle. Redrawn:
+- **The ring** has a body (a dark half-annulus behind and in front) under
+  three rows of pointed leaves — inner, crown and outer — 146 in all, each
+  laid along the curve, the outer row leaning out and the inner in so the
+  edge is ragged with leaves rather than ruled; smaller and darker towards
+  the back, lighter on the crown and the near side. It reads as a laurel
+  wreath, the race's own emblem.
+- **Depth:** every leaf and candle is drawn in order of its depth, so the
+  candles stand in the greenery and the near leaves cover their feet.
+- **Candles** are wax cylinders shaded round (a gradient across), with an
+  elliptical top, the back two smaller; a lit one has a melt pool and a
+  drip, a charred wick and a flame — white at the heart, in a soft halo —
+  that flickers behind reduced motion. The red centre candle stands on a
+  dish, shaded red, and lights at the gun.
+258 browser checks, 16,287 plan checks.
+

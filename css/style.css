@@ -3452,21 +3452,43 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 }
 
 /* ================= THE COUNTDOWN WREATH (v5.8) ===================== */
-.bb-wreath { display: block; width: 96px; height: 48px; margin: -6px 0 2px; overflow: visible; }
-.wr-leaf { fill: color-mix(in srgb, var(--t3) 55%, var(--paper)); stroke: color-mix(in srgb, var(--t2) 40%, transparent); stroke-width: .3; }
-.wr-leaf.l { fill: color-mix(in srgb, var(--t2) 60%, var(--paper)); }
-.wr-candle rect { fill: color-mix(in srgb, var(--text) 30%, var(--paper)); }
-.wr-candle.on rect { fill: color-mix(in srgb, var(--text) 92%, var(--paper)); }
-.wr-candle.centre rect { fill: color-mix(in srgb, var(--accent) 40%, var(--paper)); }
-.wr-candle.centre.on rect { fill: var(--accent-fill); }
-.wr-wick { stroke: var(--t3); stroke-width: .7; stroke-linecap: round; }
-.wr-fire { fill: color-mix(in srgb, var(--text) 85%, var(--accent)); }
-.wr-glow { fill: var(--glow-red-soft); }
+/* v5.10.1: an evergreen ring with depth, shaded wax, flames on their wicks */
+.bb-wreath { display: block; width: 112px; height: 63px; margin: -8px -4px 0 0; overflow: visible; }
+.wr-body { fill: color-mix(in srgb, var(--t3) 22%, var(--chrome-bg)); }
+.wr-body.front { fill: color-mix(in srgb, var(--t3) 30%, var(--chrome-bg)); }
+.wr-leaf { stroke: color-mix(in srgb, var(--chrome-bg) 70%, transparent); stroke-width: .3; }
+.wr-leaf.t0 { fill: color-mix(in srgb, var(--t3) 38%, var(--chrome-bg)); }
+.wr-leaf.t1 { fill: color-mix(in srgb, var(--t3) 58%, var(--chrome-bg)); }
+.wr-leaf.t2 { fill: color-mix(in srgb, var(--t3) 80%, var(--chrome-bg)); }
+.wr-leaf.t3 { fill: color-mix(in srgb, var(--t2) 88%, var(--chrome-bg)); }
+.ww0 { stop-color: color-mix(in srgb, var(--text) 55%, var(--chrome-bg)); }
+.ww1 { stop-color: var(--text); }
+.ww2 { stop-color: color-mix(in srgb, var(--text) 86%, var(--chrome-bg)); }
+.ww3 { stop-color: color-mix(in srgb, var(--text) 50%, var(--chrome-bg)); }
+.wr0 { stop-color: color-mix(in srgb, var(--accent-fill) 55%, var(--chrome-bg)); }
+.wr1 { stop-color: color-mix(in srgb, var(--accent) 85%, var(--text)); }
+.wr2 { stop-color: var(--accent-fill); }
+.wr3 { stop-color: color-mix(in srgb, var(--accent-fill) 50%, var(--chrome-bg)); }
+.wr-wax { fill: url(#wr-wax-g); }
+.wr-candle:not(.on) .wr-wax { opacity: .8; }
+.wr-candle.centre .wr-wax { fill: url(#wr-red-g); }
+.wr-top { fill: color-mix(in srgb, var(--text) 78%, var(--t3)); }
+.wr-candle.on .wr-top, .wr-drip { fill: var(--text); }
+.wr-candle.centre .wr-top { fill: color-mix(in srgb, var(--accent) 70%, var(--text)); }
+.wr-candle.centre .wr-drip { fill: color-mix(in srgb, var(--accent) 80%, var(--text)); }
+.wr-wick { fill: none; stroke: var(--t3); stroke-width: .6; stroke-linecap: round; }
+.wr-candle.on .wr-wick { stroke: var(--chrome-bg); }
+.wr-dish { fill: color-mix(in srgb, var(--t3) 45%, var(--chrome-bg)); stroke: color-mix(in srgb, var(--t2) 50%, transparent); stroke-width: .4; }
+.wh0 { stop-color: var(--text); stop-opacity: .5; }
+.wh1 { stop-color: var(--accent); stop-opacity: .16; }
+.wh2 { stop-color: var(--accent); stop-opacity: 0; }
+.wr-halo { fill: url(#wr-halo-g); }
+.wr-fire { fill: color-mix(in srgb, var(--text) 72%, var(--accent)); }
+.wr-core { fill: var(--text); }
 .day-head .bb:has(.bb-wreath) .bb-num { margin-bottom: 0; }
 @media (prefers-reduced-motion: no-preference) {
-  .wr-fire { animation: gc-flick 1.8s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
-  .wr-candle:nth-of-type(2n) .wr-fire { animation-duration: 1.4s; animation-delay: -.5s; }
-  .wr-glow { animation: gc-glow 2.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+  .wr-fire, .wr-core { animation: gc-flick 1.8s ease-in-out infinite alternate; animation-delay: calc(var(--k) * -.37s); transform-box: fill-box; transform-origin: 50% 100%; }
+  .wr-halo { animation: gc-glow 2.4s ease-in-out infinite alternate; animation-delay: calc(var(--k) * -.5s); transform-box: fill-box; transform-origin: center; }
 }
 
 /* ================= NARROW SCREENS (v5.8.1) ========================= */

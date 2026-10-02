@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.10.0';
+  const APP_VERSION = '5.10.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1996,25 +1996,75 @@
     const lit = [1, 2, 3, 4].map((k) => cd.days <= 7 * (5 - k));
     const gun = DB.parseHM(String(PLAN.race.gun));
     const centre = cd.days === 0 && (iso < todayISO() || nowMin() >= gun);
-    const cx = 50, cy = 36, rx = 38, ry = 8, f1 = (v) => v.toFixed(1);
-    let leaves = '';
-    for (let k = 0; k < 44; k++) {
-      const a = (k / 44) * Math.PI * 2, x = cx + rx * Math.cos(a), y = cy + ry * Math.sin(a);
-      const rot = (a * 180 / Math.PI + 90 + (k % 2 ? 28 : -28)).toFixed(0);
-      leaves += '<ellipse class="wr-leaf' + (k % 3 ? '' : ' l') + '" cx="' + f1(x) + '" cy="' + f1(y) + '" rx="4.4" ry="1.6" transform="rotate(' + rot + ' ' + f1(x) + ' ' + f1(y) + ')"/>';
-    }
-    const flame = (x, top) => '<g class="wr-flame"><circle class="wr-glow" cx="' + f1(x) + '" cy="' + f1(top - 5) + '" r="3.6"/>' +
-      '<path class="wr-fire" d="M' + f1(x) + ' ' + f1(top - 9) + ' C' + f1(x + 2.6) + ' ' + f1(top - 5.5) + ' ' + f1(x + 2.2) + ' ' + f1(top - 2) + ' ' + f1(x) + ' ' + f1(top - 1.2) +
-      ' C' + f1(x - 2.2) + ' ' + f1(top - 2) + ' ' + f1(x - 2.6) + ' ' + f1(top - 5.5) + ' ' + f1(x) + ' ' + f1(top - 9) + ' Z"/></g>';
-    const candle = (x, base, h, on, cls) => '<g class="wr-candle' + (cls ? ' ' + cls : '') + (on ? ' on' : '') + '"><rect x="' + f1(x - 2.4) + '" y="' + f1(base - h) + '" width="4.8" height="' + h + '" rx=".8"/>' +
-      '<path class="wr-wick" d="M' + f1(x) + ' ' + f1(base - h) + ' L' + f1(x) + ' ' + f1(base - h - 1.6) + '"/>' + (on ? flame(x, base - h - 0.6) : '') + '</g>';
+    /* v5.10.1, redrawn: an evergreen ring seen from a little above, drawn
+       back to front so the candles stand in the greenery rather than float
+       over it; wax cylinders shaded round, the back two smaller; a flame
+       on each lit wick, white at the heart, in a soft halo */
+    const cx = 60, cy = 48, rx = 45, ry = 13.5, f = (v) => v.toFixed(2);
+    const items = [];
+    const ring = (dx, dy) => (a) => [cx + (rx + dx) * Math.cos(a), cy + (ry + dy) * Math.sin(a)];
+    const outer = ring(7, 3.6), inner = ring(-7, -3.2);
+    const half = (front) => {
+      const a0 = front ? 0 : Math.PI, a1 = front ? Math.PI : 2 * Math.PI;
+      const p = (fn, a) => f(fn(a)[0]) + ' ' + f(fn(a)[1]);
+      return 'M' + p(outer, a0) + ' A' + (rx + 7) + ' ' + (ry + 3.6) + ' 0 0 1 ' + p(outer, a1) +
+        ' L' + p(inner, a1) + ' A' + (rx - 7) + ' ' + (ry - 3.2) + ' 0 0 0 ' + p(inner, a0) + ' Z';
+    };
+    items.push({ z: -1e3, svg: '<path class="wr-body" d="' + half(false) + '"/>' });
+    items.push({ z: cy, svg: '<path class="wr-body front" d="' + half(true) + '"/>' });
+    /* the leaves: two rows round the ring, each laid along the curve and
+       tipped in or out, smaller and darker towards the back */
+    const rows = [[-5.2, 44, -1], [0, 52, 0], [5.2, 50, 1]];   // inner, crown, outer: offset, count, lean
+    rows.forEach(([off, n, lean], ri) => {
+      for (let i = 0; i < n; i++) {
+        const sd = (k) => artSeed('wr:' + ri + ':' + i + ':' + k);
+        const a = ((i + (ri % 2) * 0.5) / n) * Math.PI * 2 + (sd('a') - 0.5) * 0.1;
+        const o = off + (sd('r') - 0.5) * 2.4;
+        const x = cx + (rx + o) * Math.cos(a), y = cy + (ry + o * ry / rx) * Math.sin(a) - (ri === 1 ? 1.4 : 0);
+        const depth = (Math.sin(a) + 1) / 2, sc = (0.8 + depth * 0.32) * (0.85 + sd('s') * 0.35);
+        const tan = Math.atan2(ry * Math.cos(a), -rx * Math.sin(a)) * 180 / Math.PI;
+        /* the outer row leans out and the inner in, so the ring's edge is
+           ragged with leaves rather than ruled; the crown lies along it */
+        const tilt = lean ? lean * (22 + sd('t') * 26) * (Math.sin(a) >= 0 ? 1 : -1) : (sd('t') - 0.5) * 30;
+        const lift = ri === 1 ? 1 : 0;
+        const tone = Math.min(3, Math.max(0, Math.round(depth * 2.2 + lift * 0.8 + (sd('c') - 0.5) * 1.4)));
+        items.push({ z: y + 0.01 + ri * 0.003, svg: '<path class="wr-leaf t' + tone + '" transform="translate(' + f(x) + ' ' + f(y) + ') rotate(' + f(tan + tilt) + ') scale(' + f(sc) + ')" d="M-1 0 C.8 -2.3 5 -2.6 8 0 C5 2.6 .8 2.3 -1 0 Z"/>' });
+      }
+    });
+    /* the candles */
+    const flame = (x, top, k) => {
+      const fy = top - 2.2;
+      return '<g class="wr-flame" style="--k:' + k + '"><circle class="wr-halo" cx="' + f(x) + '" cy="' + f(fy - 3.6) + '" r="7.5"/>' +
+        '<path class="wr-fire" d="M' + f(x) + ' ' + f(fy - 8) + ' C' + f(x + 1.1) + ' ' + f(fy - 5.6) + ' ' + f(x + 2) + ' ' + f(fy - 3.4) + ' ' + f(x + 1.7) + ' ' + f(fy - 1.6) +
+        ' C' + f(x + 1.4) + ' ' + f(fy - 0.2) + ' ' + f(x - 1.4) + ' ' + f(fy - 0.2) + ' ' + f(x - 1.7) + ' ' + f(fy - 1.6) +
+        ' C' + f(x - 2) + ' ' + f(fy - 3.4) + ' ' + f(x - 1.1) + ' ' + f(fy - 5.6) + ' ' + f(x) + ' ' + f(fy - 8) + ' Z"/>' +
+        '<path class="wr-core" d="M' + f(x) + ' ' + f(fy - 4.4) + ' C' + f(x + 0.9) + ' ' + f(fy - 3) + ' ' + f(x + 0.9) + ' ' + f(fy - 1.2) + ' ' + f(x) + ' ' + f(fy - 0.9) +
+        ' C' + f(x - 0.9) + ' ' + f(fy - 1.2) + ' ' + f(x - 0.9) + ' ' + f(fy - 3) + ' ' + f(x) + ' ' + f(fy - 4.4) + ' Z"/></g>';
+    };
+    const candle = (x, base, h, w, on, red, k) => {
+      const top = base - h, e = w * 0.2;
+      return '<g class="wr-candle' + (red ? ' centre' : '') + (on ? ' on' : '') + '">' +
+        '<path class="wr-wax" d="M' + f(x - w / 2) + ' ' + f(top) + ' L' + f(x - w / 2) + ' ' + f(base) + ' A' + f(w / 2) + ' ' + f(e) + ' 0 0 0 ' + f(x + w / 2) + ' ' + f(base) +
+        ' L' + f(x + w / 2) + ' ' + f(top) + ' Z"/>' +
+        '<ellipse class="wr-top" cx="' + f(x) + '" cy="' + f(top) + '" rx="' + f(w / 2) + '" ry="' + f(e) + '"/>' +
+        (on ? '<path class="wr-drip" d="M' + f(x + w / 2 - 0.15) + ' ' + f(top) + ' L' + f(x + w / 2 - 0.15) + ' ' + f(top + 3.4) +
+          ' Q' + f(x + w / 2 - 0.85) + ' ' + f(top + 4.8) + ' ' + f(x + w / 2 - 1.5) + ' ' + f(top + 3.2) + ' L' + f(x + w / 2 - 1.5) + ' ' + f(top + 0.6) + ' Z"/>' : '') +
+        '<path class="wr-wick" d="M' + f(x) + ' ' + f(top) + ' L' + f(x + 0.3) + ' ' + f(top - 2.2) + '"/>' +
+        (on ? flame(x + 0.3, top, k) : '') + '</g>';
+    };
     /* four places round the ring, each at its own x so no flame stands in
        front of another; lit in turn, front-left, left, back-right, right */
-    const pos = [110, 200, 290, 20].map((d) => [cx + rx * Math.cos(d * Math.PI / 180), cy + ry * Math.sin(d * Math.PI / 180)]);
-    const back = [1, 2], front = [0, 3];
-    const order = (ks, hScale) => ks.map((k) => candle(pos[k][0], pos[k][1], 13 * hScale, lit[k])).join('');
-    return '<svg class="bb-wreath" viewBox="0 0 100 50">' + order(back, 0.88) +
-      '<g class="wr-ring">' + leaves + '</g>' + candle(cx, cy + 1, 19, centre, 'centre') + order(front, 1) + '</svg>';
+    [110, 200, 290, 20].forEach((d, k) => {
+      const a = d * Math.PI / 180, x = cx + rx * Math.cos(a), y = cy + ry * Math.sin(a), depth = (Math.sin(a) + 1) / 2;
+      items.push({ z: y + 0.5, svg: candle(x, y - 0.6, 15 + depth * 4, 4.9 + depth * 1.1, lit[k], false, k) });
+    });
+    items.push({ z: cy - 0.5, svg: '<ellipse class="wr-dish" cx="' + cx + '" cy="' + (cy + 0.6) + '" rx="6.4" ry="2.1"/>' + candle(cx, cy, 25, 6.6, centre, true, 4) });
+    items.sort((p, q) => p.z - q.z);
+    return '<svg class="bb-wreath" viewBox="0 0 124 70" aria-hidden="true"><defs>' +
+      '<linearGradient id="wr-wax-g" x1="0" x2="1"><stop offset="0" class="ww0"/><stop offset=".38" class="ww1"/><stop offset=".72" class="ww2"/><stop offset="1" class="ww3"/></linearGradient>' +
+      '<linearGradient id="wr-red-g" x1="0" x2="1"><stop offset="0" class="wr0"/><stop offset=".38" class="wr1"/><stop offset=".72" class="wr2"/><stop offset="1" class="wr3"/></linearGradient>' +
+      '<radialGradient id="wr-halo-g"><stop offset="0" class="wh0"/><stop offset=".45" class="wh1"/><stop offset="1" class="wh2"/></radialGradient></defs>' +
+      items.map((it) => it.svg).join('') + '</svg>';
   }
 
   /* ---- "Previously": Monday opens with last week in one card ----

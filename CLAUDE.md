@@ -314,9 +314,12 @@ the wax seal onto the run card, once, with a splash.
 **The pen and the candle (v5.7):** Focus inks its emblem stroke by stroke;
 beside the gel times an hour candle burns down through the run, a ring per
 gel, the next one lit and named ("Gel III in 23 min").
-**The countdown wreath (v5.8):** from the fourth Sunday before the race the
-countdown numeral stands over an Advent-style wreath, a candle lit each
-Sunday and the red centre candle at the gun.
+**The countdown wreath (v5.8, redrawn v5.10.1):** from the fourth Sunday
+before the race the countdown numeral stands over an Advent-style wreath, a
+candle lit each Sunday and the red centre candle at the gun — a leafy ring
+seen from a little above, drawn back to front so the shaded wax candles
+stand in the greenery, each lit wick carrying a white-hearted flame in a
+soft halo.
 **No zoom (v4.92.1, the owner's call):** the viewport, touch-action and a
 tap guard keep the app at 1× — it is laid out for 390px and never needs it.
 Red-letter days (the key days) have a ruled run card; a week with every
