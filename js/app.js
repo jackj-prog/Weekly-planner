@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.11.1';
+  const APP_VERSION = '5.11.2';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1002,14 +1002,17 @@
         '" style="--phase:var(--phase-' + esc(row.phase) + ')" title="Week ' + row.wk +
         (current ? ' · current' : past ? ' · elapsed' : ' · ahead') + '"></i>';
     }).join('');
-    const p = savedProgress();
     /* The block's totals live on the Plan page's journey; here they are one
-       line that leads there (v4.89), over the thirty weeks in miniature. */
+       line that leads there (v4.89), over the thirty weeks in miniature — and
+       since v5.11.2 the same totals: every recorded run, ticked or logged, as
+       the journey and the More sheet count them, not the saved logs alone. */
+    const jt = DB.trainingJourney(getDone, getRunLogEntry, today, runMoves);
+    const p = { km: Math.round(jt.recorded * 10) / 10, runs: jt.runs };
     const wrap = el('<section class="journey line"><button class="journey-link" aria-label="Open your training journey: ' + elapsed + ' of ' + block.weeks +
-      ' weeks elapsed, ' + p.km.toLocaleString('en-GB',{maximumFractionDigits:1}) + ' km and ' + p.runs + ' runs logged">' +
+      ' weeks elapsed, ' + p.km.toLocaleString('en-GB',{maximumFractionDigits:1}) + ' km and ' + p.runs + ' runs recorded">' +
       '<span class="journey-track" aria-hidden="true">' + segments + '</span>' +
       '<span class="jl-text"><b>' + elapsed + '</b>/' + block.weeks + ' weeks · <b>' + p.km.toLocaleString('en-GB',{maximumFractionDigits:1}) +
-      '</b> km · <b>' + p.runs + '</b> runs logged</span><span class="jl-go" aria-hidden="true">↗</span></button></section>');
+      '</b> km · <b>' + p.runs + '</b> runs recorded</span><span class="jl-go" aria-hidden="true">↗</span></button></section>');
     wrap.querySelector('.journey-link').addEventListener('click', () => {
       state.view = 'plan'; window.scrollTo(0,0); render();
     });
@@ -1038,12 +1041,19 @@
   /* Said on the run itself, the day it happens: a long run well past its
      planned distance or rule 9's time cap, and the share of the week it has
      taken so far (PLAN.longRunOver). */
-  function longRunOverHTML(day, iso, r) {
+  /* A long run that went past the plan (or the time cap, rule 9): the one
+     test behind both the recap's warning and the stage's silence. */
+  function longRunOvershoot(day, r) {
     const g = PLAN.longRunOver;
-    if (!g || !day.run || day.blockId !== 'marathon' || !day.row || r.estimatedKm) return '';
-    if (DB.runClass(day.run) !== 'long') return '';
+    if (!g || !r || !day.run || day.blockId !== 'marathon' || !day.row || r.estimatedKm) return null;
+    if (DB.runClass(day.run) !== 'long') return null;
     const plan = day.run.run.km, over = r.km > plan * g.overPct, capped = r.sec > g.capMin * 60;
-    if (!over && !capped) return '';
+    return over || capped ? { g, plan, over, capped } : null;
+  }
+  function longRunOverHTML(day, iso, r) {
+    const o = longRunOvershoot(day, r);
+    if (!o) return '';
+    const { g, plan, over, capped } = o;
     const monday = DB.addDays(iso, -day.dayIndex);
     let week = 0;
     for (let i = 0; i < 7; i++) {
@@ -1100,7 +1110,7 @@
       longRunOverHTML(day, iso, r) +
       awards.map(a => '<article class="recap-award"><span class="recap-seal" aria-hidden="true">✦</span><div><h3>' + esc(a.label) + '</h3><strong>' + esc(a.value) + '</strong><p>' + esc(a.detail) + '</p></div></article>').join('') +
       (report.runCount === 1 ? '<p class="recap-baseline">Your history starts here. Future runs build the comparison.</p>' : '') +
-      '<div class="recap-total"><span>Your log so far</span><p><b>' + fmt(report.totalKm) + '</b> km <span>across ' + report.runCount + (report.runCount === 1 ? ' run' : ' runs') + '</span></p>' +
+      '<div class="recap-total"><span>Your log so far</span><p><b>' + report.totalKm.toLocaleString('en-GB', { maximumFractionDigits: 1 }) + '</b> km <span>across ' + report.runCount + (report.runCount === 1 ? ' run' : ' runs') + '</span></p>' +
       (report.estimatedCount ? '<small>Includes ' + report.estimatedCount + ' ' + (report.estimatedCount === 1 ? 'distance' : 'distances') + ' from the plan.</small>' : '') + '</div>' +
       comparison + '<details class="recap-method"><summary>What this recap counts</summary><p>Saved whole runs through ' + esc(fmtShort(iso)) +
       '. Records use explicitly saved distances and earlier logs only. First observations and ties do not earn a new best; segment times are never inferred.' +
@@ -1626,10 +1636,15 @@
     vals.sort((a, b) => a - b);
     return vals[Math.floor(vals.length / 2)];
   }
-  function readinessHTML(iso) {
+  function readinessHTML(iso, runStartMin) {
     const g = PLAN.readiness;
     if (!g) return '';
     const bpm = rhrReading(iso), usual = rhrUsual(iso);
+    /* the question is for before the run: once its window opens, the card is
+       about the run (under way, or "did it happen?"), and an unanswered
+       morning prompt beside it only competes (v5.11.2). A reading already
+       taken stays — it is information, and its advice may still apply. */
+    if (bpm == null && state.rhrDraft == null && runStartMin != null && nowMin() >= runStartMin) return '';
     if (state.rhrDraft != null) {
       return '<div class="h-rhr editing" role="group" aria-label="Morning resting heart rate"><span class="h-rhr-l">Morning resting HR</span>' +
         '<span class="h-rhr-ctl"><button data-rhr="-1" aria-label="Lower resting HR">−</button><b>' + state.rhrDraft + '</b><small>bpm</small>' +
@@ -1776,7 +1791,7 @@
       (just === r.id && isDone ? '<i class="h-sweep" aria-hidden="true"></i><div class="completion-note" role="status">✓ Run banked</div>' : '') +
       missedHTML +
       /* not on race morning: nerves lift the reading and the call is made (v5.0.1) */
-      (iso === today && !isRace && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso) : '') +
+      (iso === today && !isRace && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso, r.startMin) : '') +
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + tt(r.title) + '</div></div>' +
       '<div class="h-meta"><span class="h-shoe t-' + shoeTier(r.run.shoe) + '"><b>SHOE</b><i class="h-shoe-e">' + emblemSVG(shoeTier(r.run.shoe) === 'race' ? 'laurel' : 'foot') + '</i>' + esc(r.run.shoe) + '</span>' + paceCell +
@@ -2141,7 +2156,9 @@
      week says so, a missed long run says so. Mondays only, marathon weeks
      only, plus the Monday after race week. */
   function buildPreviously(iso, day) {
-    if (day.dayIndex !== 0) return null;
+    /* a look back needs a week that is over: previewing next Monday from
+       Thursday must not call Sunday's long run "not recorded" (v5.11.2) */
+    if (day.dayIndex !== 0 || iso > todayISO()) return null;
     const anchor = DB.addDays(iso, -7), d0 = DB.buildDay(anchor);
     if (d0.blockId !== 'marathon') return null;
     const fmt = (n) => String(Math.round(n * 10) / 10);
@@ -5659,6 +5676,10 @@
       return cinemaCard('RACED · ' + String(r.title).split(/\s+[—-]\s+|\s+all-out/)[0], esc(recordTime(e.sec)),
         loggedDistance(e.km) + ' km · ' + DB.paceOf(e.km, e.sec) + '/km', 'earned', (PLAN.hours && PLAN.hours.earned || {}).race);
     }
+    /* A run the recap is about to flag as an overshoot is not a feat: no
+       stage, no motto of going further over a warning that next Sunday should run the
+       plan's number (v5.11.2). The recap still records the longest, plainly. */
+    if (longRunOvershoot(day, e)) return;
     if (report.longest) {
       return cinemaCard('NEW LONGEST RUN', km(e.km),
         '+' + loggedDistance(Number(report.longest.gainKm.toPrecision(3))) + ' km beyond your previous longest', 'earned', (PLAN.hours && PLAN.hours.earned || {}).longest);

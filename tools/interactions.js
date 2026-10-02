@@ -508,7 +508,7 @@ async function cinema() {
   check(await t.page.evaluate(() => { const d = document.querySelector('.wk-days'), p = document.querySelector('.week-profile'); return !!(d && p && (d.compareDocumentPosition(p) & Node.DOCUMENT_POSITION_FOLLOWING)); }),
     'the seven days come before the distance figure');
   check(!(await t.page.$('.wkp-tally')) && (await t.page.$$('.week-profile .profile-day.miss')).length >= 1, 'the tally\u2019s states live on the distance bars; a passed unrecorded run reads missed');
-  check(!!(await t.page.$('.journey.line .journey-link')) && !(await t.page.$('.journey h2')) && /weeks · .* km · \d+ runs logged/.test(await text(t.page, '.journey.line')), 'the block\u2019s totals are one line');
+  check(!!(await t.page.$('.journey.line .journey-link')) && !(await t.page.$('.journey h2')) && /weeks · .* km · \d+ runs recorded/.test(await text(t.page, '.journey.line')), 'the block\u2019s totals are one line');
   await t.page.click('.journey.line .journey-link');
   check(!!(await t.page.$('.training-journey')), 'that line opens the training journey');
   noErrors(t, 'week days first');
@@ -1085,6 +1085,42 @@ async function layouts() {
   await t.ctx.close();
 }
 
+/* v5.11.2: the app as one piece — what one view says, the next agrees with */
+async function coherence() {
+  console.log('· coherence: run card, look-back, totals, earned moments');
+  let t = await open('2026-10-01', '17:20', SEED);
+  check(!(await t.page.$('.hero .h-rhr')), 'once the run is under way the card carries no morning prompt');
+  await t.ctx.close();
+  t = await open('2026-10-01', '20:00', SEED);
+  check(!!(await t.page.$('.hero .h-missed')) && !(await t.page.$('.hero .h-rhr')), '"Did it happen?" stands alone, without the resting-HR pill beside it');
+  await t.ctx.close();
+  t = await open('2026-10-01', '17:20', { ...SEED, 'rhr-2026-10-01': { bpm: 52 } });
+  check(!!(await t.page.$('.hero .h-rhr-read')), 'a reading already taken still shows during the run');
+  for (let k = 0; k < 4; k++) { await t.page.click('.day-nav .nav[data-d="1"]'); await t.page.waitForTimeout(80); }
+  check(/Monday 5 Oct/.test(await text(t.page, '.day-head h1')) && !(await t.page.$('.previously')), 'previewing next Monday gives no verdict on a week that is not over');
+  await t.ctx.close();
+  t = await open('2026-10-05', '09:00', SEED);
+  check(!!(await t.page.$('.previously')), 'on the Monday itself, the week is looked back on');
+  await t.ctx.close();
+  // the Week's one line and the journey it opens give the same totals, ticked runs included
+  t = await open('2026-10-01', '12:00', { ...SEED, 'done-2026-09-29': { 't1710-run': true } }, 'week');
+  const line = (await text(t.page, '.journey.line')).replace(/\s+/g, ' ');
+  await t.page.click('.journey.line .journey-link'); await t.page.waitForTimeout(200);
+  const tot = await t.page.$$eval('.journey-totals b', (b) => b.map((x) => x.textContent));
+  check(line.includes(tot[0] + ' km') && line.includes(tot[1] + ' runs recorded'), 'the Week’s line says what the journey says: ' + line + ' | ' + tot.join(' / '));
+  await t.ctx.close();
+  // an overshot long run is flagged, never celebrated; the longest is still recorded, plainly
+  t = await open('2026-10-04', '13:00', SEED);
+  await t.page.click('.runlogger .h-log');
+  for (const [k, v] of [['km', '27'], ['sec', '3:02:00'], ['hr', '148']]) { await t.page.fill('[data-log-field="' + k + '"]', v); await t.page.dispatchEvent('[data-log-field="' + k + '"]', 'change'); }
+  await t.page.click('.rl-save'); await t.page.waitForTimeout(300);
+  check(!(await t.page.$('.titlecard.earned')) && !!(await t.page.$('.recap-flag')) && /Longest logged run/.test(await text(t.page, '.run-recap')),
+    'a long run 23% over plan gets the warning and the record, not the fanfare');
+  check(/^\d+(\.\d)?$/.test((await text(t.page, '.recap-total b')).replace(/,/g, '')), 'the log’s total reads to one decimal, as every other total does');
+  noErrors(t, 'coherence');
+  await t.ctx.close();
+}
+
 async function sweep() {
   if (QUICK) { console.log('· render sweep skipped (--quick)'); return; }
   console.log('· render sweep: 234 days, 34 weeks, Plan, Reference');
@@ -1120,7 +1156,7 @@ async function offline() {
   browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
   server = await serve();
   try {
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, sweep, offline]) await run();
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, sweep, offline]) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');

@@ -2301,3 +2301,28 @@ under 13 data/date combinations. Fixed:
 future-dated banking, malformed backup date, the tomorrow line), 16,295
 plan checks. Still device-only: the notch's real insets, Safari's aA zoom
 and Display Zoom as such (emulated here by width), iOS text inflation.
+
+## Coherence — v5.11.2, 2 October (Claude)
+
+Seven connected journeys driven end to end with a step-by-step capture
+(a run under way → Focus → logged → read back → edited → the Week; a
+missed run → skipped → undone → ran → unticked; a session moved to
+Saturday and found there; Monday's gym through Focus with the leg dose;
+the More pages in turn and back; a week sealed and a long run saved with
+an earned moment; logging from Focus). Changed, each where two parts of
+the app contradicted each other:
+- The run card asked for a morning resting HR while the run was under
+  way and beside "Did it happen?" at 20:00. The unanswered prompt now
+  leaves once the run's window opens; a saved reading stays.
+- Previewing next Monday showed "Previously · long run not recorded" for
+  a Sunday three days away. No look-back until the week is over (the
+  load-jump note's rule since v5.0.8).
+- The Week's line ("… runs logged", saved logs only) opened the journey
+  ("runs recorded", ticks and logs) and the two disagreed whenever a run
+  was ticked but not logged. The line now uses the journey's totals.
+- The recap said "336.92 km" where every other total says "336.9".
+- A 27.6 km run on a 22 km day fired "NEW LONGEST RUN" with its Latin
+  motto over a recap warning that the extra distance was the costliest
+  kind. One predicate (`longRunOvershoot`) now drives both: flagged runs
+  get the warning and the plain record, no stage.
+306 browser checks (9 new, `coherence()`), 16,295 plan checks.

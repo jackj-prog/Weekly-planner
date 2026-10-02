@@ -318,6 +318,15 @@ safe-area insets pad every bar. Only what has happened is banked — a tick
 or log dated after today counts nowhere yet — so Today, Week, Kalendar,
 Plan and Previously agree on malformed and future-dated data too. A
 malformed backup date reads as never backed up.
+**v5.11.2 (coherence):** what one view says, the next agrees with. The
+morning resting-HR prompt leaves the run card once the run's window opens
+(a reading already taken stays). Next Monday previewed from midweek gives
+no "Previously" verdict on a week that is not over. The Week's one line
+counts what the journey it opens counts (every recorded run, ticked or
+logged — "runs recorded"), and the log's running total reads to one
+decimal like every other total. A long run the recap flags as an
+overshoot gets no earned-moment stage: the warning and a plain record of
+the longest, never fanfare over a caution.
 **v5.9.4:** a wrapped Next title hangs under its first word, not its
 emblem; the Now card's stars keep off its edge; a title that already names
 its distance ("~21 km") is not given it again.
