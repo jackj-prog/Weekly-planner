@@ -2206,3 +2206,22 @@ block in the middle. Redrawn:
   dish, shaded red, and lights at the gun.
 258 browser checks, 16,287 plan checks.
 
+## Functional pass — v5.10.2, 2 October (Claude)
+
+Every journey driven end to end in the browser and read back across Today,
+Week, the Kalendar, Plan and Reference; findings, method and what is still
+uncertain are in `docs/REVIEW-2026-10.md` (pass 2). Fixed:
+- **A moved run was banked nowhere.** Ticked on the day it was moved to, the
+  card said Completed while every total read 0; the same cause kept the
+  week from its seal, read the old day as missed and the new one as extra,
+  called the slot short and lost the km from the shoe. One rule now:
+  `DB.recordedRuns(day, done, log, moves)` (with `recordedKm` its sum and an
+  optional `getMoves` through `weekKm`, `seasonShape`, `trainingJourney`),
+  and one app resolver (`runMoves`, `recordedRunsOn`, `recordedOn`,
+  `plannedRunRecorded`) behind every total. Without moves it is the old rule.
+- The distance profile draws unplanned and moved-in runs.
+- Coming back on a new day opens Today (§4.1); the clock is scheduled on the
+  minute; the service worker precaches with `cache: 'reload'`; a refused
+  save shows an alert; persistent storage is requested.
+271 browser checks (8 new), 16,295 plan checks (8 new).
+

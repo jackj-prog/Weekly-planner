@@ -3529,3 +3529,11 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 /* a next title that wraps hangs under its first word, not under its emblem */
 .nownext .nn-next > span:has(> .nn-nemb:first-child) { padding-left: 20px; text-indent: -20px; }
 
+/* a save the phone refused says so (v5.10.2) */
+.store-warn {
+  position: fixed; left: 14px; right: 14px; top: calc(var(--sat) + 70px); z-index: 60;
+  padding: 12px 14px; border-radius: 12px; border: 1px solid var(--accent);
+  background: var(--surface); color: var(--text); font: 600 14px/1.4 var(--body);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--chrome-bg) 60%, transparent);
+}
+

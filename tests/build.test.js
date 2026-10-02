@@ -1693,6 +1693,31 @@ section('the Kalendar (v5.4)');
  want.forEach((iso) => ok(enters(iso) && !enters(DB.addDays(iso, -1)) && !enters(DB.addDays(iso, 1)), 'the sun changes sign on ' + iso));
  ok(Math.abs(DB.sunLongitude('2026-03-20', 15) - 0) < 0.3 || Math.abs(DB.sunLongitude('2026-03-20', 15) - 360) < 0.3, 'the March equinox is the first point of Aries');
 }
+section('banked where it was done (v5.10.2)');
+{
+ /* A run moved with "Move to…" is banked once, on the day it was done; with
+    no moves the rule is exactly the old one. */
+ const tue = DB.buildDay('2026-09-29'), fri = DB.buildDay('2026-10-02'), wed = DB.buildDay('2026-09-30');
+ const id = tue.run.id, mvId = 'mv-2026-09-29-' + id, km = tue.run.run.km;
+ ok(DB.recordedKm(tue, { [id]: true }, null) === km && DB.recordedKm(tue, {}, { sec: 1800, km: 6.4 }) === 6.4 &&
+   DB.recordedKm(tue, {}, { sec: 1800 }) === km && DB.recordedKm(tue, { [id]: true }, { sec: 1800, km: 0 }) === km && DB.recordedKm(fri, {}, { sec: 900, km: 3 }) === 3,
+   'without moves the banked rule is unchanged (tick, log, log without distance, bad log falls back to the tick, unplanned log)');
+ const out = { out: true, in: [] }, into = { out: false, in: [{ id: mvId, km, title: tue.run.title, run: tue.run.run, fromIso: '2026-09-29' }] };
+ ok(DB.recordedKm(tue, { [id]: true }, null, out) === 0, 'a run moved away is not banked on the day it left');
+ ok(DB.recordedKm(fri, { [mvId]: true }, null, into) === km && DB.recordedKm(fri, {}, null, into) === 0, 'a moved run ticked on its new day is banked there');
+ ok(DB.recordedKm(fri, {}, { sec: 2000 }, into) === km && DB.recordedKm(fri, { [mvId]: true }, { sec: 2000, km: 6.6 }, into) === 6.6, 'a log on the new day is the moved run\u2019s record, never added to its tick');
+ ok(DB.recordedKm(wed, { [wed.run.id]: true, [mvId]: true }, null, into) === wed.run.run.km + km, 'two runs on one day bank both');
+ const rr = DB.recordedRuns(fri, { [mvId]: true }, null, into);
+ ok(rr.length === 1 && rr[0].id === mvId && rr[0].moved && rr[0].recorded === km, 'recordedRuns names the moved run');
+ const moves = (iso) => iso === '2026-09-29' ? out : iso === '2026-10-02' ? into : null;
+ const ticks = (iso) => iso === '2026-10-02' ? { [mvId]: true } : iso === '2026-09-29' ? { [id]: true } : {};
+ const wk = DB.weekKm(ticks, '2026-09-28', () => null, moves);
+ ok(wk.done === km && wk.planned === DB.weekKm(() => ({}), '2026-09-28', () => null).planned, 'the week banks a moved run once and its planned total does not move');
+ const j = DB.trainingJourney(ticks, () => null, '2026-10-04', moves), w14 = j.weeks[13];
+ const dTue = w14.days[1], dFri = w14.days[4];
+ ok(w14.recorded === km && dTue.movedOut && dTue.recorded === 0 && dFri.movedIn && dFri.movedIn.km === km && dFri.recorded === km && j.runs === 1,
+   'the journey marks the day a run left and the day it was done');
+}
 section('gels as a schedule (rule 4)');
 {
  const g = PLAN.gels;

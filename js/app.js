@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.10.1';
+  const APP_VERSION = '5.10.2';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -73,8 +73,22 @@
       return v && typeof v === 'object' && !Array.isArray(v) ? v : fallback;
     } catch (e) { return fallback; }
   }
+  /* A save the phone refuses must not look like a tap that did nothing:
+     the tick would vanish on the next render with no word why (v5.10.2). */
   function writeJSON(key, val) {
-    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* full/blocked */ }
+    try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+    catch (e) { storageRefused(); return false; }
+  }
+  let storeWarned = false;
+  function storageRefused() {
+    if (storeWarned || !document.body) return;
+    storeWarned = true;
+    const n = document.createElement('div');
+    n.className = 'store-warn';
+    n.setAttribute('role', 'alert');
+    n.textContent = 'This phone refused to save that. Free some storage, then try again.';
+    document.body.appendChild(n);
+    setTimeout(() => { n.remove(); storeWarned = false; }, 7000);
   }
   const doneKey = (iso) => 'done-' + iso;
   const ovrKey = (iso) => 'ovr-' + iso;
@@ -133,6 +147,31 @@
     delete o.moved[id];
     writeJSON(ovrKey(iso), o);
     writeJSON(moveKey(target), getMoveIn(target).filter((m) => !(m.srcId === id && m.fromIso === iso)));
+  }
+  /* The day's run moves, for the banked-km rule (DB.recordedRuns, v5.10.2):
+     whether its own run was moved away, and the runs moved onto it. Every
+     total in the app goes through these, so a moved run is banked once, on
+     the day it was done, in every view. */
+  function runMoves(iso, day) {
+    const d = day || DB.buildDay(iso), o = getOvr(iso);
+    return { out: !!(d.run && o.moved[d.run.id]),
+      in: getMoveIn(iso).filter((m) => m.cat === 'run' && m.run && m.run.km > 0)
+        .map((m) => ({ id: m.id, km: m.run.km, title: m.title, run: m.run, fromIso: m.fromIso })) };
+  }
+  function recordedRunsOn(iso, day) {
+    const d = day || DB.buildDay(iso);
+    return DB.recordedRuns(d, getDone(iso), getRunLogEntry(iso), runMoves(iso, d));
+  }
+  const recordedOn = (iso, day) => recordedRunsOn(iso, day).reduce((n, r) => n + r.recorded, 0);
+  /* what became of a date's planned run, wherever it was done */
+  function plannedRunRecorded(iso, day) {
+    const d = day || DB.buildDay(iso);
+    if (!d.run) return 0;
+    const o = getOvr(iso);
+    const at = o.moved[d.run.id] ? movedTarget(iso, o, d.run.id) : iso;
+    const id = at === iso ? d.run.id : 'mv-' + iso + '-' + d.run.id;
+    const e = recordedRunsOn(at).find((r) => r.id === id);
+    return e ? e.recorded : 0;
   }
   /* Leg work that lands too close to the long run is dropped, not moved
      with the session (PLAN.moveRules). Only inside the marathon block, where
@@ -1000,7 +1039,7 @@
     for (let i = 0; i < 7; i++) {
       const d = DB.addDays(monday, i);
       if (d > iso) break;
-      week += DB.recordedKm(DB.buildDay(d), getDone(d), getRunLogEntry(d));
+      week += recordedOn(d);
     }
     const split = DB.distancesForWeek(day.row);
     const planShare = Math.round((split.long / day.row.km) * 100);
@@ -1962,7 +2001,8 @@
       const iso = DB.addDays(anchor, i), day = DB.buildDay(iso);
       if (!day.run) continue;
       if (i === 5 && exempt.includes('sat')) continue;
-      const plan = day.run.run.km, got = iso <= today ? DB.recordedKm(day, getDone(iso), getRunLogEntry(iso)) : 0;
+      /* a run moved within the week counts where it was done (v5.10.2) */
+      const plan = day.run.run.km, got = plannedRunRecorded(iso, day);
       if (!(got >= plan * (r.shortPct || 0.6))) return false;
       runs++;
     }
@@ -2083,11 +2123,16 @@
     for (let i = 0; i < 7; i++) {
       const di = DB.addDays(anchor, i), dd = DB.buildDay(di);
       const plan = dd.run ? dd.run.run.km : 0;
-      const got = DB.recordedKm(dd, getDone(di), getRunLogEntry(di));
+      /* runs are counted where they were done: a moved run is one of the
+         week's planned runs, not an extra, and its old day is not a miss */
+      const rr = recordedRunsOn(di, dd), mv = runMoves(di, dd);
+      const got = rr.reduce((n, r) => n + r.recorded, 0);
       planned += plan; recorded += got; top = Math.max(top, plan, got);
-      if (plan) { runs++; if (got > 0) ran++; } else if (got > 0) extra++;
-      const cls = dd.run ? DB.runClass(dd.run) : 'rest';
-      days.push({ plan, got, kind: cls === 'quality' || cls === 'race' ? 'hard' : cls === 'long' ? 'long' : 'easy', cls });
+      if (plan) runs++;
+      rr.forEach((r) => { if (r.recorded > 0) { if (r.extra) extra++; else ran++; } });
+      const lead = dd.run && !mv.out ? dd.run : rr[0] && rr[0].run ? { title: rr[0].title, run: rr[0].run } : null;
+      const cls = lead ? DB.runClass(lead) : 'rest';
+      days.push({ plan, got, moved: mv.out, kind: cls === 'quality' || cls === 'race' ? 'hard' : cls === 'long' ? 'long' : 'easy', cls });
     }
     const last = days[6];
     const lrName = last.cls === 'race' ? 'the race' : 'long run';
@@ -2097,7 +2142,7 @@
     // A dropped Saturday buffer is rule 10 working, not a miss (PLAN.shapeRule).
     const exempt = ((PLAN.shapeRule && PLAN.shapeRule.shortExempt) || []).includes('sat');
     const bars = days.map((d, i) =>
-      '<span class="pv-day ' + d.kind + (d.plan && !d.got && !(exempt && i === 5) ? ' miss' : '') + '"><span class="pv-track">' +
+      '<span class="pv-day ' + d.kind + (d.plan && !d.got && !d.moved && !(exempt && i === 5) ? ' miss' : '') + '"><span class="pv-track">' +
       (d.plan ? '<i class="pv-plan" style="height:' + (d.plan / top * 100).toFixed(1) + '%"></i>' : '') +
       (d.got ? '<i class="pv-got" style="height:' + (Math.min(d.got, top) / top * 100).toFixed(1) + '%"></i>' : '') +
       '</span><b>' + DAY_SHORT[i].slice(0, 1) + '</b></span>').join('');
@@ -2780,7 +2825,7 @@
 
   /* ---- week-progress ring: banked vs planned run km this week ---- */
   function weekRingHTML(iso) {
-    const wk = DB.weekKm(getDone, mondayOf(iso), getRunLogEntry);
+    const wk = DB.weekKm(getDone, mondayOf(iso), getRunLogEntry, runMoves);
     if (!wk.planned) return '';
     const pct = Math.min(1, wk.done / wk.planned);
     const C = 2 * Math.PI * 13;
@@ -3284,11 +3329,16 @@
     let ran = 0, due = 0;
     const cols = journey.weeks.map((w, c) => '<span class="wl-col' + (w.start <= today && today <= w.end ? ' now' : '') +
       '" style="--c:' + c + '">' + w.days.map((d, i) => {
-        const kind = d.cls === 'quality' || d.cls === 'race' ? 'hard' : d.cls === 'long' ? 'long' : 'easy';
+        /* a run moved within its week is due, and lit, on the day it moved
+           to; the day it left reads as moved, never as missed (v5.10.2) */
+        const planned = d.movedOut ? 0 : d.planned || (d.movedIn ? d.movedIn.km : 0);
+        const dcls = d.movedOut || !d.planned ? (d.movedIn ? d.movedIn.cls : d.cls) : d.cls;
+        const kind = dcls === 'quality' || dcls === 'race' ? 'hard' : dcls === 'long' ? 'long' : 'easy';
         const past = d.iso < today;
-        if (d.planned && past) { due++; if (d.recorded > 0) ran++; }
-        const st = d.recorded > 0 ? 'ran ' + (d.planned ? kind : 'extra')
-          : !d.planned ? 'rest'
+        if (planned && past) { due++; if (d.recorded > 0) ran++; }
+        const st = d.recorded > 0 ? 'ran ' + (planned ? kind : 'extra')
+          : d.movedOut ? 'drop'
+          : !planned ? 'rest'
           : past ? (exempt && i === 5 ? 'drop' : 'miss')
           : 'ahead ' + kind;
         return '<i class="wl ' + st + (d.iso === today ? ' today' : '') + '"></i>';
@@ -3334,8 +3384,8 @@
       const d = DB.addDays(monday, i), built = DB.buildDay(d), e = getRunLogEntry(d), done = getDone(d);
       const plan = built.run ? built.run.run.km : 0;
       plannedSoFar += plan;
-      ranSoFar += DB.recordedKm(built, done, e);
-      if (plan && !(e && e.sec > 0)) {
+      ranSoFar += recordedOn(d, built);
+      if (plan && !(e && e.sec > 0) && !getOvr(d).moved[built.run.id]) {
         if (done[built.run.id]) estimated++;
         else unknown++;
       }
@@ -3376,9 +3426,7 @@
     let ranTotal = 0, planTotal = 0, lrRan = 0;
     slots.forEach((s) => {
       const iso = DB.addDays(anchor, s.di);
-      const e = getRunLogEntry(iso);
-      const day = DB.buildDay(iso);
-      s.ran = DB.recordedKm(day, getDone(iso), e);
+      s.ran = plannedRunRecorded(iso);
       s.pct = s.plan ? s.ran / s.plan : 0;
       ranTotal += s.ran; planTotal += s.plan;
       if (s.di === 6) lrRan = s.ran;
@@ -3441,7 +3489,7 @@
     /* only a finished week is a shortfall: looking ahead from mid-week, the
        current week's first days are not "what was run" (v5.0.8) */
     if (DB.addDays(anchor, -1) >= todayISO()) return null;
-    const ran = DB.weekKm(getDone, prev, getRunLogEntry).done;
+    const ran = DB.weekKm(getDone, prev, getRunLogEntry, runMoves).done;
     if (!(ran > 0)) return null;                 // nothing logged ≠ nothing run
     if (ran >= prevRow.km * r.shortfall) return null;
     if (day0.row.km < ran * r.jumpRatio) return null;
@@ -3594,7 +3642,7 @@
        beside it drew the same runs a second time, so its numbers and its
        states (banked, missed, skipped, today) moved onto these bars. */
     const started = anchor <= real;
-    const wkKm = started ? DB.weekKm(getDone, anchor, getRunLogEntry) : null;
+    const wkKm = started ? DB.weekKm(getDone, anchor, getRunLogEntry, runMoves) : null;
     const fmtW = (n) => (n === Math.round(n) ? n : n.toFixed(1));
     const profile = el('<section class="week-profile" aria-label="' + (wkKm ? fmtW(wkKm.done) + ' of ' + fmtW(totalKm) + ' km recorded' : 'Planned daily distances') + '">' +
       '<div class="profile-head"><div><span class="profile-label">DISTANCE PROFILE</span>' +
@@ -3602,18 +3650,24 @@
         : '<h2>' + (Math.round(totalKm * 10) / 10) + '<small> km planned</small></h2>') + '</div>' +
       '<span class="profile-count">' + week7.filter((d) => d.run).length + ' run days</span></div>' +
       '<div class="profile-bars">' + week7.map((d, i) => {
-        const km = d.run ? d.run.run.km : 0;
-        const lg = getRunLogEntry(d.iso);
-        const banked = d.run && (!!getDone(d.iso)[d.run.id] || !!(lg && lg.sec > 0));
-        const cls = d.run ? DB.runClass(d.run) : 'rest';
+        /* the bar is the run that belongs to the day: its own, one moved
+           onto it, or an unplanned run that was logged (v5.10.2) */
+        const rr = recordedRunsOn(d.iso, d), mv = runMoves(d.iso, d);
+        const inRun = !d.run && mv.in[0] ? mv.in[0] : null, extra = rr.find((r) => r.extra);
+        const lead = d.run || (inRun ? { title: inRun.title, run: inRun.run } : null);
+        const km = d.run ? d.run.run.km : inRun ? inRun.km : extra ? Math.round(extra.recorded * 10) / 10 : 0;
+        const own = rr.find((r) => r.id === (d.run ? d.run.id : inRun ? inRun.id : null));
+        const banked = !!(own && own.recorded > 0) || !!extra;
+        const cls = lead ? DB.runClass(lead) : extra ? 'easy' : 'rest';
         const kind = cls === 'race' || cls === 'quality' ? 'hard' : cls === 'long' ? 'long' : cls === 'rest' ? 'rest' : 'easy';
         const ov = getOvr(d.iso);
         const off = d.run && !banked && (ov.skip[d.run.id] || ov.moved[d.run.id]);
-        const miss = d.run && !banked && !off && d.iso < real;
+        const miss = (d.run || inRun) && !banked && !off && d.iso < real;
+        const what = d.run ? km + ' km, ' + d.run.title : inRun ? km + ' km, ' + inRun.title + ', moved from ' + fmtShort(inRun.fromIso) : extra ? km + ' km, unplanned run' : 'No run';
         return '<button class="profile-day ' + kind + (banked ? ' lit' : off ? ' off' : miss ? ' miss' : '') + '" data-date="' + d.iso + '"' +
           (d.iso === real ? ' aria-current="date"' : '') + ' aria-label="' + esc(fmtDate(d.iso) +
-          ': ' + (d.run ? km + ' km, ' + d.run.title : 'No run') + (banked ? ', completed' : '')) + '">' +
-          '<span class="profile-track"><i style="height:' + (km / maxKm * 100).toFixed(1) + '%"></i></span>' +
+          ': ' + what + (banked ? ', completed' : '')) + '">' +
+          '<span class="profile-track"><i style="height:' + (Math.min(1, km / maxKm) * 100).toFixed(1) + '%"></i></span>' +
           '<b class="profile-km">' + (km || '—') + '</b><span class="profile-date">' + DAY_SHORT[i] + '</span>' +
           '<span class="profile-state">' + (banked ? '✓' : off ? 'off' : miss ? 'missed' : km ? '' : 'rest') + '</span></button>';
       }).join('') + '</div><div class="profile-legend"><span>Easy / recovery</span><span>Quality / race</span><span>Long</span>' +
@@ -3642,23 +3696,27 @@
       const d = DB.parseLocalDate(iso);
       const fmtKmS = (k) => (Math.round(k * 10) / 10).toString();
       const st = [];
+      /* banked run by run, so a run moved onto this day says what it
+         banked here, and its old day says where it went (v5.10.2) */
+      const rr = recordedRunsOn(iso, day);
+      const okSt = (r) => '<span class="d-st ok">✓ ' + fmtKmS(r.recorded) + ' km' + (r.logged ? '' : ' · ticked') + '</span>';
       if (day.run) {
-        const rid = day.run.id;
-        if (runLogged || done[rid]) st.push('<span class="d-st ok">✓ ' + fmtKmS(DB.recordedKm(day, done, log)) + ' km' + (runLogged ? '' : ' · ticked') + '</span>');
+        const rid = day.run.id, own = rr.find((r) => r.id === rid);
+        if (own && own.recorded > 0) st.push(okSt(own));
         else if (ovr.skip[rid]) st.push('<span class="d-st off">skipped</span>');
         else if (ovr.moved[rid]) st.push('<span class="d-st mv">→ ' + esc(movedLabel(iso, rid)) + '</span>');
         else if (iso < real) st.push('<span class="d-st off">not recorded</span>');
-      } else if (runLogged) {
-        st.push('<span class="d-st ok">✓ ' + fmtKmS(DB.recordedKm(day, done, log)) + ' km unplanned</span>');
       }
+      rr.filter((r) => r.extra).forEach((r) => st.push('<span class="d-st ok">✓ ' + fmtKmS(r.recorded) + ' km unplanned</span>'));
       day.blocks.filter((b) => b.doable && b.cat !== 'run' && (ovr.skip[b.id] || ovr.moved[b.id])).forEach((b) => {
         const head = esc(b.title.replace(/ *[—·(].*$/, '').trim());
         st.push(ovr.moved[b.id] ? '<span class="d-st mv">' + head + ' → ' + esc(movedLabel(iso, b.id).replace(/ \d+ \w+$/, '')) + '</span>'
           : '<span class="d-st off">' + head + ' skipped</span>');
       });
       movedIn.forEach((m) => {
-        const from = DB.dayIndex(m.fromIso);
+        const from = DB.dayIndex(m.fromIso), got = rr.find((r) => r.id === m.id);
         st.push('<span class="d-st mv">+ ' + esc(m.title.replace(/ *[—·(].*$/, '').trim()) + ' from ' + DAY_SHORT[from].charAt(0) + DAY_SHORT[from].slice(1).toLowerCase() + '</span>');
+        if (got && got.recorded > 0) st.push(okSt(got));
       });
       const statusHtml = st.length ? '<div class="d-status">' + st.join('') + '</div>' : '';
       /* the day's sessions as a row of emblems in their own colours, lit once done */
@@ -3754,7 +3812,7 @@
     const today = todayISO();
     const cur = DB.resolveBlock(today);
 
-    const journey = DB.trainingJourney(getDone,getRunLogEntry,today);
+    const journey = DB.trainingJourney(getDone,getRunLogEntry,today,runMoves);
     const adh = {weekKmDone:Object.fromEntries(journey.weeks.map(w=>[w.wk,w.recorded]))};
     const fmt = n => Number(n.toFixed(1));
     view.appendChild(buildTrainingJourney(journey));
@@ -4009,7 +4067,7 @@
     /* what it says, in words */
     const enter = clean.find((g) => g.day != null);
     const full = rows.find((r) => r.quarter === 'Full moon'), nw = rows.find((r) => r.quarter === 'New moon');
-    const planned = rows.reduce((t, r) => t + r.plan, 0), got = rows.reduce((t, r) => t + r.rec, 0);
+    const planned = rows.reduce((t, r) => t + r.ownPlan, 0), got = rows.reduce((t, r) => t + r.rec, 0);
     const said = MONTH_NAMES[Number(ym.slice(5)) - 1] + ' ' + ym.slice(0, 4) + ': ' + rows.filter((r) => r.plan).length + ' runs, ' + fmtKm(planned) + ' km planned' +
       (got ? ', ' + fmtKm(got) + ' recorded' : '') + '. ' + (enter ? 'The sun enters ' + signName(enter.s) + ' on the ' + ordinal(enter.day) + '. ' : '') +
       (full ? 'Full moon on the ' + ordinal(full.d) + '. ' : '') + (nw ? 'New moon on the ' + ordinal(nw.d) + '.' : '');
@@ -4034,10 +4092,13 @@
       const iso = ym + '-' + String(d).padStart(2, '0');
       const day = DB.buildDay(iso), plan = day.run ? day.run.run.km : 0;
       const past = iso <= today;
-      const rec = past ? DB.recordedKm(day, getDone(iso), getRunLogEntry(iso)) : 0;
+      /* banked where it was done: a run moved onto this day is this day's
+         run on the page, and counts once (v5.10.2) */
+      const rec = past ? recordedOn(iso, day) : 0;
       const ovr = getOvr(iso), skipped = !!(day.run && ovr.skip[day.run.id]), moved = !!(day.run && ovr.moved[day.run.id]);
+      const inRun = !day.run ? runMoves(iso, day).in[0] || null : null;
       const off = skipped || moved;
-      const cls = day.run ? DB.runClass(day.run) : rec > 0 ? 'easy' : '';
+      const cls = day.run ? DB.runClass(day.run) : inRun ? DB.runClass({ title: inRun.title, run: inRun.run }) : rec > 0 ? 'easy' : '';
       const tone = cls === 'quality' || cls === 'race' ? 'hard' : cls === 'long' ? 'long' : 'easy';
       const mp = DB.moonPhase(iso);
       let quarter = '';
@@ -4046,10 +4107,13 @@
       });
       prevPhase = mp.phase;
       planned += plan; got += rec;
-      if (plan) { runsPlanned++; if (rec > 0) runsGot++; }
-      const miss = !!(plan && iso < today && !rec && !off);
-      rows.push({ iso, d, di: DB.dayIndex(iso), plan, rec, past, off, skipped, moved, miss, tone, mp, quarter,
-        key: keyAt[iso] || '', feast: feasts[iso.slice(5)] || '', name: day.run ? kalName(day.run.title) : rec ? 'Extra run' : '' });
+      if (plan) { runsPlanned++; if ((past ? plannedRunRecorded(iso, day) : 0) > 0) runsGot++; }
+      const rowPlan = plan || (inRun ? inRun.km : 0);
+      const miss = !!(rowPlan && iso < today && !rec && !off);
+      const from = inRun ? DAY_SHORT[DB.dayIndex(inRun.fromIso)] : '';
+      rows.push({ iso, d, di: DB.dayIndex(iso), plan: rowPlan, ownPlan: plan, rec, past, off, skipped, moved, miss, tone, mp, quarter,
+        key: keyAt[iso] || '', feast: feasts[iso.slice(5)] || '',
+        name: day.run ? kalName(day.run.title) : inRun ? kalName(inRun.title) + ' · from ' + from.charAt(0) + from.slice(1).toLowerCase() : rec ? 'Extra run' : '' });
     }
     /* the light across the month, measured at one place (the 1st's), or
        the race trip's three days in Nicosia read as January's longest */
@@ -4105,7 +4169,7 @@
       for (let i = 0; i < 7; i++) {
         const di = DB.addDays(iso, i), dd = DB.buildDay(di);
         pk += dd.run ? dd.run.run.km : 0;
-        if (di <= today) rk += DB.recordedKm(dd, getDone(di), getRunLogEntry(di));
+        if (di <= today) rk += recordedOn(di, dd);
       }
       const w = c.week, row = c.block.weekTable[w - 1];
       const tag = row && row.cutback ? ' · cutback' : row && row.key ? ' · key' : '';
@@ -4924,7 +4988,7 @@
       if (!day.run) continue;
       const t = tally[day.run.run.shoe] || (tally[day.run.run.shoe] = { runs: 0, km: 0, banked: 0 });
       t.runs++; t.km += day.run.run.km;
-      if (iso <= today) t.banked += DB.recordedKm(day, getDone(iso), getRunLogEntry(iso));
+      if (iso <= today) t.banked += plannedRunRecorded(iso, day);
     }
     const p4 = DB.pro4Status(getDone, today);
     const plates = PLAN.shoes.map((s, i) => {
@@ -5303,7 +5367,7 @@
   function dressSheet() {
     const plan = document.querySelector('.sheet-item[data-nav="plan"]'), ref = document.querySelector('.sheet-item[data-nav="ref"]');
     if (!plan || !ref) return;
-    const j = DB.trainingJourney(getDone, getRunLogEntry, todayISO());
+    const j = DB.trainingJourney(getDone, getRunLogEntry, todayISO(), runMoves);
     let sky = '';
     for (let k = 0; k < 30; k++) {
       const x = 4 + artSeed('sheet:' + k) * 84, y = 4 + artSeed('sheet:' + k + 'y') * 34;
@@ -5403,7 +5467,26 @@
     const line = document.querySelector('.tl-now');
     if (line) line.textContent = 'NOW ' + DB.fmtHM(n);
   }
-  setInterval(refreshClock, 60000);
+  /* on the minute, not a minute after launch: NOW and the countdowns used
+     to lag the real minute by up to 59 s (v5.10.2) */
+  (function tickOnTheMinute() {
+    setTimeout(() => { refreshClock(); tickOnTheMinute(); }, 60000 - (Date.now() % 60000) + 40);
+  })();
+  /* Coming back on a new day is opening the app (§4.1 opens on Today):
+     a phone put away on Tuesday's page and picked up on Friday shows
+     Friday, not Tuesday. A day that turns while the app is in front of you
+     never moves the page (v5.10.2). Registered before the clock, whose
+     rollover then draws it. */
+  let hiddenOn = null;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hiddenOn = todayISO(); return; }
+    if (hiddenOn && hiddenOn !== todayISO()) {
+      state.view = 'today'; state.dateISO = todayISO(); state.expanded = null;
+      if (focusedSession && focusedSession.dialog) { try { focusedSession.dialog.close(); } catch (e) { /* fine */ } }
+      window.scrollTo(0, 0);
+    }
+    hiddenOn = null;
+  });
   document.addEventListener('visibilitychange', refreshClock);
   window.addEventListener('pageshow', refreshClock);
 
@@ -5575,4 +5658,7 @@
 
   render();
   titleCard();
+  /* This phone holds the only copy: ask the browser to keep it rather than
+     clear it under storage pressure (granted silently where it is). */
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then((p) => { if (!p) navigator.storage.persist(); }).catch(() => {}); } catch (e) { /* fine */ }
 })();

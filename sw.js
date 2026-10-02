@@ -5,7 +5,7 @@
    ========================================================================== */
 'use strict';
 
-const CACHE_VERSION = 'week-os-v5.10.1';
+const CACHE_VERSION = 'week-os-v5.10.2';
 const ASSETS = [
   './',
   './index.html',
@@ -29,7 +29,9 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_VERSION).then((cache) => cache.addAll(ASSETS)));
+  /* cache: 'reload' goes past the browser's HTTP cache, so a release
+     never precaches a file the previous release left there (v5.10.2) */
+  event.waitUntil(caches.open(CACHE_VERSION).then((cache) => cache.addAll(ASSETS.map((u) => new Request(u, { cache: 'reload' })))));
 });
 
 self.addEventListener('activate', (event) => {

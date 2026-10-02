@@ -77,8 +77,8 @@ function zoneOffset(ms) {
   return Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second) - ms;
 }
 function epochFor(iso, hhmm) {
-  const [Y, M, D] = iso.split('-').map(Number), [h, m] = hhmm.split(':').map(Number);
-  const naive = Date.UTC(Y, M - 1, D, h, m);
+  const [Y, M, D] = iso.split('-').map(Number), [h, m, sec] = hhmm.split(':').map(Number);
+  const naive = Date.UTC(Y, M - 1, D, h, m, sec || 0);
   let ms = naive - zoneOffset(naive);
   const o = zoneOffset(ms);
   if (naive - o !== ms) ms = naive - o;
@@ -102,13 +102,18 @@ async function open(date, time, seed, view) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true,
     timezoneId: TZ, locale: 'en-GB' });
   await ctx.addInitScript(({ epoch, seed }) => {
-    const Real = Date, skew = epoch - Real.now();
+    /* window.__skew lets a check move the clock on (time away from the app) */
+    const Real = Date;
+    window.__skew = epoch - Real.now();
     function Fake(...a) {
-      if (!new.target) return new Real(Real.now() + skew).toString();
-      return a.length === 0 ? new Real(Real.now() + skew) : new Real(...a);
+      if (!new.target) return new Real(Real.now() + window.__skew).toString();
+      return a.length === 0 ? new Real(Real.now() + window.__skew) : new Real(...a);
     }
-    Fake.prototype = Real.prototype; Fake.now = () => Real.now() + skew; Fake.parse = Real.parse; Fake.UTC = Real.UTC;
+    Fake.prototype = Real.prototype; Fake.now = () => Real.now() + window.__skew; Fake.parse = Real.parse; Fake.UTC = Real.UTC;
     window.Date = Fake;
+    let hidden = false;
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden });
+    window.__away = (ms) => { hidden = true; document.dispatchEvent(new Event('visibilitychange')); window.__skew += ms; hidden = false; document.dispatchEvent(new Event('visibilitychange')); };
     if (!sessionStorage.getItem('seeded')) {
       localStorage.clear();
       for (const [k, v] of Object.entries(seed)) localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
@@ -800,6 +805,55 @@ async function cinema() {
   { const lv = await open('2026-10-01', '17:20', SEED);
     check((await text(lv.page, '.hero .h-state')) === 'Under way · until 17:43', 'during its window the run card says it is under way: ' + await text(lv.page, '.hero .h-state'));
     await lv.ctx.close(); }
+  // v5.10.2: a run moved within its week is banked once, where it was done, in every view
+  { const MV = { 'ovr-2026-09-29': { skip: {}, moved: { 't1710-run': '2026-10-02' } },
+      'movein-2026-10-02': [{ id: 'mv-2026-09-29-t1710-run', srcId: 't1710-run', fromIso: '2026-09-29', title: 'Easy run', detail: '', cat: 'run', run: { km: 6, shoe: 'Ghost' }, start: '17:10', end: '17:50' }],
+      'done-2026-09-30': { 't1710-run': true }, 'done-2026-10-01': { 't1710-run': true }, 'done-2026-10-03': { 't0830-run': true }, 'done-2026-10-04': { 't0830-run': true } };
+    const mv = await open('2026-10-02', '17:30', MV);
+    await mv.page.click('.hero .h-tick');
+    await mv.page.click('[data-nav="week"]');
+    const wkv = await mv.page.evaluate(() => ({ head: document.querySelector('.profile-head h2').textContent.replace(/\s+/g, ' '),
+      tue: document.querySelector('.profile-day[data-date="2026-09-29"]').className, fri: document.querySelector('.profile-day[data-date="2026-10-02"]').className,
+      friSt: document.querySelectorAll('.wk-day')[4].querySelector('.d-status').textContent }));
+    check(/^42 \/ 42 km recorded$/.test(wkv.head) && /\boff\b/.test(wkv.tue) && !/miss/.test(wkv.tue) && /\blit\b/.test(wkv.fri) && /✓ 6 km · ticked/.test(wkv.friSt),
+      'a moved run ticked on its new day is banked there: the week, the bars and the day card agree: ' + JSON.stringify(wkv));
+    await mv.page.click('[data-nav="more"]'); await mv.page.click('.sheet-item[data-nav="kal"]');
+    check(/\bgot\b/.test(await mv.page.$eval('.kl-row[aria-label^="Friday 2 October"]', (n) => n.className)) && /Easy · from Tue/.test(await text(mv.page, '.kl-row[aria-label^="Friday 2 October"] .kl-n')),
+      'the Kalendar shows the moved run on the day it was run');
+    await mv.ctx.close();
+    /* the next Monday: the week is sealed and Previously counts five of five, no extra, no miss */
+    const mon = await open('2026-10-05', '09:00', Object.assign({}, MV, { 'done-2026-10-02': { 'mv-2026-09-29-t1710-run': true } }));
+    const pv = await text(mon.page, '.previously');
+    check(/5 of 5 runs/.test(pv) && !/extra/.test(pv) && (await mon.page.$$('.previously .pv-day.miss')).length === 0, 'Previously counts the moved run as one of the week\u2019s runs: ' + pv.slice(0, 120));
+    await mon.page.click('.pv-open');
+    check(!!(await mon.page.$('.week-profile .seal')), 'a week whose moved run was done elsewhere in the week is still sealed');
+    await mon.page.click('[data-nav="more"]'); await mon.page.click('.sheet-item[data-nav="plan"]');
+    const wall = await mon.page.$$eval('.wall-grid .wl-col', (cols) => [cols[13].children[1].className, cols[13].children[4].className]);
+    check(/drop/.test(wall[0]) && /ran easy/.test(wall[1]), 'the block wall reads the old day as moved and the new day as run: ' + wall.join(' | '));
+    await mon.page.click('.journey-open');
+    check(/^Week 15/.test(await text(mon.page, '#view h1')) && /week/i.test(await text(mon.page, '.tab.active')), 'Open week from the journey lands on that week');
+    noErrors(mon, 'moved runs banked');
+    await mon.ctx.close(); }
+  // v5.10.2: the clock turns on the minute, and a refused save says so
+  { const ck = await open('2026-10-01', '12:00:57', SEED);
+    check((await text(ck.page, '.live-clock')) === '12:00', 'the clock opens on the minute it is');
+    await ck.page.waitForTimeout(4500);
+    check((await text(ck.page, '.live-clock')) === '12:01' && /NOW 12:01/.test(await text(ck.page, '.tl-now')), 'NOW turns over on the minute, not a minute after launch: ' + await text(ck.page, '.live-clock'));
+    await ck.page.evaluate(() => { Storage.prototype.setItem = function () { throw new Error('QuotaExceededError'); }; });
+    await ck.page.click('.tl-card:has-text("Read") .tick').catch(() => {});
+    await ck.page.click('.hero .h-tick').catch(() => {});
+    check(/refused to save/.test(await text(ck.page, '.store-warn')), 'a save the phone refuses is announced, not silently lost');
+    await ck.ctx.close(); }
+  // v5.10.2: coming back on a new day opens on that day's Today; a day turning in front of you moves nothing
+  { const rt = await open('2026-10-01', '23:59', SEED);
+    await rt.page.evaluate(() => { window.__skew += 90000; document.dispatchEvent(new Event('visibilitychange')); });
+    check(/Friday 2 Oct/.test(await text(rt.page, '.day-head h1')), 'Today follows midnight while the app is open on today');
+    await rt.page.click('.day-nav [data-d="-2"], .day-nav [data-d="-1"]'); await rt.page.click('.day-nav [data-d="-1"]');
+    await rt.page.click('[data-nav="week"]');
+    await rt.page.evaluate(() => window.__away(3 * 86400000));
+    check(/Monday 5 Oct/.test(await text(rt.page, '.day-head h1')) && /today/i.test(await text(rt.page, '.tab.active')), 'back on a new day, the app opens on Today, not the page it was left on');
+    noErrors(rt, 'return on a new day');
+    await rt.ctx.close(); }
   // v5.2: the growing border — flowers for done sessions, buds for missed
   t = await open('2026-09-29', '22:40', Object.assign({}, SEED, { 'done-2026-09-29': { 't1930-study': true }, 'runlog-2026-09-29': { sec: 2665, hr: 145, km: 7.32 } }));
   const vn = await t.page.evaluate(() => { const v = document.querySelector('.tl > .vine'); return v && { flowers: v.querySelectorAll('.vn-flower').length, buds: v.querySelectorAll('.vn-bud').length, fin: !!v.querySelector('.vn-fin'), bloom: v.querySelectorAll('.bloom').length }; });

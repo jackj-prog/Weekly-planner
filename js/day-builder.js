@@ -455,7 +455,7 @@
 
   /* The whole block as one shape — drives the Plan-view skyline.
      banked = ticked run km per week (same source as the Plan stats). */
-  function seasonShape(getDone, getLog) {
+  function seasonShape(getDone, getLog, getMoves) {
     const block = PLAN.blocks[0];
     const keyWks = new Set((PLAN.keyEvents || []).map((e) => e.wk));
     return block.weekTable.map((row, i) => {
@@ -464,7 +464,7 @@
       for (let d = 0; d < 7; d++) {
         const iso = addDays(anchor, d);
         const day = buildDay(iso);
-        banked += recordedKm(day, getDone(iso), getLog && getLog(iso));
+        banked += recordedKm(day, getDone(iso), getLog && getLog(iso), getMoves && getMoves(iso, day));
       }
       return {
         wk: row.wk, km: row.km, lr: row.lr, phase: row.phase,
@@ -476,7 +476,7 @@
 
   // A journey is resolved sessions, not the headline week-table totals.
   // This matters in special weeks, whose totals may exclude the race itself.
-  function trainingJourney(getDone, getLog, today) {
+  function trainingJourney(getDone, getLog, today, getMoves) {
     const block = PLAN.blocks[0];
     const weeks = block.weekTable.map(row => {
       const dates = weekDates(block, row.wk);
@@ -484,9 +484,14 @@
         const iso = addDays(dates.start,i), day = buildDay(iso);
         const done = iso <= today ? getDone(iso) : {};
         const log = iso <= today ? getLog(iso) : null;
-        const recorded = recordedKm(day,done,log);
+        const moves = getMoves ? getMoves(iso, day) : null;
+        const recorded = recordedKm(day,done,log,moves || undefined);
+        /* a run moved onto this day is this day's planned run in the
+           picture of the block; the day it left is marked moved, not missed */
+        const inRun = moves && moves.in && moves.in[0];
         return {iso, planned:day.run ? day.run.run.km : 0, recorded,
           title:day.run ? day.run.title : '', cls:day.run ? runClass(day.run) : null,
+          movedOut:!!(moves && moves.out), movedIn:inRun ? {km:inRun.km, cls:inRun.run ? runClass({title:inRun.title || '', run:inRun.run}) : 'easy'} : null,
           estimated:recorded > 0 && !(log && Number.isFinite(log.km) && log.km > 0)};
       });
       return {wk:row.wk, phase:row.phase, cutback:!!row.cutback, ...dates, days,
@@ -871,21 +876,39 @@
   }
 
   /* Run km banked vs planned across the 7 days from anchor (any block). */
-  function recordedKm(day, done, log) {
-    const plan = day.run ? day.run.run.km : 0;
-    if (log && Number.isFinite(log.sec) && log.sec > 0) {
-      if (Number.isFinite(log.km) && log.km > 0) return log.km;
-      if (log.km == null) return plan;
-    }
-    return day.run && (done || {})[day.run.id] ? plan : 0;
+  /* What a date actually banked, run by run (v5.10.2). The day's own run
+     counts unless it was moved away; a run moved onto the day (the app's
+     "Move to…", passed in as `moves`) counts there instead, so a moved run
+     is banked once, on the day it was done. A saved log is the record of
+     the day's first run (its distance, or the planned one for a log saved
+     without a distance); otherwise a tick banks a run's planned km. A log
+     on a day with no run at all is an unplanned run. `moves` is optional:
+     { out: own run moved away, in: [{ id, km, title, run }] }. */
+  function recordedRuns(day, done, log, moves) {
+    const tick = done || {};
+    const own = day.run && !(moves && moves.out) ? day.run : null;
+    const list = [];
+    if (own) list.push({ id: own.id, km: own.run.km, title: own.title, run: own.run, moved: false });
+    ((moves && moves.in) || []).forEach((m) => list.push({ id: m.id, km: m.km, title: m.title || '', run: m.run || null, moved: true, fromIso: m.fromIso || null }));
+    const logged = !!(log && Number.isFinite(log.sec) && log.sec > 0 && ((Number.isFinite(log.km) && log.km > 0) || log.km == null));
+    const logKm = logged && Number.isFinite(log.km) && log.km > 0 ? log.km : null;
+    list.forEach((r, i) => {
+      if (i === 0 && logged) { r.recorded = logKm != null ? logKm : r.km; r.logged = true; }
+      else r.recorded = tick[r.id] ? r.km : 0;
+    });
+    if (!list.length && logKm != null) list.push({ id: null, km: 0, title: '', run: null, extra: true, logged: true, recorded: logKm });
+    return list;
   }
-  function weekKm(getDone, anchorIso, getLog) {
+  function recordedKm(day, done, log, moves) {
+    return recordedRuns(day, done, log, moves).reduce((n, r) => n + r.recorded, 0);
+  }
+  function weekKm(getDone, anchorIso, getLog, getMoves) {
     const out = { done: 0, planned: 0 };
     for (let i = 0; i < 7; i++) {
       const iso = addDays(anchorIso, i);
       const day = buildDay(iso);
       if (day.run) out.planned += day.run.run.km;
-      out.done += recordedKm(day, getDone(iso), getLog && getLog(iso));
+      out.done += recordedKm(day, getDone(iso), getLog && getLog(iso), getMoves && getMoves(iso, day));
     }
     return out;
   }
@@ -1019,7 +1042,7 @@
 
   return {
     buildDay, resolveBlock, weekNumber, dayIndex, distancesForWeek,
-    weekRow, weekDates, raceCountdown, adherence, weekKm, recordedKm, buildICS,
+    weekRow, weekDates, raceCountdown, adherence, weekKm, recordedKm, recordedRuns, buildICS,
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
