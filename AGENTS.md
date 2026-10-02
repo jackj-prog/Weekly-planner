@@ -2326,3 +2326,32 @@ the app contradicted each other:
   kind. One predicate (`longRunOvershoot`) now drives both: flagged runs
   get the warning and the plain record, no stage.
 306 browser checks (9 new, `coherence()`), 16,295 plan checks.
+
+## Release review — v5.11.3, 2 October (Claude)
+
+Final pass over v5.11.0–v5.11.2 together, on the rendered app. Re-run on
+the release build: the 270-case layout matrix (same 9 accepted flags and
+3 harness artefacts as v5.11.1), the cross-view km probe (13/13 agree),
+rendered contrast (only aria-hidden outlined numerals and a
+text-fill-colour unit the audit cannot read), SVG type (8px floor holds),
+the seven journeys with a capture at every step, a reload/fresh-page
+persistence probe (tick, skip, leg dose), and a full-block fold check
+(210 days × 07:30 and 16:00 at 390×844). Changed:
+- "Did it happen?" repeated the state line above it ("Window passed · not
+  recorded" / "The 08:30 window has passed and nothing is recorded yet").
+  The sentence is gone; the question is 21px shorter, and the fold check
+  went from 17 to 13 days where the shoe/pace line sits below the fold
+  (all are passed-window, nothing-recorded days in Dec–Jan; the distance
+  is above the fold on every one).
+- The update toast's Reload was a 21px strip of text in a 41px pill; it is
+  a 44px target now.
+- `tools/interactions.js` gains `update()`: install A, controlled, deploy
+  B with `max-age=600` on, the toast is offered while the page stays on A,
+  Reload brings B, the old cache is deleted, ticks and logs survive, and B
+  opens offline (8 checks). The missed-run check pins the shorter question.
+- Docs drift (F13, factual part): the README described the old icon and
+  the manifest's Plan shortcut a page that no longer exists.
+- Two test fixtures with figures of uncertain origin replaced by round
+  invented ones, matching the file's invented-fixture rule.
+316 browser checks (9 new), 16,295 plan checks. Device-only items are listed in
+docs/REVIEW-2026-10.md, Pass 6.

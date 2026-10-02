@@ -327,6 +327,14 @@ logged — "runs recorded"), and the log's running total reads to one
 decimal like every other total. A long run the recap flags as an
 overshoot gets no earned-moment stage: the warning and a plain record of
 the longest, never fanfare over a caution.
+**v5.11.3 (release review):** "Did it happen?" is only the question —
+the card's state line already says the window passed, so the sentence
+that repeated it is gone and the distance comes back above the fold on
+four more late-block days. The update toast's Reload is a full 44px
+target, and the browser suite now takes a release through the toast
+(HTTP cache on, as on Pages) and checks the page keeps its own release
+until the tap, the old cache goes, data stays and the new release opens
+offline.
 **v5.9.4:** a wrapped Next title hangs under its first word, not its
 emblem; the Now card's stars keep off its edge; a title that already names
 its distance ("~21 km") is not given it again.

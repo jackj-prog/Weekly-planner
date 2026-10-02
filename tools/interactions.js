@@ -37,6 +37,7 @@ const MIME = {
   '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ics': 'text/calendar',
 };
 const DENY = /(^|[/\\])\.git([/\\]|$)|(^|[/\\])private([/\\]|$)/i;
+const RELEASE = { ver: null, mark: null };
 function serve() {
   return new Promise((resolve) => {
     const server = http.createServer((req, res) => {
@@ -47,6 +48,14 @@ function serve() {
       if (DENY.test(safe) || !Object.prototype.hasOwnProperty.call(MIME, path.extname(file)) ||
           !file.startsWith(ROOT) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
         res.writeHead(404); return res.end('not found');
+      }
+      /* the update check deploys a "new release" by rewriting the service
+         worker's version and marking app.js; HTTP caching is on, as on Pages */
+      if (RELEASE.ver && (safe === 'sw.js' || safe === 'js/app.js')) {
+        let body = fs.readFileSync(file, 'utf8');
+        if (safe === 'sw.js') body = body.replace(/const CACHE_VERSION = '[^']+'/, "const CACHE_VERSION = '" + RELEASE.ver + "'");
+        else body += '\n;window.__build = ' + JSON.stringify(RELEASE.mark) + ';';
+        res.writeHead(200, { 'Content-Type': MIME[path.extname(file)], 'Cache-Control': 'max-age=600' }); return res.end(body);
       }
       res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] });
       fs.createReadStream(file).pipe(res);
@@ -142,6 +151,8 @@ async function missedRun() {
   let t = await open('2026-09-27', '18:00', SEED);
   check(await t.page.isVisible('.h-missed [data-missed="skip"]'), 'question shown after the window');
   check(!(await t.page.$('.hero button.h-tick')), 'v4.95: no second Mark done beside “Ran as planned”');
+  check(await text(t.page, '.hero .h-missed p') === 'Did it happen?' && /Window passed · not recorded/.test(await text(t.page, '.hero .h-state')),
+    'v5.11.3: the state line says the window passed; the question does not say it again');
   await t.page.click('[data-missed="skip"]');
   check((await t.json('ovr-2026-09-27')).skip['t0830-run'] === true, 'Didn’t happen stores a skip');
   check(await t.page.isVisible('.hero.skipped'), 'hero shows the skipped state');
@@ -907,11 +918,11 @@ async function cinema() {
   check(!(await t.page.$('.hero .sg.lighting')), 'the light floods in once, not on the next re-render');
   noErrors(t, 'stained glass');
   await t.ctx.close();
-  t = await open('2026-09-30', '20:00', Object.assign({}, SEED, { 'runlog-2026-09-30': { sec: 2344, hr: 158, km: 7.05 } }));
+  t = await open('2026-09-30', '20:00', Object.assign({}, SEED, { 'runlog-2026-09-30': { sec: 2700, hr: 150, km: 7 } }));
   check(!!(await t.page.$('.run-recap .sess-shape svg.sg.lit')) && !(await t.page.$('.run-recap .sg.lighting')), 'a logged run\u2019s recap carries its window, lit');
   await t.ctx.close();
   // v5.0.11: Previously counts a run on an unplanned day
-  t = await open('2026-09-28', '12:00', Object.assign({}, SEED, { 'runlog-2026-09-25': { sec: 1160, hr: 141, km: 2.77 } }));
+  t = await open('2026-09-28', '12:00', Object.assign({}, SEED, { 'runlog-2026-09-25': { sec: 1200, hr: 140, km: 3 } }));
   check(/\d of 5 runs \+ 1 extra ·/.test(await text(t.page, '.previously .pv-line')), 'an unplanned Friday run is counted as extra: ' + await text(t.page, '.previously .pv-line'));
   await t.ctx.close();
   // v5.0.10: Now and Next say how far the run is
@@ -1121,6 +1132,41 @@ async function coherence() {
   await t.ctx.close();
 }
 
+/* v5.11.3: a release arrives — the toast offers it, the page keeps its
+   release until the tap, then reloads into the new one; the old cache goes,
+   ticks and logs stay, and the new release opens offline. Pages caches
+   app.js for ten minutes; the new worker must precache past that (F5). */
+async function update() {
+  console.log('· update flow');
+  RELEASE.ver = 'week-os-vTEST-A'; RELEASE.mark = 'A';
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, timezoneId: TZ, locale: 'en-GB' });
+  const page = await ctx.newPage(); const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
+  const url = 'http://127.0.0.1:' + server.address().port + '/index.html';
+  try {
+    await page.goto(url, { waitUntil: 'networkidle' });
+    await page.evaluate(() => navigator.serviceWorker.ready); await page.waitForTimeout(600);
+    check(await page.evaluate(() => performance.getEntriesByType('navigation')[0].type === 'navigate'), 'the first install never reloads the page under the user');
+    await page.evaluate(() => { localStorage.setItem('done-2026-10-01', JSON.stringify({ 't1710-run': true })); localStorage.setItem('runlog-2026-09-30', JSON.stringify({ sec: 2700, hr: 150, km: 7 })); });
+    await page.reload({ waitUntil: 'networkidle' });
+    check(await page.evaluate(() => !!navigator.serviceWorker.controller) && await page.evaluate(() => document.getElementById('toast').classList.contains('hidden')), 'controlled on the second visit, and no toast without a release');
+    RELEASE.ver = 'week-os-vTEST-B'; RELEASE.mark = 'B';
+    await page.evaluate(() => navigator.serviceWorker.getRegistration().then((r) => r.update()));
+    await page.waitForFunction(() => !document.getElementById('toast').classList.contains('hidden'), null, { timeout: 15000 }).catch(() => {});
+    check(/Updated/.test(await text(page, '#toast')) && await page.evaluate(() => window.__build === 'A'), 'a new release offers "Updated · Reload" and the page keeps its own release until the tap');
+    await page.waitForTimeout(700);   // the toast rises in at 96% scale
+    const rh = await page.$eval('#toast-reload', (b) => Math.round(b.getBoundingClientRect().height));
+    check(rh >= 44, 'Reload is a full-height target: ' + rh + 'px');
+    const nav = page.waitForNavigation({ waitUntil: 'networkidle', timeout: 15000 }).catch(() => null);
+    await page.click('#toast-reload'); await nav; await page.waitForTimeout(500);
+    check(await page.evaluate(() => window.__build === 'B'), 'Reload brings in the new release, though the old app.js sat in the HTTP cache');
+    check(JSON.stringify(await page.evaluate(() => caches.keys())) === '["week-os-vTEST-B"]', 'the old release’s cache is deleted');
+    check(await page.evaluate(() => !!localStorage.getItem('done-2026-10-01') && JSON.parse(localStorage.getItem('runlog-2026-09-30')).km === 7), 'ticks and logs survive the update');
+    await ctx.setOffline(true); await page.reload({ waitUntil: 'load' }); await page.waitForTimeout(300);
+    check(await page.isVisible('.nownext') && await page.evaluate(() => window.__build === 'B'), 'offline, the new release opens from its cache');
+    check(!errors.length, 'no page errors in the update flow ' + errors.join(' | '));
+  } finally { RELEASE.ver = null; await ctx.close(); }
+}
+
 async function sweep() {
   if (QUICK) { console.log('· render sweep skipped (--quick)'); return; }
   console.log('· render sweep: 234 days, 34 weeks, Plan, Reference');
@@ -1156,7 +1202,7 @@ async function offline() {
   browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
   server = await serve();
   try {
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, sweep, offline]) await run();
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, update, sweep, offline]) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');

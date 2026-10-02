@@ -23,7 +23,7 @@
     {
       "name": "The 30-week block",
       "short_name": "Plan",
-      "description": "The season board and skyline",
+      "description": "The journey so far and all 30 weeks",
       "url": "./?view=plan",
       "icons": [{ "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" }]
     }

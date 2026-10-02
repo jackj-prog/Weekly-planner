@@ -24,9 +24,9 @@ keyed per ISO date.
 | `js/app.js` | Rendering + interaction. Zero plan content. |
 | `sw.js` | Service worker. **Bump `CACHE_VERSION` on every deploy** — it drives the "Updated — reload" toast. |
 | `tests/build.test.js` | Headless test: builds all 210 days + the §15 definition-of-done checks. |
-| `icons/icon.svg` | Vector source for the app icon (calendar + check). |
+| `icons/icon.svg` | Vector source for the app icon (the day clock, v4.94). |
 | `tools/make-icons.js` | Dev-only: renders `icons/icon.svg` → the 180/512 PNGs via headless Chromium. |
-| `tools/interactions.js` | Dev-only: drives the app in headless Chromium with an invented fixture and checks what the buttons store (skips, moves, logs, backups, MP check), sweeps every day of the block and reloads offline. |
+| `tools/interactions.js` | Dev-only: drives the app in headless Chromium with an invented fixture and checks what the buttons store (skips, moves, logs, backups, MP check), sweeps every day of the block, takes a release through the "Updated — reload" toast and reloads offline. |
 
 ## Amendment workflow
 

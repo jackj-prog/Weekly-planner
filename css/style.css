@@ -3755,3 +3755,9 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 /* the gym card's list summary stops short of the Focus button beside it,
    so the two never share a tap */
 .c-sess .session-plan > summary { padding-right: 0; margin-right: 96px; }
+
+/* ================= RELEASE REVIEW (v5.11.3) ======================== */
+/* the update toast's one action is a full-height target: "Reload" was a
+   21px strip of text inside a 41px pill */
+.toast { padding: 0 4px 0 18px; min-height: 44px; }
+.toast button { min-height: 44px; padding: 0 14px; border-radius: 999px; }

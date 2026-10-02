@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.11.2';
+  const APP_VERSION = '5.11.3';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1752,10 +1752,12 @@
     const nm = nowMin(), live = iso === today && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut && !unresolved && nm >= r.startMin;
     const liveLabel = live ? (nm < r.endMin ? 'Under way · until ' + r.end : 'Window ended ' + r.end) : '';
     const missedNote = (PLAN.missedRun && PLAN.missedRun.note) || '';
+    /* the card's state line already says "Window passed · not recorded", so
+       the question is only the question — the sentence after it said the
+       same thing twice and pushed the distance under the fold (v5.11.3) */
     const missedHTML = unresolved
-      ? '<div class="h-missed" role="group" aria-label="Did this run happen?"><p><b>Did it happen?</b> ' +
-        (iso < today ? 'Nothing is recorded for this run.' : 'The ' + esc(r.start) + ' window has passed and nothing is recorded yet.') +
-        '</p><div class="h-missed-acts"><button data-missed="log">Log it</button>' +
+      ? '<div class="h-missed" role="group" aria-label="Did this run happen?"><p><b>Did it happen?</b></p>' +
+        '<div class="h-missed-acts"><button data-missed="log">Log it</button>' +
         '<button data-missed="done">Ran as planned</button><button data-missed="skip">Didn’t happen</button></div></div>'
       : isSkipped
         ? '<div class="h-missed is-skipped" role="status"><p><b>Skipped.</b> ' + esc(missedNote) + '</p>' +
