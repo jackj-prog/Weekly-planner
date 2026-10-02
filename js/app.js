@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.10.2';
+  const APP_VERSION = '5.11.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -433,7 +433,11 @@
        Decorative: the top bar already carries the countdown for everyone. */
     const cd = day.blockId === 'marathon' ? DB.raceCountdown(iso) : null;
     const raceDay = cd && cd.days === 0 && day.run;
-    const bb = !cd || cd.past ? ''
+    /* One countdown (v5.11): the top bar carries it on every screen, so the
+       giant numeral beside it only said the same thing twice. It stands on
+       Today when the countdown becomes the subject — the four Advent weeks,
+       over the wreath (v5.8), and race morning's 42.2. */
+    const bb = !cd || cd.past || cd.days > 28 ? ''
       : '<span class="bb" aria-hidden="true"><span class="bb-num">' + (raceDay ? esc(String(day.run.run.km)) : cd.days) +
         '</span>' + wreathHTML(cd, iso) + '<span class="bb-cap">' + (raceDay ? 'KM · TODAY' : cd.days === 1 ? 'DAY TO THE GUN' : 'DAYS TO THE GUN') + '</span></span>';
     const light = day.run ? DB.runClass(day.run) : 'rest';
@@ -1070,7 +1074,7 @@
       const delta = Math.round(Math.abs(report.deltaPaceSec));
       const paceText = delta === 0 ? 'Same pace to the second' : delta + ' s/km ' + (report.deltaPaceSec > 0 ? 'quicker' : 'slower');
       const hrText = report.deltaHr == null ? 'HR comparison unavailable' : report.deltaHr === 0 ? 'Same average HR' : Math.abs(report.deltaHr) + ' bpm ' + (report.deltaHr > 0 ? 'higher' : 'lower');
-      comparison = '<details class="recap-compare"><summary><span>Compared with your last ' + esc(r.cls) + ' run</span><span aria-hidden="true">+</span></summary>' +
+      comparison = '<details class="recap-compare"><summary><span>Compared with your last ' + esc(r.cls) + ' run</span></summary>' +
         '<div class="recap-deltas"><div><b>' + esc(paceText) + '</b><span>' + esc(hrText) + '</span></div></div>' +
         '<table><caption>' + esc(fmtShort(prev.iso)) + ' → ' + esc(fmtShort(iso)) + '</caption><thead><tr><th>Saved values</th><th>Previous</th><th>This run</th></tr></thead><tbody>' +
         '<tr><th>Distance</th><td>' + fmt(prev.km) + ' km</td><td>' + fmt(r.km) + ' km</td></tr>' +
@@ -1110,7 +1114,7 @@
       wrap.innerHTML = '<button class="h-log' + (saved ? ' logged' : '') + '">' +
         (saved ? (hasRecap ? 'Edit run <span aria-hidden="true">↗</span>' : loggedLineHTML(iso, plannedKm)) : day.run
           ? 'Log this run <span aria-hidden="true">↗</span><small>Paste your run or enter the numbers</small>'
-          : 'Ran today? Add a run <span aria-hidden="true">↗</span><small>Record what happened, even on a rest day</small>') + '</button>' +
+          : (iso === todayISO() ? 'Ran today?' : 'Ran on ' + esc(fmtDate(iso).split(' ')[0]) + '?') + ' <b>Add a run</b> <span aria-hidden="true">↗</span>') + '</button>' +
         (saved && !hasRecap ? earnedHTML(iso) : '');
       if (saved) {
         const e = saved, km = plannedKm, r = day.run;
@@ -1164,7 +1168,7 @@
         if (share && day.run) share.addEventListener('click', () => shareRunCard(day, iso));
         else if (share) share.remove();
         if (hasRecap) {
-          const receipt = el('<button class="recap-share">Share run receipt <span aria-hidden="true">↗</span></button>');
+          const receipt = el('<button class="recap-share" aria-label="Share run receipt">Share receipt <span aria-hidden="true">↗</span></button>');
           receipt.addEventListener('click', () => shareRunCard(day, iso));
           wrap.appendChild(receipt);
         }
@@ -1625,12 +1629,12 @@
         '<span class="h-rhr-ctl"><button data-rhr="-1" aria-label="Lower resting HR">−</button><b>' + state.rhrDraft + '</b><small>bpm</small>' +
         '<button data-rhr="1" aria-label="Higher resting HR">+</button></span><button class="h-rhr-save" data-rhr="save">Save</button></div>';
     }
-    /* The morning's question belongs to the morning (v4.87): after noon an
-       unanswered prompt shrinks to one quiet line instead of pushing the
-       run's numbers down the card for the rest of the day. */
-    if (bpm == null) return nowMin() < 12 * 60 || iso !== todayISO()
-      ? '<button class="h-rhr add" data-rhr="open">Add this morning’s resting HR <small>optional · compares it with your usual</small></button>'
-      : '<button class="h-rhr add mini" data-rhr="open">+ Morning resting HR <small>optional</small></button>';
+    /* The morning's question belongs to the morning (v4.87), and even then it
+       is optional: one pill under the run's state, never a card between the
+       run's name and its distance (v5.11). Brighter before noon, when the
+       reading is worth taking. */
+    if (bpm == null) return '<button class="h-rhr add mini' + (nowMin() < 12 * 60 && iso === todayISO() ? ' am' : '') +
+      '" data-rhr="open">+ ' + (nowMin() < 12 * 60 ? 'This morning’s' : 'Morning') + ' resting HR <small>optional</small></button>';
     const delta = usual == null ? null : bpm - usual;
     const high = delta != null && delta >= g.skipDelta;
     return '<div class="h-rhr' + (high ? ' high' : '') + '"><button class="h-rhr-read" data-rhr="open" aria-label="Edit morning resting HR">' +
@@ -1815,7 +1819,8 @@
       state.view = 'ref';
       window.scrollTo(0, 0);
       render();
-      view.querySelector('[data-ref-target="ref-zones"]').click();
+      const zones = view.querySelector('#ref-zones');
+      if (zones) { zones.open = true; zones.querySelector('summary').focus({ preventScroll: true }); zones.scrollIntoView({ block: 'start' }); }
     });
     hero.querySelector('.session-focus-open').addEventListener('click', e => openSessionFocus(r, iso, e.currentTarget));
     countUp(hero.querySelector('.h-km'), km, iso);
@@ -1829,7 +1834,23 @@
       Array.from(hero.children).filter(n => n !== top).forEach(n => planned.querySelector('div').appendChild(n));
       hero.append(buildRunRecap(day, iso, recap), planned);
     }
-    hero.appendChild(buildRunLogger(day, iso, !!recap));
+    const rl = hero.appendChild(buildRunLogger(day, iso, !!recap));
+    /* One foot to the card (v5.11). Before the run its two actions stand side
+       by side — Focus for the doing, Log for the record — instead of two
+       full-width slabs; once it is logged, the card's further reading is one
+       ruled list of disclosures and its two actions one row, where they had
+       been six blocks in four styles. Nodes move; listeners move with them. */
+    const fo = hero.querySelector(':scope > .session-focus-open'), lg = rl.querySelector(':scope > .h-log:not(.logged):not(.form)');
+    if (fo && lg) { const row = el('<div class="h-acts"></div>'); lg.before(row); row.append(fo, lg); fo.firstChild.textContent = 'Focus '; }
+    if (recap && !editing) {
+      const list = el('<div class="recap-list"></div>');
+      [hero.querySelector('.recap-compare'), rl.querySelector('.recap-readback'), hero.querySelector(':scope > .recap-plan'),
+        hero.querySelector('.run-recap .recap-method:not(.recap-readback)')].forEach((n) => { if (n) list.appendChild(n); });
+      const edit = rl.querySelector(':scope > .h-log.logged'), share = rl.querySelector('.recap-share');
+      const row = el('<div class="h-acts"></div>');
+      [edit, share].forEach((n) => { if (n) row.appendChild(n); });
+      rl.append(list, row);
+    }
     return hero;
   }
   function fmtDur(sec) {
@@ -4217,34 +4238,21 @@
       return '<div class="ref-row pace-row' + (num ? ' numeric' : '') + '"><span>' + esc(k) + '</span><span class="v">' + val + '</span></div>';
     };
     const section = (id, node) => { node.id = id; node.tabIndex = -1; return node; };
-    /* the race gets a statement card, not a table */
-    const cd = DB.raceCountdown(todayISO());
-    const cdBit = cd.past ? 'DONE — MARATHONER'
-      : cd.days === 0 ? 'RACE DAY'
-      : cd.weeks === 0 ? cd.rem + ' DAY' + (cd.rem === 1 ? '' : 'S') + ' TO THE GUN'
-      : cd.weeks + 'W ' + cd.rem + 'D TO THE GUN';
+    /* the race gets a statement card, not a table — and no third countdown:
+       the top bar carries it on every screen (v5.11) */
     view.appendChild(el('<div class="ref ref-heading" id="ref-top"><h1>Reference</h1><p>Your training field guide</p></div>'));
-    /* The field guide is a book (v4.78): a contents page, filled in below
-       once the chapters exist, and each chapter numbered in red. */
-    const index = el('<nav class="ref-index" aria-label="Reference chapters"><h2 class="rc-h">Contents</h2><div class="rc-list"></div></nav>');
-    index.addEventListener('click', (event) => {
-      const button = event.target.closest('[data-ref-target]');
-      if (!button) return;
-      const target = document.getElementById(button.dataset.refTarget);
-      if (target) {
-        if (target.tagName === 'DETAILS') target.open = true;
-        (target.querySelector('summary') || target).focus({ preventScroll: true }); target.scrollIntoView({ block: 'start' });
-      }
-    });
-    view.appendChild(index);
+    /* The field guide is a book (v4.78): a frontispiece (the race), then a
+       contents page with every chapter numbered in red. Since v5.11 the
+       contents page IS the chapters: each entry opens in place, where a
+       second list of the same twelve titles had sat above the first. */
+    const book = el('<section class="ref-book" id="ref-contents" aria-label="Reference chapters"><h2 class="rc-h">Contents</h2></section>');
     view.appendChild(el(
       '<div class="race-card">' +
       '<div class="rc-kicker"><i class="rc-laurel">' + emblemSVG('laurel') + '</i>' + esc(PLAN.race.name) + '</div>' +
       '<div class="rc-where">' + esc(fmtDate(PLAN.race.date)) + ' · gun ' + esc(PLAN.race.gun) +
       (PLAN.race.city ? ' · ' + esc(PLAN.race.city) : '') + '</div>' +
       '<div class="rc-goal">' + esc(PLAN.race.goal) + '<small>' + esc(PLAN.race.goalPace) + '</small></div>' +
-      '<div class="rc-meta"><span>Stretch bet ' + esc(PLAN.race.stretch) + ' · ' + esc(PLAN.race.stretchPace) + '</span>' +
-      '<span class="rc-cd">' + esc(cdBit) + '</span></div>' +
+      '<div class="rc-meta"><span>Stretch bet ' + esc(PLAN.race.stretch) + ' · ' + esc(PLAN.race.stretchPace) + '</span></div>' +
       (() => { const rd = DB.buildDay(PLAN.race.date); return rd.run ? runSkyHTML(PLAN.race.date, rd.run, 'race', 'rc', null) : ''; })() +
       '</div>'
     ));
@@ -4290,8 +4298,8 @@
     view.appendChild(buildCalendarSection());
     view.appendChild(section('ref-data', buildDataSection()));
     view.querySelectorAll('[id^="ref-"]:not(#ref-top)').forEach((target) => {
-      const back = el('<button class="ref-back">↑ Reference sections</button>');
-      back.addEventListener('click', () => { index.scrollIntoView({ block: 'start' }); index.querySelector('button').focus({ preventScroll: true }); });
+      const back = el('<button class="ref-back">↑ Contents</button>');
+      back.addEventListener('click', () => { book.scrollIntoView({ block: 'start' }); const f = book.querySelector('.ref-fold > summary'); if (f) f.focus({ preventScroll: true }); });
       target.appendChild(back);
     });
     // Move live nodes into native disclosures so their existing controls keep
@@ -4304,10 +4312,10 @@
       const chapter = roman(++chapters);
       const fold = el('<details class="ref-fold" id="' + esc(id) + '" data-disclosure="' + esc(id) +
         '"><summary><b class="chap" aria-hidden="true">' + chapter + '</b><h2>' + esc(title) + '</h2><span aria-hidden="true">+</span></summary></details>');
-      index.querySelector('.rc-list').appendChild(el('<button data-ref-target="' + esc(id) + '"><b aria-hidden="true">' + chapter + '</b><span>' + esc(title) + '</span></button>'));
       fold.open = openDetails.has(id);
       node.removeAttribute('id'); node.removeAttribute('tabindex'); heading.remove();
-      node.before(fold); fold.appendChild(node);
+      if (!book.isConnected) node.before(book);
+      book.appendChild(fold); fold.appendChild(node);
     });
     view.querySelector('.ref-heading p').textContent = 'Your training field guide, in ' + roman(chapters) + ' chapters';
   }
@@ -5377,7 +5385,7 @@
       '<circle class="sp-sunglow" cx="84" cy="46" r="20"/><circle class="sp-sun" cx="84" cy="46" r="7"/><path class="sp-hz" d="M0 46 L96 46"/></svg>' +
       '<span class="sp-t"><b>Your training journey</b><small>' + (Math.round(j.recorded * 10) / 10) + ' km · ' + j.runs + ' runs recorded</small></span>';
     ref.innerHTML = '<span class="sp-init" aria-hidden="true">R</span>' +
-      '<span class="sp-t"><b>Reference</b><small>Paces · zones · shoes · fuelling · rules</small></span>';
+      '<span class="sp-t"><b>Reference</b><small>Paces to rules · XII chapters</small></span>';
     const kal = document.querySelector('.sheet-item[data-nav="kal"]');
     if (kal) {
       const t = todayISO(), [y, m] = t.split('-').map(Number);

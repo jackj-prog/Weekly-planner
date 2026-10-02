@@ -254,7 +254,11 @@ async function marathonPace() {
   console.log('· marathon-pace check');
   let t = await open('2026-10-04', '13:00', SEED);
   check(/5:20 · km 17–22/.test(await text(t.page, '.hero .h-mp')), 'run card shows where the MP finish starts');
+  check(await t.page.evaluate(() => { const r = document.querySelector('.hero .h-acts'); if (!r) return false; const [a, b] = r.children;
+    return r.children.length === 2 && a.matches('.session-focus-open') && b.matches('.h-log') && Math.abs(a.getBoundingClientRect().top - b.getBoundingClientRect().top) < 1; }),
+    'before the log, Focus and Log stand side by side at the card’s foot');
   await t.page.click('.runlogger .h-log');
+  check(!!(await t.page.$('.runlogger > .h-log.form')) && !(await t.page.$('.h-acts .h-log.form')), 'the log form opens full width, never inside the action row');
   check(await t.page.isVisible('[data-log-field="mpPaceSec"]'), 'MP fields on an MP day');
   check((await t.page.inputValue('[data-log-field="mpKm"]')) === '6', 'MP km from the session title');
   const fill = async (k, v) => { await t.page.fill('[data-log-field="' + k + '"]', v); await t.page.dispatchEvent('[data-log-field="' + k + '"]', 'change'); };
@@ -311,10 +315,19 @@ async function weekShape() {
 async function cinema() {
   console.log('· billboard, key days, title card gate');
   let t = await open('2026-10-04', '07:40', SEED);
-  check((await text(t.page, '.bb-num')) === '112', 'billboard numeral is the days to the gun');
-  check((await t.page.getAttribute('.bb', 'aria-hidden')) === 'true', 'billboard is decorative');
+  check(!(await t.page.$('.bb')), 'one countdown: no Today numeral 112 days out — the top bar carries it');
+  check(/16w 0d/.test(await text(t.page, '#hdr-count')), 'the top bar keeps the countdown');
   check(/light-long/.test(await t.page.getAttribute('.day-head', 'class')) && /cls-long/.test(await t.page.getAttribute('.hero', 'class')), 'long run lights the head and the card white');
   check(!(await t.page.$('.titlecard')), 'no title card in a browser tab');
+  await t.ctx.close();
+  t = await open('2026-12-27', '12:00', SEED);
+  check((await text(t.page, '.bb-num')) === '28' && !!(await t.page.$('.bb .bb-wreath')), 'the numeral stands over the wreath from 28 days out');
+  check((await t.page.getAttribute('.bb', 'aria-hidden')) === 'true', 'billboard is decorative');
+  check(await t.page.evaluate(() => { const a = document.querySelector('.day-head h1').getBoundingClientRect(), b = document.querySelector('.day-head .bb').getBoundingClientRect(), c = document.querySelector('.day-head .sub').getBoundingClientRect();
+    const hit = (x, y) => x.left < y.right && y.left < x.right && x.top < y.bottom && y.top < x.bottom; return !hit(a, b) && !hit(c, b); }), 'the countdown numeral touches neither the date nor the chips');
+  await t.ctx.close();
+  t = await open('2026-10-01', '07:20', SEED);
+  check(/^\+ This morning’s resting HR/.test(await text(t.page, '.hero .h-rhr.add.mini.am')), 'before noon the resting-HR prompt is a pill, never a card in the run’s hierarchy');
   await t.ctx.close();
   t = await open('2027-01-24', '05:10', SEED);
   check((await text(t.page, '.bb-num')) === '42.2', 'race morning billboard is the distance');
@@ -363,11 +376,20 @@ async function cinema() {
   check((await t.page.$$('.wk-days .wk-day .d-moon')).length === 7, 'every day of the week keeps its moon');
   await t.ctx.close();
   t = await open('2026-10-01', '12:00', SEED, 'ref');
-  const contents = await t.page.$$eval('.ref-index .rc-list button', (ns) => ns.map((n) => n.textContent));
-  check(contents.length === (await t.page.$$('.ref-fold')).length && contents.length >= 10 && /^IPaces$/.test(contents[0]) && /^XII/.test(contents[11] || ''),
-    'Reference opens on a contents page, one numbered entry per chapter');
-  await t.page.click('.ref-index [data-ref-target="ref-fuel"]');
+  const contents = await t.page.$$eval('.ref-book > .ref-fold > summary', (ns) => ns.map((n) => n.textContent.replace(/\s+/g, '')));
+  check(contents.length === (await t.page.$$('.ref-fold')).length && contents.length >= 10 && /^IPaces\+$/.test(contents[0]) && /^XII/.test(contents[11] || ''),
+    'Reference opens on a contents page, one numbered entry per chapter: ' + contents[0]);
+  check(!(await t.page.$('.ref-index')) && /^Contents$/.test(await text(t.page, '.ref-book > .rc-h')), 'one list of chapters, headed Contents — no second copy above it');
+  await t.page.click('#ref-fuel > summary');
   check(await t.page.$eval('#ref-fuel', (n) => n.open) && /^VIII$/.test(await text(t.page, '#ref-fuel > summary .chap')), 'a contents entry opens its numbered chapter');
+  await t.page.click('#ref-fuel .ref-back');
+  check(await t.page.evaluate(() => Math.abs(document.getElementById('ref-contents').getBoundingClientRect().top) < 140), 'a chapter’s "↑ Contents" returns to the contents page');
+  const nativeMarks = async (pg) => pg.evaluate(() => [...document.querySelectorAll('details > summary')].filter((s) => {
+    const cs = getComputedStyle(s); return cs.display === 'list-item' && cs.listStyleType !== 'none'; }).map((s) => s.parentElement.className));
+  const marks = [...await nativeMarks(t.page)];
+  for (const v of ['plan', 'week']) { if (v === 'plan') { await t.page.click('[data-nav="more"]'); await t.page.click('.sheet-item[data-nav="plan"]'); } else await t.page.click('[data-nav="week"]');
+    await t.page.waitForTimeout(150); marks.push(...await nativeMarks(t.page)); }
+  check(!marks.length, 'every fold opens on the one "+" mark, none on the browser’s ▶: ' + marks.join(', '));
   noErrors(t, 'reference book');
   await t.ctx.close();
   // v4.79: the More sheet's plates, a rest day's moon, the focus stage
@@ -378,7 +400,7 @@ async function cinema() {
   check(/Your training journey\s*[\d.]+ km · \d+ runs recorded/.test(await text(t.page, '.sheet-item[data-nav="plan"]')) && !!(await t.page.$('.sheet-item[data-nav="ref"] .sp-init')),
     'the More sheet opens on two illustrated plates with the real totals');
   await t.page.click('.sheet-item[data-nav="ref"]');
-  check(!!(await t.page.$('.ref-index')), 'the Reference plate still opens Reference');
+  check(!!(await t.page.$('.ref-book')), 'the Reference plate still opens Reference');
   noErrors(t, 'plates');
   await t.ctx.close();
   t = await open('2026-09-30', '16:55', SEED);
@@ -452,8 +474,7 @@ async function cinema() {
     'NOW sits after the block it falls inside');
   check(!!(await t.page.$('.hero .h-rhr.add.mini')), 'an unanswered resting-HR prompt is one quiet line after noon');
   check(/this week/.test(await text(t.page, '.timeline-head .wkring')), 'the ring beside Your day says it is the week\u2019s km');
-  check(await t.page.evaluate(() => { const a = document.querySelector('.day-head h1').getBoundingClientRect(), b = document.querySelector('.day-head .bb').getBoundingClientRect(), c = document.querySelector('.day-head .sub').getBoundingClientRect();
-    const hit = (x, y) => x.left < y.right && y.left < x.right && x.top < y.bottom && y.top < x.bottom; return !hit(a, b) && !hit(c, b); }), 'the countdown numeral touches neither the date nor the chips');
+  check(/^\+ Morning resting HR/.test(await text(t.page, '.hero .h-rhr.add')), 'after noon the pill asks for the morning’s reading by name');
   await t.page.click('.day-nav .nav[data-d="1"]');
   check((await text(t.page, '.hero .h-tagtxt')) === 'TOMORROW’S RUN' && !(await t.page.$('.hero button.h-tick')) && (await t.page.$$('.tl-card .tick')).length === 0,
     'tomorrow\u2019s run is named for tomorrow and cannot be ticked yet');
@@ -952,7 +973,11 @@ async function cinema() {
   // v5.0.2: the recap reads plainly and editing is secondary
   t = await open('2026-09-24', '20:00', SEED);
   check(!/logged distance/.test(await text(t.page, '.recap-subtitle')) && /Your log so far/.test(await text(t.page, '.recap-total')), 'the recap says what it means: ' + await text(t.page, '.recap-total'));
-  check(await t.page.$eval('.hero.has-recap .runlogger > .h-log.logged', (n) => getComputedStyle(n).backgroundColor === 'rgba(0, 0, 0, 0)'), 'Edit run is an outline once the run is in');
+  check(await t.page.$eval('.hero.has-recap .runlogger .h-acts > .h-log.logged', (n) => getComputedStyle(n).backgroundColor === 'rgba(0, 0, 0, 0)'), 'Edit run is an outline once the run is in');
+  check(await t.page.evaluate(() => { const h = document.querySelector('.hero.has-recap'); const list = h.querySelectorAll('.recap-list'); const acts = h.querySelector('.runlogger .h-acts');
+    return list.length === 1 && [...list[0].children].every((n) => n.tagName === 'DETAILS') && list[0].children.length >= 2 && !!acts.querySelector('.recap-share') &&
+      !h.querySelector(':scope > .recap-plan') && [...h.querySelectorAll('details > summary')].every((s) => getComputedStyle(s).listStyleType === 'none' || getComputedStyle(s).display !== 'list-item'); }),
+    'a logged card reads as one ruled list of folds and one action row, every fold on the same mark');
   await t.ctx.close();
   // v5.0.1: the log form asks for gels and the half split only on long runs
   t = await open('2026-10-01', '18:10', SEED);

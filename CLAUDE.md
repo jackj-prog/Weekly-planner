@@ -295,6 +295,20 @@ line over the sundial reads cleanly.
 on the day it was done, in every total (`DB.recordedRuns`); a return to the
 app on a new day opens on Today; the clock turns on the minute; a refused
 save says so. The review record lives in `docs/REVIEW-2026-10.md`.
+**v5.11 (visual pass):** one countdown — the top bar carries it; Today's
+giant numeral stands only in the wreath's four weeks and on race morning,
+and the race card drops its own. The run card ends in one action row
+(Focus · Log; once logged, Edit · Share receipt) and a logged card's
+further reading is one ruled list of folds. Every fold opens on the one
+"+" (turning to ×), never the browser's ▶. The morning resting-HR prompt
+is a pill, never a card inside the run's hierarchy. A rest day is said
+compactly (word, moon, next run, "Add a run" as a quiet line) and
+Monday's Previously is a strip, so the day's sessions reach the first
+screen. Reference's contents page IS its chapters (dotted leaders, red
+numerals) — no second list above them. Display type gets its word space
+back (Archivo's space is 0.19em; lines now read at ~0.24em). The past
+recedes by colour, not opacity, at AA; engraved SVG labels keep an 8px
+floor.
 **v5.9.4:** a wrapped Next title hangs under its first word, not its
 emblem; the Now card's stars keep off its edge; a title that already names
 its distance ("~21 km") is not given it again.

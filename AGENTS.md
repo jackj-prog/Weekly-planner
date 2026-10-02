@@ -2225,3 +2225,45 @@ uncertain are in `docs/REVIEW-2026-10.md` (pass 2). Fixed:
   save shows an alert; persistent storage is requested.
 271 browser checks (8 new), 16,295 plan checks (8 new).
 
+
+## Visual design pass — v5.11, 2 October (Claude)
+
+Every screen was captured at 390×844 before and after (Today in nine states
+including race morning, a rest morning and the wreath weeks; Week; Plan;
+Kalendar; Reference; Focus; the log form; the More sheet) and judged as a
+whole and in detail. The direction: Today reads as one illuminated page —
+date and the next feast, the hour, the day's run or rest, then the hours —
+and every ornament earns its height. Changes:
+- **One countdown.** The top bar keeps it on every screen; Today's outlined
+  numeral appears only when the countdown is the subject (from 28 days,
+  over the wreath, and race morning's 42.2); the Reference race card no
+  longer repeats it.
+- **The run card's foot.** Focus and Log stand side by side (`.h-acts`);
+  once logged, the four folds (compared with last run, training readback,
+  the planned session, what the recap counts) are one ruled list
+  (`.recap-list`) and Edit · Share receipt one row — they had been six
+  blocks in four styles. The "Logged" corner is an outline status; the
+  white fill stays for the Done toggle. The morning resting-HR prompt is a
+  pill (`.h-rhr.add.mini.am`), not a card between the run's state and its
+  distance.
+- **Non-run days (review P2).** The rest card is compact (word, moon, next
+  run; the REST watermark retired — the moon is the emblem), "Ran today?
+  Add a run" is a quiet line (and names the weekday on a past date), and
+  Monday's Previously is a strip with the bars beside the figure. The
+  day's sessions now reach the first screen on a rest morning.
+- **One disclosure mark (P6).** Every fold opens on a "+" at its right edge
+  that turns to ×, the Reference chapters' mark; no native ▶ remains (a
+  browser check enforces it on Reference, Plan and Week).
+- **Reference.** The contents page IS the chapters: "Contents" in italic
+  serif over the twelve folds with red numerals and dotted leaders; the
+  duplicate two-column index is gone; "↑ Contents" returns to it.
+- **Type.** Archivo's word space is 0.19em (Inter's is 0.25), and negative
+  tracking narrowed it further — "TUNE-UP HALF" read as one word, "Built
+  one run" set at 0.135em. A `:where()` rule over every display selector
+  restores ~0.24em, with more where a line is tracked tight.
+- **Legibility (F6/F7).** Past timeline rows and cards recede by colour
+  (`--t3`), not opacity; plan archive labels, the Kalendar's coming red
+  rows and the billboard caption were raised; engraved SVG labels (dial,
+  sky, tympanum, ruler, hours strip) keep an 8px rendered floor. Rendered
+  contrast now fails only on outlined decorative numerals.
+281 browser checks (10 new), 16,295 plan checks.

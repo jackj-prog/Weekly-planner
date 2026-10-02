@@ -3537,3 +3537,141 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   box-shadow: 0 8px 24px color-mix(in srgb, var(--chrome-bg) 60%, transparent);
 }
 
+
+/* ================= VISUAL PASS (v5.11) ============================== */
+/* One foot to the run card: its two actions side by side, equal weight,
+   outlined in the card's own light (white on grey, white on red). */
+.hero .h-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+.hero .h-acts > :is(.session-focus-open, .h-log, .recap-share) {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; min-height: 52px; margin: 0; padding: 12px 14px; float: none;
+  border: 1px solid color-mix(in srgb, var(--text) 32%, transparent); border-radius: 12px;
+  background: transparent; color: var(--text); text-align: left; font: 600 15px/1.25 var(--body);
+}
+.hero .h-acts > * > span[aria-hidden] { float: none; flex: none; font-size: 18px; line-height: 1; }
+.hero .h-acts > .h-log > small { display: none; }
+.hero .h-acts:has(> :only-child) { grid-template-columns: 1fr; }
+.hero .runlogger > .h-acts { margin-top: 14px; }
+
+/* once logged, the card's further reading is one ruled list */
+.hero .recap-list { margin-top: 18px; border-top: 1px solid var(--line); }
+.hero .recap-list > details { margin: 0; padding: 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: none; }
+.hero .recap-list > details > summary { display: block; min-height: 52px; padding: 14px 32px 14px 0; font: 500 15px/1.4 var(--body); color: var(--text); }
+.hero .recap-list > details > summary > span { font: inherit; color: inherit; }
+.hero .recap-list > .recap-plan > summary > span { float: right; font: 400 13px/1.6 var(--mono); color: var(--t2); }
+.hero .recap-list .recap-compare table { margin-top: 4px; }
+.hero .recap-list > details > p, .hero .recap-list > details > .recap-deltas { margin-top: 0; }
+
+/* A rest day is said once, compactly: the word, the moon, the next run.
+   The fold belongs to the day's own sessions (review P2). */
+.resthero { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; align-items: start; padding: 18px 20px 6px; }
+.resthero > .rest-kicker { display: contents; }
+.resthero > .rest-kicker > span:first-child { grid-column: 1; grid-row: 1; font: 400 11px var(--mono); letter-spacing: .16em; color: var(--t2); }
+.resthero > .rest-kicker > .rest-moon { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+.resthero > h2 { grid-column: 1; grid-row: 2; margin: 8px 0 14px; font-size: 28px; line-height: 1.04; }
+.resthero > :not(.rest-kicker, h2, .rest-wm) { grid-column: 1 / -1; }
+.resthero .rest-next { margin-top: 0; padding: 14px 0 12px; }
+.resthero .rest-distance { font-size: 30px; }
+.resthero .rest-note { margin: 4px 0 12px; }
+.resthero > .rest-wm { display: none; }   /* the moon is the rest day's emblem (v4.79); the outlined word only crossed the next run's distance */
+.resthero + .runlogger > .h-log:not(.form) {
+  display: flex; align-items: center; gap: 6px; width: 100%; min-height: 44px; margin: 2px 0 6px;
+  padding: 8px 20px; border: 0; border-radius: 0; background: none; color: var(--t2);
+  font: 400 14px/1.4 var(--body); text-align: left;
+}
+.resthero + .runlogger > .h-log:not(.form) b { font-weight: 600; color: var(--text); }
+.resthero + .runlogger > .h-log:not(.form) > span[aria-hidden] { float: none; margin-left: auto; font-size: 16px; color: var(--text); }
+
+/* Monday's look back is a strip, not a poster: the figure and the week's
+   bars side by side, the line and the way in beneath. */
+.previously { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "k bars" "km bars" "line line" "open open"; column-gap: 14px; padding: 16px 18px 6px; }
+.previously > .pv-kicker { grid-area: k; }
+.previously > .pv-km { grid-area: km; margin-top: 6px; }
+.previously > .pv-km b { font-size: 38px; }
+.previously > .pv-line { grid-area: line; margin-top: 8px; }
+.previously > .pv-bars { grid-area: bars; align-self: end; gap: 4px; margin: 0; }
+.previously .pv-track { width: 14px; height: 46px; }
+.previously .pv-day { gap: 4px; }
+.previously > .pv-open { grid-area: open; }
+.previously > .pv-num { font-size: 104px; right: auto; left: 46%; top: -6px; }
+.previously > .seal { top: auto; bottom: 52px; right: 10px; width: 56px; height: 56px; }
+.resthero + .runlogger { margin: -8px 0 8px; }
+
+/* Archivo's word space is 0.19em against Inter's 0.25em, and negative
+   tracking narrows it further ("Built one run" set at 0.135em, "TUNE-UP
+   HALF" read as one word). Every display line gets its spaces back to
+   about 0.24em: a base for the face, more where it is tracked tight. */
+:where(.day-head h1, .nownext .nn-title, .hero .h-session, .resthero b, .tl-card .c-title, .wk-head h1, .plan-head h1, .p-phasehead b, .ref h1, .tab, .cta, .timeline-head h2, .profile-head h2, .ref h2, .ef-chart figcaption strong, .resthero h2, .journey h2, .records h3, .log-heading h3, .ref-fold > summary h2, .training-journey h1, .journey-week-head h2, .journey-section-title h2, .journey-event b, .session-focus h1, .session-focus.is-gym h1, .focus-ex-name, .recap-intro h2, .recap-award strong, .wall-head h2, .sp-t b, .sp-name, .wh-head) { word-spacing: .05em; }
+.day-head h1, .ref h2 { word-spacing: .07em; }
+.tl-card .c-title { word-spacing: .06em; }
+.resthero h2, .session-focus.is-gym h1, .recap-award strong { word-spacing: .09em; }
+.wall-head h2 { word-spacing: .07em; }
+.p-phasehead b { word-spacing: 0; }
+.focus-ex-name, .recap-intro h2 { word-spacing: .1em; }
+.training-journey h1 { word-spacing: .11em; }
+.journey-section-title h2 { word-spacing: .08em; }
+.session-focus h1 { word-spacing: .12em; }
+.journey-week-head h2 { word-spacing: .13em; }
+
+/* One disclosure mark (v5.11, review P6): every fold opens on a "+" at its
+   right edge that turns to "×" when open — the Reference chapters' mark —
+   where some had a "+", some a native ▶ and some nothing at all. */
+:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare) > summary {
+  position: relative; padding-right: 32px; list-style: none;
+}
+:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .session-plan) > summary::-webkit-details-marker { display: none; }
+:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare) > summary::after {
+  content: '+'; position: absolute; right: 2px; top: 50%; width: 20px; height: 20px; margin-top: -10px;
+  font: 400 20px/20px var(--body); text-align: center; color: var(--t2);
+}
+.session-plan > summary { list-style: none; }
+.session-plan > summary::after { content: '+'; display: inline-block; margin-left: 8px; font: 400 18px/1 var(--body); color: var(--t2); }
+:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .session-plan)[open] > summary::after { transform: rotate(45deg); }
+@media (prefers-reduced-motion: no-preference) {
+  :is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .session-plan) > summary::after { transition: transform .22s var(--ease-out); }
+}
+
+/* Legibility (review F6/F7): what has passed recedes by colour, never by
+   opacity, so it still reads at AA; the archive rows and the smallest
+   labels get a floor. */
+.tl-quiet.past { opacity: 1; color: var(--t3); }
+.tl-quiet.past .t, .tl-quiet.past .anchor-detail summary, .tl-quiet.past .anchor-detail summary::after { color: var(--t3); }
+.tl-quiet.past .q-emb { opacity: .5; }
+.tl-card.past:not(.current) { opacity: 1; }
+.tl-card.past:not(.current):not(.done) { border-color: color-mix(in srgb, var(--line) 70%, transparent); }
+.tl-card.past:not(.current):not(.done) .c-title { color: var(--t2); }
+.tl-card.past:not(.current) .c-detail, .tl-card.done .c-detail { opacity: 1; color: var(--t3); }
+.plan-row.past { opacity: 1; }
+.plan-row.past :is(.p-sess, .p-km) { color: var(--t2); }
+.plan-row .p-dates { font-size: 11px; }
+.plan-row .p-flags { font-size: 10px; }
+.kl-row.ahead .kl-n { opacity: 1; }
+.day-head .bb-cap { font-size: 8.5px; }
+
+/* Reference: a frontispiece (the race), then one contents page whose
+   entries open in place — red numerals, a dotted leader to the mark. */
+.ref-book { margin-top: 22px; scroll-margin-top: calc(var(--sat) + 84px); }
+.ref-book > .rc-h { margin: 0 0 8px 4px; font: italic 400 16px var(--serif); color: var(--t2); letter-spacing: .02em; }
+.ref-book > .rc-h::after { display: none; }
+.ref-book > .ref-fold:first-of-type { margin-top: 0; }
+.ref-book .ref-fold > summary { min-height: 54px; }
+.ref-book .ref-fold > summary h2 { display: flex; align-items: baseline; gap: 10px; min-width: 0; font: 600 16px/1.3 var(--body); }
+.ref-book .ref-fold > summary h2::after { content: ''; display: block; flex: 1; min-width: 12px; border-bottom: 1px dotted color-mix(in srgb, var(--t3) 60%, transparent); transform: translateY(-4px); }
+.ref-book .ref-fold[open] > summary h2 { font-weight: 600; color: var(--text); }
+.ref-book .ref-fold[open] > summary h2::after { border-bottom-color: transparent; }
+/* a fixed-life row's fold is a footnote, not an "add" button */
+.tl-quiet .anchor-detail summary::after { font-size: 17px; color: var(--t3); }
+/* engraved labels keep an 8px floor at phone size (F7) */
+.dw-hour { font-size: 8.5px; }
+.dw-cap { font-size: 8px; letter-spacing: .24em; }
+.dw-motto { font-size: 8.5px; }
+.sk-now-t { font-size: 8px; }
+.sk-lab { font-size: 8.2px; }
+.kt-num, .kt-len { font-size: 8px; }
+.rr-t { font-size: 8.6px; }
+.wh-t { font-size: 8.6px; }
+.wh-d { font-size: 9px; }
+/* a saved run's corner says so as a status, not as the card's loudest
+   button: the white fill stays for the Done toggle a hand can press */
+.hero .h-tick.on.is-logged { background: transparent; color: var(--text); border-color: color-mix(in srgb, var(--text) 30%, transparent); }
+.hero .h-tick.on.is-logged > span { color: var(--t2); }

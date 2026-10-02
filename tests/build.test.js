@@ -1430,7 +1430,7 @@ section('palette contrast (WCAG AA)');
     ok(/flushSun\(b\.startMin\)/.test(appSrc) && /function sunRowHTML/.test(appSrc) && /function paintSpine/.test(appSrc),
       'the timeline keeps sunrise and sunset in order among its rows, and paints its spine in the light');
     ok(/class="d-moon"/.test(appSrc), 'the Week calendar keeps the moon beside each date');
-    ok(/class="chap"/.test(appSrc) && /rc-list/.test(appSrc) && /counter\(rule, upper-roman\)/.test(css), 'Reference is a book: contents, numbered chapters, rules in numerals');
+    ok(/class="chap"/.test(appSrc) && /ref-book/.test(appSrc) && /counter\(rule, upper-roman\)/.test(css), 'Reference is a book: contents, numbered chapters, rules in numerals');
     ok(/class="focus-ex-num" aria-hidden="true">' \+ roman\(i \+ 1\)/.test(appSrc), 'gym focus carries each exercise\u2019s numeral, decorative');
     ok(/function zoneScaleHTML/.test(appSrc) && /zoneScaleHTML\(zones, hist\.length/.test(appSrc), 'Reference draws the zones as a staircase');
     ok(/class="odo-gauge" role="img" aria-label=/.test(appSrc) && /od-seg' \+ \(o\.done/.test(appSrc), 'the Pro 4 odometer is a dial with a text alternative');
