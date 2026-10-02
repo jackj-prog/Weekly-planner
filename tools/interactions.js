@@ -836,7 +836,9 @@ async function cinema() {
     const wkv = await mv.page.evaluate(() => ({ head: document.querySelector('.profile-head h2').textContent.replace(/\s+/g, ' '),
       tue: document.querySelector('.profile-day[data-date="2026-09-29"]').className, fri: document.querySelector('.profile-day[data-date="2026-10-02"]').className,
       friSt: document.querySelectorAll('.wk-day')[4].querySelector('.d-status').textContent }));
-    check(/^42 \/ 42 km recorded$/.test(wkv.head) && /\boff\b/.test(wkv.tue) && !/miss/.test(wkv.tue) && /\blit\b/.test(wkv.fri) && /✓ 6 km · ticked/.test(wkv.friSt),
+    /* 17 = Wed 6 + Thu 5 + the moved run 6; Saturday's and Sunday's ticks in
+       the seed are dated after this "today" and are banked nowhere yet (v5.11.1) */
+    check(/^17 \/ 42 km recorded$/.test(wkv.head) && /\boff\b/.test(wkv.tue) && !/miss/.test(wkv.tue) && /\blit\b/.test(wkv.fri) && /✓ 6 km · ticked/.test(wkv.friSt),
       'a moved run ticked on its new day is banked there: the week, the bars and the day card agree: ' + JSON.stringify(wkv));
     await mv.page.click('[data-nav="more"]'); await mv.page.click('.sheet-item[data-nav="kal"]');
     check(/\bgot\b/.test(await mv.page.$eval('.kl-row[aria-label^="Friday 2 October"]', (n) => n.className)) && /Easy · from Tue/.test(await text(mv.page, '.kl-row[aria-label^="Friday 2 October"] .kl-n')),
@@ -1011,6 +1013,78 @@ async function cinema() {
   await t.ctx.close();
 }
 
+/* v5.11.1: the layouts and states the app supports beyond the 390px design
+   width — Display Zoom and the SE (320), Safari's aA page zoom (260), a
+   turned phone (844×390), malformed or future-dated data. */
+async function layouts() {
+  console.log('· layouts: 320 / 260 / landscape, odd data');
+  const noSideways = async (pg) => pg.evaluate(() => document.scrollingElement.scrollWidth <= innerWidth + 1);
+  for (const [w, h] of [[320, 568], [260, 562]]) {
+    const t = await open('2026-10-01', '07:20', SEED);
+    await t.page.setViewportSize({ width: w, height: h }); await t.page.waitForTimeout(150);
+    const bad = [];
+    if (!(await noSideways(t.page))) bad.push('today');
+    const clear = await t.page.evaluate(() => { const hit = (a, b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
+      const r = (s) => document.querySelector(s).getBoundingClientRect();
+      return !hit(r('.day-head h1'), r('.day-nav .nav[data-d="1"]')) && !hit(r('.day-head h1'), r('.day-nav .nav[data-d="-1"]')) && !hit(r('.nownext .nn-title'), r('.nownext .nn-jump')); });
+    check(clear, w + 'px: the date and the Now title never run under ‹ › or ↓');
+    await t.page.click('[data-nav="week"]'); await t.page.waitForTimeout(150);
+    if (!(await noSideways(t.page))) bad.push('week');
+    check(await t.page.evaluate(() => { const d = [...document.querySelectorAll('.profile-day')].map((x) => x.getBoundingClientRect()); return d.every((r, i) => i === 0 || r.left >= d[i - 1].right - 1); }),
+      w + 'px: the profile’s seven days never overlap a neighbour');
+    for (const v of ['plan', 'kal', 'ref']) {
+      await t.page.click('[data-nav="more"]'); await t.page.waitForTimeout(250); await t.page.click('.sheet-item[data-nav="' + v + '"]'); await t.page.waitForTimeout(150);
+      if (v === 'ref') await t.page.evaluate(() => document.querySelectorAll('.ref-fold').forEach((d) => { d.open = true; }));
+      if (v === 'plan') await t.page.click('.journey-all > summary');
+      if (!(await noSideways(t.page))) bad.push(v);
+    }
+    check(!bad.length, w + 'px: no view scrolls sideways (Today, Week, Plan with the archive open, Kalendar, Reference with every chapter open) ' + bad.join(' '));
+    await t.ctx.close();
+  }
+  let t = await open('2027-01-23', '20:30', SEED);
+  await t.page.setViewportSize({ width: 320, height: 568 }); await t.page.waitForTimeout(150);
+  check(await t.page.evaluate(() => [...document.querySelectorAll('.tl-sun span')].every((s) => s.scrollWidth <= s.clientWidth + 1 && getComputedStyle(s).textOverflow !== 'ellipsis')),
+    'the sun’s line wraps at 320px rather than cutting "· Nicosia time"');
+  const tm = await text(t.page, '.nn-tmrw');
+  check((tm.match(/42\.2/g) || []).length === 1 && /Pro 4/.test(tm), 'race eve: tomorrow’s line names the distance once: ' + tm);
+  await t.ctx.close();
+  t = await open('2026-10-03', '21:30', SEED);
+  const tl = await text(t.page, '.nn-tmrw');
+  check((tl.match(/\b22\b/g) || []).length === 1 && /Evo SL/.test(tl), 'Saturday night: "Long 22 — last 6 @ MP" is not given its 22 km twice: ' + tl);
+  await t.ctx.close();
+  t = await open('2026-10-01', '12:00', SEED, 'plan');
+  await t.page.click('.journey-all > summary');
+  check(await t.page.evaluate(() => [...document.querySelectorAll('.plan-row .p-sess')].every((s) => s.scrollWidth <= s.clientWidth + 1)), 'the 30-week archive shows every session in full');
+  await t.ctx.close();
+  t = await open('2026-10-05', '16:45', SEED);
+  check(await t.page.evaluate(() => { const s = document.querySelector('.c-sess .session-plan > summary').getBoundingClientRect(), b = document.querySelector('.c-sess .session-focus-open').getBoundingClientRect(); return s.right <= b.left + 1; }),
+    'the gym card’s list and its Focus button never share a tap');
+  // landscape: the session keeps a usable window between Focus's header and footer
+  await t.page.setViewportSize({ width: 844, height: 390 }); await t.page.waitForTimeout(150);
+  await t.page.click('.tl-card .session-focus-open'); await t.page.waitForTimeout(300);
+  check(await t.page.evaluate(() => document.querySelector('.focus-scroll').getBoundingClientRect().height >= 200), 'turned to landscape, Focus leaves the session at least 200px');
+  await t.page.click('.focus-close');
+  // the notch: safe-area insets reach every bar (wired through --sal/--sar; the real insets need a device)
+  check(await t.page.evaluate(() => { document.documentElement.style.setProperty('--sal', '47px'); document.documentElement.style.setProperty('--sar', '47px');
+    const px = (s, p) => parseFloat(getComputedStyle(document.querySelector(s))[p]);
+    return px('.topbar', 'paddingLeft') >= 47 && px('.tabbar', 'paddingRight') >= 47 && px('.view', 'paddingLeft') >= 47; }), 'side safe-area insets pad the top bar, tab bar and page');
+  await t.ctx.close();
+  // malformed and future-dated data
+  t = await open('2026-10-01', '12:00', { ...SEED, 'backup-at': '"not a date"', 'runlog-2026-10-03': { sec: 1800, hr: 140, km: 5 } }, 'week');
+  const wkHead = parseFloat((await text(t.page, '.week-profile h2')).split('/')[0]);
+  const ring = async () => { await t.page.click('[data-nav="today"]'); await t.page.waitForTimeout(100); return (await text(t.page, '.timeline-head .rg-t')).split('/')[0]; };
+  const r = await ring();
+  await t.page.click('[data-nav="more"]'); await t.page.waitForTimeout(250); await t.page.click('.sheet-item[data-nav="plan"]'); await t.page.waitForTimeout(200);
+  const planned = await t.page.$$eval('.journey-week-numbers b', (n) => n[1].textContent);
+  check(parseFloat(r) === parseFloat(planned) && wkHead === parseFloat(r) && parseFloat(r) === 0, 'a log dated after today is banked nowhere yet: Today ' + r + ' = Week ' + wkHead + ' = Plan ' + planned);
+  await t.page.click('[data-nav="more"]'); await t.page.waitForTimeout(250); await t.page.click('.sheet-item[data-nav="ref"]'); await t.page.waitForTimeout(150);
+  await t.page.evaluate(() => document.querySelectorAll('.ref-fold').forEach((d) => { d.open = true; }));
+  const note = await text(t.page, '.backup-note');
+  check(!/NaN/.test(note) && /Never backed up/.test(note), 'a malformed backup date reads as never backed up: ' + note);
+  noErrors(t, 'layouts');
+  await t.ctx.close();
+}
+
 async function sweep() {
   if (QUICK) { console.log('· render sweep skipped (--quick)'); return; }
   console.log('· render sweep: 234 days, 34 weeks, Plan, Reference');
@@ -1046,7 +1120,7 @@ async function offline() {
   browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
   server = await serve();
   try {
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, sweep, offline]) await run();
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, sweep, offline]) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');

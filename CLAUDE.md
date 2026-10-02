@@ -309,6 +309,15 @@ numerals) — no second list above them. Display type gets its word space
 back (Archivo's space is 0.19em; lines now read at ~0.24em). The past
 recedes by colour, not opacity, at AA; engraved SVG labels keep an 8px
 floor.
+**v5.11.1 (states & layouts):** the app holds from 260px (Safari's aA
+zoom) through 320 (Display Zoom, the SE) to 430 and a turned phone: no view
+scrolls sideways (the every-day wall's columns shrink), titles scale and
+wrap clear of ‹ › ↓ ✓, the run card's actions stack below 340px, the top
+bar stays one line, Focus keeps a usable window in landscape, and the side
+safe-area insets pad every bar. Only what has happened is banked — a tick
+or log dated after today counts nowhere yet — so Today, Week, Kalendar,
+Plan and Previously agree on malformed and future-dated data too. A
+malformed backup date reads as never backed up.
 **v5.9.4:** a wrapped Next title hangs under its first word, not its
 emblem; the Now card's stars keep off its edge; a title that already names
 its distance ("~21 km") is not given it again.

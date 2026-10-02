@@ -3675,3 +3675,83 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
    button: the white fill stays for the Done toggle a hand can press */
 .hero .h-tick.on.is-logged { background: transparent; color: var(--text); border-color: color-mix(in srgb, var(--text) 30%, transparent); }
 .hero .h-tick.on.is-logged > span { color: var(--t2); }
+
+/* ================= STATES & LAYOUTS (v5.11.1) ======================= */
+/* the wall's 30 weeks share whatever width there is — at 320px (Display
+   Zoom, the SE) their content minimum pushed the page sideways */
+.wall-grid { grid-template-columns: 12px minmax(0, 1fr); }
+.wl-cols, .wl-phases { grid-template-columns: repeat(30, minmax(0, 1fr)); }
+.wl-col, .wall .wl { min-width: 0; }
+/* the profile's seven days never overlap their neighbours: at 320px a
+   44px minimum on 38px columns put each tap target over the next day */
+.profile-bars { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.profile-day { min-width: 0; }
+.profile-head { flex-wrap: wrap; row-gap: 2px; }
+.profile-head .profile-count { white-space: nowrap; margin-left: auto; }
+.profile-head h2 small { display: inline-block; }   /* '/ 42 km recorded' moves down as one piece */
+/* a long word never runs under a neighbouring control: at 260–320px
+   (Safari's aA zoom, Display Zoom) "Thursday", "CHRISTMAS" or
+   "Basketball" could outgrow their column and sit beneath ‹ › ↓ or ✓ */
+.day-head h1 { font-size: clamp(21px, 7.4vw, 28px); }
+:is(.day-head h1, .nownext .nn-title, .tl-card .c-title, .hero .h-session, .wk-day .d-run, .session-focus h1, .ref-fold > summary h2) { overflow-wrap: break-word; min-width: 0; }
+@media (max-width: 340px) {
+  .nownext .nn-title { font-size: 15px; }
+}
+/* the sun's line wraps rather than losing its place ("· Nicosia time") */
+.tl-sun span { white-space: normal; overflow: visible; text-overflow: clip; }
+/* the ledger's five columns fit a zoomed phone instead of running off it */
+@media (max-width: 340px) {
+  .ledger { font-size: 12px; }
+  .ledger th, .ledger td { padding-left: 2px; padding-right: 2px; }
+  .ledger tbody th { font-size: 13px; white-space: normal; }
+  .ledger tbody th small { margin-left: 0; }
+  .ledger .lg-mark { width: 12px; height: 12px; margin-right: 4px; }
+}
+/* landscape on a notched iPhone: viewport-fit=cover hands the edges over,
+   so every bar, sheet and full-screen layer keeps clear of the sensor
+   housing and the home indicator's side insets */
+:root { --sal: env(safe-area-inset-left, 0px); --sar: env(safe-area-inset-right, 0px); }
+.topbar, .tabbar, .sheet { padding-left: max(14px, var(--sal)); padding-right: max(14px, var(--sar)); }
+.view { padding-left: max(14px, var(--sal)); padding-right: max(14px, var(--sar)); }
+.focus-header { padding-left: max(20px, var(--sal)); padding-right: max(20px, var(--sar)); }
+.focus-footer { padding-left: max(22px, var(--sal)); padding-right: max(22px, var(--sar)); }
+.card-ov { padding-left: var(--sal); padding-right: var(--sar); }
+.store-warn { left: max(14px, var(--sal)); right: max(14px, var(--sar)); }
+.focus-scroll { padding-left: max(22px, var(--sal)); padding-right: max(22px, var(--sar)); }
+@media (max-width: 340px) {
+  /* a zoomed phone stacks the run card's two actions rather than setting
+     "Log / this / run" three words to a line */
+  .hero .h-acts { grid-template-columns: 1fr; }
+  .timeline-head { flex-wrap: wrap; row-gap: 6px; }
+  .timeline-head .wkring { margin-left: auto; }
+}
+/* the top bar holds one line at any width: the week pill never breaks,
+   and on a zoomed phone the wordmark gives way before the countdown */
+.topbar-week, .topbar-count b { white-space: nowrap; }
+@media (max-width: 340px) {
+  .topbar { gap: 8px; }
+  .topbar-brand { font-size: 15px; }
+  .topbar-week { padding: 4px 8px; font-size: 11px; }
+  .topbar-count small { letter-spacing: .04em; }
+}
+@media (max-width: 300px) { .topbar-brand { display: none; } }
+.wk-head h1 { font-size: clamp(22px, 7.4vw, 28px); }
+/* Focus on a zoomed or turned phone: the title scales with the width, and
+   a short screen (landscape is 390px tall) gives the session the room the
+   footer's sentence was taking — the button says the same thing */
+.session-focus h1 { font-size: clamp(25px, 8.8vw, 34px); overflow-wrap: break-word; }
+@media (max-height: 600px) {
+  .focus-footer { padding-top: 8px; padding-bottom: max(10px, var(--sab)); }
+  .focus-footer .focus-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .focus-done { min-height: 48px; }
+  .focus-log { min-height: 40px; margin-top: 2px; }
+  .focus-header { padding-top: max(8px, var(--sat)); padding-bottom: 4px; }
+}
+/* the profile's state words fit a 26px column on a zoomed phone */
+@media (max-width: 300px) { .profile-state { font-size: 8px; letter-spacing: 0; } }
+/* the 30-week archive reads in full: a row's session and its note wrap
+   instead of losing the long run behind an ellipsis */
+.plan-row .p-sess, .plan-row .p-dates { white-space: normal; overflow: visible; text-overflow: clip; }
+/* the gym card's list summary stops short of the Focus button beside it,
+   so the two never share a tap */
+.c-sess .session-plan > summary { padding-right: 0; margin-right: 96px; }

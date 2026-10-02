@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.11.0';
+  const APP_VERSION = '5.11.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -158,9 +158,15 @@
       in: getMoveIn(iso).filter((m) => m.cat === 'run' && m.run && m.run.km > 0)
         .map((m) => ({ id: m.id, km: m.run.km, title: m.title, run: m.run, fromIso: m.fromIso })) };
   }
+  /* Only what has happened is banked: a tick or log dated after today (a
+     restore from a phone whose clock ran ahead, the trip home turning the
+     clock back) counts nowhere until its day comes — the rule the journey
+     already kept, now kept by every total so the views agree (v5.11.1). */
+  const bankedDone = (iso) => (iso > todayISO() ? {} : getDone(iso));
+  const bankedLog = (iso) => (iso > todayISO() ? null : getRunLogEntry(iso));
   function recordedRunsOn(iso, day) {
     const d = day || DB.buildDay(iso);
-    return DB.recordedRuns(d, getDone(iso), getRunLogEntry(iso), runMoves(iso, d));
+    return DB.recordedRuns(d, bankedDone(iso), bankedLog(iso), runMoves(iso, d));
   }
   const recordedOn = (iso, day) => recordedRunsOn(iso, day).reduce((n, r) => n + r.recorded, 0);
   /* what became of a date's planned run, wherever it was done */
@@ -875,9 +881,9 @@
     if (!next.length || nMin >= 21 * 60) {
       const tmr = DB.buildDay(DB.addDays(day.iso, 1));
       const line = tmr.run
-        ? tmr.run.start + ' · ' + tmr.run.title + ' — ' +
-          (tmr.run.run.km === Math.round(tmr.run.run.km) ? tmr.run.run.km : tmr.run.run.km.toFixed(1)) +
-          ' km · ' + tmr.run.run.shoe
+        ? tmr.run.start + ' · ' + tmr.run.title + (namesKm(tmr.run) ? '' : ' — ' +
+          (tmr.run.run.km === Math.round(tmr.run.run.km) ? tmr.run.run.km : tmr.run.run.km.toFixed(1)) + ' km') +
+          ' · ' + tmr.run.run.shoe
         : 'No run — recovery day';
       html += '<div class="nn-tmrw"><span class="t">TMRW</span><span>' + esc(line) + '</span></div>';
     }
@@ -2846,7 +2852,7 @@
 
   /* ---- week-progress ring: banked vs planned run km this week ---- */
   function weekRingHTML(iso) {
-    const wk = DB.weekKm(getDone, mondayOf(iso), getRunLogEntry, runMoves);
+    const wk = DB.weekKm(bankedDone, mondayOf(iso), bankedLog, runMoves);
     if (!wk.planned) return '';
     const pct = Math.min(1, wk.done / wk.planned);
     const C = 2 * Math.PI * 13;
@@ -3510,7 +3516,7 @@
     /* only a finished week is a shortfall: looking ahead from mid-week, the
        current week's first days are not "what was run" (v5.0.8) */
     if (DB.addDays(anchor, -1) >= todayISO()) return null;
-    const ran = DB.weekKm(getDone, prev, getRunLogEntry, runMoves).done;
+    const ran = DB.weekKm(bankedDone, prev, bankedLog, runMoves).done;
     if (!(ran > 0)) return null;                 // nothing logged ≠ nothing run
     if (ran >= prevRow.km * r.shortfall) return null;
     if (day0.row.km < ran * r.jumpRatio) return null;
@@ -3663,7 +3669,7 @@
        beside it drew the same runs a second time, so its numbers and its
        states (banked, missed, skipped, today) moved onto these bars. */
     const started = anchor <= real;
-    const wkKm = started ? DB.weekKm(getDone, anchor, getRunLogEntry, runMoves) : null;
+    const wkKm = started ? DB.weekKm(bankedDone, anchor, bankedLog, runMoves) : null;
     const fmtW = (n) => (n === Math.round(n) ? n : n.toFixed(1));
     const profile = el('<section class="week-profile" aria-label="' + (wkKm ? fmtW(wkKm.done) + ' of ' + fmtW(totalKm) + ' km recorded' : 'Planned daily distances') + '">' +
       '<div class="profile-head"><div><span class="profile-label">DISTANCE PROFILE</span>' +
@@ -3862,8 +3868,8 @@
         row.noBasketball && !row.race ? 'NO BBALL' : '', row.offWork ? 'OFF WORK' : '',
       ].filter(Boolean).join(' · ');
       const sess = row.race ? 'Race week — see the day plans'
-        : (row.wed || row.sun) ? esc((row.wed || '—') + ' / ' + (row.sun || '—'))
-        : esc(row.notes || '');
+        : (row.wed || row.sun) ? tt((row.wed || '—') + ' / ' + (row.sun || '—'))
+        : tt(row.notes || '');
       /* per-week load bar: stacked, the rows read as the block's mountain profile */
       const banked = adh.weekKmDone[row.wk] || 0;
       const loadHtml = '<span class="p-load" style="width:' + ((row.km / maxKm) * 100).toFixed(1) +
@@ -5190,7 +5196,10 @@
     for (let i = 0; i < localStorage.length; i++) {
       if (STORE_KEY.test(localStorage.key(i))) count++;
     }
-    const bAt = readJSONSafeString('backup-at');
+    /* only a date this app wrote counts: anything else (a hand-edited or
+       foreign value) read as "Last backup NaN days ago" and never stale */
+    const raw = readJSONSafeString('backup-at');
+    const bAt = /^\d{4}-\d{2}-\d{2}$/.test(raw) && !isNaN(DB.parseLocalDate(raw)) ? raw : '';
     let note = 'Never backed up.', stale = count > 0;
     if (bAt) {
       const days = Math.max(0, Math.round(

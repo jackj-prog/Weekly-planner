@@ -2267,3 +2267,37 @@ and every ornament earns its height. Changes:
   sky, tympanum, ruler, hours strip) keep an 8px rendered floor. Rendered
   contrast now fails only on outlined decorative numerals.
 281 browser checks (10 new), 16,295 plan checks.
+
+## States and layouts — v5.11.1, 2 October (Claude)
+
+A coverage matrix built from the implementation: 54 scenes (Today at 25
+dates and times from before the block to the far future, incl. the DST
+night, every special week, race weekend in Cyprus time, recovery and the
+standing week; Week, Plan, Kalendar and Reference at their boundary months;
+Focus for run, gym, race and a future day; the log form with every fold
+open; the More sheet; the move picker; moved, skipped, MP-logged, extra-run
+and recap states) × 5 conditions (390 reduced motion ordinary data · 320
+heavy data · 260 full motion malformed data · 430 full motion empty device ·
+844×390 landscape) — 270 rendered cases, each audited for sideways scroll,
+bad tokens (NaN, undefined), text cut by a clip or the viewport, glyphs
+overlapping glyphs, controls painted over text or each other, small targets
+and content left faded after motion; plus a cross-view probe reading one
+week's km from Today, Week, Kalendar, Plan and the next Monday's Previously
+under 13 data/date combinations. Fixed:
+- Plan scrolled sideways at 320 and below (the wall's 30 columns had a
+  content minimum); the Week profile's 44px days overlapped at 320.
+- At 260–320: dates, Now titles and card titles ran under ‹ › ↓ ✓; the
+  timeline's sun line truncated ("· Nicosia time"); the ledger ran off the
+  page; the run card's actions set "Log / this / run"; the top bar broke.
+- Landscape: Focus left the session ~20px between header and footer (now
+  ~220); no left/right safe-area padding anywhere (notch).
+- A log dated after today counted in Today, Week and Previously but not
+  Plan (118 vs 110 km): only what has happened is banked, everywhere.
+- "Last backup NaN days ago" from a malformed `backup-at`.
+- The 30-week archive cut every session at the long run; "@" broke from
+  its object; Saturday night's "tomorrow" line said the distance twice
+  ("MARATHON — 42.2 km — 42.2 km"); the gym list's tap area ran under Focus.
+297 browser checks (16 new: layouts at 320/260/landscape, safe-area wiring,
+future-dated banking, malformed backup date, the tomorrow line), 16,295
+plan checks. Still device-only: the notch's real insets, Safari's aA zoom
+and Display Zoom as such (emulated here by width), iOS text inflation.
