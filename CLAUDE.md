@@ -336,6 +336,7 @@ target, and the browser suite now takes a release through the toast
 until the tap, the old cache goes, data stays and the new release opens
 offline.
 **Strava import (v5.12, the owner's request):** a run's log form fills from Strava in one tap — Strava's own distance, moving time and average HR, with the time/distance/HR samples put on moving time for the halves, the HR distribution and a "last N @ MP" finish; several runs that day are offered by start time. The owner registers their own Strava API app and enters its Client ID and Secret once in Reference → Strava (chapter XIII). Keys and tokens live only in this phone's storage — never in the repo, never in a backup (the backup takes an allowlist) — and no route is stored. If Strava's answer opens in Safari rather than the Home Screen app, the code is shown to copy across. Only an import needs the network; the service worker leaves other sites alone.
+**v5.12.1 (tidy):** the site publishes only the app (index, manifest, service worker, css, js, data, fonts, icons and the calendar feed) — no docs, tests, tools or agent notes; the plan names no towns; the two superseded audits are gone from docs/ (they remain in git history).
 **v5.9.4:** a wrapped Next title hangs under its first word, not its
 emblem; the Now card's stars keep off its edge; a title that already names
 its distance ("~21 km") is not given it again.
@@ -774,7 +775,7 @@ before the long run). These four + the long run must equal weekly km
 
 ## 9. Special weeks & templates (override the standard day)
 
-**Week 8 — 2-mile time trial (Fri 21 Aug, Aberdare track).** The one
+**Week 8 — 2-mile time trial (Fri 21 Aug, at the track).** The one
 sanctioned benchmark before October, on an 8-lane certified 400 m
 surface — Friday-only access sets the day, **16:30** sets the shape:
 late afternoon is the circadian peak for performance, and it leaves the

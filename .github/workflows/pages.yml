@@ -29,6 +29,14 @@ jobs:
       - name: Generate the calendar feed
         run: node tools/make-ics.js
 
+      # The site carries the app and nothing else: no docs, tests, tools or
+      # agent notes. A file the phone loads must be listed here (and in sw.js).
+      - name: Collect the app
+        run: |
+          mkdir _site
+          cp -r index.html manifest.webmanifest sw.js training.ics css js data fonts icons _site/
+          test -s _site/index.html && test -s _site/js/app.js && test -s _site/training.ics
+
       - name: Configure Pages (enables the site on first run)
         uses: actions/configure-pages@v5
         with:
@@ -37,7 +45,7 @@ jobs:
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
       - name: Deploy
         id: deployment

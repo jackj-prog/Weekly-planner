@@ -2380,3 +2380,19 @@ cannot reach strava.com); every path is tested against a fake Strava —
 `tests/strava.test.js` (callback, key validation, scope guard, exchange,
 refresh, day window, errors, moving-time samples, disconnect) and 22 browser
 checks in `strava()`. 338 browser checks, 16,295 plan checks.
+
+## Tidy — v5.12.1, 2 October (Claude)
+
+At the owner's request:
+- `.github/workflows/pages.yml` now collects the app into `_site/`
+  (index.html, manifest, sw.js, training.ics, css, js, data, fonts, icons)
+  and publishes only that. AGENTS.md, CLAUDE.md, docs/, tests/ and tools/ are
+  no longer served on the live site. A file the phone loads must be added to
+  that copy step as well as to `sw.js`. Verified by serving `_site/` alone:
+  no 404s, all 20 precached assets, fonts, offline reload.
+- The town name is gone from the plan and the spec (week 8 reads "Travel to
+  the track"). It remains in git history; rewriting history stays the
+  owner's call (review F3).
+- `docs/AUDIT.md` and `docs/AUDIT-2026-09.md` removed: their findings were
+  resolved or carried into `docs/REVIEW-2026-10.md`. References to them above
+  are historical; the files are in git history.
