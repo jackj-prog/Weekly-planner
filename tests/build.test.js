@@ -1816,7 +1816,7 @@ section('the Strength journey (v5.14)');
 {
   const S = PLAN.strength;
   ok(S && S.splitFromWk === 12 && S.days.join() === '0,2,5', 'the split is data: rebuilt at week 12, Monday · Wednesday · Saturday');
-  ok(/without compromising the quality of the running programme/.test(S.criterion), 'the test quotes §6 in the athlete’s words');
+  ok(!('criterion' in S) && !/stj-q/.test(require('fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8')), 'the test card carries no quotation (v5.14.1, the owner’s call)');
   const store = {}, key = (ex) => String(ex);
   const io = { done: (i) => store['done-' + i] || {}, ovr: (i) => store['ovr-' + i] || {}, moveIn: (i) => store['movein-' + i] || [], lifts: (ex) => store['wt-' + key(ex)] || [] };
   const gymOn = (wk, di) => dayOfWeek(wk, di).blocks.filter((b) => b.cat === 'gym' && b.doable);

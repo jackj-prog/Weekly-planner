@@ -2440,3 +2440,11 @@ fixes to how weights are kept:
   keeps Monday's, 26 entries survive, tabs by tap and arrow key, Replay,
   no sideways scroll at 320/260).
 
+## No quotation — v5.14.1, 3 October (Claude)
+
+The owner found the Strength test card's big italic quote of §6's criterion
+corny. It is gone, with `PLAN.strength.criterion`; the card opens on a mono
+kicker, "Since the rebuild · week XII", and its labels shorten to "lifts
+held or raised" and "of planned km run". The build test and `strength()`
+now check there is no quotation.
+

@@ -3911,16 +3911,15 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 /* the programme's own test (§6), answered */
 .stj-test { margin: 28px 0 10px; padding: 22px 20px; border: 1px solid var(--line); border-radius: 16px;
   background: radial-gradient(120% 100% at 0% 0%, color-mix(in srgb, var(--text) 6%, transparent), transparent 60%), var(--surface); }
-.stj-q { margin: 0 0 16px; font: italic 400 19px/1.4 var(--serif); color: var(--text); text-wrap: balance; }
-.stj-q::first-letter { color: var(--accent); }
+.stj-k { margin: 0 0 14px; font: 400 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--t3); }
 .stj-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 0 0 16px; }
 .stj-two b { display: block; font: 800 34px/1.05 var(--display); letter-spacing: -.03em; color: var(--text); }
 .stj-two b small { margin-left: 2px; font: 700 16px var(--display); color: var(--t2); }
 .stj-two span { display: block; margin-top: 4px; font: 400 12px/1.4 var(--body); color: var(--t2); }
 .stj-wait { margin: 0 0 16px; font: 400 13px/1.5 var(--body); color: var(--t2); }
+.stj-lifts > div:last-child { padding-bottom: 0; }
 .stj-lifts > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 0; border-top: 1px solid color-mix(in srgb, var(--line) 80%, transparent); }
 .stj-lifts span { font: 400 14px/1.3 var(--body); color: var(--text); }
 .stj-lifts span small { display: block; margin-top: 2px; font: 400 11px var(--mono); color: var(--t3); }
 .stj-lifts b { font: 700 15px var(--mono); color: var(--text); white-space: nowrap; }
 .stj-lifts b small { font: 400 11px var(--mono); color: var(--t2); }
-.stj-foot { margin: 12px 0 0; font: 400 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--t3); }

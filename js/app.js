@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.14.0';
+  const APP_VERSION = '5.14.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -3589,14 +3589,15 @@
       g.rows.map((r) => liftRowHTML(r, sj, today)).join('') +
       (g.unlogged.length ? '<p class="lf-quiet">No weight logged: ' + g.unlogged.map(esc).join(' · ') + '</p>' : '') + '</div>' : '').join('');
     const share = DB.plannedShare(journey, sj.split, today);
-    const test = '<section class="stj-test"><p class="stj-q">“' + esc((PLAN.strength || {}).criterion || '') + '”</p>' +
+    /* the programme's own test (§6) in two figures, no quotation (v5.14.1) */
+    const test = '<section class="stj-test"><p class="stj-k">Since the rebuild · week ' + XII + '</p>' +
       (sj.tested
-        ? '<div class="stj-two"><div><b>' + sj.held + '<small>/' + sj.tested + '</small></b><span>lifts held or raised since week ' + XII + '</span></div>' +
-          '<div><b>' + (share != null ? Math.round(share * 100) : '–') + '<small>%</small></b><span>of the planned kilometres run since week ' + XII + '</span></div></div>'
+        ? '<div class="stj-two"><div><b>' + sj.held + '<small>/' + sj.tested + '</small></b><span>lifts held or raised</span></div>' +
+          '<div><b>' + (share != null ? Math.round(share * 100) : '–') + '<small>%</small></b><span>of planned km run</span></div></div>'
         : '<p class="stj-wait">The test fills in as the weeks are logged.</p>') +
       (sj.featured.length ? '<div class="stj-lifts">' + sj.featured.map((r) => '<div><span>' + esc(r.ex) + '<small>since week ' + roman(DB.weekNumber(r.entries[0].d)) + '</small></span><b>' +
         kgNum(r.entries[0].kg) + ' → ' + kgNum(r.last.kg) + '<small> kg</small></b></div>').join('') + '</div>' : '') +
-      '<p class="stj-foot">The plan’s own test, kept as you go.</p></section>';
+      '</section>';
     const retired = sj.retired.length
       ? '<details class="lf-earlier" data-disclosure="strength|earlier"' + (openDetails.has('strength|earlier') ? ' open' : '') + '><summary>As lived, weeks I–' + roman(sj.splitWk - 1) + ' <small>' + sj.retired.length + ' lift' + (sj.retired.length === 1 ? '' : 's') + ' retired at the rebuild</small></summary>' +
         sj.retired.map((r) => liftRowHTML(r, sj, today, true)).join('') + '</details>' : '';

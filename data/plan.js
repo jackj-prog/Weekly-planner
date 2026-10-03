@@ -633,13 +633,12 @@ const PLAN = {
   /* The Strength journey (v5.14, the owner's request): the Plan page's
      second tab. It reads the split from here — the week it was rebuilt
      (its lines start there; earlier history draws faint), the weekdays of
-     the sessions it lists, the lifts its test follows — and quotes the
-     programme's own criterion (§6), in the athlete's words. */
+     the sessions it lists, and the lifts its test (§6's criterion, in two
+     figures) follows. */
   strength: {
     splitFromWk: 12,
     days: [0, 2, 5],
     featured: ['Bench press', 'Leg press', 'Pull-ups'],
-    criterion: 'Judge it by whether it improves or preserves strength and physique without compromising the quality of the running programme.',
   },
 
   /* Optional morning resting HR on the run card (in-app, v4.63). The

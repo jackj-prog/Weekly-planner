@@ -1205,12 +1205,12 @@ async function strength() {
     return { strength: !!q('.training-journey.strength'), sky: !!q('.sky'), drums: document.querySelectorAll('.cl-d').length,
       w12: !!(drum(11) && drum(11).querySelector('.cl-flute')), w13: !!(drum(12) && drum(12).querySelector('.cl-plain')), banked: q('.journey-totals b').textContent,
       mon: kg(grp('MONDAY'), 'Chest-supported row'), sat: kg(grp('SATURDAY'), 'Chest-supported row'), bench: kg(grp('WEDNESDAY'), 'Bench press'),
-      quote: q('.stj-q').textContent, focused: document.activeElement && document.activeElement.dataset.journeyTab };
+      quote: !!q('.stj-q'), kicker: q('.stj-k') ? q('.stj-k').textContent : '', focused: document.activeElement && document.activeElement.dataset.journeyTab };
   });
   check(v.strength && !v.sky && v.drums === 30, 'Strength replaces the firmament with the column: thirty drums');
   check(v.w12 && v.w13 && v.banked === '4', 'week 12 is carved (every session), week 13 plain (some); four sessions banked: ' + JSON.stringify([v.w12, v.w13, v.banked]));
   check(v.mon === '52.5' && v.sat === '40' && v.bench === '70', 'the ledger keeps Monday’s and Saturday’s row apart: ' + JSON.stringify([v.mon, v.sat, v.bench]));
-  check(/without compromising the quality of the running programme/.test(v.quote), 'the test quotes the programme’s own criterion');
+  check(!v.quote && /^Since the rebuild · week XII$/.test(v.kicker), 'the test card opens on a plain kicker, no quotation');
   check(v.focused === 'strength', 'the chosen tab keeps the focus after the switch');
   await t.page.click('.cl-play');
   await t.page.waitForTimeout(300);
