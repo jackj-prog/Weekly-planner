@@ -1165,6 +1165,69 @@ async function batchOne() {
   await t.ctx.close();
 }
 
+/* v5.14: the Strength journey and per-session weights. Invented round
+   loads: Monday's row and Saturday's row are two histories, Saturday's box
+   opens on Saturday's weight, a save keeps every entry, and the Plan
+   page's two tabs switch by tap and by arrow key at every width. */
+async function strength() {
+  console.log('· the Strength journey and per-session weights');
+  const lateral = [];
+  for (let i = 0; i < 25; i++) lateral.push({ d: new Date(Date.UTC(2026, 6, 1 + i * 3)).toISOString().slice(0, 10), kg: 6 + Math.floor(i / 5) });
+  const seed = Object.assign({}, SEED, {
+    'done-2026-09-14': { 't1630-gym': true }, 'done-2026-09-16': { 't1930-gym': true }, 'done-2026-09-19': { 't1000-gym': true }, 'done-2026-09-21': { 't1630-gym': true },
+    'wt-chest-supported-row': [{ d: '2026-09-14', kg: 50 }, { d: '2026-09-19', kg: 40 }, { d: '2026-09-21', kg: 52.5 }],
+    'wt-bench-press': [{ d: '2026-07-07', kg: 60 }, { d: '2026-09-16', kg: 70 }],
+    'wt-lateral-raises': lateral,
+  });
+  let t = await open('2026-09-26', '12:00', seed);
+  /* Saturday's light upper: the row opens on Saturday's 40, not Monday's 52.5 */
+  await t.page.click('.tl-card:has-text("Light upper") .session-plan summary');
+  check(/^40\s*kg$/.test(await text(t.page, '.tl-card:has-text("Light upper") .xw[data-ex="wt-chest-supported-row"]')), 'Saturday’s row opens on Saturday’s weight, not Monday’s heavier one');
+  await t.page.click('.tl-card:has-text("Light upper") .xw[data-ex="wt-chest-supported-row"]');
+  await t.page.fill('.xw-in', '42.5'); await t.page.press('.xw-in', 'Enter');
+  const row = await t.json('wt-chest-supported-row');
+  check(row.length === 4 && row.some((e) => e.d === '2026-09-26' && e.kg === 42.5 && e.s === 5) && row.some((e) => e.d === '2026-09-21' && e.kg === 52.5), 'a Saturday save is stored for Saturday and Monday’s history is untouched');
+  check(await t.page.evaluate((h) => window.DayBuilder.lastLift(h, 0).kg, row) === 52.5, 'Monday still opens on Monday’s weight');
+  await t.page.click('.tl-card:has-text("Light upper") .xw[data-ex="wt-lateral-raises"]');
+  await t.page.fill('.xw-in', '9'); await t.page.press('.xw-in', 'Enter');
+  check((await t.json('wt-lateral-raises')).length === 26, 'nothing is trimmed: 25 entries and a save make 26 (the old cap kept 20)');
+  noErrors(t, 'per-session weights');
+  await t.ctx.close();
+
+  t = await open('2026-09-26', '12:00', seed, 'plan');
+  check(await text(t.page, '.jr-switch [aria-selected="true"]') === 'Running' && !!(await t.page.$('.sky')), 'the journey opens on Running with its firmament');
+  await t.page.click('[data-journey-tab="strength"]');
+  await t.page.waitForTimeout(150);
+  const v = await t.page.evaluate(() => {
+    const q = (s) => document.querySelector(s), drum = (i) => q('.cl-d[style*="--w:' + i + ';"], .cl-d[style$="--w:' + i + '"]');
+    const grp = (day) => [...document.querySelectorAll('.lf-group')].find((g) => g.querySelector('h3 span').textContent === day);
+    const kg = (g, ex) => { const r = [...g.querySelectorAll('.lf-row')].find((x) => x.querySelector('.lf-n').firstChild.textContent === ex); return r ? r.querySelector('.lf-kg').firstChild.textContent : null; };
+    return { strength: !!q('.training-journey.strength'), sky: !!q('.sky'), drums: document.querySelectorAll('.cl-d').length,
+      w12: !!(drum(11) && drum(11).querySelector('.cl-flute')), w13: !!(drum(12) && drum(12).querySelector('.cl-plain')), banked: q('.journey-totals b').textContent,
+      mon: kg(grp('MONDAY'), 'Chest-supported row'), sat: kg(grp('SATURDAY'), 'Chest-supported row'), bench: kg(grp('WEDNESDAY'), 'Bench press'),
+      quote: q('.stj-q').textContent, focused: document.activeElement && document.activeElement.dataset.journeyTab };
+  });
+  check(v.strength && !v.sky && v.drums === 30, 'Strength replaces the firmament with the column: thirty drums');
+  check(v.w12 && v.w13 && v.banked === '4', 'week 12 is carved (every session), week 13 plain (some); four sessions banked: ' + JSON.stringify([v.w12, v.w13, v.banked]));
+  check(v.mon === '52.5' && v.sat === '40' && v.bench === '70', 'the ledger keeps Monday’s and Saturday’s row apart: ' + JSON.stringify([v.mon, v.sat, v.bench]));
+  check(/without compromising the quality of the running programme/.test(v.quote), 'the test quotes the programme’s own criterion');
+  check(v.focused === 'strength', 'the chosen tab keeps the focus after the switch');
+  await t.page.click('.cl-play');
+  await t.page.waitForTimeout(300);
+  check(await t.page.evaluate(() => document.querySelector('.cl-fig').classList.contains('replay') && /^Week [IVX]+ · \d+ sessions$/.test(document.querySelector('.cl-capt').textContent)), 'Replay lays the column again, counting the sessions by week');
+  await t.page.press('[data-journey-tab="strength"]', 'ArrowLeft');
+  await t.page.waitForTimeout(150);
+  check(await text(t.page, '.jr-switch [aria-selected="true"]') === 'Running' && !!(await t.page.$('.sky')), 'the arrow keys move between the tabs');
+  await t.page.click('[data-journey-tab="strength"]');
+  for (const w of [320, 260]) {
+    await t.page.setViewportSize({ width: w, height: 700 });
+    await t.page.waitForTimeout(120);
+    check(await t.page.evaluate(() => document.scrollingElement.scrollWidth <= window.innerWidth), 'Strength never scrolls sideways at ' + w + 'px');
+  }
+  noErrors(t, 'strength journey');
+  await t.ctx.close();
+}
+
 /* v5.12: Strava, against a fake strava.com (invented runs, invented keys):
    connect through the approval round trip, import a day's run into the form
    and save it, choose between two runs, say so when Strava can't be reached,
@@ -1343,7 +1406,7 @@ async function offline() {
   browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
   server = await serve();
   try {
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, strava, update, sweep, offline]) await run();
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, strength, strava, update, sweep, offline]) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');

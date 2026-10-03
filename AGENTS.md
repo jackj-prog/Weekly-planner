@@ -2413,3 +2413,30 @@ mockup and approved before building:
 - P5 the resting-HR pill renders after `.h-meta`.
 `batchOne()` in tools/interactions.js pins all five (9 checks). Layout matrix
 re-run; fold check unchanged (13 known afternoon cases).
+
+## The Strength journey — v5.14.0, 3 October (Claude)
+
+The owner asked for a gym half of the journey ("I genuinely do use this app
+to log all my weights too"). Previewed as labelled mockups, Fig. III
+(Sundays and Mondays) dropped at the owner's call, then approved with two
+fixes to how weights are kept:
+- **Weights, one history per session, nothing trimmed.** `saveWeight` kept
+  the last 20 entries per exercise; the twice-weekly lifts (chest-supported
+  row, lateral raises, rope pushdowns) were about to lose their start. Now
+  `DB.withLift` keeps every entry as `{d, kg, s}` (s = the session's
+  weekday, the planned day if moved — `liftDayOf`), and `DB.lastLift(h, s,
+  upto)` opens a box on that session's last weight on or before the day,
+  else the last anywhere. Old entries read `s` from their date: no migration.
+- **Plan → Running | Strength** (`state.journeyTab`, `journeySwitchHTML`,
+  `wireJourneySwitch`); a tab switch fades, never slides.
+  `buildStrengthJourney` draws `columnSVG` (30 drums, carved / plain / gap /
+  to come, the capital in race week, the real moon, Replay), the ledger
+  (`liftSpark`, `liftRowHTML`) and the test card. The data is
+  `DB.strengthJourney(io, today)` and `DB.plannedShare`; the split, weekdays,
+  featured lifts and quote live in `PLAN.strength` (no plan content in code).
+- Tests: two build sections (weights; the Strength journey — invented round
+  loads, moved sessions, future ticks, retired lifts) and `strength()` in
+  tools/interactions.js (Saturday's box opens on Saturday's weight, a save
+  keeps Monday's, 26 entries survive, tabs by tap and arrow key, Replay,
+  no sideways scroll at 320/260).
+

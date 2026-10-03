@@ -502,6 +502,127 @@
       activeWeeks:weeks.filter(w=>w.runs>0).length, elapsedWeeks:weeks.filter(w=>w.end<today).length};
   }
 
+  /* ---- the weights you carry (v5.14) ----
+     A lift's history is one list per exercise, [{d, kg, s}], where s is the
+     weekday of the session it was lifted in — the planned day, when the
+     session was moved. Entries saved before v5.14 carry no s and read as
+     their own date's weekday. The same lift on two days (a row on Monday
+     and on Saturday) is two rep schemes and two loads, so two histories. */
+  function liftDay(e) {
+    return Number.isInteger(e.s) && e.s >= 0 && e.s <= 6 ? e.s : dayIndex(e.d);
+  }
+  function liftHistory(entries) {
+    return (Array.isArray(entries) ? entries : [])
+      .filter((e) => e && typeof e.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.d) && Number.isFinite(e.kg) && e.kg > 0)
+      .sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
+  }
+  /* The weight to start from: the last one lifted in this session on or
+     before the day, else the last lifted in any — so a lift's first week on
+     a new day starts from where it last was. */
+  function lastLift(entries, s, upto) {
+    const h = liftHistory(entries).filter((e) => !upto || e.d <= upto);
+    const own = h.filter((e) => liftDay(e) === s);
+    const pick = own.length ? own : h;
+    return pick.length ? pick[pick.length - 1] : null;
+  }
+  /* A save replaces that session's entry for the day and keeps every other:
+     no cap, so a lift's line runs the whole block (until v5.14 only the last
+     20 were kept, and a lift done twice a week lost its start in ten). */
+  function withLift(entries, iso, kg, s) {
+    return liftHistory(entries).filter((e) => !(e.d === iso && liftDay(e) === s))
+      .concat([{ d: iso, kg, s }]).sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
+  }
+
+  /* The Strength journey (v5.14): the block's gym work as the Plan page's
+     second tab. Every figure is read from what is already stored — the gym
+     ticks (and sessions moved within their week), the weights logged — and
+     from the plan's split (PLAN.strength). io = {done(iso), ovr(iso),
+     moveIn(iso), lifts(exercise)}; only what has happened by today counts. */
+  function strengthJourney(io, today) {
+    const block = PLAN.blocks[0], cfg = PLAN.strength || {}, splitWk = cfg.splitFromWk || 1;
+    const split = addDays(block.start, (splitWk - 1) * 7);
+    const isGym = (b) => b.cat === 'gym' && b.doable;
+    const weeks = block.weekTable.map((row) => {
+      const dates = weekDates(block, row.wk);
+      let planned = 0, set = 0;
+      for (let i = 0; i < 7; i++) {
+        const iso = addDays(dates.start, i), gym = buildDay(iso).blocks.filter(isGym);
+        planned += gym.length;
+        if (iso > today) continue;
+        const done = io.done(iso) || {}, moved = (io.ovr(iso) || {}).moved || {};
+        set += gym.filter((b) => done[b.id] && !moved[b.id]).length +
+          (io.moveIn(iso) || []).filter((m) => m.cat === 'gym' && done[m.id]).length;
+      }
+      return { wk: row.wk, start: dates.start, end: dates.end, planned, set: Math.min(set, planned),
+        state: dates.end < today ? 'past' : dates.start <= today ? 'now' : 'ahead' };
+    });
+    const nowWk = (weeks.find((w) => w.state === 'now') || {}).wk || 0;
+    const sofar = Math.max(nowWk || (weeks[weeks.length - 1].end < today ? weeks.length : 0), splitWk);
+    const clean = (t) => String(t || '').replace(/^Gym\s*[—-]\s*/, '').replace(/\s*\(.*\)\s*$/, '');
+    const scheme = (s) => String(s || '').replace(/\s*@.*$/, '').replace(/\s+—.*$/, '').trim();
+    const row = (ex, sets, entries) => {
+      const post = entries.filter((e) => e.d >= split), last = entries.length ? entries[entries.length - 1] : null;
+      return { ex, scheme: scheme(sets), entries, last, since: post.length ? post[0] : null,
+        change: post.length ? Math.round((last.kg - post[0].kg) * 100) / 100 : null,
+        heaviest: last ? Math.max(...entries.map((e) => e.kg)) : null };
+    };
+    /* every lift each session of the split has asked for so far, in the
+       order the plan lists it; earlier history (any day) draws faint */
+    const splitLifts = new Set();
+    const groups = (cfg.days || []).map((di) => {
+      let title = '';
+      const seen = new Map();
+      for (let wk = splitWk; wk <= block.weekTable.length; wk++) {
+        const g = buildDay(addDays(block.start, (wk - 1) * 7 + di)).blocks.find((b) => isGym(b) && b.plan);
+        if (!g) continue;
+        if (!title) title = clean(g.title);
+        g.plan.forEach((p) => {
+          splitLifts.add(p.ex);
+          if (wk <= sofar && !seen.has(p.ex)) seen.set(p.ex, p.sets);
+        });
+      }
+      const rows = [...seen].map(([ex, sets]) => row(ex, sets,
+        liftHistory(io.lifts(ex)).filter((e) => e.d <= today && (e.d < split || liftDay(e) === di))));
+      return { day: di, title, rows: rows.filter((r) => r.entries.length), unlogged: rows.filter((r) => !r.entries.length).map((r) => r.ex) };
+    });
+    /* the lifts the rebuild retired, as lived before it */
+    const earlier = new Map();
+    for (let wk = 1; wk < splitWk; wk++) {
+      for (let i = 0; i < 7; i++) {
+        buildDay(addDays(block.start, (wk - 1) * 7 + i)).blocks.filter((b) => isGym(b) && b.plan).forEach((b) => b.plan.forEach((p) => {
+          if (!splitLifts.has(p.ex) && !earlier.has(p.ex)) earlier.set(p.ex, p.sets);
+        }));
+      }
+    }
+    const retired = [...earlier].map(([ex, sets]) => row(ex, sets, liftHistory(io.lifts(ex)).filter((e) => e.d <= today && e.d < split)))
+      .filter((r) => r.entries.length);
+    const tested = groups.flatMap((g) => g.rows).filter((r) => r.since);
+    const featured = (cfg.featured || []).map((ex) => {
+      for (const g of groups) for (const r of g.rows) if (r.ex === ex) return r;
+      return null;
+    }).filter(Boolean);
+    const past = weeks.filter((w) => w.state === 'past').slice(-4);
+    return {
+      weeks, nowWk, split, splitWk, groups, retired, featured,
+      banked: weeks.reduce((n, w) => n + w.set, 0),
+      weeksLifted: weeks.filter((w) => w.set > 0).length,
+      recent: past.length ? { weeks: past.length, set: past.reduce((n, w) => n + w.set, 0) / past.length, planned: past.reduce((n, w) => n + w.planned, 0) / past.length } : null,
+      held: tested.filter((r) => r.change >= 0).length, tested: tested.length,
+      crowned: today >= weeks[weeks.length - 1].start,
+    };
+  }
+  /* The running side of the test: the share of the planned kilometres
+     recorded since a date, today's run counting once it is recorded. */
+  function plannedShare(journey, from, today) {
+    let plan = 0, got = 0;
+    journey.weeks.forEach((w) => w.days.forEach((d) => {
+      if (d.iso < from || d.iso > today) return;
+      got += d.recorded;
+      if (d.iso < today || d.recorded > 0) plan += d.planned;
+    }));
+    return plan > 0 ? got / plan : null;
+  }
+
   /* Verdict after a log: this run against the previous of its class, and
      whether it set the block's best EF for that class. list = chronological
      [{iso, cls, paceSec, hr, ef}]. */
@@ -1046,6 +1167,7 @@
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
+    liftDay, liftHistory, lastLift, withLift, strengthJourney, plannedShare,
     isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, sunLongitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };

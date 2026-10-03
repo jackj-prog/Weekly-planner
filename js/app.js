@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.13.0';
+  const APP_VERSION = '5.14.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -42,6 +42,7 @@
     stravaMsg: '',             // Reference → Strava: the last thing that happened
     stravaCode: null,          // a code from Strava this copy cannot finish with
     stravaScope: null,
+    journeyTab: 'run',         // Plan → the journey's half: 'run' | 'strength' (v5.14)
   };
   let nowKey = '';             // today's current|next block ids — minute tick
                                // re-renders only when this changes
@@ -250,15 +251,16 @@
   function exKey(ex) {
     return 'wt-' + String(ex).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }
-  function lastWeight(key) {
-    const arr = readJSON(key, []);
-    return arr.length ? arr[arr.length - 1] : null;
+  /* Since v5.14 a lift keeps one history per session (DB.lastLift): the
+     row on Monday and the row on Saturday are two loads, so Saturday's box
+     no longer opens on Monday's weight. s is the weekday of the session —
+     the planned day, when it was moved — and nothing is trimmed. */
+  const lastWeight = (key, s, upto) => DB.lastLift(readJSON(key, []), s, upto);
+  function saveWeight(key, iso, kg, s) {
+    writeJSON(key, DB.withLift(readJSON(key, []), iso, kg, s));
   }
-  function saveWeight(key, iso, kg) {
-    const arr = readJSON(key, []).filter((e) => e && e.d !== iso);
-    arr.push({ d: iso, kg });
-    writeJSON(key, arr.slice(-20));
-  }
+  /* the weekday a gym session belongs to: its own, or the one it moved from */
+  const liftDayOf = (iso, moved) => DB.dayIndex(moved && moved.fromIso ? moved.fromIso : iso);
   function fmtKg(kg) {
     return (kg === Math.round(kg) ? kg : kg.toFixed(1)) + 'kg';
   }
@@ -1492,7 +1494,8 @@
       ? (st.next >= 0 ? 'Gel ' + roman(st.next + 1) + ' in ' + (st.gels[st.next] - st.into) + ' min' : 'Last gel taken — bring it home')
       : st.phase === 'before' ? 'The candle is lit when the run starts' : '';
   }
-  function openSessionFocus(block, iso, trigger) {
+  function openSessionFocus(block, iso, trigger, liftDay) {
+    if (liftDay == null) liftDay = DB.dayIndex(iso);
     if (focusedSession) return;
     let inkN = 0;
     let exercises = block.cat === 'gym' && block.plan ? dosedPlan(iso, block).filter((p) => !p.off) : [];
@@ -1528,7 +1531,7 @@
       status.textContent = done ? 'Saved to your day.' : iso > todayISO() ? 'Preview your upcoming session.' : !canComplete() ? 'This session is skipped or moved.' : 'Mark done when you have finished.';
     };
     const paintExercise = (moveFocus) => {
-      const i = focusedSession.index, p = exercises[i], key = exKey(p.ex), last = lastWeight(key);
+      const i = focusedSession.index, p = exercises[i], key = exKey(p.ex), last = lastWeight(key, liftDay, iso);
       const content = dialog.querySelector('.focus-content');
       content.innerHTML = '<div class="focus-ex-progress" aria-hidden="true">' + exercises.map((_, n) => '<i class="' + (n === i ? 'selected' : n < i ? 'past' : '') + '"></i>').join('') + '</div>' +
         /* the exercise's number, huge and outlined behind its name (v4.79.1) */
@@ -1558,8 +1561,8 @@
           content.querySelector('input').setAttribute('aria-invalid', 'true');
           return;
         }
-        saveWeight(key, iso, kg);
-        const saved = lastWeight(key);
+        saveWeight(key, iso, kg, liftDay);
+        const saved = lastWeight(key, liftDay, iso);
         note.textContent = saved && saved.d === iso && saved.kg === kg ? 'Saved · ' + fmtKg(kg) : 'Could not save. Check device storage and try again.';
         content.querySelector('input').removeAttribute('aria-invalid');
         content.querySelector('input').blur();
@@ -3021,6 +3024,7 @@
     const legDrop = !!(opts.moved && legDropFor(b, iso));
     const legRe = legDrop ? new RegExp(PLAN.moveRules.legPattern, 'i') : null;
     const dose = b.plan && !opts.moved ? legDose(iso, b) : 'full';
+    const liftDay = liftDayOf(iso, opts.moved);
     /* the border's sprig for this session (v5.2): a flower once done, a
        closed bud if its time passed unticked, a bare twig if skipped */
     const bloomed = isDone || !!(b.run && (getRunLogEntry(iso) || {}).sec > 0);
@@ -3052,12 +3056,12 @@
         let w = '';
         if (b.cat === 'gym') {
           const key = exKey(p.ex);
-          const last = lastWeight(key);
+          const last = lastWeight(key, liftDay, iso);
           const editing = state.wtEdit && state.wtEdit.block === b.id && state.wtEdit.ex === key;
           w = editing
             ? '<input class="xw-in" inputmode="decimal" data-ex="' + key + '" value="' +
               (last ? last.kg : '') + '" aria-label="Weight for ' + esc(p.ex) + '">'
-            : '<button class="xw' + (last && last.d === iso ? ' logged' : '') + '" data-ex="' + key +
+            : '<button class="xw' + (last && last.d === iso && DB.liftDay(last) === liftDay ? ' logged' : '') + '" data-ex="' + key +
               '" title="' + (last ? 'last logged ' + last.d : 'log weight') + '">' +
               (last ? fmtKg(last.kg) : '· kg') + '</button>';
         }
@@ -3092,7 +3096,7 @@
       '</div></div>'
     );
     const focusBtn = card.querySelector('.session-focus-open');
-    if (focusBtn) focusBtn.addEventListener('click', () => openSessionFocus(b, iso, focusBtn));
+    if (focusBtn) focusBtn.addEventListener('click', () => openSessionFocus(b, iso, focusBtn, liftDay));
     const upBtn = card.querySelector('.c-up');
     if (upBtn) upBtn.addEventListener('click', () => {
       const hero = document.querySelector('.hero');
@@ -3137,7 +3141,7 @@
         if (doneWith) return;
         doneWith = true;
         const v = parseFloat(String(inp.value).replace(',', '.'));
-        if (isFinite(v) && v > 0 && v < 500) saveWeight(inp.getAttribute('data-ex'), iso, v);
+        if (isFinite(v) && v > 0 && v < 500) saveWeight(inp.getAttribute('data-ex'), iso, v, liftDay);
         state.wtEdit = null;
         render();
       };
@@ -3360,7 +3364,7 @@
       if((PLAN.keyEvents||[]).some(e=>e.wk===w.wk)) chart+='<circle cx="'+x(i)+'" cy="'+(y(Math.max(w.planned,w.recorded))-7)+'" r="2.5" class="journey-key-dot"/>';
     });
     chart+='<g class="journey-cursor"><line x1="0" x2="0" y1="12" y2="170"/><path d="M-4 7 L4 7 L0 12 Z"/></g>';
-    const root=el('<section class="training-journey"><div class="journey-intro"><div class="journey-kicker">YOUR TRAINING JOURNEY</div>'+
+    const root=el('<section class="training-journey"><div class="journey-intro"><div class="journey-kicker">YOUR TRAINING JOURNEY</div>'+journeySwitchHTML()+
       '<h1>Built one run<br>at a time.</h1><div class="journey-totals"><div><b>'+fmt(journey.recorded)+'</b><span>km recorded</span></div><div><b>'+journey.runs+'</b><span>runs recorded</span></div></div>'+
       '<p class="journey-story">'+(journey.runs ? journeyStory(journey, today) : 'Your first recorded run starts the story. The road ahead is already here.')+'</p>'+
       skyHTML(journey)+
@@ -3430,7 +3434,205 @@
         window.scrollTo(0,0);render();
       }
     });
+    wireJourneySwitch(root);
     paint(initial); return root;
+  }
+
+  /* ---- the journey's two halves (v5.14): Running | Strength ----
+     The owner logs every weight here too, so the journey has a gym half.
+     The switch sits under the kicker on both; the choice lasts the session. */
+  function journeySwitchHTML() {
+    const tab = (id, label) => '<button role="tab" id="jt-' + id + '" data-journey-tab="' + id + '" aria-selected="' + (state.journeyTab === id) +
+      '" tabindex="' + (state.journeyTab === id ? 0 : -1) + '">' + label + '</button>';
+    return '<div class="jr-switch" role="tablist" aria-label="Training journey">' + tab('run', 'Running') + tab('strength', 'Strength') + '</div>';
+  }
+  function wireJourneySwitch(root) {
+    const tabs = Array.from(root.querySelectorAll('[data-journey-tab]'));
+    const go = (id) => { if (state.journeyTab === id) return; state.journeyTab = id; render(); const t = document.getElementById('jt-' + id); if (t) t.focus({ preventScroll: true }); };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => go(t.dataset.journeyTab));
+      t.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        e.preventDefault();
+        go(tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length].dataset.journeyTab);
+      });
+    });
+  }
+
+  /* ---- the Strength journey (v5.14) ----
+     Fig. I is the column of the block: a drum a week laid from the plinth
+     up, fluted and polished when every gym session that week was ticked,
+     plain stone when some were, a dotted gap when none were, dotted under
+     scaffolding while still to come; the capital is set in race week. It
+     stands under tonight's real moon, and Replay raises it drum by drum as
+     the firmament's replay lights its stars. Fig. II is the weights: every
+     lift of the split, a line across the whole block. Then the programme's
+     own test (§6), answered from the same data. */
+  const kgNum = (kg) => String(Math.round(kg * 10) / 10);
+  function columnSVG(sj, today) {
+    const W = 360, H = 340, cx = 168, HZ = 304, n = sj.weeks.length, f1 = (v) => (Math.round(v * 10) / 10).toString();
+    const wAt = (i) => 37 - 6.5 * (i / n) + 2.2 * Math.sin(Math.PI * i / n);   // a slight swell, a taper
+    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="cl-svg" role="img" aria-label="The column of the block: a drum a week, ' +
+      sj.banked + ' gym sessions banked across ' + sj.weeksLifted + ' weeks' + (sj.nowWk ? ', week ' + sj.nowWk + ' now' : '') + '">' +
+      '<defs><linearGradient id="cl-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="cl-z0"/><stop offset=".75" class="cl-z1"/><stop offset="1" class="cl-z2"/></linearGradient>' +
+      '<radialGradient id="cl-glow"><stop offset="0" class="cl-glow-a"/><stop offset="1" class="cl-glow-b"/></radialGradient>' +
+      '<linearGradient id="cl-cyl" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".2"/><stop offset=".2" stop-color="#fff" stop-opacity=".62"/><stop offset=".33" stop-color="#fff" stop-opacity=".9"/><stop offset=".52" stop-color="#fff" stop-opacity=".62"/><stop offset=".8" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/></linearGradient>' +
+      '<linearGradient id="cl-step" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".25" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity=".1"/></linearGradient>' +
+      '<linearGradient id="cl-shadow" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>' +
+      '<rect width="' + W + '" height="' + H + '" fill="url(#cl-sky)"/>';
+    /* the sky: a field of stars kept clear of the shaft, a faint band of the
+       Milky Way, and tonight's moon — the light the stone is lit by */
+    let stars = '';
+    for (let k = 0; k < 90; k++) {
+      const x = artSeed('col:' + k) * W, y = artSeed('col:' + k + 'y') * (HZ - 30), m = artSeed('col:' + k + 'm');
+      if (Math.abs(x - cx) < 40 && y > 14) continue;
+      stars += '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + (m > .94 ? 1.2 : m > .7 ? .7 : .4) + '" style="opacity:' + f1(.25 + m * .6) + '"/>';
+    }
+    const mp = DB.moonPhase(today);
+    s += '<g class="cl-stars">' + stars + '</g><path class="cl-milky" d="M-20 40 Q 140 90 380 20 L 380 60 Q 140 130 -20 80Z"/>' +
+      '<circle cx="58" cy="54" r="34" fill="url(#cl-glow)" style="opacity:' + f1(.25 + .75 * mp.lit) + '"/>' + moonSVG(58, 54, 9, mp, 'cl-moon');
+    /* the ground, the hills and the stylobate, FORTITVDO cut in its face */
+    s += '<path class="cl-hills" d="M0 ' + HZ + 'L0 284 Q 60 270 120 282 T 250 278 T 360 280 L360 ' + HZ + 'Z"/><rect x="0" y="' + HZ + '" width="' + W + '" height="' + (H - HZ) + '" class="cl-ground"/>';
+    let sy = HZ;
+    [[118, 8], [102, 8], [86, 7]].forEach(([w, h]) => { sy -= h; s += '<rect class="cl-stepf" x="' + (cx - w / 2) + '" y="' + sy + '" width="' + w + '" height="' + h + '"/><path class="cl-stept" d="M' + (cx - w / 2) + ' ' + sy + 'H' + (cx + w / 2) + '"/>'; });
+    s += '<text class="cl-insc" x="' + cx + '" y="' + (HZ - 2.2) + '">FORTITVDO</text>' +
+      '<text class="cl-lab" x="14" y="' + (HZ + 22) + '">' + esc(fmtShort(sj.weeks[0].start)).toUpperCase() + '</text>' +
+      '<text class="cl-lab end" x="' + (W - 14) + '" y="' + (HZ + 22) + '">CAPITAL · RACE WEEK</text>';
+    // the moon's long shadow, thrown east across the steps and the ground
+    s += '<path d="M' + (cx + 22) + ' ' + sy + 'L' + (cx + 196) + ' ' + (HZ + 6) + 'L' + (cx + 150) + ' ' + (HZ + 12) + 'L' + (cx + 8) + ' ' + HZ + 'Z" fill="url(#cl-shadow)" opacity=".7"/>';
+    // the base: plinth, torus, scotia, torus
+    s += '<rect class="cl-stone" x="' + (cx - 28) + '" y="' + (sy - 7) + '" width="56" height="7"/><rect class="cl-stone" x="' + (cx - 25) + '" y="' + (sy - 12) + '" width="50" height="5" rx="2.5"/>' +
+      '<rect class="cl-scotia" x="' + (cx - 22) + '" y="' + (sy - 14) + '" width="44" height="2"/><rect class="cl-stone" x="' + (cx - 23) + '" y="' + (sy - 18) + '" width="46" height="4" rx="2"/>';
+    /* the shaft: a drum a week */
+    const y0 = sy - 18, dh = (y0 - 44) / n;
+    let shaft = '', scaffold = null;
+    sj.weeks.forEach((w, i) => {
+      const wd = wAt(i), x = cx - wd / 2, y = y0 - (i + 1) * dh, share = w.planned ? w.set / w.planned : 1;
+      let d;
+      if (w.state === 'ahead' || (w.state === 'now' && !w.set)) {
+        d = '<rect class="cl-ahead" x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(wd) + '" height="' + f1(dh) + '"/>';
+        if (!scaffold) scaffold = y;
+      } else if (w.planned && !w.set) {
+        d = '<rect class="cl-gap" x="' + f1(x) + '" y="' + f1(y + .4) + '" width="' + f1(wd) + '" height="' + f1(dh - .8) + '"/>';
+      } else {
+        /* carved — every session banked — is fluted and polished; a week with
+           some banked is plain stone, set but not yet worked */
+        d = '<rect x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(wd) + '" height="' + f1(dh) + '" fill="url(#cl-cyl)"' + (share < 1 ? ' class="cl-plain"' : '') + '/>';
+        if (share >= 1) {
+          let fl = '', hl = '';
+          for (let k = 1; k < 14; k++) {
+            const t = -Math.PI / 2 + Math.PI * k / 14, fx = cx + Math.sin(t) * wd / 2;
+            fl += 'M' + f1(fx) + ' ' + f1(y + .2) + 'V' + f1(y + dh - .2);
+            if (t < .2) hl += 'M' + f1(fx - .7) + ' ' + f1(y + .2) + 'V' + f1(y + dh - .2);
+          }
+          d += '<path class="cl-flute" d="' + fl + '"/><path class="cl-fillet" d="' + hl + '"/>';
+        }
+        d += '<path class="cl-joint" d="M' + f1(x) + ' ' + f1(y + dh) + 'Q' + cx + ' ' + f1(y + dh + 1.4) + ' ' + f1(x + wd) + ' ' + f1(y + dh) + '"/>';
+      }
+      if (w.state === 'now') d += '<path class="cl-now" d="M' + f1(x - 9) + ' ' + f1(y + dh / 2) + 'H' + f1(x - 3) + 'M' + f1(x + wd + 3) + ' ' + f1(y + dh / 2) + 'H' + f1(x + wd + 9) + '"/>';
+      shaft += '<g class="cl-d' + (w.state === 'ahead' ? ' ahead' : '') + '" style="--w:' + i + '">' + d + '</g>';
+    });
+    s += shaft;
+    // scaffolding up the weeks still to set: two poles and a ledger every five drums
+    const top = y0 - n * dh;
+    if (scaffold != null) {
+      let sc = 'M' + (cx - 34) + ' ' + f1(scaffold + dh) + 'V' + f1(top - 18) + 'M' + (cx + 34) + ' ' + f1(scaffold + dh) + 'V' + f1(top - 18);
+      for (let y = scaffold + dh; y > top - 10; y -= dh * 5) sc += 'M' + (cx - 38) + ' ' + f1(y) + 'H' + (cx + 38);
+      s += '<path class="cl-scaff" d="' + sc + '"/>';
+    }
+    // the week numerals down the left, a leader to each, and NOW on the right
+    [1, 10, 20, 30].filter((k) => k <= n).forEach((k) => {
+      const yy = y0 - (k - .5) * dh, xl = cx - wAt(k - 1) / 2 - 8;
+      s += '<path class="cl-lead" d="M' + f1(xl - 14) + ' ' + f1(yy) + 'H' + f1(xl) + '"/><text class="cl-wk" x="' + f1(xl - 17) + '" y="' + f1(yy + 2.6) + '">' + roman(k) + '</text>';
+    });
+    if (sj.nowWk) {
+      const yy = y0 - (sj.nowWk - .5) * dh;
+      s += '<text class="cl-wk now" x="' + f1(cx + wAt(sj.nowWk - 1) / 2 + 13) + '" y="' + f1(yy + 2.6) + '">' + roman(sj.nowWk) + ' · NOW</text>';
+    }
+    // the Ionic capital: echinus, two volutes and the abacus — set in race week, dotted until then
+    const tw = wAt(n - 1);
+    const vol = (vx, dir) => { let d = ''; for (let k = 0; k <= 60; k++) { const a = k / 60 * Math.PI * 4.2, r = 6.2 * (1 - k / 70); d += (k ? 'L' : 'M') + f1(vx + dir * Math.cos(a + Math.PI / 2) * r) + ' ' + f1(top - 6 + Math.sin(a + Math.PI / 2) * r); } return d; };
+    s += '<g class="cl-cap' + (sj.crowned ? ' set' : '') + '"><path d="M' + f1(cx - tw / 2 - 3) + ' ' + f1(top) + 'Q' + cx + ' ' + f1(top + 6) + ' ' + f1(cx + tw / 2 + 3) + ' ' + f1(top) + 'Z"/>' +
+      '<path d="M' + f1(cx - tw / 2 - 9) + ' ' + f1(top - 12) + 'H' + f1(cx + tw / 2 + 9) + '"/><path d="' + vol(cx - tw / 2 - 5, 1) + '"/><path d="' + vol(cx + tw / 2 + 5, -1) + '"/>' +
+      '<rect x="' + f1(cx - tw / 2 - 12) + '" y="' + f1(top - 16) + '" width="' + f1(tw + 24) + '" height="4"/></g>';
+    return s + '</svg>';
+  }
+  /* a lift's line across the whole block: faint before the rebuild, a step
+     at every change, a dot at today, the weeks still to come dotted */
+  function liftSpark(r, sj, today) {
+    const W = 112, H = 28, A = DB.parseLocalDate(sj.weeks[0].start), Z = DB.parseLocalDate(sj.weeks[sj.weeks.length - 1].end);
+    const x = (iso) => 3 + (W - 6) * Math.min(1, Math.max(0, (DB.parseLocalDate(iso) - A) / (Z - A)));
+    const f1 = (v) => (Math.round(v * 10) / 10).toString(), xn = x(today), xs = x(sj.split);
+    const v = r.entries.map((e) => e.kg), lo = Math.min(...v), hi = Math.max(...v, lo + 5), y = (k) => H - 5 - (H - 11) * (k - lo) / (hi - lo);
+    const run = (list, end) => { if (!list.length) return ''; let d = 'M' + f1(x(list[0].d)) + ' ' + f1(y(list[0].kg)); list.slice(1).forEach((e) => { d += 'H' + f1(x(e.d)) + 'V' + f1(y(e.kg)); }); return d + 'H' + f1(Math.max(end, x(list[list.length - 1].d))); };
+    const pre = r.entries.filter((e) => e.d < sj.split), post = r.entries.filter((e) => e.d >= sj.split);
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="lf-sp" aria-hidden="true"><path class="lf-base" d="M3 ' + (H - 2) + 'H' + f1(xn) + '"/><path class="lf-fut" d="M' + f1(xn) + ' ' + (H - 2) + 'H' + (W - 3) + '"/>' +
+      (sj.splitWk > 1 ? '<path class="lf-split" d="M' + f1(xs) + ' 3V' + (H - 2) + '"/>' : '') +
+      (pre.length ? '<path class="lf-line old" d="' + run(pre, post.length ? xs - 2 : xn) + '"/>' : '') +
+      (post.length ? '<path class="lf-line" d="' + run(post, xn) + '"/>' : '') +
+      '<circle class="lf-end" cx="' + f1(Math.max(xn, x(r.last.d))) + '" cy="' + f1(y(r.last.kg)) + '" r="2.1"/></svg>';
+  }
+  function liftRowHTML(r, sj, today, retired) {
+    const kg = r.last.kg, ch = retired ? kg - r.entries[0].kg : r.change;
+    const note = retired ? (r.entries.length > 1 && ch !== 0 ? (ch > 0 ? '+' : '−') + kgNum(Math.abs(ch)) + ' kg' : 'held')
+      : ch == null ? 'before ' + roman(sj.splitWk) : ch > 0 ? '+' + kgNum(ch) + ' kg' : ch < 0 ? '−' + kgNum(-ch) + ' kg' : 'held';
+    return '<div class="lf-row"><span class="lf-n">' + esc(r.ex) + '<small>' + esc(r.scheme) + '</small></span>' + liftSpark(r, sj, today) +
+      '<span class="lf-kg">' + kgNum(kg) + '<small>kg</small><small>' + note + '</small></span></div>';
+  }
+  function buildStrengthJourney(sj, journey) {
+    const today = todayISO(), XII = roman(sj.splitWk), lead = sj.featured[0];
+    const bits = [];
+    if (sj.recent && sj.recent.weeks >= 2) bits.push('Last ' + sj.recent.weeks + ' weeks <b>' + kgNum(sj.recent.set) + '</b> of ' + kgNum(sj.recent.planned) + ' sessions a week');
+    if (lead) bits.push(esc(lead.ex.toLowerCase()) + ' <b>' + kgNum(lead.last.kg) + ' kg</b>' + (lead.last.kg >= lead.heaviest && lead.entries.length > 1 ? ', the block’s heaviest' : ''));
+    const story = sj.banked && bits.length ? bits.join(' · ').replace(/^./, (c) => c.toUpperCase()) : 'Your first session lays the first stone. The column rises a drum a week.';
+    const groups = sj.groups.map((g) => (g.rows.length || g.unlogged.length) ? '<div class="lf-group"><h3><span>' + esc(DAY_NAMES[g.day].toUpperCase()) + '</span>' + esc(g.title) + '</h3>' +
+      g.rows.map((r) => liftRowHTML(r, sj, today)).join('') +
+      (g.unlogged.length ? '<p class="lf-quiet">No weight logged: ' + g.unlogged.map(esc).join(' · ') + '</p>' : '') + '</div>' : '').join('');
+    const share = DB.plannedShare(journey, sj.split, today);
+    const test = '<section class="stj-test"><p class="stj-q">“' + esc((PLAN.strength || {}).criterion || '') + '”</p>' +
+      (sj.tested
+        ? '<div class="stj-two"><div><b>' + sj.held + '<small>/' + sj.tested + '</small></b><span>lifts held or raised since week ' + XII + '</span></div>' +
+          '<div><b>' + (share != null ? Math.round(share * 100) : '–') + '<small>%</small></b><span>of the planned kilometres run since week ' + XII + '</span></div></div>'
+        : '<p class="stj-wait">The test fills in as the weeks are logged.</p>') +
+      (sj.featured.length ? '<div class="stj-lifts">' + sj.featured.map((r) => '<div><span>' + esc(r.ex) + '<small>since week ' + roman(DB.weekNumber(r.entries[0].d)) + '</small></span><b>' +
+        kgNum(r.entries[0].kg) + ' → ' + kgNum(r.last.kg) + '<small> kg</small></b></div>').join('') + '</div>' : '') +
+      '<p class="stj-foot">The plan’s own test, kept as you go.</p></section>';
+    const retired = sj.retired.length
+      ? '<details class="lf-earlier" data-disclosure="strength|earlier"' + (openDetails.has('strength|earlier') ? ' open' : '') + '><summary>As lived, weeks I–' + roman(sj.splitWk - 1) + ' <small>' + sj.retired.length + ' lift' + (sj.retired.length === 1 ? '' : 's') + ' retired at the rebuild</small></summary>' +
+        sj.retired.map((r) => liftRowHTML(r, sj, today, true)).join('') + '</details>' : '';
+    const anyLift = sj.groups.some((g) => g.rows.length);
+    const root = el('<section class="training-journey strength"><div class="journey-intro"><div class="journey-kicker">YOUR TRAINING JOURNEY</div>' + journeySwitchHTML() +
+      '<h1>Laid one stone<br>at a time.</h1><div class="journey-totals"><div><b>' + sj.banked + '</b><span>sessions banked</span></div><div><b>' + sj.weeksLifted + '</b><span>weeks lifted</span></div></div>' +
+      '<p class="journey-story">' + story + '</p>' +
+      '<figure class="cl-fig">' + columnSVG(sj, today) + '<figcaption class="fig-cap"><span class="fig">Fig. I</span> <span class="cl-capt">The column of the block</span>' +
+      (sj.banked ? '<button class="sk-play cl-play" aria-label="Replay the column, week by week">▶ Replay</button>' : '') + '</figcaption>' +
+      '<p class="cl-key"><span><i class="k carved"></i>every session</span><span><i class="k plain"></i>some</span><span><i class="k gap"></i>none</span><span><i class="k ahead"></i>to come</span></p></figure></div>' +
+      '<section class="lf"><div class="journey-section-title"><h2><span class="fig">Fig. II</span> The weights you carry</h2></div>' +
+      (anyLift ? '<p class="lf-cap">Every lift you log, on one line across the block — faint before the split was rebuilt at week ' + XII + '. On the right, the last weight lifted and its change since then.</p>'
+        : '<p class="lf-cap">Log a weight on a session’s card or in Focus and its line starts here.</p>') +
+      groups + retired + '</section>' + test + '</section>');
+    wireJourneySwitch(root);
+    /* the replay: the drums fall away and are laid again, a week at a time,
+       the caption counting the sessions banked by each week */
+    const play = root.querySelector('.cl-play');
+    if (play) {
+      const fig = root.querySelector('.cl-fig'), capt = fig.querySelector('.cl-capt'), lived = sj.weeks.filter((w) => w.state !== 'ahead'), D = 4200;
+      let raf = 0;
+      fig.style.setProperty('--n', lived.length);
+      play.addEventListener('click', () => {
+        cancelAnimationFrame(raf);
+        fig.classList.remove('replay'); void fig.offsetWidth; fig.classList.add('replay');
+        const t0 = performance.now();
+        const step = (now) => {
+          const p = Math.max(0, Math.min(1, (now - t0) / D)), k = Math.min(lived.length - 1, Math.floor(p * lived.length));
+          capt.textContent = 'Week ' + roman(lived[k].wk) + ' · ' + lived.slice(0, k + 1).reduce((a, w) => a + w.set, 0) + ' sessions';
+          if (p < 1) raf = requestAnimationFrame(step);
+          else setTimeout(() => { capt.textContent = 'The column of the block'; }, 2600);
+        };
+        raf = requestAnimationFrame(step);
+      });
+    }
+    return root;
   }
 
   /* ---- the block wall (v4.71): all 210 days on one grid ----
@@ -3932,9 +4134,13 @@
     const journey = DB.trainingJourney(getDone,getRunLogEntry,today,runMoves);
     const adh = {weekKmDone:Object.fromEntries(journey.weeks.map(w=>[w.wk,w.recorded]))};
     const fmt = n => Number(n.toFixed(1));
-    view.appendChild(buildTrainingJourney(journey));
-    view.appendChild(buildWall(journey));
-    view.appendChild(buildLandmarks(journey));
+    if (state.journeyTab === 'strength') {
+      view.appendChild(buildStrengthJourney(DB.strengthJourney({ done: bankedDone, ovr: getOvr, moveIn: getMoveIn, lifts: (ex) => readJSON(exKey(ex), []) }, today), journey));
+    } else {
+      view.appendChild(buildTrainingJourney(journey));
+      view.appendChild(buildWall(journey));
+      view.appendChild(buildLandmarks(journey));
+    }
 
     const rows = el('<div class="plan-rows"></div>');
     const PHASE = { base: 'var(--phase-base)', build: 'var(--phase-build)', taper: 'var(--phase-taper)' };
@@ -5515,13 +5721,14 @@
 
     /* fade content in on real navigation only — never on tick re-renders */
     const viewKey = state.view + '|' +
-      (state.view === 'today' ? state.dateISO : state.view === 'week' ? state.weekAnchor : state.view === 'kal' ? state.kalMonth : '');
+      (state.view === 'today' ? state.dateISO : state.view === 'week' ? state.weekAnchor : state.view === 'kal' ? state.kalMonth : state.view === 'plan' ? state.journeyTab : '');
     if (viewKey !== lastViewKey) {
       /* Paging through days or weeks slides in the direction of travel, so
          the gesture and the screen agree; any other arrival just fades. */
       const [lastView, lastDate] = lastViewKey.split('|');
       const [, date] = viewKey.split('|');
-      const dir = lastView === state.view && lastDate && date ? (date > lastDate ? 'slide-next' : 'slide-prev') : '';
+      /* a journey tab is not a page of a sequence: it fades, never slides */
+      const dir = lastView === state.view && state.view !== 'plan' && lastDate && date ? (date > lastDate ? 'slide-next' : 'slide-prev') : '';
       lastViewKey = viewKey;
       const v = document.getElementById('view');
       v.classList.remove('anim', 'slide-next', 'slide-prev');
