@@ -169,7 +169,21 @@ for (const wk of [7, 9, 10, 11, 12, 13]) {
   ok(row.lr / row.km <= 0.53, 'wk ' + wk + ' long-run share ≤53% of weekly km, got ' +
     Math.round((row.lr / row.km) * 100) + '%');
 }
-ok(hasBlock(dayOfWeek(17, 5), /PARKRUN 5K/i), 'wk 17 Sat should hold the parkrun');
+ok(hasBlock(dayOfWeek(18, 5), /PARKRUN 5K/i), 'wk 18 Sat should hold the parkrun (moved back a week, Oct 2026)');
+/* Oct 2026 amendment (the athlete's call, back from illness): wk 15's
+   Wednesday tempo becomes an easy 6, Tuesday keeps its 7 and Sunday its
+   24 with the last 6 at MP; weeks 17 and 18 change places with the race. */
+{
+  const w15 = [1, 2, 6].map((di) => dayOfWeek(15, di).run);
+  ok(w15[0].run.km === 7 && w15[1].run.km === 6 && DB.runClass(w15[1]) === 'easy' && !w15[1].run.hard && /illness/i.test(w15[1].title),
+    'wk 15: Tue 7 stays, Wed is an easy 6 back from illness, not a tempo');
+  ok(w15[2].run.km === 24 && /last 6 @ MP/.test(w15[2].title), 'wk 15 Sunday stays as planned: 24, last 6 @ MP');
+  const sum = (wk) => [0, 1, 2, 3, 4, 5, 6].reduce((n, di) => n + (dayOfWeek(wk, di).run ? dayOfWeek(wk, di).run.run.km : 0), 0);
+  ok(sum(15) === 45 && PLAN.blocks[0].weekTable[14].km === 45, 'wk 15 lands 45 km and its row says so');
+  ok(sum(17) === 50 && /Tempo 30/.test(dayOfWeek(17, 2).run.title) && !hasBlock(dayOfWeek(17, 5), /PARKRUN/i), 'wk 17 is now the 50 km build week');
+  ok(sum(18) === 36 && PLAN.blocks[0].weekTable[17].cutback && DB.addDays(START, 17 * 7 + 5) === '2026-10-31', 'wk 18 is the parkrun cutback, Sat 31 Oct');
+  ok(PLAN.keyEvents.some((e) => e.wk === 18 && /PARKRUN/.test(e.label)) && !PLAN.keyEvents.some((e) => e.wk === 17), 'the key date moved with the race');
+}
 ok(hasBlock(dayOfWeek(24, 6), /TUNE-UP HALF/i), 'wk 24 Sun should hold the tune-up half');
 ok(hasBlock(dayOfWeek(26, 4), /CHRISTMAS.*rest|full rest/i), 'wk 26 Fri should be Christmas rest');
 ok(hasBlock(dayOfWeek(27, 4), /New Year|REST/), 'wk 27 Fri should be NYD rest');
@@ -188,7 +202,7 @@ ok(hasBlock(dayOfWeek(23, 1), /Pro 4 fit-check/i), 'wk 23 Tue run should mention
 function hasDoable(day, re) {
   return day.blocks.some((b) => b.doable && re.test(b.title));
 }
-ok(!hasDoable(dayOfWeek(17, 4), /^Basketball/i), 'wk 17 Fri should have no basketball');
+ok(!hasDoable(dayOfWeek(18, 4), /^Basketball/i), 'wk 18 Fri should have no basketball');
 ok(!hasDoable(dayOfWeek(24, 4), /^Basketball/i), 'wk 24 Fri should have no basketball');
 ok(!hasDoable(dayOfWeek(30, 4), /^Basketball/i), 'wk 30 Fri should have no basketball');
 ok(hasDoable(dayOfWeek(15, 4), /^Basketball/i), 'wk 15 Fri should keep basketball');
@@ -328,7 +342,7 @@ ok(hasBlock(dayOfWeek(5, 5), /Hanging leg raises/), 'Upper B should carry the ab
 /* Upper B: Fri in Wks 1–3 (as lived) → Sat 10:00 from Wk 4 */
 ok(hasBlock(dayOfWeek(2, 4), /Incline bench/), 'Wks 1–3 Fri holds Upper B (as lived)');
 ok(!dayOfWeek(5, 4).blocks.some((b) => b.cat === 'gym'), 'Wks 4+ Fri has no gym — Upper B moved to Saturday');
-ok(hasBlock(dayOfWeek(17, 5), /Light upper/), 'wk17 parkrun Saturday keeps the light session after the PB');
+ok(hasBlock(dayOfWeek(18, 5), /Light upper/), 'wk18 parkrun Saturday keeps the light session after the PB');
 ok(!hasBlock(dayOfWeek(24, 5), /Upper B/), 'wk24 Sat has no Upper B — half taper');
 ok(hasBlock(dayOfWeek(23, 2), /Overhead press 2 × 8/), 'Wk 23 push maintenance keeps the overhead press');
 ok(hasBlock(dayOfWeek(23, 5), /Arms superset/), 'Wk 23 Saturday maintenance keeps the arm work');
@@ -668,7 +682,7 @@ section('run classification + log estimates');
      their Z1 efficiency reads as a fitness collapse that never happened. */
   ok(DB.runClass(dayOfWeek(7, 5).run) === 'recovery', 'the Saturday buffer run classifies as recovery');
   ok(DB.runClass(dayOfWeek(30, 3).run) === 'recovery', 'the race-week shakeout classifies as recovery');
-  ok(DB.runClass(dayOfWeek(17, 6).run) === 'long', 'wk 17 "Long 16 — recovery" is still a long run, not a shakeout');
+  ok(DB.runClass(dayOfWeek(18, 6).run) === 'long', 'wk 18 "Long 16 — recovery" is still a long run, not a shakeout');
   {
     const est = DB.logEstimate(dayOfWeek(7, 5), []);
     const easyEst = DB.logEstimate(dayOfWeek(7, 1), []);
@@ -856,7 +870,7 @@ section('basketball as training');
   const eve = dayOfWeek(15, 4).blocks.find((b) => /Evening — out/.test(b.title));
   ok(eve && eve.start === '21:00', 'the Friday evening block starts after basketball, not during it');
   /* still off on the five protected weeks — injury risk, not low value */
-  for (const wk of [17, 24, 26, 27, 30]) {
+  for (const wk of [18, 24, 26, 27, 30]) {
     ok(!dayOfWeek(wk, 4).blocks.some((b) => b.doable && /^Basketball — (1v1|shooting)/.test(b.title)),
       'wk ' + wk + ' keeps both basketball halves off before its key day');
   }

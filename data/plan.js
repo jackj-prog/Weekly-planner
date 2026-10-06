@@ -284,7 +284,7 @@ const PLAN = {
      "next key date" chip. Ordered; di is day index Mon=0. */
   keyEvents: [
     { wk: 8,  di: 4, label: '2-MILE TT' },
-    { wk: 17, di: 5, label: 'PARKRUN 5K PB' },
+    { wk: 18, di: 5, label: 'PARKRUN 5K PB' },
     { wk: 24, di: 6, label: 'TUNE-UP HALF' },
     { wk: 26, di: 6, label: 'DRESS REHEARSAL' },
     { wk: 30, di: 6, label: 'MARATHON' },
@@ -302,7 +302,7 @@ const PLAN = {
   rules: [
     'Easy means easy — conversational, or you’re stealing from Wednesday and Sunday.',
     'Cutback weeks are training. No junk km because the number looks small.',
-    'Basketball is two sessions, not one: the 1v1 hour is real training (~500 kcal — the block’s only top-end and lateral work), the shooting hour is active recovery (~350 kcal, about a brisk walk). Flex the 1v1 half first: least marathon-specific, highest ankle risk. OFF entirely on weeks 17, 24, 26, 27, 30.',
+    'Basketball is two sessions, not one: the 1v1 hour is real training (~500 kcal — the block’s only top-end and lateral work), the shooting hour is active recovery (~350 kcal, about a brisk walk). Flex the 1v1 half first: least marathon-specific, highest ankle risk. OFF entirely on weeks 18, 24, 26, 27, 30.',
     'Fuelling is a skill, and the interval IS the carb rate. Runs over 90 min: a gel every 35–40 min (~39 g/h — learning the gut). Over 2.5 h: every 30 min (~46 g/h). Race day: every 25 min, 9 gels, ~55 g/h. Carry your own salt — gels barely have any.',
     'Niggle protocol: anything sharp or one-sided = 2 days off running before it becomes 2 weeks. The plan survives missed days, not a stress injury.',
     'Sleep is where training sticks: 22:30 lights out is part of the plan.',
@@ -873,10 +873,14 @@ const PLAN = {
       { wk: 12, phase: 'build', km: 43, lr: 21, wed: 'Tempo 25 min continuous',    sun: 'Long 21 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost' },
       { wk: 13, phase: 'build', km: 35, lr: 16, wed: 'Easy + strides', sun: 'Long 16 easy', wedShoe: 'Evo SL', lrShoe: 'Ghost', cutback: true },
       { wk: 14, phase: 'build', km: 42, lr: 22, wed: '5×3 min @ threshold', sun: 'Long 22 — last 6 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL', notes: 'First MP work; study modules start' },
-      { wk: 15, phase: 'build', km: 46, lr: 24, wed: 'Tempo 25 min',   sun: 'Long 24 — last 6 @ MP',  wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
+      { wk: 15, phase: 'build', km: 45, lr: 24, wed: 'Easy 6 (back from illness)', sun: 'Long 24 — last 6 @ MP',  wedShoe: 'Ghost', lrShoe: 'Evo SL', notes: 'Back from illness: Wed eased, Sun as planned' },
       { wk: 16, phase: 'build', km: 50, lr: 26, wed: '4×5 min @ threshold', sun: 'Long 26 — last 8 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
-      { wk: 17, phase: 'build', km: 36, lr: 16, wed: 'Easy 5 (race week)', sun: 'Long 16 easy — recovery', wedShoe: 'Ghost', lrShoe: 'Ghost', cutback: true, key: true, noBasketball: true, notes: 'PARKRUN 5K PB Sat' },
-      { wk: 18, phase: 'build', km: 50, lr: 26, wed: 'Tempo 30 min',   sun: 'Long 26 — 2×5 @ MP',     wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
+      /* Oct 2026, the athlete's call after a week lost to illness (wk 14):
+         the parkrun moves back a week, so weeks 17 and 18 change places —
+         the race keeps its cutback and its easy days, and the build reads
+         15 · 16 · 17 then the cutback, the illness having been the rest. */
+      { wk: 17, phase: 'build', km: 50, lr: 26, wed: 'Tempo 30 min',   sun: 'Long 26 — 2×5 @ MP',     wedShoe: 'Evo SL', lrShoe: 'Evo SL', notes: 'Swapped with wk 18 — parkrun moved back a week' },
+      { wk: 18, phase: 'build', km: 36, lr: 16, wed: 'Easy 5 (race week)', sun: 'Long 16 easy — recovery', wedShoe: 'Ghost', lrShoe: 'Ghost', cutback: true, key: true, noBasketball: true, notes: 'PARKRUN 5K PB Sat' },
       { wk: 19, phase: 'build', km: 54, lr: 28, wed: '6×3 min @ threshold', sun: 'Long 28 — last 10 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
       { wk: 20, phase: 'build', km: 58, lr: 30, wed: 'Tempo 2×15 min', sun: 'Long 30 — 12 @ MP',      wedShoe: 'Evo SL', lrShoe: 'Evo SL', key: true, notes: 'First 30 km' },
       { wk: 21, phase: 'build', km: 46, lr: 22, wed: 'Easy + strides', sun: 'Long 22 easy',           wedShoe: 'Evo SL', lrShoe: 'Ghost', cutback: true },
@@ -894,7 +898,7 @@ const PLAN = {
     /* Weeks whose run distances are hand-set by §9, excluded from the
        algorithm split test. (26–27 keep algorithmic distances — only the
        day scaffold goes on holiday.) */
-    specialDistanceWeeks: [8, 17, 24, 30],
+    specialDistanceWeeks: [8, 15, 18, 24, 30],
 
     /* ---- Phase deltas (§6) ---- */
     friGermanEnd: [
@@ -1360,10 +1364,26 @@ const PLAN = {
         },
       },
 
-      /* Week 17 — parkrun PB (Sat). Wed easy 5 · Thu easy 4 + strides ·
-         Fri no basketball (flag) · Sun easy 16 recovery (table).
-         Tue 6 keeps the 40 km week honest around the hand-set days. */
-      17: {
+      /* Week 15 — back from illness (Oct 2026). The week-14 runs after
+         Wednesday were lost to illness; Tuesday was the first one back.
+         Wednesday's tempo is dropped for an easy 6 that suits either a
+         first good day or one still at 80–90%; Tuesday keeps the 7 it was
+         planned at; Sunday's long run stays as written (the athlete's call).
+         The week lands 45. */
+      15: {
+        label: 'Back from illness',
+        days: {
+          1: { run: { km: 7 } },
+          2: { run: { km: 6, title: 'Easy 6 — back from illness', shoe: 'Ghost',
+            detail: 'The tempo is dropped this week. Easy Z2, conversational, no watch-chasing — if the heart rate sits well above your usual for the pace, stop at 4 km. 4 × 20 s relaxed strides at the end only if you feel fully well. Sunday’s long run stays as planned' } },
+        },
+      },
+
+      /* Week 18 — parkrun PB (Sat 31 Oct; moved from wk 17 in Oct 2026).
+         Wed easy 5 · Thu easy 4 + strides · Fri no basketball (flag) ·
+         Sun easy 16 recovery (table). Tue 6 keeps the 36 km week honest
+         around the hand-set days. */
+      18: {
         label: 'PARKRUN 5K PB',
         days: {
           1: { run: { km: 6, title: 'Easy run', detail: 'Race week — keep it genuinely easy' } },

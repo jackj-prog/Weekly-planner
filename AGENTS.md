@@ -2448,3 +2448,16 @@ kicker, "Since the rebuild · week XII", and its labels shorten to "lifts
 held or raised" and "of planned km run". The build test and `strength()`
 now check there is no quotation.
 
+## Back from illness — v5.14.2, 6 October (Claude)
+
+Plan amendment, data only, at the athlete's request: ill after the wk 14
+Wednesday; Tuesday 6 Oct the first run back. `specialWeeks[15]` turns
+Wednesday's tempo into an easy 6 (Ghost, Z2, stop at 4 km if HR runs high,
+strides only if fully well) and pins Tuesday at the 7 it was planned at;
+the wk 15 row reads 45 km and joins `specialDistanceWeeks`. Sunday's 24 with
+the last 6 @ MP is unchanged (the athlete's call). The parkrun moves back a
+week: rows 17 and 18 swap, `specialWeeks[17]` becomes `[18]`, the key event
+and rule 3's basketball list follow (Sat 31 Oct). CLAUDE.md §5–§9, §12 and
+§15 updated; build tests pin the amendment; the calendar feed regenerates in
+CI. Block total 1,177.5 → 1,176.5 km.
+

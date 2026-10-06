@@ -476,7 +476,7 @@ gym 2–2.5h · running per plan · basketball 2h (~850 kcal ≈ 10 km-equiv:
 - **Upper B moves Fri 13:00 → Sat 10:00 (Jul 2026, from Wk 4):**
   Fridays proved the fragile day (German + evening plans + basketball), and
   Base Saturdays are clear (Sat km is mostly 0 until ~Wk 11). Friday
-  becomes gym-free; Wk 17 keeps the Saturday session after the parkrun;
+  becomes gym-free; Wk 18 keeps the Saturday session after the parkrun;
   Wk 24 Saturday has no gym (half taper).
 - **Tuesday's gym moves onto Wednesday (Sep 2026, from Wk 12):** push
   now sits AFTER the quality run on the same day, so the only two hard
@@ -597,11 +597,11 @@ Sunday reading catch-up · 21:00 wind down (reading IS wind down) ·
   the day that is already hard keeps the week's hard days to two.
 - **Wk 8 (TT week) carries no leg work and deloads both upper days.**
   The only race week in the block that still had a Monday Lower B, and
-  only by accident of the era boundaries — 17, 24 and 30 were all in
-  the Wk 17+ era where Monday was then the zero day. The clash is with
+  only by accident of the era boundaries — 17 (now 18), 24 and 30 were
+  all in the Wk 17+ era where Monday was then the zero day. The clash is with
   Tuesday's 4×400 rehearsal ~20 h later, not with Friday. Lower B is
   insurance rather than progression, so a week off costs nothing.
-- **Gym deload on cutback weeks from Wk 13** (wks 13, 21 — 17 and 25
+- **Gym deload on cutback weeks from Wk 13** (wks 13, 21 — 18 and 25
   sit inside other rules): both upper sessions halve their SETS, floor
   of 2, **load unchanged**. Strength holds on ~a third of the volume
   that built it, so cutting sets costs almost nothing while the fatigue
@@ -741,10 +741,10 @@ session · Sunday session · flags/notes.
 | 12 | 14–20 Sep | Build | 43 | 21 | Tempo 25 min continuous | Long 21 easy | |
 | 13 | 21–27 Sep | Build | 35 | 16 | Easy + strides | Long 16 easy | CUTBACK |
 | 14 | 28 Sep–4 Oct | Build | 42 | 22 | 5×3 min @ threshold | Long 22 — last 6 @ MP | First MP work; study modules start |
-| 15 | 5–11 Oct | Build | 46 | 24 | Tempo 25 min | Long 24 — last 6 @ MP | |
+| 15 | 5–11 Oct | Build | 45 | 24 | Easy 6 (back from illness) | Long 24 — last 6 @ MP | Wed eased after illness (see below) |
 | 16 | 12–18 Oct | Build | 50 | 26 | 4×5 min @ threshold | Long 26 — last 8 @ MP | |
-| 17 | 19–25 Oct | Build | 36 | 16 | Easy 5 (race week) | Long 16 easy — recovery | CUTBACK · KEY · **PARKRUN 5K PB Sat** · no basketball |
-| 18 | 26 Oct–1 Nov | Build | 50 | 26 | Tempo 30 min | Long 26 — 2×5 @ MP | |
+| 17 | 19–25 Oct | Build | 50 | 26 | Tempo 30 min | Long 26 — 2×5 @ MP | Swapped with 18 (see below) |
+| 18 | 26 Oct–1 Nov | Build | 36 | 16 | Easy 5 (race week) | Long 16 easy — recovery | CUTBACK · KEY · **PARKRUN 5K PB Sat** · no basketball |
 | 19 | 2–8 Nov | Build | 54 | 28 | 6×3 min @ threshold | Long 28 — last 10 @ MP | |
 | 20 | 9–15 Nov | Build | 58 | 30 | Tempo 2×15 min | Long 30 — 12 @ MP | KEY · first 30 km |
 | 21 | 16–22 Nov | Build | 46 | 22 | Easy + strides | Long 22 easy | CUTBACK |
@@ -765,6 +765,18 @@ toward ~47–50%. All growth lands in the Tue/Wed/Thu runs (they were
 2–4 km against a 13 km long run — too short to build anything). Build
 weeks from 14 stay as planned: their share is already ~50%, normal for
 a schedule-constrained marathoner.
+
+**Back from illness (Oct 2026, the athlete's call).** Ill after the wk 14
+Wednesday session: Thursday, Saturday and the Sunday 22 km were lost, and
+Tuesday 6 Oct was the first run back. Wk 15's Wednesday tempo becomes an
+**easy 6** (Ghost, Z2; stop at 4 km if the heart rate runs high; strides
+only if fully well) that suits either a first good day or one still at
+80–90%; Tuesday keeps the 7 it was planned at, and **Sunday's 24 with the
+last 6 @ MP stays as written** — the athlete expects to be fully fit by
+then. The week lands 45. The **parkrun moves back a week to Sat 31 Oct**:
+weeks 17 and 18 change places, so the race keeps its cutback, easy days
+and basketball-free Friday, and the build reads 15 · 16 · 17 then the
+cutback — the illness week having been the rest. Block total 1,176.5 km.
 
 ## 8. Daily distance algorithm
 
@@ -808,7 +820,7 @@ effort, and it clears a full rest day before Sunday. Sun long run 11 km
 eased: legs heavy for 2–3 km, run by effort ~15–20 s/km slower than
 usual. Week lands ~23 km on the cutback.
 
-**Week 17 — parkrun PB (Sat 24 Oct).** Wed: easy 5 only. Thu: easy 4 +
+**Week 18 — parkrun PB (Sat 31 Oct; moved from Wk 17, Oct 2026).** Wed: easy 5 only. Thu: easy 4 +
 strides. Fri: NO basketball ("fresh legs for the race"). Sat: light
 breakfast 90 min before · travel + 2 km warm-up + 3–4 strides · **09:00
 PARKRUN 5K all-out PB in the Evo SL** · even splits, don't sprint km 1 ·
@@ -984,7 +996,7 @@ from mile 22.
    (Sep 2026) rather than kept alongside it: at 40–65 km/week that was
    impact cost with nothing left to buy. The **shooting hour** is active
    recovery (~350 kcal, about a brisk walk). Flex the 1v1 half first:
-   least marathon-specific, highest ankle risk. Both OFF on weeks 17,
+   least marathon-specific, highest ankle risk. Both OFF on weeks 18,
    24, 26, 27, 30.
 4. **Fuelling is a skill, and the interval IS the carb rate.** A 40 g gel
    is ~23 g carbs, so "every 35 min" literally means 39 g/h, every 30
@@ -1118,7 +1130,7 @@ absorbed without a deploy; the plan file stays canonical.
   weekly km (±1).
 - Date anchors: 2026-07-01 → week 1, day index 2. 2027-01-24 → week 30,
   day index 6.
-- Special-week spot checks: Wk 17 Sat = parkrun · Wk 24 Sun = tune-up
+- Special-week spot checks: Wk 18 Sat = parkrun · Wk 24 Sun = tune-up
   half · Wk 26 Fri = Christmas rest · Wk 27 Fri = NYD rest · Wk 30 Sun
   = race protocol · Wk 23 Tue run mentions the Pro 4 fit-check.
 - Post-block behaviour: 2027-01-27 resolves to the Recovery block;

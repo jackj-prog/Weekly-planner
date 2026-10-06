@@ -498,9 +498,9 @@ async function cinema() {
     const hit = (x, y) => x.left < y.right && y.left < x.right && x.top < y.bottom && y.top < x.bottom; return !hit(a, b) && !(l && hit(l.getBoundingClientRect(), b)); }), 'race day\u2019s 42.2 clears the date and the week\u2019s label');
   await t.ctx.close();
   // v4.88: a quieter Today
-  t = await open('2026-10-07', '19:45', SEED);
+  t = await open('2026-10-21', '19:45', SEED);
   const run = await t.page.$('.tl-card.slim');
-  check(!!run && !(await run.$('.tick')) && !!(await run.$('.more-btn')) && /Tempo 25\smin/.test(await run.textContent()), 'the day\u2019s run is a slim row that keeps its ⋯ and leaves the tick to the run card');
+  check(!!run && !(await run.$('.tick')) && !!(await run.$('.more-btn')) && /Tempo 30\smin/.test(await run.textContent()), 'the day\u2019s run is a slim row that keeps its ⋯ and leaves the tick to the run card');
   await t.page.click('.tl-card.slim .c-up');
   check(await t.page.evaluate(() => Math.abs(document.querySelector('.hero').getBoundingClientRect().top - document.querySelector('.topbar').getBoundingClientRect().height) < 30), 'the slim row\u2019s button returns to the run card');
   check((await t.page.$$('.tl-card .c-cat')).length === 0, 'no category labels where the emblem and colour already say it');
@@ -644,7 +644,7 @@ async function cinema() {
   t = await open('2026-09-21', '12:00', Object.assign({}, SEED, { 'runlog-2026-09-16': { sec: 2300, hr: 160, km: 7 } }));
   check(!!(await t.page.$('.previously .seal')) && /sealed/.test(await t.page.getAttribute('.previously .seal', 'aria-label')), 'a week with every run done is sealed');
   await t.ctx.close();
-  t = await open('2026-10-24', '07:00', SEED);
+  t = await open('2026-10-31', '07:00', SEED);
   check(/red-letter/.test(await t.page.getAttribute('.hero', 'class')) && /RED-LETTER DAY/.test(await text(t.page, '.hero .h-tag')), 'the parkrun is a red-letter day');
   await t.ctx.close();
   t = await open('2026-09-20', '20:00', SEED);
@@ -807,8 +807,8 @@ async function cinema() {
     rays: document.querySelectorAll('.kl-tymp .kt-ray').length, key: document.querySelectorAll('.kl-tymp .kt-key').length, hand: !!document.querySelector('.kl-tymp .kt-hand'),
     names: Array.from(document.querySelectorAll('.kl-row .kl-n')).slice(0, 7).map((n) => n.textContent.replace(/\u2060/g, '').replace(/\s+/g, ' ')), title: document.querySelector('.kl-title .sr').textContent }));
   check(kal.rows === 31 && kal.today === '1' && kal.title === 'October 2026' && /Scorpio/.test(kal.sign) && /^The sun enters Scorpio on the 23rd · /.test(kal.light), 'October on one page, today ringed, the sun entering Scorpio on the 23rd: ' + JSON.stringify(kal));
-  check(kal.red.join() === '24 PARKRUN 5K PB' && kal.moons === 31 && kal.arch === 31 && kal.quarters >= 3 && kal.quarters <= 5, 'the parkrun is the month\u2019s red-letter day, and every night has its moon, the quarters marked on the arch');
-  check(kal.rays === 22 && kal.key === 1 && kal.hand && kal.names.join('|') === 'Easy||Recovery|Long 22 — last 6 @ MP||Easy|Tempo 25 min', 'each run is a ray from the sun, the key day starred, the hand at today, and each day named: ' + kal.names.join('|'));
+  check(kal.red.join() === '31 PARKRUN 5K PB' && kal.moons === 31 && kal.arch === 31 && kal.quarters >= 3 && kal.quarters <= 5, 'the parkrun is the month\u2019s red-letter day, and every night has its moon, the quarters marked on the arch');
+  check(kal.rays === 22 && kal.key === 1 && kal.hand && kal.names.join('|') === 'Easy||Recovery|Long 22 — last 6 @ MP||Easy|Easy', 'each run is a ray from the sun, the key day starred, the hand at today, and each day named: ' + kal.names.join('|'));
   await t.page.click('.kl-head .nav[data-m="-1"]');
   const sep = await t.page.evaluate(() => ({ rows: document.querySelectorAll('.kl-row').length, got: document.querySelectorAll('.kl-row.got').length, miss: document.querySelectorAll('.kl-row.miss').length,
     lit: document.querySelectorAll('.kl-tymp .kt-ray.got').length, dashed: document.querySelectorAll('.kl-tymp .kt-ray.miss').length, tally: document.querySelector('.kl-tally').textContent }));
@@ -909,7 +909,7 @@ async function cinema() {
   noErrors(t, 'growing border');
   await t.ctx.close();
   // v5.1: the session as a stained-glass window — dark before, lit when done
-  t = await open('2026-10-07', '17:50', SEED);
+  t = await open('2026-10-21', '17:50', SEED);
   check(!!(await t.page.$('.hero .sess-shape svg.sg')) && !(await t.page.$('.hero .sess-shape svg.sg.lit')) && (await t.page.$$('.hero .sg .sg-pane')).length >= 20,
     'before the run the window is glazed but dark');
   await t.page.click('.hero button.h-tick');
