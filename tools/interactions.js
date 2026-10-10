@@ -1236,7 +1236,7 @@ async function strength() {
 async function fuel() {
   console.log('· the day’s fuel, German paused');
   let t = await open('2026-10-12', '12:00', SEED);
-  check(/set your weight, height and age/.test(await text(t.page, '.fuel-set')) && !(await t.page.$('.fuel-day')), 'without body stats Today offers one line to set them, no invented number');
+  check(/set your weight, height and age/.test(await text(t.page, '.fuel-set')) && !(await t.page.$('.fx')), 'without body stats Today offers one line to set them, no invented number');
   const tl = await text(t.page, '.tl');
   check(!/German|Anki/.test(tl) && /Wake · breakfast/.test(tl) && !!(await t.page.$('.tl-card:has-text("Study") >> text=19:30–21:10')), 'German’s evening is study to 21:10, then free; breakfast loses Anki: ' + tl.slice(0, 80));
   await t.page.click('.fuel-set');
@@ -1253,21 +1253,62 @@ async function fuel() {
   check(body && body.kg === 70 && body.cm === 175 && body.age === 30 && body.sex === 'm' && body.act === 'desk', 'a valid body is kept on the phone: ' + JSON.stringify(body));
   const wk = await t.page.$$eval('#ref-daily-fuel .fw-row', (r) => r.map((x) => x.querySelector('.fw-k').textContent));
   check(wk.length === 7 && wk.every((k) => /^\d,\d{3}$/.test(k)) && !!(await t.page.$('#ref-daily-fuel .fw-row.today')), 'the week’s targets, seven days, today marked: ' + wk.join(' '));
+  const g = await t.page.$$eval('#ref-daily-fuel .fw-g', (r) => r.map((x) => x.textContent.replace(/\s+/g, ' ')));
+  check(g.length === 7 && g.every((x) => /^C \d+ · P \d+$/.test(x)), 'each day’s carbs and protein in grams beside its target: ' + g[0]);
+  const cups = await t.page.$$eval('#ref-daily-fuel .fxw', (r) => r.map((x) => x.className + '|' + x.querySelector('b').textContent));
+  check(cups.length === 7 && cups.filter((c) => /today/.test(c)).length === 1 && cups.map((c) => c.split('|')[1]).join(' ') === wk.join(' '), 'seven chalices, today’s lit, each with its day’s target');
   await t.page.click('[data-nav="today"]');
   await t.page.waitForTimeout(200);
-  check(/^≈ 2,650\s*kcal$/.test(await text(t.page, '.fuel-day .fd-v')), 'Today shows the target: ' + await text(t.page, '.fuel-day .fd-v'));
-  await t.page.click('.fuel-day > summary');
-  const rows = await t.page.$$eval('.fuel-day .fd-row span', (r) => r.map((x) => x.textContent));
+  check(/^2,650\s*kcal$/.test(await text(t.page, '.fx .fx-v')), 'Today shows the target: ' + await text(t.page, '.fx .fx-v'));
+  check(/^Rest or gym only · carbs 4\.4 g\/kg$/.test(await text(t.page, '.fx-why')), 'one line says why — a gym Monday, fat held at 35%: ' + await text(t.page, '.fx-why'));
+  const ms = await t.page.$$eval('.fx-m', (r) => r.map((x) => x.textContent.replace(/\s+/g, ' ').trim()));
+  check(ms.length === 3 && /^Carbs 305g 46%$/.test(ms[0]) && /^Protein 125g 19%$/.test(ms[1]) && /^Fat 105g 35%$/.test(ms[2]), 'the three macros in grams with their share: ' + ms.join(' | '));
+  check(!!(await t.page.$('.fx-cup svg.cup')) && !!(await t.page.$('.fx-bar')), 'the chalice, and the split as one bar');
+  await t.page.click('.fx > summary');
+  const rows = await t.page.$$eval('.fx .fd-row span', (r) => r.map((x) => x.textContent));
   check(rows[0] === 'Your body at rest' && rows.some((r) => /Legs microdose/.test(r)) && rows.some((r) => /Maintenance-plus/.test(r)), 'and how it is built: ' + rows.join(' | '));
   for (const w of [320, 260]) {
     await t.page.setViewportSize({ width: w, height: 700 });
     await t.page.waitForTimeout(100);
-    check(await t.page.evaluate(() => document.scrollingElement.scrollWidth <= window.innerWidth), 'Today with its fuel line never scrolls sideways at ' + w + 'px');
+    check(await t.page.evaluate(() => document.scrollingElement.scrollWidth <= window.innerWidth), 'Today with its fuel card never scrolls sideways at ' + w + 'px');
   }
+  await t.page.setViewportSize({ width: 390, height: 844 });
+  /* the day's totals from the food diary: optional, entered in the fold */
+  await t.page.click('.fx [data-eat="edit"]');
+  await t.page.waitForTimeout(150);
+  await t.page.fill('[data-eat-f="kcal"]', 'lots');
+  await t.page.click('.fx-eat-form .rl-save');
+  check(/Check the numbers/.test(await text(t.page, '.fx-eat-form .ff-err')) && !(await t.ls('eat-2026-10-12')), 'totals that are not numbers are refused and nothing is saved');
+  await t.page.fill('[data-eat-f="kcal"]', '2,400'); await t.page.fill('[data-eat-f="c"]', '300');
+  await t.page.click('.fx-eat-form .rl-save');
+  const eat = await t.json('eat-2026-10-12');
+  check(eat && eat.kcal === 2400 && eat.c === 300 && eat.p === null && eat.f === null && /^\d\d:\d\d$/.test(eat.at) && eat.on === '2026-10-12', 'the totals are kept for the day, a blank macro left blank: ' + JSON.stringify(eat));
+  check(/^2,400\s*of 2,650 kcal$/.test(await text(t.page, '.fx .fx-v')) && /^250 kcal to go · entered \d\d:\d\d from MyFitnessPal$/.test(await text(t.page, '.fx-why')), 'the card reads what was eaten against the target: ' + await text(t.page, '.fx .fx-v') + ' — ' + await text(t.page, '.fx-why'));
+  const ate = await t.page.$$eval('.fx-m', (r) => r.map((x) => x.className + '|' + x.textContent.replace(/\s+/g, ' ').trim()));
+  check(/ate\|Carbs 300 \/ 305 g$/.test(ate[0]) && !/ate/.test(ate[1]) && /Protein 125g 19%$/.test(ate[1]) && !(await t.page.$('.fx-bar')) && !!(await t.page.$('.fx-cup .cup-target')), 'each macro against its own; a blank one keeps its target; the cup fills toward a dotted line');
+  for (const w of [320, 260]) {
+    await t.page.setViewportSize({ width: w, height: 700 });
+    await t.page.waitForTimeout(100);
+    check(await t.page.evaluate(() => document.scrollingElement.scrollWidth <= window.innerWidth), 'the entered card never scrolls sideways at ' + w + 'px');
+  }
+  await t.page.setViewportSize({ width: 390, height: 844 });
+  check(await t.page.$eval('.fx', (n) => n.open), 'the fold stays open through the save');
+  await t.page.click('.fx [data-eat="edit"]');
+  await t.page.waitForTimeout(150);
+  check(await t.page.inputValue('[data-eat-f="kcal"]') === '2400', 'Edit opens on the saved totals');
+  await t.page.click('.fx-eat-form [data-eat="clear"]');
+  check(!(await t.ls('eat-2026-10-12')) && /^2,650\s*kcal$/.test(await text(t.page, '.fx .fx-v')), 'Remove takes the totals away and the card is targets again');
+  await t.page.click('.nav[data-d="1"]');
+  await t.page.waitForTimeout(250);
+  check(!!(await t.page.$('.fx')) && !(await t.page.$('.fx [data-eat]')), 'a day still to come takes no totals');
   noErrors(t, 'fuel');
   await t.ctx.close();
   t = await open('2026-10-11', '12:00', Object.assign({}, SEED, { body: { kg: 70, cm: 175, age: 30, sex: 'm', act: 'desk', at: '2026-10-11' }, 'runlog-2026-10-11': { sec: 7200, hr: 150, km: 20 } }));
-  check(/^≈ 3,650\s*kcal$/.test(await text(t.page, '.fuel-day .fd-v')), 'a logged run counts as run (20 km logged against 24 planned): ' + await text(t.page, '.fuel-day .fd-v'));
+  check(/^3,650\s*kcal$/.test(await text(t.page, '.fx .fx-v')), 'a logged run counts as run (20 km logged against 24 planned): ' + await text(t.page, '.fx .fx-v'));
+  check(/^Up to two hours · carbs 6\.7 g\/kg$/.test(await text(t.page, '.fx-why')), 'the carbs follow the run as logged, 2:00 → up to two hours: ' + await text(t.page, '.fx-why'));
+  await t.page.click('.nav[data-d="-1"]');
+  await t.page.waitForTimeout(250);
+  check(/carb-forward for tomorrow’s 24 km/.test(await text(t.page, '.fx-why')), 'the evening before carries the carb-forward dinner: ' + await text(t.page, '.fx-why'));
   noErrors(t, 'fuel (logged)');
   await t.ctx.close();
 }

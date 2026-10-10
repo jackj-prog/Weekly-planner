@@ -650,18 +650,54 @@
         const own = log && b === day.run;
         if (own) ran = true;
         const km = own ? log.km : b.run.km, h = own && log.sec > 0 ? log.sec / 3600 : hours(b) * km / b.run.km;
-        items.push({ kind: 'run', title: b.title, km, kcal: runKcal(km, h) });
+        items.push({ kind: 'run', title: b.title, km, min: Math.round(h * 60), race: b === day.run && runClass(b) === 'race', kcal: runKcal(km, h) });
         return;
       }
       const m = (E.mets || []).find((x) => x.cat === b.cat && (!x.match || new RegExp(x.match, 'i').test(b.title)));
-      if (m) items.push({ kind: b.cat, title: b.title, kcal: Math.max(0, (m.met - pal) * kg * hours(b)) });
+      if (m) items.push({ kind: b.cat, title: b.title, min: Math.round(hours(b) * 60), kcal: Math.max(0, (m.met - pal) * kg * hours(b)) });
     });
     /* a run logged on a day with no run of its own (or whose run moved away) */
-    if (log && !ran) items.push({ kind: 'run', title: 'Logged run', km: log.km, kcal: runKcal(log.km, log.sec > 0 ? log.sec / 3600 : log.km * PLAN.pacing.easy / 60) });
+    if (log && !ran) {
+      const h = log.sec > 0 ? log.sec / 3600 : log.km * PLAN.pacing.easy / 60;
+      items.push({ kind: 'run', title: 'Logged run', km: log.km, min: Math.round(h * 60), kcal: runKcal(log.km, h) });
+    }
     const adj = (E.adjust || []).find((a) => (!a.from || day.iso >= a.from) && (!a.to || day.iso <= a.to)) || null;
     const total = base + items.reduce((n, it) => n + it.kcal, 0) + (adj ? adj.kcal : 0), r = E.round || 50;
     return { kcal: Math.round(total / r) * r, bmr: Math.round(bmr), base: Math.round(base), pal, activity: act,
       items: items.map((it) => Object.assign(it, { kcal: Math.round(it.kcal) })), adjust: adj };
+  }
+
+  /* The day's macros (v5.16, PLAN.energy.macros): protein by weight, carbs
+     by the day's endurance minutes, fat the rest within its bounds — the
+     carbs take up whatever the bounds give or take. t = energyTarget's
+     result; nextKm = tomorrow's run as it stands (0 when skipped or moved
+     away), for the carb-forward evening. A logged race counts by its own
+     class: a logged marathon is still race day. */
+  function macroTargets(day, t, body, nextKm) {
+    const M = PLAN.energy && PLAN.energy.macros;
+    if (!M || !t || !validBody(body)) return null;
+    const kg = body.kg, kcal = t.kcal, r = M.round || 5;
+    const mins = t.items.filter((it) => it.kind === 'run' || it.kind === 'xt').reduce((n, it) => n + (it.min || 0), 0);
+    const tier = M.carbTiers.find((x) => x.upToMin == null || mins <= x.upToMin);
+    let g = tier.g, label = tier.label, eve = null;
+    const race = !!M.race && t.items.some((it) => it.race && it.km >= M.race.minKm);
+    if (race) { g = M.race.g; label = M.race.label; }
+    const topG = Math.max(...M.carbTiers.map((x) => x.g));
+    if (!race && M.eve && nextKm >= M.eve.minKm && g < topG) { g += M.eve.g; eve = nextKm; }
+    const p = M.proteinGPerKg * kg;
+    let c = g * kg, fk = kcal - p * 4 - c * 4;
+    if (fk < M.fatMinPct * kcal) fk = M.fatMinPct * kcal;
+    if (fk > M.fatMaxPct * kcal) fk = M.fatMaxPct * kcal;
+    c = Math.max(0, (kcal - p * 4 - fk) / 4);
+    const rd = (x) => Math.round(x / r) * r;
+    return { protein: rd(p), carbs: rd(c), fat: rd(fk / 9), carbsPerKg: Math.round(c / kg * 10) / 10, tierG: g, label, eve, mins,
+      share: { c: c * 4 / kcal, p: p * 4 / kcal, f: fk / kcal } };
+  }
+  /* The day's totals entered from a food diary (v5.16, eat-ISO): calories
+     required, each macro optional. */
+  function validEaten(e) {
+    const g = (x) => x == null || (typeof x === 'number' && x >= 0 && x <= 2000);
+    return !!e && typeof e.kcal === 'number' && e.kcal > 0 && e.kcal <= 15000 && g(e.c) && g(e.p) && g(e.f);
   }
 
   /* Verdict after a log: this run against the previous of its class, and
@@ -1231,7 +1267,7 @@
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
-    liftDay, liftHistory, lastLift, withLift, strengthJourney, plannedShare, validBody, bmrOf, energyTarget,
+    liftDay, liftHistory, lastLift, withLift, strengthJourney, plannedShare, validBody, bmrOf, energyTarget, macroTargets, validEaten,
     isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, sunLongitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };

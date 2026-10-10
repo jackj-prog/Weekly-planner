@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.15.0';
+  const APP_VERSION = '5.16.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -44,6 +44,7 @@
     stravaScope: null,
     journeyTab: 'run',         // Plan → the journey's half: 'run' | 'strength' (v5.14)
     fuelEdit: false, fuelDraft: null,  // Reference → Daily fuel: the body form (v5.15)
+    eatEdit: null, eatDraft: null,     // Today's fuel: the day's totals form, by date (v5.16)
   };
   let nowKey = '';             // today's current|next block ids — minute tick
                                // re-renders only when this changes
@@ -520,7 +521,7 @@
 
     const previously = buildPreviously(iso, day);
     if (previously) view.appendChild(previously);
-    view.appendChild(buildFuelStrip(iso, day));
+    view.appendChild(buildFuelCard(iso, day));
 
     const feast = feastOn(iso);
     if (feast) view.appendChild(el('<p class="hodie"><span class="feast">Red-letter day · ' + esc(feast) + '</span></p>'));
@@ -4945,14 +4946,20 @@
     );
   }
 
-  /* ---- the day's fuel (v5.15, the owner's request) ----
+  /* ---- the day's fuel (v5.15, the owner's request; the chalice v5.16) ----
      A calorie target for each day from PLAN.energy and the body stats the
      owner enters once on this phone (`body`, never in the repo; in the
      backup beside `hr`). What became of the day counts: a skipped or
      moved-away session costs nothing, one moved in does, a logged run
-     counts as run. */
+     counts as run. Since v5.16 the target splits into macros
+     (DB.macroTargets), and the day's totals can be entered from a food
+     diary in the evening (`eat-ISO`, optional): the cup then fills toward
+     a dotted line at the target. */
   const getBody = () => readJSON('body', null);
   const fmtKcal = (n) => Math.round(n).toLocaleString('en-GB');
+  const eatKey = (iso) => 'eat-' + iso;
+  /* only a day that has come carries its totals, like every other record */
+  const bankedEaten = (iso) => { if (iso > todayISO()) return null; const e = readJSON(eatKey(iso), null); return DB.validEaten(e) ? e : null; };
   function fuelFor(iso, day) {
     const body = getBody();
     if (!DB.validBody(body)) return null;
@@ -4961,6 +4968,18 @@
       startMin: DB.parseHM(m.start), endMin: DB.parseHM(m.end) }));
     return DB.energyTarget(d, body, { skip: o.skip, moved: o.moved, moveIn, log: bankedLog(iso) });
   }
+  /* tomorrow's run as it stands, for the carb-forward evening (§6) */
+  function nextRunKm(iso) {
+    const n = DB.addDays(iso, 1), d = DB.buildDay(n), o = getOvr(n);
+    let km = d.run && !o.skip[d.run.id] && !o.moved[d.run.id] ? d.run.run.km : 0;
+    getMoveIn(n).forEach((m) => { if (m.cat === 'run' && m.run && m.run.km > km) km = m.run.km; });
+    return km;
+  }
+  function fuelDay(iso, day) {
+    const d = day || DB.buildDay(iso), t = fuelFor(iso, d);
+    return t ? { iso, day: d, t, m: DB.macroTargets(d, t, getBody(), nextRunKm(iso)) } : null;
+  }
+  const fuelWeek = (iso) => Array.from({ length: 7 }, (_, i) => fuelDay(DB.addDays(mondayOf(iso), i)));
   function openFuelChapter() {
     state.view = 'ref'; openDetails.add('ref-daily-fuel'); render();
     const s = document.getElementById('ref-daily-fuel');
@@ -4973,20 +4992,117 @@
       t.items.map((it) => row(esc(it.title) + (it.kind === 'run' && it.km ? ' <small>' + (Math.round(it.km * 10) / 10) + ' km</small>' : ''), '+' + fmtKcal(it.kcal), 'k-' + esc(it.kind))).join('') +
       (t.adjust ? row(esc(t.adjust.label), (t.adjust.kcal < 0 ? '−' : '+') + fmtKcal(Math.abs(t.adjust.kcal)), 'k-adj') : '');
   }
-  function buildFuelStrip(iso, day) {
-    const t = fuelFor(iso, day), today = iso === todayISO();
-    if (!t) {
-      const b = el('<button class="fuel-set"><i class="fd-emb">' + emblemSVG('goblet') + '</i><span><b>' + (today ? 'Today’s fuel' : 'The day’s fuel') +
+  /* The chalice (v5.16): an engraved cup, the meal's colour for its wine,
+     filled to a fraction — the day's share of the week's biggest table, or,
+     with the day's totals entered, toward a dotted line at the target.
+     The empty part is hatched like an engraving; gadroons at the foot of
+     the bowl, a knop with its gem on the stem. Decorative: the figures say it. */
+  let cupN = 0;
+  function chaliceSVG(frac, lit, line) {
+    const f1 = (n) => String(Math.round(n * 10) / 10);
+    const u = 'cup' + (cupN++), top = 9, bot = 33, lev = bot - (bot - top) * Math.max(0.08, Math.min(1, frac));
+    const bowl = 'M6 ' + top + ' C6 24 12.5 ' + bot + ' 20 ' + bot + ' C27.5 ' + bot + ' 34 24 34 ' + top + ' Z';
+    /* the bowl's half-width at a height, for the wine's surface */
+    const half = (y) => 14 * Math.sqrt(Math.max(0, 1 - Math.pow((y - top) / (bot - top), 2.2)));
+    let hatch = '';
+    for (let x = -10; x < 40; x += 2) hatch += 'M' + x + ' ' + top + 'l' + f1(lev - top) + ' ' + f1(lev - top);
+    let lobes = '';
+    for (let k = -2; k <= 2; k++) lobes += 'M' + f1(20 + k * 4.4) + ' ' + f1(bot - 1.2 - Math.abs(k) * 1.6) + 'q' + f1(k * 0.6) + ' -4.5 0 -8';
+    return '<svg class="cup' + (lit ? ' lit' : '') + '" viewBox="0 0 40 62" aria-hidden="true" focusable="false"><defs><clipPath id="' + u + '"><path d="' + bowl + '"/></clipPath>' +
+      '<linearGradient id="' + u + 'w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="cup-w0"/><stop offset="1" class="cup-w1"/></linearGradient>' +
+      (lit ? '<radialGradient id="' + u + 'g"><stop offset="0" class="cup-g0"/><stop offset="1" class="cup-g1"/></radialGradient>' : '') + '</defs>' +
+      (lit ? '<circle cx="20" cy="24" r="21" fill="url(#' + u + 'g)"/>' : '') +
+      '<g clip-path="url(#' + u + ')"><path class="cup-hatch" d="' + hatch + '"/>' +
+      '<rect fill="url(#' + u + 'w)" x="0" y="' + f1(lev) + '" width="40" height="' + f1(bot - lev + 1) + '"/>' +
+      '<path class="cup-lobe" d="' + lobes + '"/></g>' +
+      (line != null ? '<path class="cup-target" d="M2 ' + f1(bot - (bot - top) * line) + 'H38"/>' : '') +
+      '<ellipse class="cup-men" cx="20" cy="' + f1(lev) + '" rx="' + f1(half(lev)) + '" ry="1.4"/>' +
+      '<path class="cup-line" d="' + bowl + '"/><ellipse class="cup-rim" cx="20" cy="' + top + '" rx="14" ry="2.4"/>' +
+      '<path class="cup-line" d="M18.5 ' + bot + 'V47M21.5 ' + bot + 'V47"/><path class="cup-band" d="M16.5 ' + (bot + 1.6) + 'H23.5"/>' +
+      '<ellipse class="cup-knop" cx="20" cy="40" rx="4.2" ry="2.4"/><circle class="cup-gem" cx="20" cy="40" r=".9"/>' +
+      '<path class="cup-foot" d="M9.5 54.5 Q12 49.5 18.5 47.5 H21.5 Q28 49.5 30.5 54.5 Z"/><path class="cup-line" d="M8.5 55 H31.5"/>' +
+      '<path class="cup-band" d="M12.5 52.5 Q20 50 27.5 52.5"/></svg>';
+  }
+  const EAT_LINE = 0.82;   // with the day's totals in, the target sits here in the cup
+  function buildFuelCard(iso, day) {
+    const f = fuelDay(iso, day), today = iso === todayISO(), name = today ? 'Today’s fuel' : 'The day’s fuel';
+    if (!f) {
+      const b = el('<button class="fuel-set"><i class="fd-emb">' + emblemSVG('goblet') + '</i><span><b>' + name +
         '</b> · set your weight, height and age once for a daily calorie target</span><span class="fs-go" aria-hidden="true">↗</span></button>');
       b.addEventListener('click', openFuelChapter);
       return b;
     }
-    const key = iso + '|fuel';
-    return el('<details class="fuel-day" data-disclosure="' + esc(key) + '"' + (openDetails.has(key) ? ' open' : '') + '><summary>' +
-      '<i class="fd-emb">' + emblemSVG('goblet') + '</i><span class="fd-k">' + (today ? 'Today’s fuel' : 'The day’s fuel') + '</span>' +
-      '<b class="fd-v">≈ ' + fmtKcal(t.kcal) + '<small>kcal</small></b></summary>' +
-      '<div class="fd-rows">' + fuelRowsHTML(t) + '</div>' +
-      '<p class="fd-note">An estimate to aim at, built from your body (Reference → Daily fuel), the day’s sessions and the phase. A logged run counts as run.</p></details>');
+    const { t, m } = f, E = bankedEaten(iso), K = fmtKcal, key = iso + '|fuel';
+    const top = Math.max(...fuelWeek(iso).map((w) => w.t.kcal));
+    const col = (label, cls, g, share, ate) => '<span class="fx-m ' + cls + (ate != null ? ' ate' : '') + '"><span class="fx-ml"><i></i>' + label + '</span> ' + (ate != null
+      ? '<b>' + K(ate) + ' <small>/\u00a0' + K(g) + '\u00a0g</small></b> <em class="fx-mb"><i style="width:' + Math.min(100, Math.round(ate / Math.max(1, g) * 100)) + '%"></i></em>'
+      : '<b>' + K(g) + '<small>g</small></b> <em>' + Math.round(share * 100) + '%</em>') + '</span>';
+    let head;
+    if (E) {
+      const diff = t.kcal - E.kcal, r = (PLAN.energy.round || 50);
+      const gap = Math.abs(diff) < r ? 'On target' : K(Math.abs(diff)) + ' kcal ' + (diff > 0 ? (today ? 'to go' : 'under') : 'over');
+      const when = E.at ? ' · entered ' + (E.on && E.on !== iso ? fmtShort(E.on) + ' ' : '') + E.at : '';
+      head = '<b class="fx-v of">' + K(E.kcal) + ' <small>of ' + K(t.kcal) + ' kcal</small></b><span class="fx-why">' + esc(gap + when) + ' from MyFitnessPal</span>';
+    } else {
+      head = '<b class="fx-v">' + K(t.kcal) + ' <small>kcal</small></b><span class="fx-why">' + esc(m.label) +
+        (m.eve ? ' · carb-forward for tomorrow’s ' + (Math.round(m.eve * 10) / 10) + '\u00a0km' : '') + ' · carbs ' + m.carbsPerKg + '\u00a0g/kg</span>';
+    }
+    const card = el('<section class="fx-wrap" aria-label="' + name + '"><details class="fx" data-disclosure="' + esc(key) + '"' + (openDetails.has(key) ? ' open' : '') + '><summary>' +
+      '<span class="fx-cup">' + (E ? chaliceSVG(EAT_LINE * E.kcal / t.kcal, true, EAT_LINE) : chaliceSVG(t.kcal / top, true)) + '</span>' +
+      '<span class="fx-main"><span class="fx-k">' + name + '</span>' + head + '</span>' +
+      '<span class="fx-ms">' + col('Carbs', 'c', m.carbs, m.share.c, E && E.c) + col('Protein', 'p', m.protein, m.share.p, E && E.p) + col('Fat', 'f', m.fat, m.share.f, E && E.f) + '</span>' +
+      (E ? '' : '<span class="fx-bar" aria-hidden="true"><i class="c" style="flex:' + m.share.c.toFixed(3) + '"></i><i class="p" style="flex:' + m.share.p.toFixed(3) + '"></i><i class="f" style="flex:' + m.share.f.toFixed(3) + '"></i></span>') +
+      '</summary><div class="fx-more"><div class="fd-rows">' + fuelRowsHTML(t) + '</div>' + (iso <= todayISO() ? eatHTML(iso, E) : '') +
+      '<p class="fd-note">Protein ' + PLAN.energy.macros.proteinGPerKg + ' g/kg every day, spread over the meals · carbs follow the training · fat makes up the rest. ' +
+      'An estimate to aim at, built from your body (Reference → Daily fuel), the day’s sessions and the phase.</p></div></details></section>');
+    wireEat(card, iso, E);
+    return card;
+  }
+  /* The day's totals, entered from MyFitnessPal (or any food diary) — four
+     numbers, the calories required, each macro optional. Never a food log:
+     the app keeps no foods, only what the diary added up to. */
+  function eatHTML(iso, E) {
+    if (state.eatEdit !== iso) {
+      return E ? '<div class="fx-eat"><span>Entered: ' + esc(fmtKcal(E.kcal) + ' kcal' + ['c', 'p', 'f'].map((k) => E[k] != null ? ' · ' + k.toUpperCase() + ' ' + fmtKcal(E[k]) : '').join('')) +
+          '</span><button class="zedit" data-eat="edit">Edit</button></div>'
+        : '<button class="fx-eat-go" data-eat="edit"><b>Enter the day’s totals</b><small>From MyFitnessPal, in the evening — the cup fills toward the target</small></button>';
+    }
+    const d = state.eatDraft || (state.eatDraft = E ? { kcal: E.kcal, c: E.c, p: E.p, f: E.f } : { kcal: '', c: '', p: '', f: '' });
+    const num = (k, label, unit) => '<label class="ff-n"><span>' + label + '</span><input data-eat-f="' + k + '" inputmode="numeric" autocomplete="off" value="' + esc(d[k] == null ? '' : String(d[k])) + '"><small>' + unit + '</small></label>';
+    return '<form class="fuel-form fx-eat-form" aria-label="The day’s totals"><p class="fx-ef-h">The day’s totals from MyFitnessPal</p>' +
+      num('kcal', 'Calories', 'kcal') + num('c', 'Carbs', 'g') + num('p', 'Protein', 'g') + num('f', 'Fat', 'g') +
+      '<p class="ff-err" role="alert"></p><div class="st-act"><button type="submit" class="rl-save">Save</button>' +
+      (E ? '<button type="button" class="zedit" data-eat="clear">Remove</button>' : '') +
+      '<button type="button" class="rl-x" data-eat="cancel" aria-label="Cancel">✕</button></div></form>';
+  }
+  function wireEat(card, iso, E) {
+    card.querySelectorAll('[data-eat]').forEach((b) => b.addEventListener('click', () => {
+      const a = b.dataset.eat;
+      if (a === 'edit') { state.eatEdit = iso; state.eatDraft = null; openDetails.add(iso + '|fuel'); }
+      else {
+        if (a === 'clear') { try { localStorage.removeItem(eatKey(iso)); } catch (e) { /* storage blocked: nothing kept to remove */ } }
+        state.eatEdit = null; state.eatDraft = null;
+      }
+      render();
+      if (a === 'edit') { const i = document.querySelector('.fx-eat-form input'); if (i) i.focus({ preventScroll: true }); }
+    }));
+    const form = card.querySelector('.fx-eat-form');
+    if (!form) return;
+    form.querySelectorAll('[data-eat-f]').forEach((inp) => inp.addEventListener('input', () => { state.eatDraft[inp.dataset.eatF] = inp.value; }));
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = state.eatDraft, n = (v) => { const s = String(v == null ? '' : v).trim().replace(/[\s,]/g, ''); return s === '' ? null : Number(s); };
+      const next = { kcal: n(d.kcal), c: n(d.c), p: n(d.p), f: n(d.f) };
+      ['kcal', 'c', 'p', 'f'].forEach((k) => { if (next[k] != null) next[k] = Math.round(next[k]); });
+      if (!DB.validEaten(next)) {
+        form.querySelector('.ff-err').textContent = 'Check the numbers: calories up to 15,000, each macro up to 2,000 g — leave a macro blank if you don’t have it.';
+        return;
+      }
+      const now = new Date();
+      next.at = DB.fmtHM(now.getHours() * 60 + now.getMinutes()); next.on = todayISO();
+      if (!writeJSON(eatKey(iso), next)) return;
+      state.eatEdit = null; state.eatDraft = null; render();
+    });
   }
   function buildDailyFuelSection() {
     const E = PLAN.energy, body = getBody(), set = DB.validBody(body), editing = state.fuelEdit;
@@ -5010,16 +5126,21 @@
     } else {
       const act = E.activity.find((a) => a.id === body.act) || E.activity[0];
       /* the week's targets, Monday to Sunday, the day's sessions beside them */
-      const mon = mondayOf(todayISO()), week = [];
-      for (let i = 0; i < 7; i++) { const iso = DB.addDays(mon, i), dd = DB.buildDay(iso), t = fuelFor(iso, dd); week.push({ iso, dd, t }); }
+      /* the week at table: seven cups, each filled to its day's share of
+         the week's biggest, today's lit; then the days with their sessions,
+         carbs and protein in grams beside the target (v5.16) */
+      const week = fuelWeek(todayISO()), now = todayISO();
       const top = Math.max(...week.map((w) => w.t.kcal));
-      const what = (w) => { const r = w.dd.run; const gym = w.dd.blocks.some((b) => b.cat === 'gym' && b.doable); const xt = w.dd.blocks.some((b) => b.cat === 'xt' && b.doable);
+      const what = (w) => { const r = w.day.run; const gym = w.day.blocks.some((b) => b.cat === 'gym' && b.doable); const xt = w.day.blocks.some((b) => b.cat === 'xt' && b.doable);
         return [r ? r.title : '', gym ? 'Gym' : '', xt ? 'Basketball' : ''].filter(Boolean).join(' · ') || 'Rest'; };
       inner = '<div class="ref-row"><span>' + esc(kgNum(body.kg) + ' kg · ' + body.cm + ' cm · ' + body.age + ' · ' + (body.sex === 'f' ? 'female' : 'male') + ' · ' + act.label.toLowerCase()) + '</span>' +
         '<span class="v"><button class="zedit" data-fuel="edit">Edit</button></span></div>' +
-        '<div class="fw" aria-label="This week’s targets">' + week.map((w) => '<div class="fw-row' + (w.iso === todayISO() ? ' today' : '') + (w.iso < todayISO() ? ' past' : '') + '">' +
+        '<figure class="fx-week" aria-hidden="true"><div class="fxw-cups">' + week.map((w) => '<div class="fxw' + (w.iso === now ? ' today' : '') + '">' + chaliceSVG(w.t.kcal / top, w.iso === now) +
+          '<b>' + fmtKcal(w.t.kcal) + '</b><span>' + esc(DAY_SHORT[DB.dayIndex(w.iso)].slice(0, 1)) + '</span></div>').join('') + '</div>' +
+          '<figcaption class="fxw-key">Each cup filled to its day’s share of the week’s biggest table</figcaption></figure>' +
+        '<div class="fw" aria-label="This week’s targets">' + week.map((w) => '<div class="fw-row' + (w.iso === now ? ' today' : '') + (w.iso < now ? ' past' : '') + '">' +
           '<span class="fw-d">' + esc(DAY_SHORT[DB.dayIndex(w.iso)].slice(0, 3)) + '</span><span class="fw-w">' + esc(what(w)) + '</span>' +
-          '<span class="fw-bar"><i style="width:' + Math.round(w.t.kcal / top * 100) + '%"></i></span><b class="fw-k">' + fmtKcal(w.t.kcal) + '</b></div>').join('') + '</div>' +
+          '<span class="fw-g">C\u00a0' + fmtKcal(w.m.carbs) + ' · P\u00a0' + fmtKcal(w.m.protein) + '</span><b class="fw-k">' + fmtKcal(w.t.kcal) + '</b></div>').join('') + '</div>' +
         (body.at ? '<div class="ref-note no-init">Body stats set ' + esc(fmtShort(body.at)) + '. Weigh in every couple of weeks and update them.</div>' : '');
     }
     const wrap = el('<div class="ref"><h2>Daily fuel</h2>' + inner + '<div class="ref-note">' + esc(E.note) + '</div></div>');
@@ -5593,7 +5714,7 @@
   }
 
   /* ---- backup / restore (ticks, skips, moves, gym weights, tune-up time) ---- */
-  const STORE_KEY = /^(?:(?:done|ovr|movein|runlog|rhr)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+|recal|hr|body)$/;
+  const STORE_KEY = /^(?:(?:done|ovr|movein|runlog|rhr|eat)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+|recal|hr|body)$/;
 
   /* freshness: this phone holds the only copy of the ticks */
   function backupState() {
@@ -5952,7 +6073,9 @@
     const nxt = day.blocks.find((b) => b.startMin > n);
     const late = day.run && n > day.run.endMin + MISSED_GRACE_MIN ? '|late' : '';
     const key = iso + '|' + (cur ? cur.id : '-') + '|' + (nxt ? nxt.id : '-') + late + skyKey(iso, n);
-    if (key !== nowKey) { render(); return; }
+    /* a new block redraws the day — but never under a hand typing the
+       day's totals; it waits for the next minute (v5.16) */
+    if (key !== nowKey) { if (!(document.activeElement && document.activeElement.closest && document.activeElement.closest('.fx-eat-form'))) render(); return; }
     /* same block — just move the needle */
     const bar = document.querySelector('.nn-bar i');
     if (bar && cur) {

@@ -673,7 +673,17 @@ const PLAN = {
        adjust = the phase: lean bulk to Sep, maintenance-plus through the
                 build to the race (§6 "lean bulk pauses ~Oct–Jan"), lean
                 bulk again after it
-     Rounded to 50 kcal. An estimate to aim at, not a measurement. */
+     Rounded to 50 kcal. An estimate to aim at, not a measurement.
+     The macros (v5.16) split that target three ways:
+       protein = proteinGPerKg × kg, every day, spread over the meals
+       carbs   = by the day's endurance minutes (runs and basketball; the
+                 gym is not endurance), the first tier that holds them;
+                 race day (the marathon) its own; the evening before a
+                 long run of eveMinKm or more one gram more (§6's
+                 carb-forward Saturday dinner)
+       fat     = what is left, held between fatMinPct and fatMaxPct of the
+                 day — the carbs give or take the difference
+     Grams to the nearest 5. */
   energy: {
     activity: [
       { id: 'desk',   label: 'Mostly sitting',            pal: 1.4 },
@@ -693,7 +703,21 @@ const PLAN = {
       { from: '2027-01-25',                   kcal: 300, label: 'Lean bulk resumes' },
     ],
     round: 50,
-    note: 'An estimate to aim at, not a measurement: your body at rest (Mifflin–St Jeor) times how active your everyday is, each session’s own cost on top (a logged run counts as run), and the phase — maintenance-plus through the build, as the plan says. Weigh in every couple of weeks and update it here; if your weight drifts more than ~0.5 kg a fortnight from where you want it, the target is off for you, not the other way round.',
+    macros: {
+      proteinGPerKg: 1.8,
+      carbTiers: [
+        { upToMin: 0,   g: 4, label: 'Rest or gym only' },
+        { upToMin: 60,  g: 5, label: 'A short session' },
+        { upToMin: 120, g: 6, label: 'Up to two hours' },
+        {               g: 8, label: 'Long-run day' },
+      ],
+      race: { g: 10, minKm: 30, label: 'Race day' },
+      eve: { g: 1, minKm: 22 },
+      fatMinPct: 0.2,
+      fatMaxPct: 0.35,
+      round: 5,
+    },
+    note:'An estimate to aim at, not a measurement: your body at rest (Mifflin–St Jeor) times how active your everyday is, each session’s own cost on top (a logged run counts as run), and the phase — maintenance-plus through the build, as the plan says. Weigh in every couple of weeks and update it here; if your weight drifts more than ~0.5 kg a fortnight from where you want it, the target is off for you, not the other way round.',
   },
 
   /* Optional morning resting HR on the run card (in-app, v4.63). The

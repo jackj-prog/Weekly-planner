@@ -1945,6 +1945,45 @@ section('the day’s fuel (v5.15)');
   const src = require('fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
   ok(/\|hr\|body\)\$/.test(src) && /readJSON\('body'/.test(src), 'the body stats live on the phone and travel in the backup beside the heart rate');
 }
+section('the day’s macros and totals (v5.16)');
+{
+  const body = { kg: 70, cm: 175, age: 30, sex: 'm', act: 'desk' };   // invented, as above
+  const mac = (iso, nextKm, s) => { const d = DB.buildDay(iso), t = DB.energyTarget(d, body, s); return { t, m: DB.macroTargets(d, t, body, nextKm || 0) }; };
+  const kcalOf = (m) => m.carbs * 4 + m.protein * 4 + m.fat * 9;
+  ok(DB.macroTargets(DB.buildDay('2026-10-30'), null, body, 0) === null, 'no macros without a target');
+  const rest = mac('2026-10-30');
+  ok(rest.m.label === 'Rest or gym only' && rest.m.tierG === 4 && rest.m.mins === 0 && rest.m.protein === 125, 'a rest day: 4 g/kg carbs, protein 1.8 g/kg (126 → 125 g)');
+  const mon = mac('2026-10-12');
+  ok(mon.m.mins === 0 && mon.m.label === 'Rest or gym only', 'the gym is not endurance: a gym Monday is a rest-day carb tier');
+  ok(Math.abs(mon.m.share.f - 0.35) < 1e-9 && mon.m.carbsPerKg > 4, 'fat held at 35% — the carbs take the difference (' + mon.m.carbsPerKg + ' g/kg)');
+  const sun = mac('2026-10-11');
+  ok(sun.m.label === 'Long-run day' && sun.m.tierG === 8 && sun.m.carbs === 560, 'the long run: 8 g/kg, 560 g');
+  ok(mac('2026-10-16').m.label === 'Up to two hours', 'Friday’s two hours of basketball: up to two hours');
+  ok(mac('2026-10-13').m.label === 'A short session', 'an easy run under the hour: a short session');
+  const eve = mac('2026-10-10', 24), plain = mac('2026-10-10', 0);
+  ok(eve.m.eve === 24 && eve.m.tierG === plain.m.tierG + 1 && plain.m.eve === null, 'the evening before a 22 km+ run carries one gram more (§6 carb-forward dinner)');
+  ok(mac('2026-10-10', 21).m.eve === null, 'not before a shorter run');
+  const race = mac('2027-01-24'), raceRun = DB.buildDay('2027-01-24').run;
+  ok(race.m.label === 'Race day' && race.m.tierG === 10, 'race day: 10 g/kg');
+  ok(mac('2027-01-24', 0, { log: { km: 42.2, sec: 13500 } }).m.label === 'Race day', 'a logged marathon is still race day');
+  ok(mac('2027-01-24', 0, { skip: { [raceRun.id]: true } }).m.label !== 'Race day', 'a skipped race is not race day');
+  ok(mac('2026-12-13').m.label !== 'Race day', 'the tune-up half is raced but fuelled by its time, not as the marathon');
+  let fatOK = true, sumOK = true;
+  for (let i = 0; i < 210; i++) {
+    const iso = DB.addDays(PLAN.blocks[0].start, i), nx = DB.buildDay(DB.addDays(iso, 1));
+    const { t, m } = mac(iso, nx.run ? nx.run.run.km : 0);
+    if (m.share.f < 0.2 - 1e-9 || m.share.f > 0.35 + 1e-9 || m.carbs <= 0) fatOK = false;
+    if (Math.abs(kcalOf(m) - t.kcal) > 45) sumOK = false;
+  }
+  ok(fatOK, 'every day of the block: fat between 20% and 35%, carbs positive');
+  ok(sumOK, 'every day of the block: the grams add back up to the target (within the 5 g rounding)');
+  ok(DB.validEaten({ kcal: 2400 }) && DB.validEaten({ kcal: 2400, c: 300, p: 130, f: 80 }) && DB.validEaten({ kcal: 2400, c: null, p: 0, f: null }), 'the day’s totals: calories required, each macro optional');
+  ok(!DB.validEaten(null) && !DB.validEaten({}) && !DB.validEaten({ kcal: 0 }) && !DB.validEaten({ kcal: 20000 }) && !DB.validEaten({ kcal: 2400, c: -1 }) && !DB.validEaten({ kcal: '2400' }) && !DB.validEaten({ kcal: 2400, p: 3000 }), 'nonsense totals are refused');
+  const src = require('fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
+  const store = new RegExp(src.match(/const STORE_KEY = \/(.+)\/;/)[1]);
+  ok(store.test('eat-2026-10-11') && !store.test('eat-') && !store.test('eat-x'), 'the day’s totals travel in the backup (eat-ISO)');
+  ok(/const bankedEaten = \(iso\) => \{ if \(iso > todayISO\(\)\) return null;/.test(src), 'totals dated after today count nowhere yet');
+}
 /* ---- result ---- */
 // Chart geometry is part of correctness, not just appearance.
 require('./ef-chart.test.js');

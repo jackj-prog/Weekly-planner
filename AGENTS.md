@@ -2485,3 +2485,38 @@ Two owner requests.
 - Tests: build sections for the pause and the fuel model (invented round
   figures); `fuel()` in tools/interactions.js.
 
+
+## The day's fuel as a chalice, with macros — v5.16.0, 10 October (Claude)
+
+Owner-approved redesign (mockups shown and approved before any code).
+- **Macros** (`PLAN.energy.macros`, `DB.macroTargets(day, t, body, nextKm)`):
+  protein 1.8 g/kg every day; carbs by the day's endurance minutes (runs and
+  xt — `energyTarget` items now carry `min`, and the hero run a `race` flag):
+  4 g/kg at 0 min, 5 to 60, 6 to 120, 8 beyond; 10 on race day (the
+  marathon, logged or planned; not when skipped); +1 the evening before a
+  run of 22 km or more (`nextKm` from the app: tomorrow's run as it stands,
+  0 when skipped or moved away, a run moved in counts). Fat is what is left,
+  held to 20–35% of the day — the carbs take the difference, so a gym
+  Monday reads 4.4 g/kg. Grams to the nearest 5.
+- **Today** (`buildFuelCard`, replacing `buildFuelStrip`): `.fx-wrap` card,
+  `<details class="fx">` whose summary holds the chalice (`chaliceSVG(frac,
+  lit, line)` — engraved cup in the meal colour, filled to the day's share
+  of the week's biggest target), the kcal, one "why" line, the three macros
+  (grams, share) and the split bar; the fold keeps the breakdown. `.fx`
+  joined the one-"+" fold list.
+- **The day's totals** (optional, `eat-ISO = {kcal, c, p, f, at, on}`,
+  `DB.validEaten`: kcal required, macros optional; in the backup allowlist;
+  `bankedEaten` ignores dates after today). Entered in the card's fold for
+  days that have come; the cup then fills toward a dotted target line,
+  the kcal reads "2,950 of 3,850 kcal · 900 kcal to go", each entered macro
+  shows eaten / target with a bar. The minute tick never re-renders under a
+  hand typing in the form.
+- **Reference → Daily fuel**: seven chalices on a dark plate (today lit),
+  and the week's rows show "C · P" grams in place of the bars; below 340px
+  the grams drop under the session.
+- Narrow widths: below 360px the entered "of …" and "/ … g" stack; below
+  300px the cup and figures step down. No sideways scroll at 320 or 260.
+- Tests: build section "the day's macros and totals (v5.16)" (tiers, race,
+  eve, fat bounds and grams summing back on all 210 days, validEaten, the
+  backup key); `fuel()` in tools/interactions.js covers the card, the
+  chalice week, entry/refusal/edit/remove of totals and future days.
