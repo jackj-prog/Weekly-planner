@@ -3616,19 +3616,19 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 /* One disclosure mark (v5.11, review P6): every fold opens on a "+" at its
    right edge that turns to "×" when open — the Reference chapters' mark —
    where some had a "+", some a native ▶ and some nothing at all. */
-:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .lf-earlier) > summary {
+:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .lf-earlier, .fuel-day) > summary {
   position: relative; padding-right: 32px; list-style: none;
 }
-:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .lf-earlier, .session-plan) > summary::-webkit-details-marker { display: none; }
-:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .lf-earlier) > summary::after {
+:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .lf-earlier, .fuel-day, .session-plan) > summary::-webkit-details-marker { display: none; }
+:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .lf-earlier, .fuel-day) > summary::after {
   content: '+'; position: absolute; right: 2px; top: 50%; width: 20px; height: 20px; margin-top: -10px;
   font: 400 20px/20px var(--body); text-align: center; color: var(--t2);
 }
 .session-plan > summary { list-style: none; }
 .session-plan > summary::after { content: '+'; display: inline-block; margin-left: 8px; font: 400 18px/1 var(--body); color: var(--t2); }
-:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .lf-earlier, .session-plan)[open] > summary::after { transform: rotate(45deg); }
+:is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .lf-earlier, .fuel-day, .session-plan)[open] > summary::after { transform: rotate(45deg); }
 @media (prefers-reduced-motion: no-preference) {
-  :is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .lf-earlier, .session-plan) > summary::after { transition: transform .22s var(--ease-out); }
+  :is(.log-import, .log-extra, .journey-all, .journey-method, .ef-data, .record-method, .ref-course, .focus-notes, .recap-plan, .recap-method, .recap-compare, .sv-paste, .lf-earlier, .fuel-day, .session-plan) > summary::after { transition: transform .22s var(--ease-out); }
 }
 
 /* Legibility (review F6/F7): what has passed recedes by colour, never by
@@ -3923,3 +3923,47 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .stj-lifts span small { display: block; margin-top: 2px; font: 400 11px var(--mono); color: var(--t3); }
 .stj-lifts b { font: 700 15px var(--mono); color: var(--text); white-space: nowrap; }
 .stj-lifts b small { font: 400 11px var(--mono); color: var(--t2); }
+
+/* ================= THE DAY'S FUEL (v5.15) ========================== */
+/* Today: one ruled line under the run — the goblet, the target, a fold
+   with how it is built. Meal's colour for the emblem, white for the figure. */
+.fuel-day, .fuel-set { margin: 14px 0 4px; border-block: 1px solid var(--line); }
+.fuel-day > summary { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 32px 8px 0; box-sizing: border-box; cursor: pointer; }
+.fd-emb { display: inline-flex; flex: 0 0 22px; width: 22px; height: 22px; color: var(--cat-meal); }
+.fd-emb .emb { width: 22px; height: 22px; }
+.fd-k { flex: 1; font: 400 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--t2); }
+.fd-v { font: 800 22px/1 var(--display); letter-spacing: -.02em; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fd-v small { margin-left: 4px; font: 400 11px var(--mono); letter-spacing: .04em; color: var(--t2); }
+.fd-rows { padding: 2px 2px 6px 32px; }
+.fd-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 6px 0; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); font: 400 13px/1.35 var(--body); color: var(--t2); }
+.fd-row b { font: 700 13px var(--mono); color: var(--text); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.fd-row small { margin-left: 4px; font: 400 11px var(--mono); color: var(--t3); }
+.fd-row.k-run b { color: var(--cat-run); }
+.fd-row.k-adj span { color: var(--t3); }
+.fd-note { margin: 0 0 12px 32px; font: 400 12px/1.5 var(--body); color: var(--t3); }
+.fuel-set { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 8px 0; border-inline: 0; background: none; text-align: left; font: 400 13px/1.4 var(--body); color: var(--t2); }
+.fuel-set b { font-weight: 600; color: var(--text); }
+.fuel-set .fs-go { margin-left: auto; color: var(--t2); }
+/* Reference → Daily fuel: the body form and the week's targets */
+.fuel-form { display: grid; gap: 12px; margin: 6px 0 14px; }
+.ff-n { display: grid; grid-template-columns: 72px minmax(0, 1fr) 42px; align-items: center; gap: 10px; font: 400 14px var(--body); color: var(--t2); }
+.ff-n input { min-width: 0; height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--text); font: 700 16px var(--mono); }
+.ff-n small { font: 400 12px var(--mono); color: var(--t3); }
+.ff-g { display: grid; gap: 6px; font: 400 14px var(--body); color: var(--t2); }
+.ff-g small { color: var(--t3); }
+.ff-pick { display: flex; flex-wrap: wrap; gap: 6px; }
+.ff-pick button { min-height: 44px; padding: 0 14px; border: 1px solid color-mix(in srgb, var(--text) 22%, transparent); border-radius: 22px; background: none; color: var(--t2); font: 500 13px var(--body); }
+.ff-pick button[aria-checked="true"] { border-color: var(--text); color: var(--text); background: color-mix(in srgb, var(--text) 8%, transparent); }
+.ff-err { margin: 0; min-height: 1em; font: 400 12px var(--body); color: var(--accent); }
+.fw { margin: 10px 0 12px; }
+.fw-row:first-child { border-top: 0; }
+.fw-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) 56px 52px; align-items: center; gap: 8px; min-height: 36px; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+.fw-d { font: 400 11px var(--mono); letter-spacing: .1em; color: var(--t3); }
+.fw-w { font: 400 12px/1.3 var(--body); color: var(--t2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fw-bar { height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--line) 60%, transparent); overflow: hidden; }
+.fw-bar i { display: block; height: 100%; background: var(--t2); border-radius: 2px; }
+.fw-k { text-align: right; font: 700 13px var(--mono); color: var(--text); font-variant-numeric: tabular-nums; }
+.fw-row.today .fw-d, .fw-row.today .fw-w { color: var(--text); }
+.fw-row.today .fw-bar i { background: var(--text); }
+.fw-row.past .fw-k { color: var(--t2); }
+

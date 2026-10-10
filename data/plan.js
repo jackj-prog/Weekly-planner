@@ -318,7 +318,9 @@ const PLAN = {
     '~4–5.5h active; rest is passive/media/Anki) · gym 2–2.5h · running ' +
     'per plan · basketball 2h (~850 kcal ≈ 10 km-equivalent: 1 hr training ' +
     '+ 1 hr active recovery) · ' +
-    'reading 6h (~200 pages/week).',
+    'reading 6h (~200 pages/week). German paused from 10 Oct 2026: its ' +
+    '~7.5h of timed blocks a week now go two-thirds to study (~+5h) and a ' +
+    'third to free time (~+2.5h).',
 
   /* ---- Open questions (§16 — surfaced in Reference, never guessed) ---- */
   openQuestions: [
@@ -639,6 +641,59 @@ const PLAN = {
     splitFromWk: 12,
     days: [0, 2, 5],
     featured: ['Bench press', 'Leg press', 'Pull-ups'],
+  },
+
+  /* German paused (Oct 2026, the owner's call — "for the time being").
+     From `from`, every unbroken stretch of German time becomes study, then
+     free time, in the proportion below (Monday 19:30–22:00 → study
+     19:30–21:10, free to 22:00; Friday's morning block likewise). Mentions
+     of German in other blocks (Anki at breakfast, podcasts on the commute,
+     listening at work) are taken out: they shared their time with
+     something else, so there is none to hand on. Dates before `from` keep
+     their German as lived. To bring German back, set `until` to the first
+     day it returns. */
+  germanPause: {
+    from: '2026-10-10',
+    until: null,
+    studyShare: 2 / 3,
+    mentions: 'Anki|German',
+    study: { title: 'Study', detail: 'Any subject — the slot is the commitment', cat: 'study', doable: true },
+    free: { title: 'Free', cat: 'free', quiet: true },
+  },
+
+  /* The day's energy target (v5.15, the owner's request). The model is
+     generic and lives here; what makes it personal — weight, height, age,
+     sex and how active the everyday is — is entered on the phone
+     (Reference → Daily fuel) and never leaves it, like the heart rate.
+       base   = Mifflin–St Jeor BMR × the everyday factor (digestion and
+                daily life included; training is added on top)
+       run    = runKcalPerKgKm × kg × km (the logged distance and time once
+                saved), less the baseline already counted for its time
+       gym/xt = (MET − everyday factor) × kg × hours, by the first match
+       adjust = the phase: lean bulk to Sep, maintenance-plus through the
+                build to the race (§6 "lean bulk pauses ~Oct–Jan"), lean
+                bulk again after it
+     Rounded to 50 kcal. An estimate to aim at, not a measurement. */
+  energy: {
+    activity: [
+      { id: 'desk',   label: 'Mostly sitting',            pal: 1.4 },
+      { id: 'mixed',  label: 'On your feet some of the day', pal: 1.55 },
+      { id: 'active', label: 'On your feet most of the day', pal: 1.7 },
+    ],
+    runKcalPerKgKm: 1.0,
+    mets: [
+      { cat: 'gym', met: 3.5 },
+      { cat: 'xt', match: '1v1', met: 6.5 },
+      { cat: 'xt', match: 'shooting', met: 4.5 },
+      { cat: 'xt', match: 'punchbag', met: 5.5 },
+    ],
+    adjust: [
+      { to: '2026-09-30',                     kcal: 300, label: 'Lean bulk' },
+      { from: '2026-10-01', to: '2027-01-24', kcal: 150, label: 'Maintenance-plus — fuel the mileage' },
+      { from: '2027-01-25',                   kcal: 300, label: 'Lean bulk resumes' },
+    ],
+    round: 50,
+    note: 'An estimate to aim at, not a measurement: your body at rest (Mifflin–St Jeor) times how active your everyday is, each session’s own cost on top (a logged run counts as run), and the phase — maintenance-plus through the build, as the plan says. Weigh in every couple of weeks and update it here; if your weight drifts more than ~0.5 kg a fortnight from where you want it, the target is off for you, not the other way round.',
   },
 
   /* Optional morning resting HR on the run card (in-app, v4.63). The
@@ -1884,7 +1939,7 @@ const PLAN = {
         { t: '15:30', end: '19:00', title: 'Afternoon — out', cat: 'free', quiet: true },
         { t: '19:00', end: '20:00', title: 'Basketball — 1v1', detail: 'THE KEYSTONE now the block is over. With running down to ~3 easy runs a week this is the only session still hitting Z4/Z5, so it is what holds VO2max — and therefore the sub-21 5k and sub-45 10k. Drop it and the times go, however much you lift', cat: 'xt', doable: true },
         { t: '20:00', end: '21:00', title: 'Basketball — shooting', detail: 'Active recovery — the easy half', cat: 'xt', doable: true },
-        { t: '20:00', end: '22:00', title: 'Evening — out', cat: 'free', quiet: true },
+        { t: '21:00', end: '22:00', title: 'Evening — out', cat: 'free', quiet: true },
         { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
         { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
       ],

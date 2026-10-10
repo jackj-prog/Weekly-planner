@@ -623,6 +623,47 @@
     return plan > 0 ? got / plan : null;
   }
 
+  /* ---- the day's energy target (v5.15, PLAN.energy) ----
+     body = {kg, cm, age, sex: 'm'|'f', act} — entered on the phone, never
+     in the repo. s = {skip, moved, moveIn, log}: what became of the day's
+     sessions — skipped and moved-away sessions cost nothing here, sessions
+     moved in do, and a logged run counts as run (its km and time). */
+  function validBody(b) {
+    return !!b && b.kg >= 30 && b.kg <= 250 && b.cm >= 120 && b.cm <= 230 && b.age >= 13 && b.age <= 100 && (b.sex === 'm' || b.sex === 'f');
+  }
+  function bmrOf(b) {
+    return 10 * b.kg + 6.25 * b.cm - 5 * b.age + (b.sex === 'f' ? -161 : 5);
+  }
+  function energyTarget(day, body, s) {
+    const E = PLAN.energy;
+    if (!E || !validBody(body)) return null;
+    s = s || {};
+    const kg = body.kg, act = E.activity.find((a) => a.id === body.act) || E.activity[0], pal = act.pal;
+    const bmr = bmrOf(body), base = bmr * pal;
+    const skip = s.skip || {}, moved = s.moved || {}, log = s.log && s.log.km > 0 ? s.log : null;
+    const hours = (b) => Math.max(0, (b.endMin - b.startMin) / 60);
+    const runKcal = (km, h) => Math.max(0, E.runKcalPerKgKm * kg * km - pal * kg * h);
+    const items = [];
+    let ran = false;
+    day.blocks.filter((b) => b.doable && !skip[b.id] && !moved[b.id]).concat(s.moveIn || []).forEach((b) => {
+      if (b.cat === 'run' && b.run && b.run.km > 0) {
+        const own = log && b === day.run;
+        if (own) ran = true;
+        const km = own ? log.km : b.run.km, h = own && log.sec > 0 ? log.sec / 3600 : hours(b) * km / b.run.km;
+        items.push({ kind: 'run', title: b.title, km, kcal: runKcal(km, h) });
+        return;
+      }
+      const m = (E.mets || []).find((x) => x.cat === b.cat && (!x.match || new RegExp(x.match, 'i').test(b.title)));
+      if (m) items.push({ kind: b.cat, title: b.title, kcal: Math.max(0, (m.met - pal) * kg * hours(b)) });
+    });
+    /* a run logged on a day with no run of its own (or whose run moved away) */
+    if (log && !ran) items.push({ kind: 'run', title: 'Logged run', km: log.km, kcal: runKcal(log.km, log.sec > 0 ? log.sec / 3600 : log.km * PLAN.pacing.easy / 60) });
+    const adj = (E.adjust || []).find((a) => (!a.from || day.iso >= a.from) && (!a.to || day.iso <= a.to)) || null;
+    const total = base + items.reduce((n, it) => n + it.kcal, 0) + (adj ? adj.kcal : 0), r = E.round || 50;
+    return { kcal: Math.round(total / r) * r, bmr: Math.round(bmr), base: Math.round(base), pal, activity: act,
+      items: items.map((it) => Object.assign(it, { kcal: Math.round(it.kcal) })), adjust: adj };
+  }
+
   /* Verdict after a log: this run against the previous of its class, and
      whether it set the block's best EF for that class. list = chronological
      [{iso, cls, paceSec, hr, ef}]. */
@@ -796,6 +837,8 @@
     }
 
     out.sort((a, b) => a.startMin - b.startMin || a.endMin - b.endMin);
+    const gp = PLAN.germanPause;
+    if (gp && iso >= gp.from && (!gp.until || iso < gp.until)) pauseGerman(out, gp);
     /* ids key the per-date ticks in localStorage. Start times are unique
        within a day (block times are strictly ordered), so time+category
        survives renames and block insertions — §14 says the plan WILL change. */
@@ -810,6 +853,27 @@
       label: special ? special.label : (row && row.notes ? row.notes : (block.note || '')),
       dist, blocks: out, run: runHero,
     };
+  }
+
+  /* German paused (PLAN.germanPause, Oct 2026): each unbroken stretch of
+     German time becomes study, then free time, in the plan's proportion
+     (to the nearest 5 min), and the parts of other blocks' titles and
+     notes that name German are dropped ("Wake · Anki · breakfast" reads
+     "Wake · breakfast"). Runs on a built day, so every view agrees. */
+  function pauseGerman(out, gp) {
+    const re = new RegExp(gp.mentions, 'i');
+    const strip = (t) => String(t || '').split(' · ').filter((seg) => !re.test(seg)).join(' · ');
+    for (let i = 0; i < out.length; i++) {
+      const b = out[i];
+      if (b.cat !== 'german') { b.title = strip(b.title) || b.title; b.detail = strip(b.detail); continue; }
+      let j = i;
+      while (j + 1 < out.length && out[j + 1].cat === 'german' && out[j + 1].startMin === out[j].endMin) j++;
+      const s0 = b.startMin, e0 = out[j].endMin, cut = s0 + Math.round((e0 - s0) * gp.studyShare / 5) * 5;
+      const parts = [mk(s0, cut, gp.study)];
+      if (e0 - cut >= 5) parts.push(mk(cut, e0, gp.free));
+      out.splice(i, j - i + 1, ...parts);
+      i += parts.length - 1;
+    }
   }
 
   function mk(startMin, endMin, entry) {
@@ -1167,7 +1231,7 @@
     pro4Status, runLog, easyBand, ef, paceOf, nextKeyEvent,
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
-    liftDay, liftHistory, lastLift, withLift, strengthJourney, plannedShare,
+    liftDay, liftHistory, lastLift, withLift, strengthJourney, plannedShare, validBody, bmrOf, energyTarget,
     isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, sunLongitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };

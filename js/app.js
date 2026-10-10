@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.14.2';
+  const APP_VERSION = '5.15.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -43,6 +43,7 @@
     stravaCode: null,          // a code from Strava this copy cannot finish with
     stravaScope: null,
     journeyTab: 'run',         // Plan → the journey's half: 'run' | 'strength' (v5.14)
+    fuelEdit: false, fuelDraft: null,  // Reference → Daily fuel: the body form (v5.15)
   };
   let nowKey = '';             // today's current|next block ids — minute tick
                                // re-renders only when this changes
@@ -519,6 +520,7 @@
 
     const previously = buildPreviously(iso, day);
     if (previously) view.appendChild(previously);
+    view.appendChild(buildFuelStrip(iso, day));
 
     const feast = feastOn(iso);
     if (feast) view.appendChild(el('<p class="hodie"><span class="feast">Red-letter day · ' + esc(feast) + '</span></p>'));
@@ -4587,6 +4589,7 @@
     view.appendChild(buildRecalSection());
     view.appendChild(buildShoeSection());
     view.appendChild(buildOdoSection());
+    view.appendChild(section('ref-daily-fuel', buildDailyFuelSection()));
     view.appendChild(section('ref-fuel', buildFuelSection()));
     view.appendChild(el(
       '<div class="ref">' +
@@ -4940,6 +4943,110 @@
       (g.caffeine ? '<div class="ref-note"><b>Caffeine.</b> ' + esc(g.caffeine) + '</div>' : '') +
       '</div>'
     );
+  }
+
+  /* ---- the day's fuel (v5.15, the owner's request) ----
+     A calorie target for each day from PLAN.energy and the body stats the
+     owner enters once on this phone (`body`, never in the repo; in the
+     backup beside `hr`). What became of the day counts: a skipped or
+     moved-away session costs nothing, one moved in does, a logged run
+     counts as run. */
+  const getBody = () => readJSON('body', null);
+  const fmtKcal = (n) => Math.round(n).toLocaleString('en-GB');
+  function fuelFor(iso, day) {
+    const body = getBody();
+    if (!DB.validBody(body)) return null;
+    const d = day || DB.buildDay(iso), o = getOvr(iso);
+    const moveIn = getMoveIn(iso).filter((m) => m.start && m.end).map((m) => ({ id: m.id, title: m.title, cat: m.cat, run: m.run || null, doable: true,
+      startMin: DB.parseHM(m.start), endMin: DB.parseHM(m.end) }));
+    return DB.energyTarget(d, body, { skip: o.skip, moved: o.moved, moveIn, log: bankedLog(iso) });
+  }
+  function openFuelChapter() {
+    state.view = 'ref'; openDetails.add('ref-daily-fuel'); render();
+    const s = document.getElementById('ref-daily-fuel');
+    if (s) { s.scrollIntoView({ block: 'start' }); const f = s.querySelector('summary'); if (f) f.focus({ preventScroll: true }); }
+  }
+  function fuelRowsHTML(t) {
+    const row = (k, v, cls) => '<div class="fd-row' + (cls ? ' ' + cls : '') + '"><span>' + k + '</span><b>' + v + '</b></div>';
+    return row('Your body at rest', fmtKcal(t.bmr)) +
+      row('Everyday life · ×' + t.pal, '+' + fmtKcal(t.base - t.bmr)) +
+      t.items.map((it) => row(esc(it.title) + (it.kind === 'run' && it.km ? ' <small>' + (Math.round(it.km * 10) / 10) + ' km</small>' : ''), '+' + fmtKcal(it.kcal), 'k-' + esc(it.kind))).join('') +
+      (t.adjust ? row(esc(t.adjust.label), (t.adjust.kcal < 0 ? '−' : '+') + fmtKcal(Math.abs(t.adjust.kcal)), 'k-adj') : '');
+  }
+  function buildFuelStrip(iso, day) {
+    const t = fuelFor(iso, day), today = iso === todayISO();
+    if (!t) {
+      const b = el('<button class="fuel-set"><i class="fd-emb">' + emblemSVG('goblet') + '</i><span><b>' + (today ? 'Today’s fuel' : 'The day’s fuel') +
+        '</b> · set your weight, height and age once for a daily calorie target</span><span class="fs-go" aria-hidden="true">↗</span></button>');
+      b.addEventListener('click', openFuelChapter);
+      return b;
+    }
+    const key = iso + '|fuel';
+    return el('<details class="fuel-day" data-disclosure="' + esc(key) + '"' + (openDetails.has(key) ? ' open' : '') + '><summary>' +
+      '<i class="fd-emb">' + emblemSVG('goblet') + '</i><span class="fd-k">' + (today ? 'Today’s fuel' : 'The day’s fuel') + '</span>' +
+      '<b class="fd-v">≈ ' + fmtKcal(t.kcal) + '<small>kcal</small></b></summary>' +
+      '<div class="fd-rows">' + fuelRowsHTML(t) + '</div>' +
+      '<p class="fd-note">An estimate to aim at, built from your body (Reference → Daily fuel), the day’s sessions and the phase. A logged run counts as run.</p></details>');
+  }
+  function buildDailyFuelSection() {
+    const E = PLAN.energy, body = getBody(), set = DB.validBody(body), editing = state.fuelEdit;
+    if (!set && !editing) {
+      const wrap = el('<div class="ref"><h2>Daily fuel</h2><div class="ref-note">A calorie target for every day — your body at rest, how active your everyday is, each session on top, and the phase of the block. ' +
+        'It needs your weight, height, age and sex, which stay on this phone: body data never goes in the repo.</div>' +
+        '<div class="data-actions"><button data-fuel="edit">Set up daily fuel</button></div></div>');
+      wrap.querySelector('[data-fuel="edit"]').addEventListener('click', () => { state.fuelEdit = true; state.fuelDraft = null; render(); });
+      return wrap;
+    }
+    let inner;
+    if (editing) {
+      const d = state.fuelDraft || Object.assign({ kg: '', cm: '', age: '', sex: '', act: 'desk' }, set ? body : {});
+      state.fuelDraft = d;
+      const num = (k, label, unit, mode) => '<label class="ff-n"><span>' + label + '</span><input data-ff="' + k + '" inputmode="' + mode + '" autocomplete="off" value="' + esc(String(d[k] == null ? '' : d[k])) + '"><small>' + unit + '</small></label>';
+      const pick = (k, opts) => '<div class="ff-pick" role="radiogroup">' + opts.map(([v, l]) => '<button type="button" role="radio" data-ffp="' + k + '" data-v="' + v + '" aria-checked="' + (d[k] === v) + '">' + esc(l) + '</button>').join('') + '</div>';
+      inner = '<form class="fuel-form">' + num('kg', 'Weight', 'kg', 'decimal') + num('cm', 'Height', 'cm', 'numeric') + num('age', 'Age', 'years', 'numeric') +
+        '<div class="ff-g"><span>Sex <small>(for the formula)</small></span>' + pick('sex', [['m', 'Male'], ['f', 'Female']]) + '</div>' +
+        '<div class="ff-g"><span>Your everyday</span>' + pick('act', E.activity.map((a) => [a.id, a.label])) + '</div>' +
+        '<p class="ff-err" role="alert"></p><div class="st-act"><button type="submit" class="rl-save">Save</button><button type="button" class="rl-x" data-fuel="cancel">✕</button></div></form>';
+    } else {
+      const act = E.activity.find((a) => a.id === body.act) || E.activity[0];
+      /* the week's targets, Monday to Sunday, the day's sessions beside them */
+      const mon = mondayOf(todayISO()), week = [];
+      for (let i = 0; i < 7; i++) { const iso = DB.addDays(mon, i), dd = DB.buildDay(iso), t = fuelFor(iso, dd); week.push({ iso, dd, t }); }
+      const top = Math.max(...week.map((w) => w.t.kcal));
+      const what = (w) => { const r = w.dd.run; const gym = w.dd.blocks.some((b) => b.cat === 'gym' && b.doable); const xt = w.dd.blocks.some((b) => b.cat === 'xt' && b.doable);
+        return [r ? r.title : '', gym ? 'Gym' : '', xt ? 'Basketball' : ''].filter(Boolean).join(' · ') || 'Rest'; };
+      inner = '<div class="ref-row"><span>' + esc(kgNum(body.kg) + ' kg · ' + body.cm + ' cm · ' + body.age + ' · ' + (body.sex === 'f' ? 'female' : 'male') + ' · ' + act.label.toLowerCase()) + '</span>' +
+        '<span class="v"><button class="zedit" data-fuel="edit">Edit</button></span></div>' +
+        '<div class="fw" aria-label="This week’s targets">' + week.map((w) => '<div class="fw-row' + (w.iso === todayISO() ? ' today' : '') + (w.iso < todayISO() ? ' past' : '') + '">' +
+          '<span class="fw-d">' + esc(DAY_SHORT[DB.dayIndex(w.iso)].slice(0, 3)) + '</span><span class="fw-w">' + esc(what(w)) + '</span>' +
+          '<span class="fw-bar"><i style="width:' + Math.round(w.t.kcal / top * 100) + '%"></i></span><b class="fw-k">' + fmtKcal(w.t.kcal) + '</b></div>').join('') + '</div>' +
+        (body.at ? '<div class="ref-note no-init">Body stats set ' + esc(fmtShort(body.at)) + '. Weigh in every couple of weeks and update them.</div>' : '');
+    }
+    const wrap = el('<div class="ref"><h2>Daily fuel</h2>' + inner + '<div class="ref-note">' + esc(E.note) + '</div></div>');
+    wrap.querySelectorAll('[data-fuel]').forEach((b) => b.addEventListener('click', () => {
+      if (b.dataset.fuel === 'edit') { state.fuelEdit = true; state.fuelDraft = null; } else { state.fuelEdit = false; state.fuelDraft = null; }
+      render();
+    }));
+    const form = wrap.querySelector('.fuel-form');
+    if (form) {
+      form.querySelectorAll('[data-ff]').forEach((inp) => inp.addEventListener('input', () => { state.fuelDraft[inp.dataset.ff] = inp.value; }));
+      form.querySelectorAll('[data-ffp]').forEach((b) => b.addEventListener('click', () => {
+        state.fuelDraft[b.dataset.ffp] = b.dataset.v;
+        form.querySelectorAll('[data-ffp="' + b.dataset.ffp + '"]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+      }));
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const d = state.fuelDraft, n = (v) => Number(String(v).trim().replace(',', '.'));
+        const next = { kg: Math.round(n(d.kg) * 10) / 10, cm: Math.round(n(d.cm)), age: Math.round(n(d.age)), sex: d.sex, act: d.act, at: todayISO() };
+        if (!DB.validBody(next)) {
+          form.querySelector('.ff-err').textContent = 'Check the numbers: weight 30–250 kg, height 120–230 cm, age 13–100, and choose one for the formula.';
+          return;
+        }
+        writeJSON('body', next);
+        state.fuelEdit = false; state.fuelDraft = null; render();
+      });
+    }
+    return wrap;
   }
 
   /* The app closes the loop: it prescribes the runs AND reads them back.
@@ -5486,7 +5593,7 @@
   }
 
   /* ---- backup / restore (ticks, skips, moves, gym weights, tune-up time) ---- */
-  const STORE_KEY = /^(?:(?:done|ovr|movein|runlog|rhr)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+|recal|hr)$/;
+  const STORE_KEY = /^(?:(?:done|ovr|movein|runlog|rhr)-\d{4}-\d{2}-\d{2}|wt-[a-z0-9-]+|recal|hr|body)$/;
 
   /* freshness: this phone holds the only copy of the ticks */
   function backupState() {
@@ -5774,7 +5881,7 @@
       '<circle class="sp-sunglow" cx="84" cy="46" r="20"/><circle class="sp-sun" cx="84" cy="46" r="7"/><path class="sp-hz" d="M0 46 L96 46"/></svg>' +
       '<span class="sp-t"><b>Your training journey</b><small>' + (Math.round(j.recorded * 10) / 10) + ' km · ' + j.runs + ' runs recorded</small></span>';
     ref.innerHTML = '<span class="sp-init" aria-hidden="true">R</span>' +
-      '<span class="sp-t"><b>Reference</b><small>Paces to rules · XIII chapters</small></span>';
+      '<span class="sp-t"><b>Reference</b><small>Paces to rules · XIV chapters</small></span>';
     const kal = document.querySelector('.sheet-item[data-nav="kal"]');
     if (kal) {
       const t = todayISO(), [y, m] = t.split('-').map(Number);

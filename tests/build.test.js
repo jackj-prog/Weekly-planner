@@ -50,6 +50,13 @@ for (let i = 0; i < 210; i++) {
   }
 }
 
+/* German is paused from Oct 2026 (PLAN.germanPause): the 210 days above are
+   built as the app shows them, pause and all. The checks below describe the
+   plan AS WRITTEN — German blocks included — so they run with the pause
+   lifted, and the pause gets its own section at the end. */
+const GERMAN_PAUSE = PLAN.germanPause;
+PLAN.germanPause = null;
+
 /* ---- 2. Distance splits: Tue+Wed+Thu+Sat+LR = weekly km (±1) ---- */
 section('distance splits vs weekly km');
 const specialKm = new Set(PLAN.blocks[0].specialDistanceWeeks);
@@ -1873,6 +1880,70 @@ section('the Strength journey (v5.14)');
   const jr = { weeks: [{ days: [{ iso: '2026-09-14', planned: 10, recorded: 10 }, { iso: '2026-09-15', planned: 10, recorded: 0 }, { iso: '2026-09-16', planned: 10, recorded: 0 }, { iso: '2026-09-13', planned: 10, recorded: 0 }] }] };
   ok(DB.plannedShare(jr, '2026-09-14', '2026-09-16') === 0.5, 'the running side: today counts once its run is recorded, before the split never');
   ok(DB.plannedShare({ weeks: [] }, '2026-09-14', '2026-09-16') === null, 'nothing planned yet: no share');
+}
+section('German paused, its time to study and free (Oct 2026)');
+{
+  PLAN.germanPause = GERMAN_PAUSE;
+  const G = PLAN.germanPause;
+  ok(G && G.from === '2026-10-10' && !G.until && Math.abs(G.studyShare - 2 / 3) < 1e-9, 'German is paused from 10 Oct, two-thirds of its time to study');
+  const at = (iso) => DB.buildDay(iso).blocks;
+  const find = (iso, re) => at(iso).find((b) => re.test(b.title));
+  ok(at('2026-10-05').some((b) => b.cat === 'german') && /Anki/.test(find('2026-10-05', /^Wake/).title), 'before the pause the days keep their German as lived');
+  let leaks = 0, ordered = true, mins = { german: 0, study: 0, free: 0 }, before = { german: 0, study: 0, free: 0 };
+  for (let i = 0; i < 300; i++) {
+    const iso = DB.addDays('2026-10-10', i), d = DB.buildDay(iso);
+    let prev = 0;
+    d.blocks.forEach((b) => {
+      if (b.cat === 'german' || /Anki|German/i.test(b.title + ' ' + b.detail)) leaks++;
+      if (b.startMin < prev) ordered = false;
+      prev = b.endMin;
+    });
+  }
+  ok(leaks === 0, 'from the pause on no block is German and none names it: ' + leaks);
+  ok(ordered, 'the converted days stay in time order through the block, the recovery and the standing week');
+  const mon = at('2026-10-12'), fri = at('2026-10-16'), sun = at('2026-10-11');
+  const span = (blocks, cat, start) => blocks.find((b) => b.cat === cat && b.start === start);
+  ok(span(mon, 'study', '19:30') && span(mon, 'study', '19:30').end === '21:10' && span(mon, 'study', '19:30').doable && span(mon, 'free', '21:10') && span(mon, 'free', '21:10').end === '22:00',
+    'Monday 19:30–22:00 (active + media) → study to 21:10, free to 22:00');
+  ok(span(fri, 'study', '07:30') && span(fri, 'study', '07:30').end === '10:10' && span(fri, 'free', '10:10') && span(fri, 'free', '10:10').end === '11:30',
+    'Friday’s Build-phase block 07:30–11:30 → study to 10:10, free to 11:30');
+  ok(span(sun, 'study', '17:00') && span(sun, 'study', '17:00').end === '17:40' && span(sun, 'free', '17:40'), 'Sunday’s hour of German media → 40 min study, 20 min free');
+  ok(find('2026-10-12', /^Wake/).title === 'Wake · breakfast' && find('2026-10-12', /^Wake/).detail === 'College lie-in vs work days', 'Anki leaves the breakfast line, the rest of it stays');
+  ok(at('2026-10-14').filter((b) => b.cat === 'work').every((b) => !/German/i.test(b.detail)), 'the commute and work lose their German listening');
+  /* the time is handed on, two to one: a pause week against the same week as written */
+  const weekMins = (paused) => { PLAN.germanPause = paused ? G : null; const m = { german: 0, study: 0, free: 0 };
+    for (let k = 0; k < 7; k++) DB.buildDay(DB.addDays('2026-10-12', k)).blocks.forEach((b) => { if (m[b.cat] != null) m[b.cat] += b.endMin - b.startMin; }); return m; };
+  const w0 = weekMins(false), w1 = weekMins(true);
+  ok(w1.german === 0 && w1.study - w0.study + w1.free - w0.free === w0.german, 'every German minute is handed on: ' + w0.german + ' min');
+  ok(Math.abs((w1.study - w0.study) - w0.german * 2 / 3) <= 10, 'two-thirds to study (' + (w1.study - w0.study) + ' of ' + w0.german + ' min)');
+  PLAN.germanPause = Object.assign({}, G, { until: '2026-10-19' });
+  ok(at('2026-10-19').some((b) => b.cat === 'german') && !at('2026-10-18').some((b) => b.cat === 'german'), 'setting `until` brings German back on that day');
+  PLAN.germanPause = G;
+}
+section('the day’s fuel (v5.15)');
+{
+  /* invented round figures — never anyone's real body */
+  const body = { kg: 70, cm: 175, age: 30, sex: 'm', act: 'desk' };
+  const bmr = 10 * 70 + 6.25 * 175 - 5 * 30 + 5;
+  ok(DB.bmrOf(body) === bmr && DB.bmrOf(Object.assign({}, body, { sex: 'f' })) === bmr - 166, 'BMR is Mifflin–St Jeor');
+  ok(DB.energyTarget(DB.buildDay('2026-10-30'), Object.assign({}, body, { kg: 0 })) === null && !DB.validBody({ kg: 70, cm: 175, age: 30 }), 'no target without a valid body');
+  const rest = DB.energyTarget(DB.buildDay('2026-10-30'), body);   // wk 18 Friday: no run, no gym, no basketball
+  ok(rest.items.length === 0 && rest.base === Math.round(bmr * 1.4) && rest.adjust.kcal === 150 && rest.kcal === Math.round((bmr * 1.4 + 150) / 50) * 50, 'a day with no sessions: BMR × 1.4 plus maintenance-plus, to the nearest 50: ' + rest.kcal);
+  const sun = DB.buildDay('2026-10-11'), long = DB.energyTarget(sun, body), h = (sun.run.endMin - sun.run.startMin) / 60;
+  ok(long.items.length === 1 && Math.abs(long.items[0].kcal - (70 * 24 - 1.4 * 70 * h)) <= 1, 'a 24 km long run adds its own cost above the everyday baseline: ' + long.items[0].kcal);
+  const logged = DB.energyTarget(sun, body, { log: { km: 20, sec: 7200 } });
+  ok(logged.items[0].km === 20 && Math.abs(logged.items[0].kcal - (70 * 20 - 1.4 * 70 * 2)) <= 1, 'a logged run counts as run');
+  const fri = DB.buildDay('2026-10-16'), bb = DB.energyTarget(fri, body);
+  ok(bb.items.length === 2 && Math.abs(bb.items[0].kcal - (6.5 - 1.4) * 70) <= 1 && Math.abs(bb.items[1].kcal - (4.5 - 1.4) * 70) <= 1, 'basketball by its METs: the 1v1 hour and the shooting hour');
+  const mon = DB.buildDay('2026-10-12'), gym = mon.blocks.find((b) => b.cat === 'gym');
+  ok(DB.energyTarget(mon, body).items.length === 1 && DB.energyTarget(mon, body, { skip: { [gym.id]: true } }).items.length === 0, 'a skipped session costs nothing');
+  ok(DB.energyTarget(DB.buildDay('2026-10-30'), body, { moveIn: [Object.assign({}, gym, { id: 'mv-x' })] }).items.length === 1, 'a session moved in counts');
+  ok(DB.energyTarget(DB.buildDay('2026-10-30'), body, { log: { km: 5, sec: 1800 } }).items[0].title === 'Logged run', 'a run logged on a rest day counts too');
+  ok(DB.energyTarget(DB.buildDay('2026-09-18'), body).adjust.kcal === 300 && DB.energyTarget(DB.buildDay('2027-02-01'), body).adjust.label === 'Lean bulk resumes', 'the phase: lean bulk, maintenance-plus through the build, lean bulk after the race');
+  const hi = DB.energyTarget(DB.buildDay('2026-10-30'), Object.assign({}, body, { act: 'active' }));
+  ok(hi.pal === 1.7 && hi.kcal > rest.kcal, 'an active everyday raises the base');
+  const src = require('fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
+  ok(/\|hr\|body\)\$/.test(src) && /readJSON\('body'/.test(src), 'the body stats live on the phone and travel in the backup beside the heart rate');
 }
 /* ---- result ---- */
 // Chart geometry is part of correctness, not just appearance.

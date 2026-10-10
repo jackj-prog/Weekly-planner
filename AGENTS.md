@@ -2461,3 +2461,27 @@ and rule 3's basketball list follow (Sat 31 Oct). CLAUDE.md §5–§9, §12 and
 §15 updated; build tests pin the amendment; the calendar feed regenerates in
 CI. Block total 1,177.5 → 1,176.5 km.
 
+## German paused, the day's fuel — v5.15.0, 10 October (Claude)
+
+Two owner requests.
+- **German paused** (`PLAN.germanPause`, from 2026-10-10, `until` null). In
+  `assemble`, after sorting, `pauseGerman` turns each unbroken run of
+  `cat: 'german'` blocks into study then free (2/3 : 1/3, to 5 min) and drops
+  the ' · '-separated parts of other blocks' titles/details matching
+  `mentions` (Anki, German). Earlier dates keep German as lived. The build
+  test now lifts the pause after the 210-day build so the as-written checks
+  still describe the plan, then tests the pause in its own section (300
+  days, nothing German, order kept, minutes handed on 2:1, `until` works).
+  It also found and fixed a standing-week Friday overlap (evening out from
+  21:00, after basketball).
+- **The day's fuel** (`PLAN.energy`, `DB.energyTarget(day, body, {skip,
+  moved, moveIn, log})`, `DB.bmrOf`, `DB.validBody`): Mifflin–St Jeor ×
+  everyday PAL + run (1.0 kcal/kg/km less the baseline over its time; the
+  logged km and time once saved) + gym/xt by MET − PAL + phase adjustment;
+  rounded to 50. Body stats live in localStorage `body` (in the backup
+  allowlist), entered in Reference → Daily fuel (chapter VIII; Fuelling is
+  IX, Strava XIV). Today: `buildFuelStrip` under the run (a one-"+" fold);
+  without body stats, one quiet line that opens the chapter.
+- Tests: build sections for the pause and the fuel model (invented round
+  figures); `fuel()` in tools/interactions.js.
+

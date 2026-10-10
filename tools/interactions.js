@@ -392,7 +392,7 @@ async function cinema() {
     'Reference opens on a contents page, one numbered entry per chapter: ' + contents[0]);
   check(!(await t.page.$('.ref-index')) && /^Contents$/.test(await text(t.page, '.ref-book > .rc-h')), 'one list of chapters, headed Contents — no second copy above it');
   await t.page.click('#ref-fuel > summary');
-  check(await t.page.$eval('#ref-fuel', (n) => n.open) && /^VIII$/.test(await text(t.page, '#ref-fuel > summary .chap')), 'a contents entry opens its numbered chapter');
+  check(await t.page.$eval('#ref-fuel', (n) => n.open) && /^IX$/.test(await text(t.page, '#ref-fuel > summary .chap')), 'a contents entry opens its numbered chapter');
   await t.page.click('#ref-fuel .ref-back');
   check(await t.page.evaluate(() => Math.abs(document.getElementById('ref-contents').getBoundingClientRect().top) < 140), 'a chapter’s "↑ Contents" returns to the contents page');
   const nativeMarks = async (pg) => pg.evaluate(() => [...document.querySelectorAll('details > summary')].filter((s) => {
@@ -1228,6 +1228,50 @@ async function strength() {
   await t.ctx.close();
 }
 
+/* v5.15: the day's fuel and German paused. Invented round body figures.
+   Without body stats Today offers one quiet line that opens Reference →
+   Daily fuel; the form refuses nonsense and keeps a valid body on the
+   phone; Today then shows the target with how it is built; the week's
+   targets list seven days; German's evening is study then free time. */
+async function fuel() {
+  console.log('· the day’s fuel, German paused');
+  let t = await open('2026-10-12', '12:00', SEED);
+  check(/set your weight, height and age/.test(await text(t.page, '.fuel-set')) && !(await t.page.$('.fuel-day')), 'without body stats Today offers one line to set them, no invented number');
+  const tl = await text(t.page, '.tl');
+  check(!/German|Anki/.test(tl) && /Wake · breakfast/.test(tl) && !!(await t.page.$('.tl-card:has-text("Study") >> text=19:30–21:10')), 'German’s evening is study to 21:10, then free; breakfast loses Anki: ' + tl.slice(0, 80));
+  await t.page.click('.fuel-set');
+  await t.page.waitForTimeout(200);
+  check(await t.page.$eval('#ref-daily-fuel', (n) => n.open) && /^VIII$/.test(await text(t.page, '#ref-daily-fuel > summary .chap')), 'the line opens Reference → Daily fuel, chapter VIII');
+  await t.page.click('[data-fuel="edit"]');
+  await t.page.fill('[data-ff="kg"]', '70'); await t.page.fill('[data-ff="cm"]', '175'); await t.page.fill('[data-ff="age"]', '5');
+  await t.page.click('[data-ffp="sex"][data-v="m"]');
+  await t.page.click('.fuel-form .rl-save');
+  check(/Check the numbers/.test(await text(t.page, '.ff-err')) && !(await t.ls('body')), 'an impossible age is refused and nothing is saved');
+  await t.page.fill('[data-ff="age"]', '30');
+  await t.page.click('.fuel-form .rl-save');
+  const body = await t.json('body');
+  check(body && body.kg === 70 && body.cm === 175 && body.age === 30 && body.sex === 'm' && body.act === 'desk', 'a valid body is kept on the phone: ' + JSON.stringify(body));
+  const wk = await t.page.$$eval('#ref-daily-fuel .fw-row', (r) => r.map((x) => x.querySelector('.fw-k').textContent));
+  check(wk.length === 7 && wk.every((k) => /^\d,\d{3}$/.test(k)) && !!(await t.page.$('#ref-daily-fuel .fw-row.today')), 'the week’s targets, seven days, today marked: ' + wk.join(' '));
+  await t.page.click('[data-nav="today"]');
+  await t.page.waitForTimeout(200);
+  check(/^≈ 2,650\s*kcal$/.test(await text(t.page, '.fuel-day .fd-v')), 'Today shows the target: ' + await text(t.page, '.fuel-day .fd-v'));
+  await t.page.click('.fuel-day > summary');
+  const rows = await t.page.$$eval('.fuel-day .fd-row span', (r) => r.map((x) => x.textContent));
+  check(rows[0] === 'Your body at rest' && rows.some((r) => /Legs microdose/.test(r)) && rows.some((r) => /Maintenance-plus/.test(r)), 'and how it is built: ' + rows.join(' | '));
+  for (const w of [320, 260]) {
+    await t.page.setViewportSize({ width: w, height: 700 });
+    await t.page.waitForTimeout(100);
+    check(await t.page.evaluate(() => document.scrollingElement.scrollWidth <= window.innerWidth), 'Today with its fuel line never scrolls sideways at ' + w + 'px');
+  }
+  noErrors(t, 'fuel');
+  await t.ctx.close();
+  t = await open('2026-10-11', '12:00', Object.assign({}, SEED, { body: { kg: 70, cm: 175, age: 30, sex: 'm', act: 'desk', at: '2026-10-11' }, 'runlog-2026-10-11': { sec: 7200, hr: 150, km: 20 } }));
+  check(/^≈ 3,650\s*kcal$/.test(await text(t.page, '.fuel-day .fd-v')), 'a logged run counts as run (20 km logged against 24 planned): ' + await text(t.page, '.fuel-day .fd-v'));
+  noErrors(t, 'fuel (logged)');
+  await t.ctx.close();
+}
+
 /* v5.12: Strava, against a fake strava.com (invented runs, invented keys):
    connect through the approval round trip, import a day's run into the form
    and save it, choose between two runs, say so when Strava can't be reached,
@@ -1331,7 +1375,7 @@ async function strava() {
   await t.page.goto('http://127.0.0.1:' + server.address().port + '/index.html?state=x&error=access_denied', { waitUntil: 'networkidle' });
   check(/cancelled/.test(await text(t.page, '#ref-strava')) && !(await t.ls('strava')), 'a refusal on Strava changes nothing');
   check(/^IPaces\+$/.test((await t.page.$$eval('.ref-fold > summary', (s) => s.map((x) => x.textContent.trim())))[0]) &&
-    /^XIIIStrava/.test((await t.page.$$eval('.ref-fold > summary', (s) => s.map((x) => x.textContent.trim()))).pop()), 'Strava is chapter XIII');
+    /^XIVStrava/.test((await t.page.$$eval('.ref-fold > summary', (s) => s.map((x) => x.textContent.trim()))).pop()), 'Strava is chapter XIV');
   noErrors(t, 'strava hand-off');
   await t.ctx.close();
 }
@@ -1406,7 +1450,7 @@ async function offline() {
   browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
   server = await serve();
   try {
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, strength, strava, update, sweep, offline]) await run();
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, strength, fuel, strava, update, sweep, offline]) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');
