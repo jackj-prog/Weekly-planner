@@ -1194,27 +1194,35 @@ async function strength() {
   noErrors(t, 'per-session weights');
   await t.ctx.close();
 
-  t = await open('2026-09-26', '12:00', seed, 'plan');
+  /* the journey: continuous from 12 Oct (v5.17), a ring a week */
+  const jseed = Object.assign({}, SEED, {
+    'done-2026-09-14': { 't1630-gym': true },                                   // before the start: never drawn
+    'done-2026-10-12': { 't1630-gym': true }, 'done-2026-10-14': { 't1930-gym': true }, 'done-2026-10-17': { 't1000-gym': true }, 'done-2026-10-19': { 't1630-gym': true },
+    'wt-chest-supported-row': [{ d: '2026-10-12', kg: 50 }, { d: '2026-10-17', kg: 40 }, { d: '2026-10-19', kg: 52.5 }],
+    'wt-bench-press': [{ d: '2026-09-16', kg: 70 }, { d: '2026-10-14', kg: 72.5 }],
+  });
+  t = await open('2026-10-24', '12:00', jseed, 'plan');
   check(await text(t.page, '.jr-switch [aria-selected="true"]') === 'Running' && !!(await t.page.$('.sky')), 'the journey opens on Running with its firmament');
   await t.page.click('[data-journey-tab="strength"]');
   await t.page.waitForTimeout(150);
   const v = await t.page.evaluate(() => {
-    const q = (s) => document.querySelector(s), drum = (i) => q('.cl-d[style*="--w:' + i + ';"], .cl-d[style$="--w:' + i + '"]');
+    const q = (s) => document.querySelector(s), ring = (i) => q('.rg-r[style*="--w:' + i + '"] .rg-early');
     const grp = (day) => [...document.querySelectorAll('.lf-group')].find((g) => g.querySelector('h3 span').textContent === day);
     const kg = (g, ex) => { const r = [...g.querySelectorAll('.lf-row')].find((x) => x.querySelector('.lf-n').firstChild.textContent === ex); return r ? r.querySelector('.lf-kg').firstChild.textContent : null; };
-    return { strength: !!q('.training-journey.strength'), sky: !!q('.sky'), drums: document.querySelectorAll('.cl-d').length,
-      w12: !!(drum(11) && drum(11).querySelector('.cl-flute')), w13: !!(drum(12) && drum(12).querySelector('.cl-plain')), banked: q('.journey-totals b').textContent,
+    return { strength: !!q('.training-journey.strength'), sky: !!q('.sky'), column: !!q('.cl-d, .cl-fig'), rings: document.querySelectorAll('.rg-r').length,
+      r0: ring(0) && ring(0).getAttribute('class'), r1: ring(1) && ring(1).getAttribute('class'), now: q('.rg-cl.now') && q('.rg-cl.now').textContent,
+      banked: q('.journey-totals b').textContent, h1: q('.training-journey.strength h1').innerText.replace(/\s+/g, ' '),
       mon: kg(grp('MONDAY'), 'Chest-supported row'), sat: kg(grp('SATURDAY'), 'Chest-supported row'), bench: kg(grp('WEDNESDAY'), 'Bench press'),
-      quote: !!q('.stj-q'), kicker: q('.stj-k') ? q('.stj-k').textContent : '', focused: document.activeElement && document.activeElement.dataset.journeyTab };
+      quote: !!q('.stj-q'), kicker: q('.stj-k') ? q('.stj-k').textContent : '', note: q('.rg-note') ? q('.rg-note').textContent : '', focused: document.activeElement && document.activeElement.dataset.journeyTab };
   });
-  check(v.strength && !v.sky && v.drums === 30, 'Strength replaces the firmament with the column: thirty drums');
-  check(v.w12 && v.w13 && v.banked === '4', 'week 12 is carved (every session), week 13 plain (some); four sessions banked: ' + JSON.stringify([v.w12, v.w13, v.banked]));
-  check(v.mon === '52.5' && v.sat === '40' && v.bench === '70', 'the ledger keeps Monday’s and Saturday’s row apart: ' + JSON.stringify([v.mon, v.sat, v.bench]));
-  check(!v.quote && /^Since the rebuild · week XII$/.test(v.kicker), 'the test card opens on a plain kicker, no quotation');
+  check(v.strength && !v.sky && !v.column && v.rings === 2 && v.h1 === 'Grown one ring at a time.', 'Strength is the rings of the oak, not the column: two rings since 12 Oct, nothing ahead: ' + JSON.stringify([v.rings, v.h1]));
+  check(/\bs3\b/.test(v.r0) && /\bs1\b/.test(v.r1) && v.banked === '4' && v.now === 'THIS WEEK', 'the first week every session (wide), the second one (narrow), this week the living edge; four banked: ' + JSON.stringify([v.r0, v.r1, v.banked]));
+  check(v.mon === '52.5' && v.sat === '40' && v.bench === '72.5', 'the ledger keeps Monday’s and Saturday’s row apart and starts bench on 12 Oct: ' + JSON.stringify([v.mon, v.sat, v.bench]));
+  check(!v.quote && /^Since 12 Oct$/.test(v.kicker) && /since 12 Oct/.test(v.note), 'the test and the figure count from 12 Oct: ' + v.kicker);
   check(v.focused === 'strength', 'the chosen tab keeps the focus after the switch');
-  await t.page.click('.cl-play');
+  await t.page.click('.rg-play');
   await t.page.waitForTimeout(300);
-  check(await t.page.evaluate(() => document.querySelector('.cl-fig').classList.contains('replay') && /^Week [IVX]+ · \d+ sessions$/.test(document.querySelector('.cl-capt').textContent)), 'Replay lays the column again, counting the sessions by week');
+  check(await t.page.evaluate(() => document.querySelector('.rg-fig').classList.contains('replay') && /^Week of \d+ \w+ · \d+ sessions$/.test(document.querySelector('.rg-capt').textContent)), 'Replay grows the rings again, counting the sessions by week');
   await t.page.press('[data-journey-tab="strength"]', 'ArrowLeft');
   await t.page.waitForTimeout(150);
   check(await text(t.page, '.jr-switch [aria-selected="true"]') === 'Running' && !!(await t.page.$('.sky')), 'the arrow keys move between the tabs');
@@ -1225,6 +1233,14 @@ async function strength() {
     check(await t.page.evaluate(() => document.scrollingElement.scrollWidth <= window.innerWidth), 'Strength never scrolls sideways at ' + w + 'px');
   }
   noErrors(t, 'strength journey');
+  await t.ctx.close();
+  /* the first morning: a seed of a slice, and the line that says how it grows */
+  t = await open('2026-10-12', '09:00', SEED, 'plan');
+  await t.page.click('[data-journey-tab="strength"]');
+  await t.page.waitForTimeout(150);
+  check(await t.page.evaluate(() => document.querySelectorAll('.rg-r').length === 1 && !document.querySelector('.rg-play') && /first session lays the first ring/.test(document.querySelector('.journey-story').textContent)),
+    'on the first day: one ring growing, no Replay, the story says how it starts');
+  noErrors(t, 'strength journey (first day)');
   await t.ctx.close();
 }
 

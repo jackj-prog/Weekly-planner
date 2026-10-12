@@ -2541,3 +2541,32 @@ after the long run got 4 g/kg of carbs. `DB.macroTargets` now holds fat at
 when the tier needs more, fat yields down to `fatMinPct` (0.2). `fatMaxPct`
 is gone. Invented 70 kg: gym Monday 305 → 370 g carbs, fat 35 → 25%; long
 run 560 → 595 g. Build checks and `fuel()` updated to the new figures.
+
+## The rings of the oak; Strength starts 12 Oct — v5.17.0, 12 October (Claude)
+
+Owner-approved (mockup shown first). The owner found the column's blank
+drums meaningless and strength "a continuous endeavour", not a block; and
+they had never logged strength in the app, so the journey starts today.
+- `PLAN.strength` is now `{ since: '2026-10-12', featured }` (`splitFromWk`
+  and `days` gone). `DB.strengthJourney(io, today)` returns weeks from
+  `monday(since)` to this week only (`{start, end, planned, set, state:
+  past|now}`; days before `since` don't count), across blocks; groups are
+  each weekday's latest session over the last four weeks (so holidays keep
+  the split and a dropped session falls away); rows count from `since`
+  (`first`, `last`, `change` since first); `retired` = lifts asked for since
+  the start that the programme no longer asks for. No `nowWk`, `split`,
+  `splitWk`, `crowned`.
+- `ringsSVG` replaces `columnSVG`: ring width = 0.55 + sessions; scale
+  `k = min((R−r0)/U, max(3.2, (48−r0)/U))` so a young slice is readable and
+  grows to R = 112, then rings close up. Callouts: this week (lit edge), the
+  latest lean stretch, BEGAN (from week two), the marathon in `--accent`
+  once run. `.rg-*` CSS replaces `.cl-*`; arrival and Replay animate `.rg-r`
+  groups (`--w`) behind reduced-motion. Blur filter in userSpaceOnUse (a
+  bbox-relative region clipped the living edge's glow into a square).
+- Fig. II: `liftSpark` runs from `since` to today, no split line, nothing
+  ahead; notes "first" / "+x kg" / "held". Test kicker "Since 12 Oct".
+- Totals pluralise ("1 session banked").
+- Tests: build section rewritten (start date, before/after the start, moved
+  session, per-weekday rows, continuity to March, race week lean, programme
+  change → earlier programme); `strength()` in tools/interactions.js checks
+  the rings, the ledger, the kicker, Replay, widths and the first morning.

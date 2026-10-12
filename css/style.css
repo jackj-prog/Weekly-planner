@@ -3827,58 +3827,55 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .jr-switch button[aria-selected="true"] { color: var(--text); }
 .jr-switch button[aria-selected="true"]::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--text); }
 .jr-switch button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; border-radius: 2px; }
-/* Fig. I · the column of the block */
-.cl-fig { margin: 18px -6px 6px; }
-.cl-svg { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--chrome-bg); color: var(--text); }
-.cl-z0 { stop-color: var(--chrome-bg); }
-.cl-z1 { stop-color: var(--paper); }
-.cl-z2 { stop-color: var(--hero-bg); }
-.cl-glow-a { stop-color: var(--text); stop-opacity: .25; }
-.cl-glow-b { stop-color: var(--text); stop-opacity: 0; }
-.cl-stars circle { fill: var(--text); }
-.cl-milky { fill: var(--text); fill-opacity: .025; }
-.cl-moon .mo-dark { fill: var(--text); fill-opacity: .08; stroke: none; }
-.cl-moon .mo-lit { fill: var(--text); fill-opacity: .92; }
-.cl-hills { fill: var(--paper); }
-.cl-ground { fill: var(--hero-bg); fill-opacity: .55; }
-.cl-stepf { fill: url(#cl-step); }
-.cl-stept { stroke: var(--text); stroke-opacity: .55; stroke-width: .7; }
-.cl-insc { font: 700 5.4px var(--mono); letter-spacing: .5em; text-anchor: middle; fill: var(--paper); fill-opacity: .9; }
-.cl-lab { fill: var(--t3); font: 400 8.2px var(--mono); letter-spacing: .16em; }
-.cl-lab.end { text-anchor: end; fill: var(--accent); }
-.cl-stone { fill: url(#cl-cyl); }
-.cl-scotia { fill: var(--chrome-bg); fill-opacity: .5; }
-.cl-plain { opacity: .74; }
-.cl-flute { stroke: var(--chrome-bg); stroke-opacity: .26; stroke-width: .7; }
-.cl-fillet { stroke: var(--text); stroke-opacity: .35; stroke-width: .45; }
-.cl-joint { fill: none; stroke: var(--chrome-bg); stroke-opacity: .16; stroke-width: .45; }
-.cl-gap { fill: none; stroke: var(--text); stroke-opacity: .3; stroke-width: .5; stroke-dasharray: 1 1.6; }
-.cl-ahead { fill: none; stroke: var(--text); stroke-opacity: .13; stroke-width: .5; stroke-dasharray: .6 2.2; }
-.cl-scaff { fill: none; stroke: var(--text); stroke-opacity: .09; stroke-width: .6; }
-.cl-now { stroke: var(--text); stroke-width: 1.1; }
-.cl-lead { stroke: var(--text); stroke-opacity: .25; stroke-width: .5; }
-.cl-wk { font: 400 8px var(--mono); fill: var(--t3); text-anchor: end; letter-spacing: .06em; }
-.cl-wk.now { fill: var(--text); text-anchor: start; }
-.cl-cap :is(path, rect) { fill: none; stroke: var(--text); stroke-opacity: .3; stroke-width: .7; stroke-dasharray: 1 1.8; }
-.cl-cap.set :is(path, rect) { fill: url(#cl-cyl); stroke-dasharray: none; stroke-opacity: .7; }
-.cl-fig .fig-cap { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 10px; }
-.cl-capt { font-variant-numeric: tabular-nums; }
-.cl-key { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; margin: 8px 0 0; font: 400 12px var(--body); color: var(--t2); }
-.cl-key span { white-space: nowrap; }
-.cl-key .k { display: inline-block; width: 16px; height: 6px; margin-right: 6px; vertical-align: 1px; border-radius: 1px; }
-.cl-key .k.carved { background: repeating-linear-gradient(90deg, var(--text) 0 2px, var(--t3) 2px 3px); }
-.cl-key .k.plain { background: var(--t2); }
-.cl-key .k.gap { border: 1px dotted var(--t2); }
-.cl-key .k.ahead { border: 1px dotted var(--t3); opacity: .6; }
+/* Fig. I · the rings of the oak (v5.17): an engraved cross-section on the
+   dark plate, the wood in the grey ladder, the living edge white, the
+   marathon's ring the one red */
+.rg-fig { margin: 18px -6px 6px; }
+.rg-svg { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--chrome-bg); }
+.rg-v0 { stop-color: color-mix(in srgb, var(--text) 7%, var(--chrome-bg)); }
+.rg-v1 { stop-color: var(--chrome-bg); }
+.rg-shadow { fill: var(--chrome-bg); opacity: .9; }
+.rg-bark { fill: color-mix(in srgb, var(--t3) 30%, var(--chrome-bg)); stroke: color-mix(in srgb, var(--t3) 60%, var(--chrome-bg)); stroke-width: .8; }
+.rg-fis { fill: none; stroke: var(--chrome-bg); stroke-width: .9; stroke-linecap: round; opacity: .8; }
+.rg-w0 { stop-color: color-mix(in srgb, var(--text) 52%, var(--chrome-bg)); }
+.rg-w1 { stop-color: color-mix(in srgb, var(--text) 64%, var(--chrome-bg)); }
+.rg-early { fill: color-mix(in srgb, var(--text) 60%, var(--chrome-bg)); }
+.rg-early.s3 { fill: color-mix(in srgb, var(--text) 68%, var(--chrome-bg)); }
+.rg-early.s1 { fill: color-mix(in srgb, var(--text) 54%, var(--chrome-bg)); }
+.rg-early.s0 { fill: color-mix(in srgb, var(--text) 40%, var(--chrome-bg)); }
+.rg-late { fill: none; stroke: color-mix(in srgb, var(--text) 22%, var(--chrome-bg)); }
+.rg-late.lean { stroke: color-mix(in srgb, var(--text) 14%, var(--chrome-bg)); }
+.rg-rays { fill: none; stroke: color-mix(in srgb, var(--text) 30%, var(--chrome-bg)); stroke-width: .3; opacity: .5; }
+.rg-now-glow { fill: none; stroke: var(--text); opacity: .3; }
+.rg-now { fill: none; stroke: var(--text); stroke-width: .8; }
+.rg-pith { fill: var(--chrome-bg); }
+.rg-core { stroke: var(--chrome-bg); stroke-width: .6; stroke-dasharray: 1.4 1.8; opacity: .8; }
+.rg-tick { stroke: var(--chrome-bg); stroke-width: .9; }
+.rg-mon { fill: var(--chrome-bg); font: 700 8.5px var(--mono); letter-spacing: .08em; text-anchor: end; paint-order: stroke; stroke: color-mix(in srgb, var(--text) 64%, var(--chrome-bg)); stroke-width: 3px; }
+.rg-lead { fill: none; stroke: var(--t2); stroke-width: .6; }
+.rg-dot { fill: var(--text); }
+.rg-cl { fill: var(--t2); font: 400 9px var(--mono); letter-spacing: .12em; }
+.rg-cl.now { fill: var(--text); }
+.rg-cl.race, .rg-dot.race { fill: var(--accent); }
+.rg-cl2 { fill: var(--t3); font: 400 10px var(--body); }
+.rg-insc { fill: var(--t3); font: 400 8px var(--mono); letter-spacing: .3em; text-anchor: middle; }
+.rg-fig .fig-cap { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 10px; }
+.rg-capt { font-variant-numeric: tabular-nums; }
+.rg-key { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; margin: 8px 0 0; font: 400 12px var(--body); color: var(--t2); }
+.rg-key span { white-space: nowrap; }
+.rg-key .k { display: inline-block; width: 18px; height: 8px; margin-right: 6px; vertical-align: 0; border-radius: 1px; }
+.rg-key .k.r3 { background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--text) 68%, var(--chrome-bg)) 0 7px, color-mix(in srgb, var(--text) 22%, var(--chrome-bg)) 7px 8px); }
+.rg-key .k.r1 { background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--text) 54%, var(--chrome-bg)) 0 2.5px, color-mix(in srgb, var(--text) 22%, var(--chrome-bg)) 2.5px 3.5px); }
+.rg-key .k.r0 { background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--text) 40%, var(--chrome-bg)) 0 .8px, color-mix(in srgb, var(--text) 14%, var(--chrome-bg)) .8px 2px); }
+.rg-note { margin: 8px 6px 0; text-align: center; font: 400 12px/1.5 var(--body); color: var(--t3); }
 @media (prefers-reduced-motion: no-preference) {
-  /* the drums are laid from the plinth up, on arrival and again on Replay */
-  .cl-d { transform-box: fill-box; transform-origin: 50% 100%; }
-  .view.anim .cl-d:not(.ahead) { animation: cl-lay .5s var(--ease-spring) backwards; animation-delay: calc(var(--w) * 22ms + 120ms); }
-  #view .cl-fig.replay .cl-d:not(.ahead) { animation: cl-relay .55s var(--ease-spring) backwards; animation-delay: calc(var(--w) / var(--n) * 4.2s); }
-  #view .cl-fig.replay .cl-cap { animation: cl-fade .9s var(--ease-soft) backwards; animation-delay: 4.2s; }
-  @keyframes cl-lay { from { opacity: 0; transform: translateY(-6px); } }
-  @keyframes cl-relay { from { opacity: 0; transform: translateY(-10px) scaleY(.6); } }
-  @keyframes cl-fade { from { opacity: 0; } }
+  /* the rings grow from the pith, on arrival and again on Replay (the wood
+     behind them gives way while they do) */
+  .view.anim .rg-r { animation: rg-grow .45s var(--ease-out) backwards; animation-delay: calc(var(--w) * 30ms + 120ms); }
+  #view .rg-fig.replay .rg-r { animation: rg-grow .5s var(--ease-out) backwards; animation-delay: calc(var(--w) / var(--n) * 4.2s); }
+  #view .rg-fig.replay :is(.rg-disc, .rg-rays) { animation: rg-fade .6s var(--ease-soft) backwards; animation-delay: 4.2s; }
+  @keyframes rg-grow { from { opacity: 0; } }
+  @keyframes rg-fade { from { opacity: 0; } }
 }
 /* Fig. II · the weights you carry */
 .lf { margin-top: 26px; }
@@ -3894,10 +3891,7 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
 .lf-kg small:last-child { display: block; margin: 2px 0 0; color: var(--t3); white-space: nowrap; }
 .lf-sp { display: block; width: 112px; height: 28px; }
 .lf-base { stroke: var(--text); stroke-opacity: .12; stroke-width: .6; }
-.lf-fut { stroke: var(--text); stroke-opacity: .2; stroke-width: .6; stroke-dasharray: 1 2; }
-.lf-split { stroke: var(--text); stroke-opacity: .14; stroke-width: .6; }
 .lf-line { fill: none; stroke: var(--text); stroke-width: 1.2; stroke-linejoin: round; }
-.lf-line.old { stroke-opacity: .38; }
 .lf-end { fill: var(--text); }
 .lf-quiet { margin: 8px 0 0; font: 400 12px var(--body); color: var(--t3); }
 .lf-earlier { border-block: 1px solid var(--line); }

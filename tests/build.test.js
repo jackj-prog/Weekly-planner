@@ -1833,50 +1833,56 @@ section('weights: one history per session, nothing trimmed (v5.14)');
   const src = require('fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8');
   ok(!/slice\(-20\)/.test(src) && /DB\.withLift/.test(src) && /DB\.lastLift/.test(src), 'the app saves and reads weights through the session-aware helpers');
 }
-section('the Strength journey (v5.14)');
+section('the Strength journey — continuous from 12 Oct (v5.17)');
 {
   const S = PLAN.strength;
-  ok(S && S.splitFromWk === 12 && S.days.join() === '0,2,5', 'the split is data: rebuilt at week 12, Monday · Wednesday · Saturday');
+  ok(S && S.since === '2026-10-12' && !('splitFromWk' in S) && !('days' in S), 'the journey starts on a date (12 Oct, when strength began to be logged here), not on a block week');
   ok(!('criterion' in S) && !/stj-q/.test(require('fs').readFileSync(path.join(__dirname, '..', 'js', 'app.js'), 'utf8')), 'the test card carries no quotation (v5.14.1, the owner’s call)');
   const store = {}, key = (ex) => String(ex);
   const io = { done: (i) => store['done-' + i] || {}, ovr: (i) => store['ovr-' + i] || {}, moveIn: (i) => store['movein-' + i] || [], lifts: (ex) => store['wt-' + key(ex)] || [] };
-  const gymOn = (wk, di) => dayOfWeek(wk, di).blocks.filter((b) => b.cat === 'gym' && b.doable);
-  const tickWeek = (wk, only) => { for (let di = 0; di < 7; di++) gymOn(wk, di).forEach((b, k) => { if (only == null || only === di) { const iso = DB.addDays(START, (wk - 1) * 7 + di); store['done-' + iso] = Object.assign(store['done-' + iso] || {}, { [b.id]: true }); } }); };
-  let j = DB.strengthJourney(io, '2026-10-02');
-  ok(j.banked === 0 && j.weeksLifted === 0 && j.nowWk === 14 && !j.crowned, 'an empty device: nothing banked, week 14 now, the capital not set');
+  const gymOn = (iso) => DB.buildDay(iso).blocks.filter((b) => b.cat === 'gym' && b.doable);
+  const tick = (iso) => { store['done-' + iso] = Object.assign(store['done-' + iso] || {}, ...gymOn(iso).map((b) => ({ [b.id]: true }))); };
+  let j = DB.strengthJourney(io, '2026-10-11');
+  ok(j.weeks.length === 0 && j.groups.length === 0 && j.banked === 0, 'the day before it starts there is nothing to draw');
+  j = DB.strengthJourney(io, '2026-10-12');
+  ok(j.weeks.length === 1 && j.weeks[0].state === 'now' && j.weeks[0].planned === 3 && j.weeks[0].set === 0, 'the first day: one ring, this week, nothing banked yet');
   ok(j.groups.map((g) => g.title).join(' / ') === 'Legs microdose · Pull · Core / Push / Light upper', 'the three sessions are named from the plan');
   ok(j.groups.every((g) => !g.rows.length && g.unlogged.length >= 5), 'with no weights every lift waits in the quiet line');
-  ok(j.weeks.length === 30 && j.weeks[29].planned === 0, 'thirty drums; race week asks for no gym');
-  tickWeek(12); tickWeek(13, 0);
-  store['done-2026-10-05'] = { [gymOn(15, 0)[0].id]: true };   // a tick dated after today
-  j = DB.strengthJourney(io, '2026-10-02');
-  const w = (n) => j.weeks[n - 1];
-  ok(w(12).set === w(12).planned && w(12).planned === 3, 'week 12: every session banked (3 of 3)');
-  ok(w(13).set === 1 && w(14).set === 0 && w(14).state === 'now' && w(15).set === 0, 'week 13 some, week 14 none yet, a future tick counts nowhere');
-  ok(j.banked === 4 && j.weeksLifted === 2, 'four sessions banked across two weeks');
+  tick('2026-09-14'); tick('2026-10-05');                       // before the start: never counted
+  ['2026-10-12', '2026-10-14', '2026-10-17', '2026-10-19'].forEach(tick);
+  tick('2026-10-31');                                           // after today: counted nowhere yet
+  j = DB.strengthJourney(io, '2026-10-28');
+  ok(j.weeks.map((w) => w.start + ':' + w.set + '/' + w.planned + ':' + w.state).join(' ') === '2026-10-12:3/3:past 2026-10-19:1/3:past 2026-10-26:0/3:now',
+    'a ring a week from the start to this one — 3 of 3, then 1, then this week so far: ' + j.weeks.map((w) => w.set).join(','));
+  ok(j.banked === 4 && j.weeksLifted === 2, 'four sessions banked across two weeks; ticks before the start and after today count nowhere');
   /* a Saturday session moved to Sunday is banked once, where it was done */
-  const sat = '2026-09-26', sun = '2026-09-27', id = gymOn(13, 5)[0].id;
-  store['ovr-' + sat] = { moved: { [id]: sun } }; store['done-' + sat] = Object.assign(store['done-' + sat] || {}, { [id]: true });
+  const sat = '2026-10-24', sun = '2026-10-25', id = gymOn(sat)[0].id;
+  store['ovr-' + sat] = { moved: { [id]: sun } }; store['done-' + sat] = { [id]: true };
   store['movein-' + sun] = [{ id: 'mv-' + sat + '-' + id, srcId: id, fromIso: sat, cat: 'gym' }];
   store['done-' + sun] = { ['mv-' + sat + '-' + id]: true };
-  j = DB.strengthJourney(io, '2026-10-02');
-  ok(j.weeks[12].set === 2, 'a moved gym session is banked once, on the day it was done');
-  /* weights: the row on Monday and on Saturday are two lines */
-  store['wt-Chest-supported row'] = [{ d: '2026-09-14', kg: 50 }, { d: '2026-09-19', kg: 40 }, { d: '2026-09-21', kg: 52.5 }, { d: '2026-09-26', kg: 40 }];
-  store['wt-Bench press'] = [{ d: '2026-07-07', kg: 60 }, { d: '2026-09-16', kg: 70 }, { d: '2026-09-30', kg: 72.5 }, { d: '2026-10-07', kg: 80 }];
-  store['wt-Deadlift'] = [{ d: '2026-07-20', kg: 100 }, { d: '2026-08-31', kg: 110 }];
-  j = DB.strengthJourney(io, '2026-10-02');
+  j = DB.strengthJourney(io, '2026-10-28');
+  ok(j.weeks[1].set === 2, 'a moved gym session is banked once, on the day it was done');
+  /* weights: from the start only; the row on Monday and on Saturday are two lines */
+  store['wt-Chest-supported row'] = [{ d: '2026-10-12', kg: 50 }, { d: '2026-10-17', kg: 40 }, { d: '2026-10-19', kg: 52.5 }];
+  store['wt-Bench press'] = [{ d: '2026-09-16', kg: 70 }, { d: '2026-10-14', kg: 72.5 }, { d: '2026-10-21', kg: 75 }, { d: '2026-11-04', kg: 80 }];
+  store['wt-Deadlift'] = [{ d: '2026-10-13', kg: 110 }];
+  j = DB.strengthJourney(io, '2026-10-28');
   const rowIn = (di, ex) => j.groups.find((g) => g.day === di).rows.find((r) => r.ex === ex);
-  ok(rowIn(0, 'Chest-supported row').last.kg === 52.5 && rowIn(0, 'Chest-supported row').change === 2.5, 'Monday’s row: its own line, +2.5 since the rebuild');
+  ok(rowIn(0, 'Chest-supported row').last.kg === 52.5 && rowIn(0, 'Chest-supported row').change === 2.5, 'Monday’s row: its own line, +2.5 since its first');
   ok(rowIn(5, 'Chest-supported row').last.kg === 40 && rowIn(5, 'Chest-supported row').change === 0, 'Saturday’s row: its own line, held');
   const bench = rowIn(2, 'Bench press');
-  ok(bench.entries.length === 3 && bench.entries[0].d === '2026-07-07' && bench.last.kg === 72.5, 'bench keeps its history from before the rebuild (faint) and ignores a future save');
-  ok(bench.change === 2.5 && bench.since.kg === 70, 'the change is counted from the first lift since the rebuild');
-  ok(j.retired.length === 1 && j.retired[0].ex === 'Deadlift' && j.retired[0].last.kg === 110, 'a lift the rebuild retired is kept as lived');
-  ok(!j.groups.some((g) => g.rows.some((r) => r.ex === 'Deadlift')), 'a retired lift never appears in the split');
+  ok(bench.entries.length === 2 && bench.first.kg === 72.5 && bench.last.kg === 75 && bench.change === 2.5, 'bench starts at its first lift since 12 Oct, ignores the September one and a future save');
+  ok(!j.retired.length && !j.groups.some((g) => g.rows.some((r) => r.ex === 'Deadlift')), 'a lift the programme never asked for since the start is not drawn');
   ok(j.featured.map((r) => r.ex).join() === 'Bench press', 'the test follows the featured lifts that have been logged');
-  ok(j.tested === 3 && j.held === 3, 'every lift logged since the rebuild was held or raised (3 of 3)');
-  ok(DB.strengthJourney(io, '2027-01-24').crowned && DB.strengthJourney(io, '2027-03-01').nowWk === 0, 'race week sets the capital; after the block nothing is now');
+  ok(j.tested === 3 && j.held === 3, 'every lift logged since the start was held or raised (3 of 3)');
+  /* continuous: past the race, into the standing week, nothing ahead */
+  j = DB.strengthJourney(io, '2027-03-01');
+  ok(j.weeks.length === 21 && j.weeks[20].state === 'now' && j.weeks[20].start === '2027-03-01' && j.weeks.every((w) => w.start <= '2027-03-01'), 'past the race the rings keep going — 21 weeks, the last one now, none ahead');
+  ok(j.weeks.find((w) => w.start === '2027-01-18').planned === 0, 'race week asks for no gym: a lean ring, honestly');
+  ok(!j.groups.some((g) => g.title === 'Push') && j.groups.length >= 3, 'the programme as it stands: the standing week’s sessions, the block’s Push gone a month on');
+  const all = Object.assign({}, io, { lifts: () => [{ d: '2026-10-14', kg: 10 }] }), jj = DB.strengthJourney(all, '2027-03-01');
+  const cur = new Set(jj.groups.flatMap((g) => g.rows.map((r) => r.ex)));
+  ok(jj.retired.length > 0 && jj.retired.every((r) => !cur.has(r.ex)), 'lifts the programme no longer asks for fold away as an earlier programme (' + jj.retired.length + ')');
   const jr = { weeks: [{ days: [{ iso: '2026-09-14', planned: 10, recorded: 10 }, { iso: '2026-09-15', planned: 10, recorded: 0 }, { iso: '2026-09-16', planned: 10, recorded: 0 }, { iso: '2026-09-13', planned: 10, recorded: 0 }] }] };
   ok(DB.plannedShare(jr, '2026-09-14', '2026-09-16') === 0.5, 'the running side: today counts once its run is recorded, before the split never');
   ok(DB.plannedShare({ weeks: [] }, '2026-09-14', '2026-09-16') === null, 'nothing planned yet: no share');

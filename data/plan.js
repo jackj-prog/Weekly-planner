@@ -636,14 +636,15 @@ const PLAN = {
     ],
   },
 
-  /* The Strength journey (v5.14, the owner's request): the Plan page's
-     second tab. It reads the split from here — the week it was rebuilt
-     (its lines start there; earlier history draws faint), the weekdays of
-     the sessions it lists, and the lifts its test (§6's criterion, in two
-     figures) follows. */
+  /* The Strength journey (v5.14, the owner's request; continuous since
+     v5.17): the Plan page's second tab. It starts on `since` — the day the
+     owner began logging strength in the app (12 Oct 2026; the gym ticks
+     before it were never kept here, so earlier weeks would read as lean
+     ones that were not) — and runs to today with no end: past the race,
+     across blocks, nothing drawn ahead. The test follows the featured
+     lifts (§6's criterion, in two figures). */
   strength: {
-    splitFromWk: 12,
-    days: [0, 2, 5],
+    since: '2026-10-12',
     featured: ['Bench press', 'Leg press', 'Pull-ups'],
   },
 

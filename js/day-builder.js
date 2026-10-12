@@ -533,82 +533,77 @@
       .concat([{ d: iso, kg, s }]).sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
   }
 
-  /* The Strength journey (v5.14): the block's gym work as the Plan page's
-     second tab. Every figure is read from what is already stored — the gym
-     ticks (and sessions moved within their week), the weights logged — and
-     from the plan's split (PLAN.strength). io = {done(iso), ovr(iso),
-     moveIn(iso), lifts(exercise)}; only what has happened by today counts. */
+  /* The Strength journey (v5.14; continuous since v5.17): the gym work as
+     the Plan page's second tab. It starts on PLAN.strength.since — the day
+     strength began to be logged here — and runs a week at a time to today,
+     across blocks and past the race, with nothing drawn ahead. Every figure
+     is read from what is already stored — the gym ticks (and sessions moved
+     within their week), the weights logged — and from the sessions the plan
+     sets. io = {done(iso), ovr(iso), moveIn(iso), lifts(exercise)}; only
+     what has happened by today, and since the start, counts. */
   function strengthJourney(io, today) {
-    const block = PLAN.blocks[0], cfg = PLAN.strength || {}, splitWk = cfg.splitFromWk || 1;
-    const split = addDays(block.start, (splitWk - 1) * 7);
-    const isGym = (b) => b.cat === 'gym' && b.doable;
-    const weeks = block.weekTable.map((row) => {
-      const dates = weekDates(block, row.wk);
-      let planned = 0, set = 0;
-      for (let i = 0; i < 7; i++) {
-        const iso = addDays(dates.start, i), gym = buildDay(iso).blocks.filter(isGym);
-        planned += gym.length;
-        if (iso > today) continue;
-        const done = io.done(iso) || {}, moved = (io.ovr(iso) || {}).moved || {};
-        set += gym.filter((b) => done[b.id] && !moved[b.id]).length +
-          (io.moveIn(iso) || []).filter((m) => m.cat === 'gym' && done[m.id]).length;
-      }
-      return { wk: row.wk, start: dates.start, end: dates.end, planned, set: Math.min(set, planned),
-        state: dates.end < today ? 'past' : dates.start <= today ? 'now' : 'ahead' };
-    });
-    const nowWk = (weeks.find((w) => w.state === 'now') || {}).wk || 0;
-    const sofar = Math.max(nowWk || (weeks[weeks.length - 1].end < today ? weeks.length : 0), splitWk);
-    const clean = (t) => String(t || '').replace(/^Gym\s*[—-]\s*/, '').replace(/\s*\(.*\)\s*$/, '');
-    const scheme = (s) => String(s || '').replace(/\s*@.*$/, '').replace(/\s+—.*$/, '').trim();
-    const row = (ex, sets, entries) => {
-      const post = entries.filter((e) => e.d >= split), last = entries.length ? entries[entries.length - 1] : null;
-      return { ex, scheme: scheme(sets), entries, last, since: post.length ? post[0] : null,
-        change: post.length ? Math.round((last.kg - post[0].kg) * 100) / 100 : null,
-        heaviest: last ? Math.max(...entries.map((e) => e.kg)) : null };
-    };
-    /* every lift each session of the split has asked for so far, in the
-       order the plan lists it; earlier history (any day) draws faint */
-    const splitLifts = new Set();
-    const groups = (cfg.days || []).map((di) => {
-      let title = '';
-      const seen = new Map();
-      for (let wk = splitWk; wk <= block.weekTable.length; wk++) {
-        const g = buildDay(addDays(block.start, (wk - 1) * 7 + di)).blocks.find((b) => isGym(b) && b.plan);
-        if (!g) continue;
-        if (!title) title = clean(g.title);
-        g.plan.forEach((p) => {
-          splitLifts.add(p.ex);
-          if (wk <= sofar && !seen.has(p.ex)) seen.set(p.ex, p.sets);
-        });
-      }
-      const rows = [...seen].map(([ex, sets]) => row(ex, sets,
-        liftHistory(io.lifts(ex)).filter((e) => e.d <= today && (e.d < split || liftDay(e) === di))));
-      return { day: di, title, rows: rows.filter((r) => r.entries.length), unlogged: rows.filter((r) => !r.entries.length).map((r) => r.ex) };
-    });
-    /* the lifts the rebuild retired, as lived before it */
-    const earlier = new Map();
-    for (let wk = 1; wk < splitWk; wk++) {
-      for (let i = 0; i < 7; i++) {
-        buildDay(addDays(block.start, (wk - 1) * 7 + i)).blocks.filter((b) => isGym(b) && b.plan).forEach((b) => b.plan.forEach((p) => {
-          if (!splitLifts.has(p.ex) && !earlier.has(p.ex)) earlier.set(p.ex, p.sets);
-        }));
+    const cfg = PLAN.strength || {}, since = cfg.since || PLAN.blocks[0].start;
+    const isGym = (b) => b.cat === 'gym' && b.doable, monday = (iso) => addDays(iso, -dayIndex(iso));
+    const weeks = [];
+    if (today >= since) {
+      for (let w = monday(since); w <= today; w = addDays(w, 7)) {
+        let planned = 0, set = 0;
+        for (let i = 0; i < 7; i++) {
+          const iso = addDays(w, i);
+          if (iso < since) continue;
+          const gym = buildDay(iso).blocks.filter(isGym);
+          planned += gym.length;
+          if (iso > today) continue;
+          const done = io.done(iso) || {}, moved = (io.ovr(iso) || {}).moved || {};
+          set += gym.filter((b) => done[b.id] && !moved[b.id]).length +
+            (io.moveIn(iso) || []).filter((m) => m.cat === 'gym' && done[m.id]).length;
+        }
+        const end = addDays(w, 6);
+        weeks.push({ start: w, end, planned, set: Math.min(set, planned), state: end < today ? 'past' : 'now' });
       }
     }
-    const retired = [...earlier].map(([ex, sets]) => row(ex, sets, liftHistory(io.lifts(ex)).filter((e) => e.d <= today && e.d < split)))
-      .filter((r) => r.entries.length);
-    const tested = groups.flatMap((g) => g.rows).filter((r) => r.since);
+    const clean = (t) => String(t || '').replace(/^Gym\s*[—-]\s*/, '').replace(/\s*\(.*\)\s*$/, '');
+    const scheme = (s) => String(s || '').replace(/\s*@.*$/, '').replace(/\s+—.*$/, '').trim();
+    const lifted = (ex) => liftHistory(io.lifts(ex)).filter((e) => e.d >= since && e.d <= today);
+    const row = (ex, sets, entries) => {
+      const first = entries.length ? entries[0] : null, last = entries.length ? entries[entries.length - 1] : null;
+      return { ex, scheme: scheme(sets), entries, first, last,
+        change: last ? Math.round((last.kg - first.kg) * 100) / 100 : null,
+        heaviest: last ? Math.max(...entries.map((e) => e.kg)) : null };
+    };
+    /* the programme as it stands: each weekday's latest session over the
+       last four weeks to the end of this one (so a holiday fortnight keeps
+       the split, and a session the plan has dropped falls away), its lifts
+       in the plan's order; every lift asked for since the start is known */
+    const byDay = new Map(), everEx = new Map();
+    if (weeks.length) {
+      const recentFrom = addDays(monday(today), -21);
+      for (let iso = since, last = addDays(monday(today), 6); iso <= last; iso = addDays(iso, 1)) {
+        const g = buildDay(iso).blocks.find((b) => isGym(b) && b.plan);
+        if (!g) continue;
+        if (iso >= recentFrom) byDay.set(dayIndex(iso), { title: clean(g.title), plan: g.plan });
+        g.plan.forEach((p) => { if (!everEx.has(p.ex)) everEx.set(p.ex, p.sets); });
+      }
+    }
+    const current = new Set();
+    const groups = [...byDay].sort((x, y) => x[0] - y[0]).map(([di, g]) => {
+      const rows = g.plan.map((p) => { current.add(p.ex); return row(p.ex, p.sets, lifted(p.ex).filter((e) => liftDay(e) === di)); });
+      return { day: di, title: g.title, rows: rows.filter((r) => r.entries.length), unlogged: rows.filter((r) => !r.entries.length).map((r) => r.ex) };
+    });
+    /* lifts logged since the start that the programme no longer asks for */
+    const retired = [...everEx].filter(([ex]) => !current.has(ex)).map(([ex, sets]) => row(ex, sets, lifted(ex))).filter((r) => r.entries.length);
+    const tested = groups.flatMap((g) => g.rows);
     const featured = (cfg.featured || []).map((ex) => {
       for (const g of groups) for (const r of g.rows) if (r.ex === ex) return r;
       return null;
     }).filter(Boolean);
     const past = weeks.filter((w) => w.state === 'past').slice(-4);
     return {
-      weeks, nowWk, split, splitWk, groups, retired, featured,
+      since, weeks, groups, retired, featured,
       banked: weeks.reduce((n, w) => n + w.set, 0),
       weeksLifted: weeks.filter((w) => w.set > 0).length,
       recent: past.length ? { weeks: past.length, set: past.reduce((n, w) => n + w.set, 0) / past.length, planned: past.reduce((n, w) => n + w.planned, 0) / past.length } : null,
       held: tested.filter((r) => r.change >= 0).length, tested: tested.length,
-      crowned: today >= weeks[weeks.length - 1].start,
     };
   }
   /* The running side of the test: the share of the planned kilometres

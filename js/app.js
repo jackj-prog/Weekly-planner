@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.16.2';
+  const APP_VERSION = '5.17.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -3462,176 +3462,174 @@
     });
   }
 
-  /* ---- the Strength journey (v5.14) ----
-     Fig. I is the column of the block: a drum a week laid from the plinth
-     up, fluted and polished when every gym session that week was ticked,
-     plain stone when some were, a dotted gap when none were, dotted under
-     scaffolding while still to come; the capital is set in race week. It
-     stands under tonight's real moon, and Replay raises it drum by drum as
-     the firmament's replay lights its stars. Fig. II is the weights: every
-     lift of the split, a line across the whole block. Then the programme's
-     own test (§6), answered from the same data. */
+  /* ---- the Strength journey (v5.14; the rings since v5.17) ----
+     Fig. I is the rings of an oak: a ring for every week since strength
+     began to be logged (PLAN.strength.since), as wide as the gym sessions
+     done that week — a lean week stays a tight ring, the way a tree keeps
+     its lean years — and nothing drawn ahead: no end date, the slice grows
+     from a seedling and keeps growing past the race, whose ring is marked
+     in the one red once it is run. This week is the living edge, lit; a
+     core-sample ruler marks the months. Replay grows the rings again from
+     the pith. Fig. II is the weights: every lift of the programme, a line
+     from the start to today. Then the programme's own test (§6). */
   const kgNum = (kg) => String(Math.round(kg * 10) / 10);
-  function columnSVG(sj, today) {
-    const W = 360, H = 340, cx = 168, HZ = 304, n = sj.weeks.length, f1 = (v) => (Math.round(v * 10) / 10).toString();
-    const wAt = (i) => 37 - 6.5 * (i / n) + 2.2 * Math.sin(Math.PI * i / n);   // a slight swell, a taper
-    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="cl-svg" role="img" aria-label="The column of the block: a drum a week, ' +
-      sj.banked + ' gym sessions banked across ' + sj.weeksLifted + ' weeks' + (sj.nowWk ? ', week ' + sj.nowWk + ' now' : '') + '">' +
-      '<defs><linearGradient id="cl-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="cl-z0"/><stop offset=".75" class="cl-z1"/><stop offset="1" class="cl-z2"/></linearGradient>' +
-      '<radialGradient id="cl-glow"><stop offset="0" class="cl-glow-a"/><stop offset="1" class="cl-glow-b"/></radialGradient>' +
-      '<linearGradient id="cl-cyl" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".2"/><stop offset=".2" stop-color="#fff" stop-opacity=".62"/><stop offset=".33" stop-color="#fff" stop-opacity=".9"/><stop offset=".52" stop-color="#fff" stop-opacity=".62"/><stop offset=".8" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/></linearGradient>' +
-      '<linearGradient id="cl-step" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".25" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity=".1"/></linearGradient>' +
-      '<linearGradient id="cl-shadow" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>' +
-      '<rect width="' + W + '" height="' + H + '" fill="url(#cl-sky)"/>';
-    /* the sky: a field of stars kept clear of the shaft, a faint band of the
-       Milky Way, and tonight's moon — the light the stone is lit by */
-    let stars = '';
-    for (let k = 0; k < 90; k++) {
-      const x = artSeed('col:' + k) * W, y = artSeed('col:' + k + 'y') * (HZ - 30), m = artSeed('col:' + k + 'm');
-      if (Math.abs(x - cx) < 40 && y > 14) continue;
-      stars += '<circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + (m > .94 ? 1.2 : m > .7 ? .7 : .4) + '" style="opacity:' + f1(.25 + m * .6) + '"/>';
+  function ringsSVG(sj, today) {
+    const W = 360, H = 372, cx = 176, cy = 176, R = 112, r0 = 3.2, f1 = (v) => (Math.round(v * 10) / 10).toString();
+    const weeks = sj.weeks, widths = weeks.map((w) => 0.55 + w.set), U = widths.reduce((a, b) => a + b, 0);
+    /* a young slice is drawn at a readable size and grows to the plate's
+       width; then its rings close up */
+    const k = Math.min((R - r0) / U, Math.max(3.2, (48 - r0) / U)), bounds = [];
+    let acc = r0;
+    widths.forEach((w) => { acc += w * k; bounds.push(acc); });
+    const RA = acc, barkW = 3 + 6 * Math.min(1, RA / R);
+    const wob = (t) => 0.034 * Math.sin(3 * t + 1.1) + 0.021 * Math.sin(5 * t + 2.3) + 0.011 * Math.sin(8 * t + 0.4);
+    const pt = (r, t) => { const g = r / R, rr = r * (1 + wob(t) * g); return [cx + 7 * g + rr * Math.cos(t), cy - 4 * g + rr * 0.95 * Math.sin(t)]; };
+    const loop = (r, jag) => { let d = ''; for (let i = 0; i <= 144; i++) { const t = i / 144 * Math.PI * 2, [x, y] = pt(r + (jag ? jag(t) : 0), t); d += (i ? 'L' : 'M') + f1(x) + ' ' + f1(y); } return d + 'Z'; };
+    const rough = (t) => (2.4 * (artSeed('rg:' + Math.floor(t * 40)) - 0.5) + 1.2 * Math.sin(t * 23)) * Math.min(1, RA / R + .2);
+    const total = sj.banked;
+    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="rg-svg" role="img" aria-label="The rings of the oak: a ring for each of ' + weeks.length + ' week' + (weeks.length === 1 ? '' : 's') +
+      ' since ' + esc(fmtShort(sj.since)) + ', as wide as the gym sessions done — ' + total + ' banked">' +
+      '<defs><radialGradient id="rg-v" cx=".48" cy=".46" r=".7"><stop offset="0" class="rg-v0"/><stop offset="1" class="rg-v1"/></radialGradient>' +
+      '<radialGradient id="rg-wood" cx=".5" cy=".5" r=".5"><stop offset="0" class="rg-w0"/><stop offset="1" class="rg-w1"/></radialGradient>' +
+      '<filter id="rg-blur" filterUnits="userSpaceOnUse" x="0" y="0" width="' + W + '" height="' + H + '"><feGaussianBlur stdDeviation="2.4"/></filter></defs>' +
+      '<rect width="' + W + '" height="' + H + '" fill="url(#rg-v)"/>';
+    // the slice's shadow on the plate, the bark and its fissures
+    s += '<path class="rg-shadow" transform="translate(5 7)" d="' + loop(RA + barkW, rough) + '" filter="url(#rg-blur)"/><path class="rg-bark" d="' + loop(RA + barkW, rough) + '"/>';
+    let fis = '';
+    for (let i = 0; i < 64; i++) {
+      const t = (i + artSeed('rgf:' + i) * .8) / 64 * Math.PI * 2, a = pt(RA + 1 + artSeed('rgf:' + i + 'a') * barkW * .4, t), b = pt(RA + barkW - 1.5 + rough(t) * .6, t);
+      fis += 'M' + f1(a[0]) + ' ' + f1(a[1]) + 'L' + f1(b[0]) + ' ' + f1(b[1]);
     }
-    const mp = DB.moonPhase(today);
-    s += '<g class="cl-stars">' + stars + '</g><path class="cl-milky" d="M-20 40 Q 140 90 380 20 L 380 60 Q 140 130 -20 80Z"/>' +
-      '<circle cx="58" cy="54" r="34" fill="url(#cl-glow)" style="opacity:' + f1(.25 + .75 * mp.lit) + '"/>' + moonSVG(58, 54, 9, mp, 'cl-moon');
-    /* the ground, the hills and the stylobate, FORTITVDO cut in its face */
-    s += '<path class="cl-hills" d="M0 ' + HZ + 'L0 284 Q 60 270 120 282 T 250 278 T 360 280 L360 ' + HZ + 'Z"/><rect x="0" y="' + HZ + '" width="' + W + '" height="' + (H - HZ) + '" class="cl-ground"/>';
-    let sy = HZ;
-    [[118, 8], [102, 8], [86, 7]].forEach(([w, h]) => { sy -= h; s += '<rect class="cl-stepf" x="' + (cx - w / 2) + '" y="' + sy + '" width="' + w + '" height="' + h + '"/><path class="cl-stept" d="M' + (cx - w / 2) + ' ' + sy + 'H' + (cx + w / 2) + '"/>'; });
-    s += '<text class="cl-insc" x="' + cx + '" y="' + (HZ - 2.2) + '">FORTITVDO</text>' +
-      '<text class="cl-lab" x="14" y="' + (HZ + 22) + '">' + esc(fmtShort(sj.weeks[0].start)).toUpperCase() + '</text>' +
-      '<text class="cl-lab end" x="' + (W - 14) + '" y="' + (HZ + 22) + '">CAPITAL · RACE WEEK</text>';
-    // the moon's long shadow, thrown east across the steps and the ground
-    s += '<path d="M' + (cx + 22) + ' ' + sy + 'L' + (cx + 196) + ' ' + (HZ + 6) + 'L' + (cx + 150) + ' ' + (HZ + 12) + 'L' + (cx + 8) + ' ' + HZ + 'Z" fill="url(#cl-shadow)" opacity=".7"/>';
-    // the base: plinth, torus, scotia, torus
-    s += '<rect class="cl-stone" x="' + (cx - 28) + '" y="' + (sy - 7) + '" width="56" height="7"/><rect class="cl-stone" x="' + (cx - 25) + '" y="' + (sy - 12) + '" width="50" height="5" rx="2.5"/>' +
-      '<rect class="cl-scotia" x="' + (cx - 22) + '" y="' + (sy - 14) + '" width="44" height="2"/><rect class="cl-stone" x="' + (cx - 23) + '" y="' + (sy - 18) + '" width="46" height="4" rx="2"/>';
-    /* the shaft: a drum a week */
-    const y0 = sy - 18, dh = (y0 - 44) / n;
-    let shaft = '', scaffold = null;
-    sj.weeks.forEach((w, i) => {
-      const wd = wAt(i), x = cx - wd / 2, y = y0 - (i + 1) * dh, share = w.planned ? w.set / w.planned : 1;
-      let d;
-      if (w.state === 'ahead' || (w.state === 'now' && !w.set)) {
-        d = '<rect class="cl-ahead" x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(wd) + '" height="' + f1(dh) + '"/>';
-        if (!scaffold) scaffold = y;
-      } else if (w.planned && !w.set) {
-        d = '<rect class="cl-gap" x="' + f1(x) + '" y="' + f1(y + .4) + '" width="' + f1(wd) + '" height="' + f1(dh - .8) + '"/>';
-      } else {
-        /* carved — every session banked — is fluted and polished; a week with
-           some banked is plain stone, set but not yet worked */
-        d = '<rect x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(wd) + '" height="' + f1(dh) + '" fill="url(#cl-cyl)"' + (share < 1 ? ' class="cl-plain"' : '') + '/>';
-        if (share >= 1) {
-          let fl = '', hl = '';
-          for (let k = 1; k < 14; k++) {
-            const t = -Math.PI / 2 + Math.PI * k / 14, fx = cx + Math.sin(t) * wd / 2;
-            fl += 'M' + f1(fx) + ' ' + f1(y + .2) + 'V' + f1(y + dh - .2);
-            if (t < .2) hl += 'M' + f1(fx - .7) + ' ' + f1(y + .2) + 'V' + f1(y + dh - .2);
-          }
-          d += '<path class="cl-flute" d="' + fl + '"/><path class="cl-fillet" d="' + hl + '"/>';
-        }
-        d += '<path class="cl-joint" d="M' + f1(x) + ' ' + f1(y + dh) + 'Q' + cx + ' ' + f1(y + dh + 1.4) + ' ' + f1(x + wd) + ' ' + f1(y + dh) + '"/>';
+    s += '<path class="rg-fis" d="' + fis + '"/><path class="rg-disc" d="' + loop(RA) + '" fill="url(#rg-wood)"/>';
+    // the rings, outermost first: the early wood, the late wood's line at its edge
+    let rings = '';
+    for (let i = weeks.length - 1; i >= 0; i--) {
+      const w = weeks[i], rw = widths[i] * k, lw = w.set ? Math.max(.5, Math.min(1.3, .13 * rw)) : Math.max(.9, rw * .7);
+      rings += '<g class="rg-r" style="--w:' + i + '"><path class="rg-early s' + Math.min(3, w.set) + '" d="' + loop(bounds[i]) + '"/>' +
+        '<path class="rg-late' + (w.set ? '' : ' lean') + '" stroke-width="' + f1(lw) + '" d="' + loop(bounds[i] - lw / 2) + '"/></g>';
+    }
+    s += rings;
+    // the medullary rays, faint
+    if (RA > 24) {
+      let rays = '';
+      for (let i = 0; i < 46; i++) {
+        const t = artSeed('rgr:' + i) * Math.PI * 2, r1 = 10 + artSeed('rgr:' + i + 'a') * Math.min(30, RA * .3), r2 = Math.min(RA - 2, r1 + 20 + artSeed('rgr:' + i + 'b') * (RA - r1 - 24));
+        if (r2 <= r1) continue;
+        const a = pt(r1, t), b = pt(r2, t);
+        rays += 'M' + f1(a[0]) + ' ' + f1(a[1]) + 'L' + f1(b[0]) + ' ' + f1(b[1]);
       }
-      if (w.state === 'now') d += '<path class="cl-now" d="M' + f1(x - 9) + ' ' + f1(y + dh / 2) + 'H' + f1(x - 3) + 'M' + f1(x + wd + 3) + ' ' + f1(y + dh / 2) + 'H' + f1(x + wd + 9) + '"/>';
-      shaft += '<g class="cl-d' + (w.state === 'ahead' ? ' ahead' : '') + '" style="--w:' + i + '">' + d + '</g>';
-    });
-    s += shaft;
-    // scaffolding up the weeks still to set: two poles and a ledger every five drums
-    const top = y0 - n * dh;
-    if (scaffold != null) {
-      let sc = 'M' + (cx - 34) + ' ' + f1(scaffold + dh) + 'V' + f1(top - 18) + 'M' + (cx + 34) + ' ' + f1(scaffold + dh) + 'V' + f1(top - 18);
-      for (let y = scaffold + dh; y > top - 10; y -= dh * 5) sc += 'M' + (cx - 38) + ' ' + f1(y) + 'H' + (cx + 38);
-      s += '<path class="cl-scaff" d="' + sc + '"/>';
+      s += '<path class="rg-rays" d="' + rays + '"/>';
     }
-    // the week numerals down the left, a leader to each, and NOW on the right
-    [1, 10, 20, 30].filter((k) => k <= n).forEach((k) => {
-      const yy = y0 - (k - .5) * dh, xl = cx - wAt(k - 1) / 2 - 8;
-      s += '<path class="cl-lead" d="M' + f1(xl - 14) + ' ' + f1(yy) + 'H' + f1(xl) + '"/><text class="cl-wk" x="' + f1(xl - 17) + '" y="' + f1(yy + 2.6) + '">' + roman(k) + '</text>';
+    // this week: the living edge, lit
+    const nowI = weeks.findIndex((w) => w.state === 'now');
+    if (nowI >= 0) s += '<path class="rg-now-glow" d="' + loop(bounds[nowI] - widths[nowI] * k / 2) + '" stroke-width="' + f1(widths[nowI] * k) + '" filter="url(#rg-blur)"/>' +
+      '<path class="rg-now" d="' + loop(bounds[nowI] - .4) + '"/>';
+    s += '<ellipse class="rg-pith" cx="' + cx + '" cy="' + cy + '" rx="2.6" ry="2.2"/>';
+    /* the core sample: a ruler from the pith out through the bark, the first
+       ring of each month marked — a crowded month gives way to the last */
+    const tr = -Math.PI * 0.62, end = pt(RA + barkW + 6, tr), nx = Math.cos(tr + Math.PI / 2), ny = Math.sin(tr + Math.PI / 2);
+    let ruler = '<path class="rg-core" d="M' + cx + ' ' + cy + 'L' + f1(end[0]) + ' ' + f1(end[1]) + '"/>', lastM = weeks.length ? weeks[0].start.slice(0, 7) : null, lastR = -99;
+    weeks.forEach((w, i) => {
+      const m = w.start.slice(0, 7);
+      if (m === lastM) return;
+      lastM = m;
+      const r = bounds[i - 1];
+      if (r - lastR < 12) return;
+      lastR = r;
+      const [x, y] = pt(r, tr), mo = +m.slice(5, 7);
+      ruler += '<path class="rg-tick" d="M' + f1(x - nx * 4) + ' ' + f1(y - ny * 4) + 'L' + f1(x + nx * 4) + ' ' + f1(y + ny * 4) + '"/>' +
+        '<text class="rg-mon" x="' + f1(x - nx * 7) + '" y="' + f1(y - ny * 7 + 3) + '">' + MONTHS[mo - 1].toUpperCase() + (mo === 1 ? ' ’' + m.slice(2, 4) : '') + '</text>';
     });
-    if (sj.nowWk) {
-      const yy = y0 - (sj.nowWk - .5) * dh;
-      s += '<text class="cl-wk now" x="' + f1(cx + wAt(sj.nowWk - 1) / 2 + 13) + '" y="' + f1(yy + 2.6) + '">' + roman(sj.nowWk) + ' · NOW</text>';
-    }
-    // the Ionic capital: echinus, two volutes and the abacus — set in race week, dotted until then
-    const tw = wAt(n - 1);
-    const vol = (vx, dir) => { let d = ''; for (let k = 0; k <= 60; k++) { const a = k / 60 * Math.PI * 4.2, r = 6.2 * (1 - k / 70); d += (k ? 'L' : 'M') + f1(vx + dir * Math.cos(a + Math.PI / 2) * r) + ' ' + f1(top - 6 + Math.sin(a + Math.PI / 2) * r); } return d; };
-    s += '<g class="cl-cap' + (sj.crowned ? ' set' : '') + '"><path d="M' + f1(cx - tw / 2 - 3) + ' ' + f1(top) + 'Q' + cx + ' ' + f1(top + 6) + ' ' + f1(cx + tw / 2 + 3) + ' ' + f1(top) + 'Z"/>' +
-      '<path d="M' + f1(cx - tw / 2 - 9) + ' ' + f1(top - 12) + 'H' + f1(cx + tw / 2 + 9) + '"/><path d="' + vol(cx - tw / 2 - 5, 1) + '"/><path d="' + vol(cx + tw / 2 + 5, -1) + '"/>' +
-      '<rect x="' + f1(cx - tw / 2 - 12) + '" y="' + f1(top - 16) + '" width="' + f1(tw + 24) + '" height="4"/></g>';
-    return s + '</svg>';
+    s += ruler;
+    /* the readings, each on its own ring, leaders out past the bark */
+    const call = (i, t, lx, ly, anchor, l1, l2, cls) => {
+      const r = i >= 0 ? bounds[i] - widths[i] * k / 2 : r0, [x, y] = pt(r, t), [ox, oy] = pt(RA + barkW + 10, t);
+      const ex = anchor === 'end' ? lx - 30 : lx + 30, ey = ly > cy ? ly - 13 : ly + 18;
+      return '<path class="rg-lead" d="M' + f1(x) + ' ' + f1(y) + 'L' + f1(ox) + ' ' + f1(oy) + 'L' + f1(ex) + ' ' + f1(ey) + '"/>' +
+        '<circle class="rg-dot' + (cls ? ' ' + cls : '') + '" cx="' + f1(x) + '" cy="' + f1(y) + '" r="1.7"/>' +
+        '<text class="rg-cl' + (cls ? ' ' + cls : '') + '" text-anchor="' + anchor + '" x="' + lx + '" y="' + ly + '">' + l1 + '</text>' +
+        '<text class="rg-cl2" text-anchor="' + anchor + '" x="' + lx + '" y="' + (ly + 12) + '">' + l2 + '</text>';
+    };
+    const up = (iso) => esc(fmtShort(iso)).toUpperCase();
+    if (nowI >= 0) s += call(nowI, -0.35, W - 12, 30, 'end', 'THIS WEEK', weeks[nowI].set + ' so far · still growing', 'now');
+    let lean = null, run = null;
+    weeks.forEach((w, i) => { if (!w.set && w.state !== 'now') { run = run ? { a: run.a, b: i } : { a: i, b: i }; lean = Object.assign({}, run); } else run = null; });
+    if (lean) s += call(lean.b, 0.55, W - 12, H - 40, 'end', 'LEAN WEEK' + (lean.a === lean.b ? '' : 'S'), esc(fmtShort(weeks[lean.a].start)) + ' – ' + esc(fmtShort(weeks[lean.b].end)));
+    if (weeks.length > 1) s += call(-1, 2.45, 12, H - 40, 'start', 'BEGAN', esc(fmtShort(sj.since)));
+    const race = PLAN.race && PLAN.race.date, ri = race ? weeks.findIndex((w) => w.start <= race && race <= w.end) : -1;
+    if (ri >= 0 && race <= today) s += call(ri, -2.35, 12, 30, 'start', up(race), 'the marathon', 'race');
+    return s + '<text class="rg-insc" x="' + cx + '" y="' + (H - 12) + '">ROBUR · OAK, AND STRENGTH</text></svg>';
   }
-  /* a lift's line across the whole block: faint before the rebuild, a step
-     at every change, a dot at today, the weeks still to come dotted */
+  /* a lift's line from the start to today: a step at every change, a dot
+     at the last weight; nothing drawn ahead */
   function liftSpark(r, sj, today) {
-    const W = 112, H = 28, A = DB.parseLocalDate(sj.weeks[0].start), Z = DB.parseLocalDate(sj.weeks[sj.weeks.length - 1].end);
+    const W = 112, H = 28, A = DB.parseLocalDate(sj.since), Z = DB.parseLocalDate(today > DB.addDays(sj.since, 6) ? today : DB.addDays(sj.since, 6));
     const x = (iso) => 3 + (W - 6) * Math.min(1, Math.max(0, (DB.parseLocalDate(iso) - A) / (Z - A)));
-    const f1 = (v) => (Math.round(v * 10) / 10).toString(), xn = x(today), xs = x(sj.split);
-    const v = r.entries.map((e) => e.kg), lo = Math.min(...v), hi = Math.max(...v, lo + 5), y = (k) => H - 5 - (H - 11) * (k - lo) / (hi - lo);
-    const run = (list, end) => { if (!list.length) return ''; let d = 'M' + f1(x(list[0].d)) + ' ' + f1(y(list[0].kg)); list.slice(1).forEach((e) => { d += 'H' + f1(x(e.d)) + 'V' + f1(y(e.kg)); }); return d + 'H' + f1(Math.max(end, x(list[list.length - 1].d))); };
-    const pre = r.entries.filter((e) => e.d < sj.split), post = r.entries.filter((e) => e.d >= sj.split);
-    return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="lf-sp" aria-hidden="true"><path class="lf-base" d="M3 ' + (H - 2) + 'H' + f1(xn) + '"/><path class="lf-fut" d="M' + f1(xn) + ' ' + (H - 2) + 'H' + (W - 3) + '"/>' +
-      (sj.splitWk > 1 ? '<path class="lf-split" d="M' + f1(xs) + ' 3V' + (H - 2) + '"/>' : '') +
-      (pre.length ? '<path class="lf-line old" d="' + run(pre, post.length ? xs - 2 : xn) + '"/>' : '') +
-      (post.length ? '<path class="lf-line" d="' + run(post, xn) + '"/>' : '') +
-      '<circle class="lf-end" cx="' + f1(Math.max(xn, x(r.last.d))) + '" cy="' + f1(y(r.last.kg)) + '" r="2.1"/></svg>';
+    const f1 = (v) => (Math.round(v * 10) / 10).toString(), xn = x(today);
+    const v = r.entries.map((e) => e.kg), lo = Math.min(...v), hi = Math.max(...v, lo + 5), y = (kg) => H - 5 - (H - 11) * (kg - lo) / (hi - lo);
+    let d = 'M' + f1(x(r.entries[0].d)) + ' ' + f1(y(r.entries[0].kg));
+    r.entries.slice(1).forEach((e) => { d += 'H' + f1(x(e.d)) + 'V' + f1(y(e.kg)); });
+    d += 'H' + f1(Math.max(xn, x(r.last.d)));
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="lf-sp" aria-hidden="true"><path class="lf-base" d="M3 ' + (H - 2) + 'H' + f1(xn) + '"/>' +
+      '<path class="lf-line" d="' + d + '"/><circle class="lf-end" cx="' + f1(Math.max(xn, x(r.last.d))) + '" cy="' + f1(y(r.last.kg)) + '" r="2.1"/></svg>';
   }
-  function liftRowHTML(r, sj, today, retired) {
-    const kg = r.last.kg, ch = retired ? kg - r.entries[0].kg : r.change;
-    const note = retired ? (r.entries.length > 1 && ch !== 0 ? (ch > 0 ? '+' : '−') + kgNum(Math.abs(ch)) + ' kg' : 'held')
-      : ch == null ? 'before ' + roman(sj.splitWk) : ch > 0 ? '+' + kgNum(ch) + ' kg' : ch < 0 ? '−' + kgNum(-ch) + ' kg' : 'held';
+  function liftRowHTML(r, sj, today) {
+    const ch = r.change, note = r.entries.length === 1 ? 'first' : ch > 0 ? '+' + kgNum(ch) + ' kg' : ch < 0 ? '−' + kgNum(-ch) + ' kg' : 'held';
     return '<div class="lf-row"><span class="lf-n">' + esc(r.ex) + '<small>' + esc(r.scheme) + '</small></span>' + liftSpark(r, sj, today) +
-      '<span class="lf-kg">' + kgNum(kg) + '<small>kg</small><small>' + note + '</small></span></div>';
+      '<span class="lf-kg">' + kgNum(r.last.kg) + '<small>kg</small><small>' + note + '</small></span></div>';
   }
   function buildStrengthJourney(sj, journey) {
-    const today = todayISO(), XII = roman(sj.splitWk), lead = sj.featured[0];
+    const today = todayISO(), since = fmtShort(sj.since), lead = sj.featured[0];
     const bits = [];
     if (sj.recent && sj.recent.weeks >= 2) bits.push('Last ' + sj.recent.weeks + ' weeks <b>' + kgNum(sj.recent.set) + '</b> of ' + kgNum(sj.recent.planned) + ' sessions a week');
-    if (lead) bits.push(esc(lead.ex.toLowerCase()) + ' <b>' + kgNum(lead.last.kg) + ' kg</b>' + (lead.last.kg >= lead.heaviest && lead.entries.length > 1 ? ', the block’s heaviest' : ''));
-    const story = sj.banked && bits.length ? bits.join(' · ').replace(/^./, (c) => c.toUpperCase()) : 'Your first session lays the first stone. The column rises a drum a week.';
+    if (lead) bits.push(esc(lead.ex.toLowerCase()) + ' <b>' + kgNum(lead.last.kg) + ' kg</b>' + (lead.last.kg >= lead.heaviest && lead.entries.length > 1 ? ', your heaviest' : ''));
+    const story = sj.banked && bits.length ? bits.join(' · ').replace(/^./, (c) => c.toUpperCase()) : 'Your first session lays the first ring. The oak grows a ring a week.';
     const groups = sj.groups.map((g) => (g.rows.length || g.unlogged.length) ? '<div class="lf-group"><h3><span>' + esc(DAY_NAMES[g.day].toUpperCase()) + '</span>' + esc(g.title) + '</h3>' +
       g.rows.map((r) => liftRowHTML(r, sj, today)).join('') +
       (g.unlogged.length ? '<p class="lf-quiet">No weight logged: ' + g.unlogged.map(esc).join(' · ') + '</p>' : '') + '</div>' : '').join('');
-    const share = DB.plannedShare(journey, sj.split, today);
+    const share = DB.plannedShare(journey, sj.since, today);
     /* the programme's own test (§6) in two figures, no quotation (v5.14.1) */
-    const test = '<section class="stj-test"><p class="stj-k">Since the rebuild · week ' + XII + '</p>' +
+    const test = '<section class="stj-test"><p class="stj-k">Since ' + esc(since) + '</p>' +
       (sj.tested
         ? '<div class="stj-two"><div><b>' + sj.held + '<small>/' + sj.tested + '</small></b><span>lifts held or raised</span></div>' +
           '<div><b>' + (share != null ? Math.round(share * 100) : '–') + '<small>%</small></b><span>of planned km run</span></div></div>'
         : '<p class="stj-wait">The test fills in as the weeks are logged.</p>') +
-      (sj.featured.length ? '<div class="stj-lifts">' + sj.featured.map((r) => '<div><span>' + esc(r.ex) + '<small>since week ' + roman(DB.weekNumber(r.entries[0].d)) + '</small></span><b>' +
-        kgNum(r.entries[0].kg) + ' → ' + kgNum(r.last.kg) + '<small> kg</small></b></div>').join('') + '</div>' : '') +
+      (sj.featured.length ? '<div class="stj-lifts">' + sj.featured.map((r) => '<div><span>' + esc(r.ex) + '<small>since ' + esc(fmtShort(r.first.d)) + '</small></span><b>' +
+        kgNum(r.first.kg) + ' → ' + kgNum(r.last.kg) + '<small> kg</small></b></div>').join('') + '</div>' : '') +
       '</section>';
     const retired = sj.retired.length
-      ? '<details class="lf-earlier" data-disclosure="strength|earlier"' + (openDetails.has('strength|earlier') ? ' open' : '') + '><summary>As lived, weeks I–' + roman(sj.splitWk - 1) + ' <small>' + sj.retired.length + ' lift' + (sj.retired.length === 1 ? '' : 's') + ' retired at the rebuild</small></summary>' +
-        sj.retired.map((r) => liftRowHTML(r, sj, today, true)).join('') + '</details>' : '';
+      ? '<details class="lf-earlier" data-disclosure="strength|earlier"' + (openDetails.has('strength|earlier') ? ' open' : '') + '><summary>From an earlier programme <small>' + sj.retired.length + ' lift' + (sj.retired.length === 1 ? '' : 's') + ' no longer asked for</small></summary>' +
+        sj.retired.map((r) => liftRowHTML(r, sj, today)).join('') + '</details>' : '';
     const anyLift = sj.groups.some((g) => g.rows.length);
     const root = el('<section class="training-journey strength"><div class="journey-intro"><div class="journey-kicker">YOUR TRAINING JOURNEY</div>' + journeySwitchHTML() +
-      '<h1>Laid one stone<br>at a time.</h1><div class="journey-totals"><div><b>' + sj.banked + '</b><span>sessions banked</span></div><div><b>' + sj.weeksLifted + '</b><span>weeks lifted</span></div></div>' +
+      '<h1>Grown one ring<br>at a time.</h1><div class="journey-totals"><div><b>' + sj.banked + '</b><span>session' + (sj.banked === 1 ? '' : 's') + ' banked</span></div><div><b>' + sj.weeksLifted + '</b><span>week' + (sj.weeksLifted === 1 ? '' : 's') + ' lifted</span></div></div>' +
       '<p class="journey-story">' + story + '</p>' +
-      '<figure class="cl-fig">' + columnSVG(sj, today) + '<figcaption class="fig-cap"><span class="fig">Fig. I</span> <span class="cl-capt">The column of the block</span>' +
-      (sj.banked ? '<button class="sk-play cl-play" aria-label="Replay the column, week by week">▶ Replay</button>' : '') + '</figcaption>' +
-      '<p class="cl-key"><span><i class="k carved"></i>every session</span><span><i class="k plain"></i>some</span><span><i class="k gap"></i>none</span><span><i class="k ahead"></i>to come</span></p></figure></div>' +
+      (sj.weeks.length ? '<figure class="rg-fig">' + ringsSVG(sj, today) + '<figcaption class="fig-cap"><span class="fig">Fig. I</span> <span class="rg-capt">The rings of the oak</span>' +
+        (sj.banked ? '<button class="sk-play rg-play" aria-label="Replay the rings, week by week">▶ Replay</button>' : '') + '</figcaption>' +
+        '<p class="rg-key"><span><i class="k r3"></i>3 sessions</span><span><i class="k r1"></i>1</span><span><i class="k r0"></i>none</span></p>' +
+        '<p class="rg-note">A ring for every week since ' + esc(since) + ' — as wide as the sessions you did. The lean weeks stay in the wood; nothing is drawn ahead.</p></figure>'
+        : '<p class="rg-note">The rings begin on ' + esc(since) + '.</p>') + '</div>' +
       '<section class="lf"><div class="journey-section-title"><h2><span class="fig">Fig. II</span> The weights you carry</h2></div>' +
-      (anyLift ? '<p class="lf-cap">Every lift you log, on one line across the block — faint before the split was rebuilt at week ' + XII + '. On the right, the last weight lifted and its change since then.</p>'
+      (anyLift ? '<p class="lf-cap">Every lift you log, one line from ' + esc(since) + ' to today. On the right, the last weight lifted and its change since the first.</p>'
         : '<p class="lf-cap">Log a weight on a session’s card or in Focus and its line starts here.</p>') +
       groups + retired + '</section>' + test + '</section>');
     wireJourneySwitch(root);
-    /* the replay: the drums fall away and are laid again, a week at a time,
-       the caption counting the sessions banked by each week */
-    const play = root.querySelector('.cl-play');
+    /* the replay: the rings fall away and grow again from the pith, a week
+       at a time, the caption counting the sessions banked by each week */
+    const play = root.querySelector('.rg-play');
     if (play) {
-      const fig = root.querySelector('.cl-fig'), capt = fig.querySelector('.cl-capt'), lived = sj.weeks.filter((w) => w.state !== 'ahead'), D = 4200;
+      const fig = root.querySelector('.rg-fig'), capt = fig.querySelector('.rg-capt'), D = 4200;
       let raf = 0;
-      fig.style.setProperty('--n', lived.length);
+      fig.style.setProperty('--n', sj.weeks.length);
       play.addEventListener('click', () => {
         cancelAnimationFrame(raf);
         fig.classList.remove('replay'); void fig.offsetWidth; fig.classList.add('replay');
         const t0 = performance.now();
         const step = (now) => {
-          const p = Math.max(0, Math.min(1, (now - t0) / D)), k = Math.min(lived.length - 1, Math.floor(p * lived.length));
-          capt.textContent = 'Week ' + roman(lived[k].wk) + ' · ' + lived.slice(0, k + 1).reduce((a, w) => a + w.set, 0) + ' sessions';
+          const p = Math.max(0, Math.min(1, (now - t0) / D)), i = Math.min(sj.weeks.length - 1, Math.floor(p * sj.weeks.length));
+          capt.textContent = 'Week of ' + fmtShort(sj.weeks[i].start) + ' · ' + sj.weeks.slice(0, i + 1).reduce((a, w) => a + w.set, 0) + ' sessions';
           if (p < 1) raf = requestAnimationFrame(step);
-          else setTimeout(() => { capt.textContent = 'The column of the block'; }, 2600);
+          else setTimeout(() => { capt.textContent = 'The rings of the oak'; }, 2600);
         };
         raf = requestAnimationFrame(step);
       });
