@@ -667,9 +667,10 @@
       items: items.map((it) => Object.assign(it, { kcal: Math.round(it.kcal) })), adjust: adj };
   }
 
-  /* The day's macros (v5.16, PLAN.energy.macros): protein by weight, carbs
-     by the day's endurance minutes, fat the rest within its bounds — the
-     carbs take up whatever the bounds give or take. t = energyTarget's
+  /* The day's macros (v5.16, PLAN.energy.macros; v5.16.2): protein by
+     weight, fat a quarter of the day, carbs the rest — never under the
+     tier the day's endurance minutes ask for, fat giving way (to its
+     floor) when the tier needs the room. t = energyTarget's
      result; nextKm = tomorrow's run as it stands (0 when skipped or moved
      away), for the carb-forward evening. A logged race counts by its own
      class: a logged marathon is still race day. */
@@ -684,11 +685,10 @@
     if (race) { g = M.race.g; label = M.race.label; }
     const topG = Math.max(...M.carbTiers.map((x) => x.g));
     if (!race && M.eve && nextKm >= M.eve.minKm && g < topG) { g += M.eve.g; eve = nextKm; }
-    const p = M.proteinGPerKg * kg;
-    let c = g * kg, fk = kcal - p * 4 - c * 4;
-    if (fk < M.fatMinPct * kcal) fk = M.fatMinPct * kcal;
-    if (fk > M.fatMaxPct * kcal) fk = M.fatMaxPct * kcal;
-    c = Math.max(0, (kcal - p * 4 - fk) / 4);
+    const p = M.proteinGPerKg * kg, floor = g * kg;
+    let fk = M.fatPct * kcal;
+    if ((kcal - p * 4 - fk) / 4 < floor) fk = Math.max(M.fatMinPct * kcal, kcal - p * 4 - floor * 4);
+    const c = Math.max(0, (kcal - p * 4 - fk) / 4);
     const rd = (x) => Math.round(x / r) * r;
     return { protein: rd(p), carbs: rd(c), fat: rd(fk / 9), carbsPerKg: Math.round(c / kg * 10) / 10, tierG: g, label, eve, mins,
       share: { c: c * 4 / kcal, p: p * 4 / kcal, f: fk / kcal } };

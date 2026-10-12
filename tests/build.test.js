@@ -1955,9 +1955,11 @@ section('the day’s macros and totals (v5.16)');
   ok(rest.m.label === 'Rest or gym only' && rest.m.tierG === 4 && rest.m.mins === 0 && rest.m.protein === 125, 'a rest day: 4 g/kg carbs, protein 1.8 g/kg (126 → 125 g)');
   const mon = mac('2026-10-12');
   ok(mon.m.mins === 0 && mon.m.label === 'Rest or gym only', 'the gym is not endurance: a gym Monday is a rest-day carb tier');
-  ok(Math.abs(mon.m.share.f - 0.35) < 1e-9 && mon.m.carbsPerKg > 4, 'fat held at 35% — the carbs take the difference (' + mon.m.carbsPerKg + ' g/kg)');
+  ok(Math.abs(mon.m.share.f - 0.25) < 1e-9 && mon.m.carbsPerKg > 5, 'fat a quarter of the day, carbs the rest — the Monday after the long run gets ' + mon.m.carbsPerKg + ' g/kg, not 4');
   const sun = mac('2026-10-11');
-  ok(sun.m.label === 'Long-run day' && sun.m.tierG === 8 && sun.m.carbs === 560, 'the long run: 8 g/kg, 560 g');
+  ok(sun.m.label === 'Long-run day' && sun.m.tierG === 8 && sun.m.carbs >= 560 && Math.abs(sun.m.share.f - 0.25) < 1e-9, 'the long run: at least 8 g/kg (' + sun.m.carbs + ' g), fat a quarter');
+  const eveDay = mac('2026-10-10', 24);
+  ok(eveDay.m.carbs === 420 && eveDay.m.share.f < 0.25 && eveDay.m.share.f >= 0.2, 'when the tier needs the room, fat gives way: the carb-forward Saturday holds 6 g/kg with fat at ' + Math.round(eveDay.m.share.f * 100) + '%');
   ok(mac('2026-10-16').m.label === 'Up to two hours', 'Friday’s two hours of basketball: up to two hours');
   ok(mac('2026-10-13').m.label === 'A short session', 'an easy run under the hour: a short session');
   const eve = mac('2026-10-10', 24), plain = mac('2026-10-10', 0);
@@ -1972,10 +1974,10 @@ section('the day’s macros and totals (v5.16)');
   for (let i = 0; i < 210; i++) {
     const iso = DB.addDays(PLAN.blocks[0].start, i), nx = DB.buildDay(DB.addDays(iso, 1));
     const { t, m } = mac(iso, nx.run ? nx.run.run.km : 0);
-    if (m.share.f < 0.2 - 1e-9 || m.share.f > 0.35 + 1e-9 || m.carbs <= 0) fatOK = false;
+    if (m.share.f < 0.2 - 1e-9 || m.share.f > 0.25 + 1e-9 || m.carbs <= 0 || (m.share.f > 0.2 + 1e-9 && m.carbs < m.tierG * 70 - 2.5)) fatOK = false;
     if (Math.abs(kcalOf(m) - t.kcal) > 45) sumOK = false;
   }
-  ok(fatOK, 'every day of the block: fat between 20% and 35%, carbs positive');
+  ok(fatOK, 'every day of the block: fat between 20% and 25%, carbs never under the tier unless fat is at its floor');
   ok(sumOK, 'every day of the block: the grams add back up to the target (within the 5 g rounding)');
   ok(DB.validEaten({ kcal: 2400 }) && DB.validEaten({ kcal: 2400, c: 300, p: 130, f: 80 }) && DB.validEaten({ kcal: 2400, c: null, p: 0, f: null }), 'the day’s totals: calories required, each macro optional');
   ok(!DB.validEaten(null) && !DB.validEaten({}) && !DB.validEaten({ kcal: 0 }) && !DB.validEaten({ kcal: 20000 }) && !DB.validEaten({ kcal: 2400, c: -1 }) && !DB.validEaten({ kcal: '2400' }) && !DB.validEaten({ kcal: 2400, p: 3000 }), 'nonsense totals are refused');

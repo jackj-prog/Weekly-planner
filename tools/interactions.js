@@ -1260,9 +1260,9 @@ async function fuel() {
   await t.page.click('[data-nav="today"]');
   await t.page.waitForTimeout(200);
   check(/^2,650\s*kcal$/.test(await text(t.page, '.fx .fx-v')), 'Today shows the target: ' + await text(t.page, '.fx .fx-v'));
-  check(/^Rest or gym only · carbs 4\.4 g\/kg$/.test(await text(t.page, '.fx-why')), 'one line says why — a gym Monday, fat held at 35%: ' + await text(t.page, '.fx-why'));
+  check(/^Rest or gym only · carbs 5\.3 g\/kg$/.test(await text(t.page, '.fx-why')), 'one line says why — a gym Monday, fat a quarter, carbs the rest: ' + await text(t.page, '.fx-why'));
   const ms = await t.page.$$eval('.fx-m', (r) => r.map((x) => x.textContent.replace(/\s+/g, ' ').trim()));
-  check(ms.length === 3 && /^Carbs 305g 46%$/.test(ms[0]) && /^Protein 125g 19%$/.test(ms[1]) && /^Fat 105g 35%$/.test(ms[2]), 'the three macros in grams with their share: ' + ms.join(' | '));
+  check(ms.length === 3 && /^Carbs 370g 56%$/.test(ms[0]) && /^Protein 125g 19%$/.test(ms[1]) && /^Fat 75g 25%$/.test(ms[2]), 'the three macros in grams with their share: ' + ms.join(' | '));
   check(!!(await t.page.$('.fx-cup svg.cup')) && !!(await t.page.$('.fx-bar')), 'the chalice, and the split as one bar');
   await t.page.click('.fx > summary');
   const rows = await t.page.$$eval('.fx .fd-row span', (r) => r.map((x) => x.textContent));
@@ -1285,7 +1285,7 @@ async function fuel() {
   check(eat && eat.kcal === 2400 && eat.c === 300 && eat.p === null && eat.f === null && /^\d\d:\d\d$/.test(eat.at) && eat.on === '2026-10-12', 'the totals are kept for the day, a blank macro left blank: ' + JSON.stringify(eat));
   check(/^2,400\s*of 2,650 kcal$/.test(await text(t.page, '.fx .fx-v')) && /^250 kcal to go · entered \d\d:\d\d from MyFitnessPal$/.test(await text(t.page, '.fx-why')), 'the card reads what was eaten against the target: ' + await text(t.page, '.fx .fx-v') + ' — ' + await text(t.page, '.fx-why'));
   const ate = await t.page.$$eval('.fx-m', (r) => r.map((x) => x.className + '|' + x.textContent.replace(/\s+/g, ' ').trim()));
-  check(/ate\|Carbs 300 \/ 305 g$/.test(ate[0]) && !/ate/.test(ate[1]) && /Protein 125g 19%$/.test(ate[1]) && !(await t.page.$('.fx-bar')) && !!(await t.page.$('.fx-cup .cup-target')), 'each macro against its own; a blank one keeps its target; the cup fills toward a dotted line');
+  check(/ate\|Carbs 300 \/ 370 g$/.test(ate[0]) && !/ate/.test(ate[1]) && /Protein 125g 19%$/.test(ate[1]) && !(await t.page.$('.fx-bar')) && !!(await t.page.$('.fx-cup .cup-target')), 'each macro against its own; a blank one keeps its target; the cup fills toward a dotted line');
   for (const w of [320, 260]) {
     await t.page.setViewportSize({ width: w, height: 700 });
     await t.page.waitForTimeout(100);
@@ -1305,7 +1305,7 @@ async function fuel() {
   await t.ctx.close();
   t = await open('2026-10-11', '12:00', Object.assign({}, SEED, { body: { kg: 70, cm: 175, age: 30, sex: 'm', act: 'desk', at: '2026-10-11' }, 'runlog-2026-10-11': { sec: 7200, hr: 150, km: 20 } }));
   check(/^3,650\s*kcal$/.test(await text(t.page, '.fx .fx-v')), 'a logged run counts as run (20 km logged against 24 planned): ' + await text(t.page, '.fx .fx-v'));
-  check(/^Up to two hours · carbs 6\.7 g\/kg$/.test(await text(t.page, '.fx-why')), 'the carbs follow the run as logged, 2:00 → up to two hours: ' + await text(t.page, '.fx-why'));
+  check(/^Up to two hours · carbs 8 g\/kg$/.test(await text(t.page, '.fx-why')), 'the run as logged, 2:00 → up to two hours; carbs the rest at 8 g/kg: ' + await text(t.page, '.fx-why'));
   await t.page.click('.nav[data-d="-1"]');
   await t.page.waitForTimeout(250);
   check(/carb-forward for tomorrow’s 24 km/.test(await text(t.page, '.fx-why')), 'the evening before carries the carb-forward dinner: ' + await text(t.page, '.fx-why'));

@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.16.1';
+  const APP_VERSION = '5.16.2';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -5053,7 +5053,7 @@
       '<span class="fx-ms">' + col('Carbs', 'c', m.carbs, m.share.c, E && E.c) + col('Protein', 'p', m.protein, m.share.p, E && E.p) + col('Fat', 'f', m.fat, m.share.f, E && E.f) + '</span>' +
       (E ? '' : '<span class="fx-bar" aria-hidden="true"><i class="c" style="flex:' + m.share.c.toFixed(3) + '"></i><i class="p" style="flex:' + m.share.p.toFixed(3) + '"></i><i class="f" style="flex:' + m.share.f.toFixed(3) + '"></i></span>') +
       '</summary><div class="fx-more"><div class="fd-rows">' + fuelRowsHTML(t) + '</div>' + (iso <= todayISO() ? eatHTML(iso, E) : '') +
-      '<p class="fd-note">Protein ' + PLAN.energy.macros.proteinGPerKg + ' g/kg every day, spread over the meals · carbs follow the training · fat makes up the rest. ' +
+      '<p class="fd-note">Protein ' + PLAN.energy.macros.proteinGPerKg + ' g/kg every day, spread over the meals · fat about a quarter of the day · carbs the rest, never under what the training asks. ' +
       'An estimate to aim at, built from your body (Reference → Daily fuel), the day’s sessions and the phase.</p></div></details></section>');
     wireEat(card, iso, E);
     return card;

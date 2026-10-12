@@ -2530,3 +2530,14 @@ two build checks that named the wheel (the Monday core check, and the
 "upper and core work is never dropped" leg-dose check). No `wt-ab-wheel`
 history is expected (bodyweight, and there was no wheel), so nothing is
 migrated.
+
+## Fat a quarter, carbs the rest — v5.16.2, 12 October (Claude)
+
+The owner questioned the fat share, and it was the model's fault: carbs sat
+at the tier and fat took the remainder (capped 35%), so every spare calorie
+of an easy or gym day went to fat — 33–35% four days a week — and the Monday
+after the long run got 4 g/kg of carbs. `DB.macroTargets` now holds fat at
+`fatPct` (0.25) and gives carbs the rest, never under the tier (`g × kg`);
+when the tier needs more, fat yields down to `fatMinPct` (0.2). `fatMaxPct`
+is gone. Invented 70 kg: gym Monday 305 → 370 g carbs, fat 35 → 25%; long
+run 560 → 595 g. Build checks and `fuel()` updated to the new figures.
