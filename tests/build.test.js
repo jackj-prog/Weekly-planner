@@ -359,7 +359,7 @@ ok(hasBlock(dayOfWeek(5, 0), /Plank finisher/), 'Base Lower B should carry the c
 ok(hasBlock(dayOfWeek(5, 1), /\+2\.5 kg/), 'Upper A should carry the progression rule');
 ok(hasBlock(dayOfWeek(3, 0), /6 × 3 min rounds/), 'Wks 1–3 Mondays keep punchbag (as lived)');
 ok(hasBlock(dayOfWeek(11, 0), /Plank 3 × 45s/), 'Wk 11 Monday carries the trunk prescription (as lived)');
-ok(hasBlock(dayOfWeek(12, 0), /Ab wheel/) && hasBlock(dayOfWeek(12, 0), /Pallof press/),
+ok(hasBlock(dayOfWeek(12, 0), /Barbell rollout/) && !hasBlock(dayOfWeek(12, 0), /Ab wheel/) && hasBlock(dayOfWeek(12, 0), /Pallof press/),
   'Wk 12+ Monday carries anti-extension and anti-rotation core');
 /* push:pull rebalance + calves-all-block (assessed from first principles) */
 ok(hasBlock(dayOfWeek(5, 1), /Band pull-aparts 4 × 15–20/), 'Upper A should carry pull-aparts in the bench rests');
@@ -1769,7 +1769,7 @@ section('move rules and missed runs');
   const gym = dayOfWeek(wk, 0).blocks.find(b => b.cat === 'gym');
   const legs = gym.plan.filter(p => re.test(p.ex)).map(p => p.ex);
   ok(legs.length >= 2 && legs.some(x => /leg press/i.test(x)), 'wk ' + wk + ' Monday leg work is recognised: ' + legs.join(', '));
-  ok(!gym.plan.some(p => re.test(p.ex) && /pull|row|curl(?!.*leg)|ab wheel|pallof|fly/i.test(p.ex) && !/leg curl/i.test(p.ex)), 'wk ' + wk + ' upper and core work is never dropped');
+  ok(!gym.plan.some(p => re.test(p.ex) && /pull|row|curl(?!.*leg)|rollout|pallof|fly/i.test(p.ex) && !/leg curl/i.test(p.ex)), 'wk ' + wk + ' upper and core work is never dropped');
  }
  ok(!re.test('Hanging leg raises'), 'hanging leg raises are core, not leg work');
  ok(typeof PLAN.missedRun.note === 'string' && /not owed/.test(PLAN.missedRun.note), 'missed-run note present');

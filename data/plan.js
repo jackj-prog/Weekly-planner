@@ -93,6 +93,10 @@ const UPPER_B = {
    race. Plyometrics are excluded for the same class of reason: Friday
    basketball already supplies jumps, landings, cuts and accelerations.
 
+   The anti-extension core work is a barbell rollout (Oct 2026, the owner's
+   call): the gym has no ab wheel, and a bar loaded with round plates rolls
+   out from the knees the same way — the same job, the same sets.
+
    UPPER_A / UPPER_B / CORE_CALVES above are left untouched: weeks 1–11 are
    as lived, and rewriting them would misreport sessions already done. */
 const MON_LONG = {
@@ -111,7 +115,7 @@ const MON_LONG = {
     { ex: 'Chest-supported row',      sets: '3 × 6–10 @ ~2 RIR' },
     { ex: 'Rear-delt fly',            sets: '3 × 12–20 @ 1–2 RIR' },
     { ex: 'Hammer curls',             sets: '2 × 8–12 @ 1–2 RIR' },
-    { ex: 'Ab wheel',                 sets: '2 × 8–12' },
+    { ex: 'Barbell rollout',          sets: '2 × 8–12 — round plates, from the knees' },
     { ex: 'Pallof press',             sets: '2 × 10–15/side' },
   ],
   maintDetail: 'Leg press and leg curl: 1 set each; pull work: 2 sets each · 3 reps in reserve — the race is the priority now · SHARP OR ONE-SIDED PAIN, joint or tendon pain, or altered running mechanics: skip the lower-body work entirely, upper only',

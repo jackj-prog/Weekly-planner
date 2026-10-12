@@ -2520,3 +2520,13 @@ Owner-approved redesign (mockups shown and approved before any code).
   eve, fat bounds and grams summing back on all 210 days, validEaten, the
   backup key); `fuel()` in tools/interactions.js covers the card, the
   chalice week, entry/refusal/edit/remove of totals and future days.
+
+## Ab wheel → barbell rollout — v5.16.1, 12 October (Claude)
+
+The owner's gym has no ab wheel. Monday's `MON_LONG` plan (wks 12–30)
+now prescribes a barbell rollout, 2 × 8–12 from the knees on round plates —
+the same anti-extension job. Data-only: `data/plan.js`, CLAUDE.md §6 and the
+two build checks that named the wheel (the Monday core check, and the
+"upper and core work is never dropped" leg-dose check). No `wt-ab-wheel`
+history is expected (bodyweight, and there was no wheel), so nothing is
+migrated.
