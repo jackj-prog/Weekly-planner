@@ -107,9 +107,9 @@ const SEED = {
 
 let browser, server, passes = 0, fails = 0;
 function check(cond, msg) { if (cond) passes++; else { fails++; console.log('  FAIL: ' + msg); } }
-async function open(date, time, seed, view) {
+async function open(date, time, seed, view, opts) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true,
-    timezoneId: TZ, locale: 'en-GB' });
+    timezoneId: TZ, locale: 'en-GB', reducedMotion: (opts && opts.reduce) ? 'reduce' : 'no-preference' });
   await ctx.addInitScript(({ epoch, seed }) => {
     /* window.__skew lets a check move the clock on (time away from the app) */
     const Real = Date;
@@ -1244,6 +1244,107 @@ async function strength() {
   await t.ctx.close();
 }
 
+/* v5.18: the banked moment. A run's first log and a gym session's tick
+   open the journey after a beat on Today and play once (a shooting star; the
+   ring's new wood); a pill goes back. Nothing for an edit, an untick, a
+   re-tick, a reading tick, a session before the strength start, or when you
+   have moved on in the beat; reduced motion arrives without the flight. */
+async function moments() {
+  console.log('· the banked moment: a star, a ring');
+  const view = (t) => t.page.evaluate(() => ({ plan: !!document.querySelector('.training-journey'), tab: (document.querySelector('.jr-switch [aria-selected="true"]') || {}).textContent || '',
+    today: !!document.querySelector('.hero, .tl'), pill: (document.querySelector('.mo-back .mo-what') || {}).textContent || '' }));
+  const logRun = async (t) => {
+    await t.page.click('.runlogger .h-log');
+    const fill = async (k, v) => { await t.page.fill('[data-log-field="' + k + '"]', v); await t.page.dispatchEvent('[data-log-field="' + k + '"]', 'change'); };
+    await fill('km', '7'); await fill('sec', '45:30'); await fill('hr', '143');
+    await t.page.click('.rl-save');
+  };
+  let t = await open('2026-10-13', '18:30', SEED);
+  await logRun(t);
+  await t.page.waitForTimeout(400);
+  check((await view(t)).today, 'a beat on Today first, so the save lands where it was made');
+  await t.page.waitForTimeout(1000);
+  let v = await view(t);
+  check(v.plan && v.tab === 'Running' && v.pill === 'Easy run · 7 km banked', 'then the journey opens on Running with the way back: ' + JSON.stringify(v));
+  check(await t.page.evaluate(() => !!document.querySelector('.sky .sk-star[data-iso="2026-10-13"][data-hold]') && !!document.querySelector('.mo-meteor')), 'the day’s star waits while a meteor falls to it');
+  await t.page.waitForTimeout(1500);
+  check(await t.page.evaluate(() => document.querySelector('.sky .sk-star[data-iso="2026-10-13"]').classList.contains('mo-landed') && !document.querySelector('.mo-meteor') &&
+    /^Tue 13 Oct · \+7 km · banked$/.test(document.querySelector('.sk-capt').textContent)), 'it lands, the star is lit, the caption says what was banked');
+  await t.page.click('.mo-back button');
+  await t.page.waitForTimeout(200);
+  v = await view(t);
+  check(v.today && !v.plan && !v.pill && /13 Oct|Tuesday/.test(await text(t.page, '.day-nav h1')), 'Back to Today returns to the day it came from, the pill gone');
+  /* an edit is not a new star */
+  await t.page.click('.runlogger .h-log');
+  await t.page.fill('[data-log-field="hr"]', '144'); await t.page.dispatchEvent('[data-log-field="hr"]', 'change');
+  await t.page.click('.rl-save');
+  await t.page.waitForTimeout(1500);
+  check((await view(t)).today, 'editing a saved run stays on Today');
+  noErrors(t, 'run moment');
+  await t.ctx.close();
+
+  t = await open('2026-10-14', '20:30', SEED);
+  await t.page.click('.tl-card:has-text("Push") .tick');
+  await t.page.waitForTimeout(1500);
+  v = await view(t);
+  check(v.plan && v.tab === 'Strength' && v.pill === 'Push · session banked' && await t.page.evaluate(() => !!document.querySelector('.rg-slice.fresh .rg-fresh')),
+    'a gym tick opens Strength and its ring swells out by the new wood: ' + JSON.stringify(v));
+  check(/^Wed 14 Oct · \+1 session · 1 this week$/.test(await text(t.page, '.rg-capt')), 'the caption counts the session into its week: ' + await text(t.page, '.rg-capt'));
+  await t.page.click('.mo-back button');
+  await t.page.waitForTimeout(200);
+  await t.page.click('.tl-card:has-text("Push") .tick');            // untick
+  await t.page.waitForTimeout(1400);
+  check((await view(t)).today, 'an untick stays on Today');
+  await t.page.click('.tl-card:has-text("Push") .tick');            // re-tick: once is enough
+  await t.page.waitForTimeout(1400);
+  check((await view(t)).today, 'a re-tick does not replay the moment');
+  await t.page.click('.tl-card:has-text("Read") .tick');
+  await t.page.waitForTimeout(1400);
+  check((await view(t)).today, 'reading is not an input to the journey: no moment');
+  noErrors(t, 'gym moment');
+  await t.ctx.close();
+
+  /* moving on in the beat cancels it; before the strength start there is no ring */
+  t = await open('2026-10-17', '12:00', SEED);
+  await t.page.click('.tl-card:has-text("Light upper") .tick');
+  await t.page.click('[data-nav="week"]');
+  await t.page.waitForTimeout(1500);
+  check(!(await view(t)).plan, 'leaving Today during the beat cancels the moment');
+  await t.ctx.close();
+  t = await open('2026-10-10', '12:00', SEED);
+  await t.page.click('.tl-card:has-text("Light upper") .tick');
+  await t.page.waitForTimeout(1500);
+  check((await view(t)).today, 'a session before the strength journey starts has no ring to grow: no moment');
+  await t.ctx.close();
+
+  /* a session ticked in Focus waits for Focus to close */
+  t = await open('2026-10-14', '20:30', SEED);
+  await t.page.click('.tl-card:has-text("Push") .session-focus-open');
+  await t.page.waitForTimeout(200);
+  await t.page.click('.focus-done');
+  await t.page.waitForTimeout(1500);
+  check(!!(await t.page.$('dialog.session-focus[open], dialog[open]')) && !(await view(t)).plan, 'ticked in Focus: nothing moves while Focus is open');
+  await t.page.click('.focus-close');
+  await t.page.waitForTimeout(1500);
+  check((await view(t)).tab === 'Strength', 'closing Focus lets the moment play');
+  noErrors(t, 'focus moment');
+  await t.ctx.close();
+
+  /* reduced motion: the journey arrives with the ring already in place */
+  t = await open('2026-10-14', '20:30', SEED, null, { reduce: true });
+  await t.page.click('.tl-card:has-text("Push") .tick');
+  await t.page.waitForTimeout(1500);
+  v = await view(t);
+  check(v.plan && v.tab === 'Strength' && !!v.pill && !(await t.page.$('.rg-slice.fresh')), 'reduced motion: the journey opens, no swell');
+  for (const w of [320, 260]) {
+    await t.page.setViewportSize({ width: w, height: 700 });
+    await t.page.waitForTimeout(100);
+    check(await t.page.evaluate(() => { const p = document.querySelector('.mo-back'), r = p.getBoundingClientRect(); return document.scrollingElement.scrollWidth <= window.innerWidth && r.left >= 0 && r.right <= window.innerWidth; }), 'the pill fits at ' + w + 'px');
+  }
+  noErrors(t, 'reduced moment');
+  await t.ctx.close();
+}
+
 /* v5.15: the day's fuel and German paused. Invented round body figures.
    Without body stats Today offers one quiet line that opens Reference →
    Daily fuel; the form refuses nonsense and keeps a valid body on the
@@ -1507,7 +1608,7 @@ async function offline() {
   browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
   server = await serve();
   try {
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, strength, fuel, strava, update, sweep, offline]) await run();
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, strength, moments, fuel, strava, update, sweep, offline]) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');

@@ -2570,3 +2570,37 @@ they had never logged strength in the app, so the journey starts today.
   session, per-weekday rows, continuity to March, race week lean, programme
   change → earlier programme); `strength()` in tools/interactions.js checks
   the rings, the ledger, the kicker, Replay, widths and the first morning.
+
+## The banked moment — v5.18.0, 13 October (Claude)
+
+Owner's idea; storyboard shown and approved; scope narrowed by the owner to
+logged runs and strength.
+- Triggers: `bankMoment('run', iso, {title, km, staged})` on a run log's
+  first save (buildRunLogger; `staged` = an earned-moment card is playing,
+  `celebrate` now returns true when `cinemaCard` ran), and
+  `bankMoment('gym', iso, {id, title})` on a gym tick-on (timeline card and
+  Focus). Ignored: dates after today, runs outside the marathon block's
+  days, gym before `PLAN.strength.since`, a key already played this session
+  (`momentsPlayed`). In Focus the moment waits (`pendingMoment`) and
+  `releaseMoment()` runs from the dialog's close handler.
+- `scheduleMoment`: 1100 ms beat (3300 when staged); cancelled if the view
+  or date changed, Focus is open, the page is hidden, or the tick/log is gone.
+- `playMoment`: view → plan, `journeyTab` → run|strength, `state.moment`
+  set for that one render (read by `skyHTML`, which tags every star mark
+  with `data-iso` and the target with `data-hold`, and by `ringsSVG`, which
+  wraps the slice in `.rg-slice` with `--s0` = radius before ÷ after and
+  draws `.rg-fresh`/`.rg-fresh-edge`), `anim` removed from #view (the
+  moment is the arrival), figure scrolled to centre, caption replaced for
+  7 s, pill (`.mo-back`, role=status) for 12 s or until leaving the plan.
+  Run: `shootingStar` rAF meteor (1 s) using `#sk-tail`/`#sk-hw`, then a CSS
+  flare and `.mo-landed`. Gym: CSS `mo-swell` scale from `--s0`, `mo-wood`
+  and `mo-edge`. All motion behind reduced-motion; under reduce no
+  `state.moment`, so the figure arrives already drawn.
+- `ringsSVG` scale is now `k = min((R − r0)/U, 12)`: a sapling grows by a
+  session's width so the swell is visible from week one.
+- Strength story after a first session with no lift logged reads "The first
+  ring is growing…" (v5.17 kept the first-session line).
+- Tests: `moments()` in tools/interactions.js (22 checks: beat, journey and
+  tab, hold/meteor/landing, caption, back, edit, untick, re-tick, reading,
+  moving on, before the start, Focus, reduced motion, pill at 320/260);
+  `open()` takes `{reduce}`.

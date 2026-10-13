@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.17.0';
+  const APP_VERSION = '5.18.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -45,6 +45,7 @@
     journeyTab: 'run',         // Plan → the journey's half: 'run' | 'strength' (v5.14)
     fuelEdit: false, fuelDraft: null,  // Reference → Daily fuel: the body form (v5.15)
     eatEdit: null, eatDraft: null,     // Today's fuel: the day's totals form, by date (v5.16)
+    moment: null,                      // the banked moment being drawn on the journey (v5.18)
   };
   let nowKey = '';             // today's current|next block ids — minute tick
                                // re-renders only when this changes
@@ -1414,7 +1415,10 @@
       state.runLogEdit = null; state.runLogDraft = null;
       if (!saved || !(saved.sec > 0)) state.justLit = iso;   // the window floods with light on the first save
       render();
-      if (!saved || !(saved.sec > 0)) celebrate(iso, day);   // first save only, never on edits
+      if (!saved || !(saved.sec > 0)) {                       // first save only, never on edits
+        const staged = celebrate(iso, day);
+        bankMoment('run', iso, { title: (day.run && day.run.title) || 'Run', km: entry.km, staged });
+      }
       const recapHeading = view.querySelector('.run-recap h2');
       if (recapHeading) { recapHeading.focus({ preventScroll: true }); recapHeading.scrollIntoView({ block: 'start' }); }
     });
@@ -1637,6 +1641,7 @@
       toggleDone(iso, block.id);
       paintDone();
       if (!!getDone(iso)[block.id] === before) status.textContent = 'Could not save. Check device storage and try again.';
+      else if (!before && block.cat === 'gym') bankMoment('gym', iso, { id: block.id, title: block.title });
     });
     let logAfterClose = false;
     dialog.querySelector('.focus-back').addEventListener('click', () => {
@@ -1657,6 +1662,7 @@
       // Rendering replaces the opener. Restore its new counterpart by block id.
       const opener = Array.from(document.querySelectorAll('[data-focus-id]')).find(n => n.dataset.focusId === block.id);
       if (opener) opener.focus({ preventScroll: true }); else if (trigger && trigger.isConnected) trigger.focus({ preventScroll: true });
+      releaseMoment();
       if (logAfterClose) {
         state.view = 'today'; state.dateISO = iso;
         render();
@@ -3112,6 +3118,7 @@
       if (!isDone) state.justTicked = b.id;       // animate on tick-on only
       toggleDone(iso, b.id);
       render();
+      if (!isDone && b.cat === 'gym' && getDone(iso)[b.id]) bankMoment('gym', iso, { id: b.id, title: b.title });
     });
     card.querySelector('.more-btn').addEventListener('click', () => {
       state.expanded = expanded ? null : b.id;
@@ -3254,19 +3261,22 @@
       const t = (x / W).toFixed(3);
       if (d.recorded > 0) {
         const r = Math.max(0.8, Math.min(3.2, Math.sqrt(d.recorded) * 0.66));
-        halos += '<circle class="sk-halo ' + kind + '" style="--t:' + t + '" cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(r * (kind === 'easy' ? 3 : 4.6)) + '" fill="url(#sk-h' + (kind === 'hard' ? 'r' : 'w') + ')"/>';
+        /* every mark of a day's star carries its date; the one a banked
+           moment is bringing in waits, unlit, for the meteor (v5.18) */
+        const mark = ' data-iso="' + d.iso + '"' + (state.moment && state.moment.kind === 'run' && state.moment.iso === d.iso ? ' data-hold' : '');
+        halos += '<circle class="sk-halo ' + kind + '"' + mark + ' style="--t:' + t + '" cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(r * (kind === 'easy' ? 3 : 4.6)) + '" fill="url(#sk-h' + (kind === 'hard' ? 'r' : 'w') + ')"/>';
         /* the brightest carry diffraction spikes: four tapered needles */
         if (kind === 'long' || d.recorded >= 21) {
           const L = r * 2.8 + 2.5, w = 0.32;
           const needle = (x0, y0, x1, y1, px, py) => 'M' + f1(x0) + ' ' + f1(y0) + ' L' + (x + px).toFixed(2) + ' ' + (y + py).toFixed(2) + ' L' + f1(x1) + ' ' + f1(y1) + ' L' + (x - px).toFixed(2) + ' ' + (y - py).toFixed(2) + ' Z';
-          spikes += '<path class="sk-spike" style="--t:' + t + '" d="' + needle(x - L, y, x + L, y, 0, w) + ' ' + needle(x, y - L, x, y + L, w, 0) + '"/>';
+          spikes += '<path class="sk-spike"' + mark + ' style="--t:' + t + '" d="' + needle(x - L, y, x + L, y, 0, w) + ' ' + needle(x, y - L, x, y + L, w, 0) + '"/>';
         }
-        stars += '<circle class="sk-star ' + kind + (seed(d.iso + 't') > 0.62 ? ' tw' : '') + '" style="--t:' + t + ';--d:' + (seed(d.iso + 'd') * 6).toFixed(2) + 's" cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(r) + '"/>';
+        stars += '<circle class="sk-star ' + kind + (seed(d.iso + 't') > 0.62 ? ' tw' : '') + '"' + mark + ' style="--t:' + t + ';--d:' + (seed(d.iso + 'd') * 6).toFixed(2) + 's" cx="' + f1(x) + '" cy="' + f1(y) + '" r="' + f1(r) + '"/>';
         if (kind === 'long') spine.push([x, y, r]);
         if (d.recorded > maxKm) {
           if (maxKm > 0) {
             const gain = d.recorded - maxKm, len = 8 + Math.min(30, gain * 3.2);
-            comets += '<path class="sk-comet" pathLength="1" style="--t:' + t + '" d="M' + f1(x - len * 0.93) + ' ' + f1(y - len * 0.37) + ' L' + f1(x - r) + ' ' + f1(y - r * 0.4) + '"/>';
+            comets += '<path class="sk-comet" pathLength="1"' + mark + ' style="--t:' + t + '" d="M' + f1(x - len * 0.93) + ' ' + f1(y - len * 0.37) + ' L' + f1(x - r) + ' ' + f1(y - r * 0.4) + '"/>';
           }
           maxKm = d.recorded;
         }
@@ -3476,12 +3486,17 @@
   function ringsSVG(sj, today) {
     const W = 360, H = 372, cx = 176, cy = 176, R = 112, r0 = 3.2, f1 = (v) => (Math.round(v * 10) / 10).toString();
     const weeks = sj.weeks, widths = weeks.map((w) => 0.55 + w.set), U = widths.reduce((a, b) => a + b, 0);
-    /* a young slice is drawn at a readable size and grows to the plate's
-       width; then its rings close up */
-    const k = Math.min((R - r0) / U, Math.max(3.2, (48 - r0) / U)), bounds = [];
+    /* a sapling grows by a session's width with every session (v5.18, so
+       a banked session visibly adds wood) until it fills the plate; then
+       its rings close up */
+    const k = Math.min((R - r0) / U, 12), bounds = [];
     let acc = r0;
     widths.forEach((w) => { acc += w * k; bounds.push(acc); });
     const RA = acc, barkW = 3 + 6 * Math.min(1, RA / R);
+    /* a banked moment: the session's week, and the slice as it was before it */
+    const fresh = state.moment && state.moment.kind === 'gym' ? state.moment.iso : null;
+    const fi = fresh ? weeks.findIndex((w) => w.start <= fresh && fresh <= w.end && w.set > 0) : -1;
+    const U1 = U - 1, RA1 = fi >= 0 ? r0 + Math.min((R - r0) / U1, 12) * U1 : RA;
     const wob = (t) => 0.034 * Math.sin(3 * t + 1.1) + 0.021 * Math.sin(5 * t + 2.3) + 0.011 * Math.sin(8 * t + 0.4);
     const pt = (r, t) => { const g = r / R, rr = r * (1 + wob(t) * g); return [cx + 7 * g + rr * Math.cos(t), cy - 4 * g + rr * 0.95 * Math.sin(t)]; };
     const loop = (r, jag) => { let d = ''; for (let i = 0; i <= 144; i++) { const t = i / 144 * Math.PI * 2, [x, y] = pt(r + (jag ? jag(t) : 0), t); d += (i ? 'L' : 'M') + f1(x) + ' ' + f1(y); } return d + 'Z'; };
@@ -3492,7 +3507,8 @@
       '<defs><radialGradient id="rg-v" cx=".48" cy=".46" r=".7"><stop offset="0" class="rg-v0"/><stop offset="1" class="rg-v1"/></radialGradient>' +
       '<radialGradient id="rg-wood" cx=".5" cy=".5" r=".5"><stop offset="0" class="rg-w0"/><stop offset="1" class="rg-w1"/></radialGradient>' +
       '<filter id="rg-blur" filterUnits="userSpaceOnUse" x="0" y="0" width="' + W + '" height="' + H + '"><feGaussianBlur stdDeviation="2.4"/></filter></defs>' +
-      '<rect width="' + W + '" height="' + H + '" fill="url(#rg-v)"/>';
+      '<rect width="' + W + '" height="' + H + '" fill="url(#rg-v)"/>' +
+      '<g class="rg-slice' + (fi >= 0 ? ' fresh' : '') + '" style="transform-origin:' + f1(cx + 7 * RA / R) + 'px ' + f1(cy - 4 * RA / R) + 'px;--s0:' + (RA1 / RA).toFixed(4) + '">';
     // the slice's shadow on the plate, the bark and its fissures
     s += '<path class="rg-shadow" transform="translate(5 7)" d="' + loop(RA + barkW, rough) + '" filter="url(#rg-blur)"/><path class="rg-bark" d="' + loop(RA + barkW, rough) + '"/>';
     let fis = '';
@@ -3524,7 +3540,9 @@
     const nowI = weeks.findIndex((w) => w.state === 'now');
     if (nowI >= 0) s += '<path class="rg-now-glow" d="' + loop(bounds[nowI] - widths[nowI] * k / 2) + '" stroke-width="' + f1(widths[nowI] * k) + '" filter="url(#rg-blur)"/>' +
       '<path class="rg-now" d="' + loop(bounds[nowI] - .4) + '"/>';
-    s += '<ellipse class="rg-pith" cx="' + cx + '" cy="' + cy + '" rx="2.6" ry="2.2"/>';
+    // the new wood a banked session adds, lit while it swells out
+    if (fi >= 0) s += '<path class="rg-fresh" fill-rule="evenodd" d="' + loop(bounds[fi]) + loop(Math.max(r0, bounds[fi] - k)) + '"/><path class="rg-fresh-edge" d="' + loop(bounds[fi] - .4) + '"/>';
+    s += '<ellipse class="rg-pith" cx="' + cx + '" cy="' + cy + '" rx="2.6" ry="2.2"/></g>';
     /* the core sample: a ruler from the pith out through the bark, the first
        ring of each month marked — a crowded month gives way to the last */
     const tr = -Math.PI * 0.62, end = pt(RA + barkW + 6, tr), nx = Math.cos(tr + Math.PI / 2), ny = Math.sin(tr + Math.PI / 2);
@@ -3583,7 +3601,9 @@
     const bits = [];
     if (sj.recent && sj.recent.weeks >= 2) bits.push('Last ' + sj.recent.weeks + ' weeks <b>' + kgNum(sj.recent.set) + '</b> of ' + kgNum(sj.recent.planned) + ' sessions a week');
     if (lead) bits.push(esc(lead.ex.toLowerCase()) + ' <b>' + kgNum(lead.last.kg) + ' kg</b>' + (lead.last.kg >= lead.heaviest && lead.entries.length > 1 ? ', your heaviest' : ''));
-    const story = sj.banked && bits.length ? bits.join(' · ').replace(/^./, (c) => c.toUpperCase()) : 'Your first session lays the first ring. The oak grows a ring a week.';
+    const story = sj.banked && bits.length ? bits.join(' · ').replace(/^./, (c) => c.toUpperCase())
+      : sj.banked ? 'The first ring is growing. Log a weight on a session’s card and its line starts below.'
+        : 'Your first session lays the first ring. The oak grows a ring a week.';
     const groups = sj.groups.map((g) => (g.rows.length || g.unlogged.length) ? '<div class="lf-group"><h3><span>' + esc(DAY_NAMES[g.day].toUpperCase()) + '</span>' + esc(g.title) + '</h3>' +
       g.rows.map((r) => liftRowHTML(r, sj, today)).join('') +
       (g.unlogged.length ? '<p class="lf-quiet">No weight logged: ' + g.unlogged.map(esc).join(' · ') + '</p>' : '') + '</div>' : '').join('');
@@ -5927,6 +5947,7 @@
   const openDetails = new Set();
 
   function render() {
+    if (state.view !== 'plan' && typeof hideMomentPill === 'function') hideMomentPill();
     document.querySelectorAll('details[data-disclosure]').forEach(node => {
       if (node.open) openDetails.add(node.dataset.disclosure);
       else openDetails.delete(node.dataset.disclosure);
@@ -6226,6 +6247,7 @@
     const bye = () => card.remove();
     card.addEventListener('animationend', (e) => { if (e.target === card) bye(); });
     setTimeout(bye, 3400);   // in case the animation never runs
+    return true;
   }
 
   /* ---- title card: every launch of the installed app ----
@@ -6283,6 +6305,128 @@
       return cinemaCard(report.milestone + ' KM LOGGED', esc(String(report.milestone)) + '<small>KM</small>',
         'across ' + report.runCount + ' saved runs', 'earned', (PLAN.hours && PLAN.hours.earned || {}).milestone);
     }
+  }
+
+  /* ---- the banked moment (v5.18, the owner's idea) ----
+     A run's first log (by hand or from Strava) and a gym session's tick are
+     the two inputs the journey is drawn from, so each gets its moment there:
+     a beat on Today for the tick or the glass to land (longer when an
+     earned-moment card is playing), then the journey opens on its tab and
+     plays once — the run comes in as a shooting star and settles into its
+     place in the firmament; the session swells this week's ring out by its
+     new wood. A pill at the foot takes you back to Today where you were.
+     Only once per session (a re-tick never replays); nothing for an untick,
+     an edit, a weight saved, study or reading; nothing when the day has no
+     place in the figure; under reduced motion the figure arrives with the
+     new star or ring already in place. */
+  const momentsPlayed = new Set();
+  let momentTimer = 0, pendingMoment = null, momentPill = null, momentPillTimer = 0;
+  function bankMoment(kind, iso, info) {
+    const key = kind + '|' + iso + '|' + (info.id || '');
+    if (momentsPlayed.has(key) || iso > todayISO()) return;
+    if (kind === 'run' && (iso < PLAN.blocks[0].start || iso > DB.addDays(PLAN.blocks[0].start, PLAN.blocks[0].weekTable.length * 7 - 1))) return;
+    if (kind === 'gym' && iso < ((PLAN.strength || {}).since || PLAN.blocks[0].start)) return;
+    momentsPlayed.add(key);
+    const m = { kind, iso, info, from: { view: state.view, dateISO: state.dateISO, y: window.scrollY } };
+    if (focusedSession) { pendingMoment = m; return; }   // a session in Focus: after it closes
+    scheduleMoment(m);
+  }
+  function releaseMoment() {
+    if (!pendingMoment) return;
+    const m = pendingMoment;
+    pendingMoment = null;
+    m.from = { view: state.view, dateISO: state.dateISO, y: window.scrollY };
+    scheduleMoment(m);
+  }
+  function scheduleMoment(m) {
+    clearTimeout(momentTimer);
+    momentTimer = setTimeout(() => {
+      /* moved on, or changed their mind in the beat: nothing to show */
+      if (state.view !== m.from.view || state.dateISO !== m.from.dateISO || focusedSession || document.hidden) return;
+      if (m.kind === 'gym' && !getDone(m.iso)[m.info.id]) return;
+      if (m.kind === 'run' && !((getRunLogEntry(m.iso) || {}).sec > 0)) return;
+      playMoment(m);
+    }, m.info.staged ? 3300 : 1100);
+  }
+  function playMoment(m) {
+    const motion = motionOK();
+    state.view = 'plan';
+    state.journeyTab = m.kind === 'run' ? 'run' : 'strength';
+    state.moment = motion ? { kind: m.kind, iso: m.iso } : null;
+    render();
+    state.moment = null;
+    /* the moment is the arrival: no page fade under it */
+    document.getElementById('view').classList.remove('anim', 'slide-next', 'slide-prev');
+    const fig = document.querySelector(m.kind === 'run' ? '#view .sky' : '#view .rg-fig');
+    if (!fig) return;
+    const top = fig.getBoundingClientRect().top + window.scrollY - (window.innerHeight - fig.getBoundingClientRect().height) / 2;
+    window.scrollTo(0, Math.max(0, top));
+    const capt = fig.querySelector(m.kind === 'run' ? '.sk-capt' : '.rg-capt'), was = capt ? capt.textContent : '';
+    const day = esc(fmtShort(m.iso)), wd = DAY_SHORT[DB.dayIndex(m.iso)].charAt(0) + DAY_SHORT[DB.dayIndex(m.iso)].slice(1).toLowerCase();
+    let line, what;
+    if (m.kind === 'run') {
+      line = wd + ' ' + day + ' · +' + loggedDistance(m.info.km) + ' km · banked';
+      what = m.info.title.replace(/\s+[—-]\s+.*$/, '') + ' · ' + loggedDistance(m.info.km) + ' km banked';
+      if (motion) shootingStar(fig, m.iso);
+    } else {
+      const sj = DB.strengthJourney({ done: bankedDone, ovr: getOvr, moveIn: getMoveIn, lifts: () => [] }, todayISO());
+      const w = sj.weeks.find((x) => x.start <= m.iso && m.iso <= x.end);
+      line = wd + ' ' + day + ' · +1 session' + (w ? ' · ' + w.set + (w.state === 'now' ? ' this week' : ' that week') : '');
+      what = m.info.title.replace(/^Gym\s*[—-]\s*/, '') + ' · session banked';
+    }
+    if (capt) {
+      capt.textContent = line;
+      setTimeout(() => { if (capt.isConnected) capt.textContent = was; }, 7000);
+    }
+    showMomentPill(what, m.from);
+  }
+  /* the run's star: hidden, a meteor falls to it from high on the left, it
+     flares where it lands and settles in its halo */
+  function shootingStar(fig, iso) {
+    const svg = fig.querySelector('svg'), star = svg && svg.querySelector('.sk-star[data-iso="' + iso + '"]');
+    if (!star) return;
+    const parts = svg.querySelectorAll('[data-iso="' + iso + '"]');
+    const sx = +star.getAttribute('cx'), sy = +star.getAttribute('cy'), ax = sx - 120, ay = sy - 78, NS = 'http://www.w3.org/2000/svg';
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'mo-meteor');
+    g.innerHTML = '<path class="mo-tail" stroke="url(#sk-tail)"/><circle class="mo-glow" r="6" fill="url(#sk-hw)"/><circle class="mo-head" r="1.3"/>';
+    svg.appendChild(g);
+    const tail = g.querySelector('.mo-tail'), heads = g.querySelectorAll('circle'), D = 1000, t0 = performance.now();
+    const ease = (p) => p * p * (1.6 - 0.6 * p);   // falling: gathering pace, settling at the end
+    const at = (p) => [ax + (sx - ax) * p, ay + (sy - ay) * p];
+    const step = (now) => {
+      if (!svg.isConnected) return;
+      const p = Math.min(1, (now - t0) / D), q = ease(p), [hx, hy] = at(q), [tx, ty] = at(Math.max(0, q - 0.42));
+      tail.setAttribute('d', 'M' + tx.toFixed(1) + ' ' + ty.toFixed(1) + ' L' + hx.toFixed(1) + ' ' + hy.toFixed(1));
+      heads.forEach((c) => { c.setAttribute('cx', hx.toFixed(1)); c.setAttribute('cy', hy.toFixed(1)); });
+      if (p < 1) { requestAnimationFrame(step); return; }
+      g.remove();
+      const flare = document.createElementNS(NS, 'g');
+      flare.setAttribute('class', 'mo-flare');
+      flare.innerHTML = '<circle cx="' + sx + '" cy="' + sy + '" r="16" fill="url(#sk-hw)"/><circle class="mo-ring" cx="' + sx + '" cy="' + sy + '" r="9"/>' +
+        '<path class="mo-cross" d="M' + (sx - 12) + ' ' + sy + 'H' + (sx + 12) + 'M' + sx + ' ' + (sy - 12) + 'V' + (sy + 12) + '"/>';
+      svg.appendChild(flare);
+      parts.forEach((n) => n.classList.add('mo-landed'));
+      setTimeout(() => flare.remove(), 1400);
+    };
+    requestAnimationFrame(step);
+  }
+  function showMomentPill(what, from) {
+    hideMomentPill();
+    momentPill = el('<div class="mo-back" role="status"><span class="mo-what">' + esc(what) + '</span><button type="button">‹ Back to Today</button></div>');
+    momentPill.querySelector('button').addEventListener('click', () => {
+      hideMomentPill();
+      state.view = 'today'; state.dateISO = from.dateISO;
+      render();
+      window.scrollTo(0, from.y);
+    });
+    document.body.appendChild(momentPill);
+    clearTimeout(momentPillTimer);
+    momentPillTimer = setTimeout(hideMomentPill, 12000);
+  }
+  function hideMomentPill() {
+    clearTimeout(momentPillTimer);
+    if (momentPill) { momentPill.remove(); momentPill = null; }
   }
 
   stravaReturn();
