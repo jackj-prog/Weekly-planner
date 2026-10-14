@@ -20,7 +20,7 @@ function section(name) { console.log('· ' + name); }
 
 /* ---- 0. JS syntax: browser-only files can't be require()d ---- */
 section('syntax check (node --check)');
-for (const f of ['../js/app.js', '../sw.js', '../js/day-builder.js', '../data/plan.js']) {
+for (const f of ['../js/app.js', '../sw.js', '../js/day-builder.js', '../data/plan.js', '../js/scribe.js']) {
   const p = path.join(__dirname, f);
   try {
     execFileSync(process.execPath, ['--check', p], { stdio: 'pipe' });
@@ -1991,6 +1991,36 @@ section('the day’s macros and totals (v5.16)');
   const store = new RegExp(src.match(/const STORE_KEY = \/(.+)\/;/)[1]);
   ok(store.test('eat-2026-10-11') && !store.test('eat-') && !store.test('eat-x'), 'the day’s totals travel in the backup (eat-ISO)');
   ok(/const bankedEaten = \(iso\) => \{ if \(iso > todayISO\(\)\) return null;/.test(src), 'totals dated after today count nowhere yet');
+}
+section('the banked moment: the scribe’s hand and the transfer (v5.18.1)');
+{
+  const fs = require('fs'), Scribe = require('../js/scribe.js');
+  const B = (PLAN.hours || {}).banked || {};
+  const pairs = ['run', 'gym'].flatMap((k) => (B[k] || []).map((x) => [k, x]));
+  ok((B.run || []).length >= 1 && (B.gym || []).length >= 1, 'a phrase for the star and one for the ring (PLAN.hours.banked)');
+  ok(pairs.every(([, x]) => Array.isArray(x) && x.length === 2 && x[0] && x[1]), 'every phrase carries its English, as every motto does');
+  ok(pairs.every(([, x]) => Array.from(x[0]).every((c) => Scribe.has(c))), 'the scribe has a letter for every character of every phrase');
+  pairs.forEach(([k, x]) => {
+    const w = Scribe.write(x[0], { maxUnits: 200 }), n = (w.svg.match(/<path /g) || []).length;
+    ok(n > 10 && w.lines <= 2 && w.ms > 0 && w.ms < 4000 && /^<svg class="scribe"/.test(w.svg) && (w.svg.match(/class="sc-s rub"/g) || []).length >= 1,
+      k + ': “' + x[0] + '” written in ' + n + ' strokes over ' + w.lines + ' line' + (w.lines === 1 ? '' : 's') + ' in ' + w.ms + ' ms, its initial in red');
+    const d = [...w.svg.matchAll(/--d:(\d+)ms/g)].map((m) => +m[1]);
+    ok(d.every((v, i) => i === 0 || v >= d[i - 1] - 200), k + ': the pen moves forward through the phrase');
+  });
+  ok(Scribe.lines('Sic itur ad astra', 200).length === 2 && Scribe.lines('Ave', 200).length === 1, 'a long phrase breaks onto two lines at the middle, a short one stays on one');
+  const sc = fs.readFileSync(path.join(__dirname, '../js/scribe.js'), 'utf8');
+  ok(/originally created by Dr\. A\. V\. Hershey/.test(sc) && /James Hurt, Cognition, Inc\./.test(sc), 'the Hershey glyphs carry the acknowledgements their licence asks for');
+  const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8'), sw = fs.readFileSync(path.join(__dirname, '../sw.js'), 'utf8');
+  const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]);
+  ok(scripts.includes('js/scribe.js') && scripts.indexOf('js/scribe.js') < scripts.indexOf('js/app.js'), 'the page loads the scribe before the app');
+  ok(scripts.every((s) => sw.includes("'./" + s + "'")), 'every script the page loads is precached for offline: ' + scripts.filter((s) => !sw.includes("'./" + s + "'")).join(', '));
+  const css = fs.readFileSync(path.join(__dirname, '../css/style.css'), 'utf8'), app = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  /* the iris ring and the flare's ring once shared a name, and the flare
+     scaled about the sky's corner: the transfer's classes stay its own */
+  ok(!/^\.mo-ring\b/m.test(css) && /\.mo-iris-ring \{/.test(css), 'the iris ring keeps its own class, apart from the landing flare’s');
+  ok(/\.sk-runs \[data-hold\]:not\(\.mo-landed\) \{ visibility: hidden; animation: none; \}/.test(css), 'the held star is hidden outright, so a twinkle cannot show it early');
+  ok(/momentCurtain\(wrap\.querySelector\('\.rl-save'\)\);[\s\S]{0,120}render\(\);/.test(app) && /momentCurtain\(tickEl\);\s*toggleDone/.test(app), 'the press holds Today before it redraws, so nothing jumps under the transfer');
+  ok(!/\.view\.mo-out|1100\)|m\.info\.staged \? 3300 : 1100/.test(css + app), 'no beat on Today: the press is the transfer');
 }
 /* ---- result ---- */
 // Chart geometry is part of correctness, not just appearance.

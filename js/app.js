@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.18.0';
+  const APP_VERSION = '5.18.1';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1413,11 +1413,16 @@
       try { localStorage.setItem(logKey(iso), JSON.stringify(entry)); }
       catch (e) { wrap.querySelector('.log-error').textContent = 'Could not save on this device. Keep this form open and free some storage, then try again.'; return; }
       state.runLogEdit = null; state.runLogDraft = null;
-      if (!saved || !(saved.sec > 0)) state.justLit = iso;   // the window floods with light on the first save
+      if (!saved || !(saved.sec > 0)) {
+        state.justLit = iso;                                 // the window floods with light on the first save
+        momentCurtain(wrap.querySelector('.rl-save'));       // Today as it stood, for the journey to open through
+      }
       render();
       if (!saved || !(saved.sec > 0)) {                       // first save only, never on edits
         const staged = celebrate(iso, day);
-        bankMoment('run', iso, { title: (day.run && day.run.title) || 'Run', km: entry.km, staged });
+        /* a long run the recap flags as an overshoot keeps its warning in
+           front of you: no flourish over a caution (v5.11.2) */
+        if (!longRunOvershoot(day, entry)) bankMoment('run', iso, { title: (day.run && day.run.title) || 'Run', km: entry.km, staged });
       }
       const recapHeading = view.querySelector('.run-recap h2');
       if (recapHeading) { recapHeading.focus({ preventScroll: true }); recapHeading.scrollIntoView({ block: 'start' }); }
@@ -3116,6 +3121,7 @@
     const tickEl = card.querySelector('.tick');
     if (tickEl) tickEl.addEventListener('click', () => {
       if (!isDone) state.justTicked = b.id;       // animate on tick-on only
+      if (!isDone && b.cat === 'gym') momentCurtain(tickEl);
       toggleDone(iso, b.id);
       render();
       if (!isDone && b.cat === 'gym' && getDone(iso)[b.id]) bankMoment('gym', iso, { id: b.id, title: b.title });
@@ -3508,7 +3514,7 @@
       '<radialGradient id="rg-wood" cx=".5" cy=".5" r=".5"><stop offset="0" class="rg-w0"/><stop offset="1" class="rg-w1"/></radialGradient>' +
       '<filter id="rg-blur" filterUnits="userSpaceOnUse" x="0" y="0" width="' + W + '" height="' + H + '"><feGaussianBlur stdDeviation="2.4"/></filter></defs>' +
       '<rect width="' + W + '" height="' + H + '" fill="url(#rg-v)"/>' +
-      '<g class="rg-slice' + (fi >= 0 ? ' fresh' : '') + '" style="transform-origin:' + f1(cx + 7 * RA / R) + 'px ' + f1(cy - 4 * RA / R) + 'px;--s0:' + (RA1 / RA).toFixed(4) + '">';
+      '<g class="rg-slice' + (fi >= 0 ? ' pre' : '') + '" style="transform-origin:' + f1(cx + 7 * RA / R) + 'px ' + f1(cy - 4 * RA / R) + 'px;--s0:' + (RA1 / RA).toFixed(4) + '">';
     // the slice's shadow on the plate, the bark and its fissures
     s += '<path class="rg-shadow" transform="translate(5 7)" d="' + loop(RA + barkW, rough) + '" filter="url(#rg-blur)"/><path class="rg-bark" d="' + loop(RA + barkW, rough) + '"/>';
     let fis = '';
@@ -5947,6 +5953,7 @@
   const openDetails = new Set();
 
   function render() {
+    if (typeof momentAbort === 'function') momentAbort();
     if (state.view !== 'plan' && typeof hideMomentPill === 'function') hideMomentPill();
     document.querySelectorAll('details[data-disclosure]').forEach(node => {
       if (node.open) openDetails.add(node.dataset.disclosure);
@@ -6310,17 +6317,51 @@
   /* ---- the banked moment (v5.18, the owner's idea) ----
      A run's first log (by hand or from Strava) and a gym session's tick are
      the two inputs the journey is drawn from, so each gets its moment there:
-     a beat on Today for the tick or the glass to land (longer when an
-     earned-moment card is playing), then the journey opens on its tab and
-     plays once — the run comes in as a shooting star and settles into its
-     place in the firmament; the session swells this week's ring out by its
-     new wood. A pill at the foot takes you back to Today where you were.
-     Only once per session (a re-tick never replays); nothing for an untick,
-     an edit, a weight saved, study or reading; nothing when the day has no
-     place in the figure; under reduced motion the figure arrives with the
-     new star or ring already in place. */
+     the journey opens on its tab and plays once — the run comes in as a
+     shooting star and settles into its place in the firmament; the session
+     swells this week's ring out by its new wood. A pill at the foot takes
+     you back to Today where you were. Only once per session (a re-tick
+     never replays); nothing for an untick, an edit, a weight saved, study
+     or reading; nothing when the day has no place in the figure; under
+     reduced motion the figure arrives with the new star or ring already in
+     place.
+     The sequence (v5.18.1, the owner's calls — the first cut a pause, a
+     jump-cut and a scroll): the press itself is the transfer. Today is held
+     as it stood at the press, a still copy, and the journey opens through
+     it in a circle from the button you pressed, a ring of light at its edge
+     (three growth rings for a session), while Today falls back into the
+     dark. The figure, already in the middle of the screen as it was before
+     the session, then lifts and zooms until it fills the screen; the Latin
+     is written in over the top, the animation plays at that size under a
+     caption, and the figure pans back down into its place on the page. A
+     tap at any point lands it and pans back. A run that also earns a card
+     waits for the card; a session ticked in Focus, for Focus to close. */
   const momentsPlayed = new Set();
-  let momentTimer = 0, pendingMoment = null, momentPill = null, momentPillTimer = 0;
+  let momentTimer = 0, pendingMoment = null, momentPill = null, momentPillTimer = 0, curtain = null;
+  /* Today as it stood at the press: called before the press redraws it,
+     claimed by the moment it starts, gone otherwise */
+  function momentCurtain(fromEl) {
+    dropCurtain();
+    if (!motionOK()) return null;
+    const v = document.getElementById('view'), vr = v.getBoundingClientRect(), r = fromEl && fromEl.getBoundingClientRect();
+    const copy = v.cloneNode(true), bs = getComputedStyle(document.body);
+    copy.removeAttribute('id');
+    copy.classList.remove('anim', 'slide-next', 'slide-prev');
+    copy.style.cssText = 'position:absolute;margin:0;left:' + vr.left + 'px;top:' + vr.top + 'px;width:' + vr.width + 'px';
+    const c = el('<div class="mo-curtain" aria-hidden="true"><div class="mo-dim"></div></div>');
+    ['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat'].forEach((k) => { c.style[k] = bs[k]; });
+    c.insertBefore(copy, c.firstChild);
+    c.inert = true;
+    document.body.appendChild(c);
+    /* a still: arrivals at their end, loops held */
+    if (copy.getAnimations) copy.getAnimations({ subtree: true }).forEach((a) => { try { if (a.effect && a.effect.getTiming().iterations === Infinity) a.pause(); else a.finish(); } catch (e) { a.cancel(); } });
+    const me = curtain = { el: c, x: r ? r.left + r.width / 2 : window.innerWidth / 2, y: r ? r.top + r.height / 2 : window.innerHeight / 2, claimed: false };
+    setTimeout(() => { if (curtain === me && !me.claimed) dropCurtain(); }, 0);
+    return me;
+  }
+  function dropCurtain() {
+    if (curtain) { curtain.el.remove(); curtain = null; }
+  }
   function bankMoment(kind, iso, info) {
     const key = kind + '|' + iso + '|' + (info.id || '');
     if (momentsPlayed.has(key) || iso > todayISO()) return;
@@ -6329,87 +6370,249 @@
     momentsPlayed.add(key);
     const m = { kind, iso, info, from: { view: state.view, dateISO: state.dateISO, y: window.scrollY } };
     if (focusedSession) { pendingMoment = m; return; }   // a session in Focus: after it closes
-    scheduleMoment(m);
+    if (info.staged) { dropCurtain(); scheduleMoment(m, 3300); return; }   // the earned card first
+    playMoment(m);
   }
   function releaseMoment() {
     if (!pendingMoment) return;
     const m = pendingMoment;
     pendingMoment = null;
     m.from = { view: state.view, dateISO: state.dateISO, y: window.scrollY };
-    scheduleMoment(m);
+    scheduleMoment(m, 120);
   }
-  function scheduleMoment(m) {
+  function scheduleMoment(m, ms) {
     clearTimeout(momentTimer);
     momentTimer = setTimeout(() => {
-      /* moved on, or changed their mind in the beat: nothing to show */
+      /* moved on, or changed their mind meanwhile: nothing to show */
       if (state.view !== m.from.view || state.dateISO !== m.from.dateISO || focusedSession || document.hidden) return;
       if (m.kind === 'gym' && !getDone(m.iso)[m.info.id]) return;
       if (m.kind === 'run' && !((getRunLogEntry(m.iso) || {}).sec > 0)) return;
+      m.from.y = window.scrollY;
       playMoment(m);
-    }, m.info.staged ? 3300 : 1100);
+    }, ms);
+  }
+  let momentLive = null;
+  function momentWords(m) {
+    const di = DB.dayIndex(m.iso), day = fmtShort(m.iso), wd = DAY_SHORT[di].charAt(0) + DAY_SHORT[di].slice(1).toLowerCase();
+    const kicker = DAY_SHORT[di] + ' ' + day.toUpperCase() + ' · BANKED';
+    if (m.kind === 'run') {
+      const km = loggedDistance(m.info.km), title = m.info.title.replace(/\s+[—-]\s+.*$/, '');
+      const j = DB.trainingJourney(getDone, getRunLogEntry, todayISO(), runMoves);
+      return { kicker, big: '+' + km, unit: 'km', sub: title + ' · ' + Number(j.recorded.toFixed(1)) + ' km recorded', latin: inTurn('run', j.runs),
+        line: wd + ' ' + day + ' · +' + km + ' km · banked', what: title + ' · ' + km + ' km banked' };
+    }
+    const sj = DB.strengthJourney({ done: bankedDone, ovr: getOvr, moveIn: getMoveIn, lifts: () => [] }, todayISO());
+    const w = sj.weeks.find((x) => x.start <= m.iso && m.iso <= x.end), title = m.info.title.replace(/^Gym\s*[—-]\s*/, '');
+    const count = w ? w.set + (w.state === 'now' ? ' this week' : ' that week') : '';
+    return { kicker, big: '+1', unit: 'session', sub: title + (count ? ' · ' + count : ''), latin: inTurn('gym', sj.banked),
+      line: wd + ' ' + day + ' · +1 session' + (count ? ' · ' + count : ''), what: title + ' · session banked' };
+  }
+  /* the phrases take turns, so the next moment is written differently */
+  function inTurn(kind, n) {
+    const all = (PLAN.hours && PLAN.hours.banked && PLAN.hours.banked[kind]) || [];
+    return all.length ? all[(Math.max(1, n) - 1) % all.length] : null;
   }
   function playMoment(m) {
-    const motion = motionOK();
+    const motion = motionOK(), v = document.getElementById('view'), say = momentWords(m);
+    const cur = motion ? (curtain || momentCurtain(null)) : null;
+    if (cur) cur.claimed = true;
+    curtain = null;
     state.view = 'plan';
     state.journeyTab = m.kind === 'run' ? 'run' : 'strength';
     state.moment = motion ? { kind: m.kind, iso: m.iso } : null;
     render();
     state.moment = null;
-    /* the moment is the arrival: no page fade under it */
-    document.getElementById('view').classList.remove('anim', 'slide-next', 'slide-prev');
+    /* the moment is its own arrival: no cascade under it */
+    v.classList.remove('anim', 'slide-next', 'slide-prev');
     const fig = document.querySelector(m.kind === 'run' ? '#view .sky' : '#view .rg-fig');
-    if (!fig) return;
-    const top = fig.getBoundingClientRect().top + window.scrollY - (window.innerHeight - fig.getBoundingClientRect().height) / 2;
-    window.scrollTo(0, Math.max(0, top));
-    const capt = fig.querySelector(m.kind === 'run' ? '.sk-capt' : '.rg-capt'), was = capt ? capt.textContent : '';
-    const day = esc(fmtShort(m.iso)), wd = DAY_SHORT[DB.dayIndex(m.iso)].charAt(0) + DAY_SHORT[DB.dayIndex(m.iso)].slice(1).toLowerCase();
-    let line, what;
-    if (m.kind === 'run') {
-      line = wd + ' ' + day + ' · +' + loggedDistance(m.info.km) + ' km · banked';
-      what = m.info.title.replace(/\s+[—-]\s+.*$/, '') + ' · ' + loggedDistance(m.info.km) + ' km banked';
-      if (motion) shootingStar(fig, m.iso);
-    } else {
-      const sj = DB.strengthJourney({ done: bankedDone, ovr: getOvr, moveIn: getMoveIn, lifts: () => [] }, todayISO());
-      const w = sj.weeks.find((x) => x.start <= m.iso && m.iso <= x.end);
-      line = wd + ' ' + day + ' · +1 session' + (w ? ' · ' + w.set + (w.state === 'now' ? ' this week' : ' that week') : '');
-      what = m.info.title.replace(/^Gym\s*[—-]\s*/, '') + ' · session banked';
+    if (fig) {
+      const fr = fig.getBoundingClientRect();
+      window.scrollTo(0, Math.max(0, fr.top + window.scrollY - (window.innerHeight - fr.height) / 2));
     }
-    if (capt) {
-      capt.textContent = line;
-      setTimeout(() => { if (capt.isConnected) capt.textContent = was; }, 7000);
+    if (!motion || !fig) {
+      if (cur) cur.el.remove();
+      if (fig) momentCaption(fig, m, say.line);
+      showMomentPill(say.what, m.from);
+      return;
     }
-    showMomentPill(what, m.from);
+    /* the iris: the journey opens through Today from the press */
+    const Wv = window.innerWidth, Hv = window.innerHeight, R = Math.ceil(Math.max(Math.hypot(cur.x, cur.y), Math.hypot(Wv - cur.x, cur.y), Math.hypot(cur.x, Hv - cur.y), Math.hypot(Wv - cur.x, Hv - cur.y))) + 24;
+    const vr = v.getBoundingClientRect(), at = ' at ' + (cur.x - vr.left).toFixed(1) + 'px ' + (cur.y - vr.top).toFixed(1) + 'px)';
+    const ring = el('<div class="mo-iris-ring ' + m.kind + '" aria-hidden="true"><i></i><i></i><i></i></div>');
+    ring.style.cssText = 'left:' + cur.x.toFixed(1) + 'px;top:' + cur.y.toFixed(1) + 'px;width:' + 2 * R + 'px;height:' + 2 * R + 'px;margin:' + -R + 'px 0 0 ' + -R + 'px';
+    cur.el.style.transformOrigin = cur.x.toFixed(1) + 'px ' + cur.y.toFixed(1) + 'px';
+    document.body.appendChild(ring);
+    v.classList.add('mo-iris');
+    v.style.clipPath = 'circle(0px' + at;
+    void v.offsetWidth;
+    v.style.clipPath = 'circle(' + R + 'px' + at;
+    cur.el.classList.add('away');
+    ring.classList.add('go');
+    setTimeout(() => {
+      v.classList.remove('mo-iris');
+      v.style.clipPath = '';
+      cur.el.remove();
+      ring.remove();
+      if (fig.isConnected && state.view === 'plan') momentZoom(fig, m, say);
+    }, 820);
   }
-  /* the run's star: hidden, a meteor falls to it from high on the left, it
-     flares where it lands and settles in its halo */
-  function shootingStar(fig, iso) {
-    const svg = fig.querySelector('svg'), star = svg && svg.querySelector('.sk-star[data-iso="' + iso + '"]');
-    if (!star) return;
-    const parts = svg.querySelectorAll('[data-iso="' + iso + '"]');
-    const sx = +star.getAttribute('cx'), sy = +star.getAttribute('cy'), ax = sx - 120, ay = sy - 78, NS = 'http://www.w3.org/2000/svg';
+  function momentCaption(fig, m, line) {
+    const capt = fig.querySelector(m.kind === 'run' ? '.sk-capt' : '.rg-capt');
+    if (!capt) return;
+    const was = capt.textContent;
+    capt.textContent = line;
+    setTimeout(() => { if (capt.isConnected) capt.textContent = was; }, 7000);
+  }
+  function momentZoom(fig, m, say) {
+    const svg = fig.querySelector('svg');
+    if (!svg || !svg.viewBox || !svg.viewBox.baseVal) { momentCaption(fig, m, say.line); showMomentPill(say.what, m.from); return; }
+    const r = svg.getBoundingClientRect(), Wv = document.documentElement.clientWidth, Hv = window.innerHeight;
+    const u = svg.clientWidth / svg.viewBox.baseVal.width, ox = svg.clientLeft, oy = svg.clientTop;
+    const stage = el('<div class="mo-stage" aria-hidden="true"></div>');
+    const words = el('<div class="mo-say" aria-hidden="true"><span class="mo-k">' + esc(say.kicker) + '</span><b>' + esc(say.big) + '<small>' + esc(say.unit) + '</small></b><span class="mo-sub">' + esc(say.sub) + '</span></div>');
+    /* the inscription over the top: the Latin written out, its English under it */
+    const hand = say.latin && typeof Scribe !== 'undefined' ? Scribe.write(say.latin[0], { maxUnits: 200 }) : null;
+    let latin = null;
+    if (hand) {
+      const k = Math.min(1.7, Math.min(Wv - 48, 340) / hand.w, Hv * 0.13 / hand.h);
+      latin = el('<div class="mo-latin" aria-hidden="true" style="--en:' + Math.round(hand.ms * 0.8) + 'ms">' + hand.svg + '<i>' + esc(say.latin[1]) + '</i></div>');
+      latin.firstChild.style.width = (hand.w * k).toFixed(1) + 'px';
+    }
+    document.body.append(stage, words);
+    if (latin) document.body.appendChild(latin);
+    /* the figure's room: below the inscription, above the caption */
+    const top = latin ? latin.getBoundingClientRect().bottom + 12 : 0, foot = words.getBoundingClientRect().top - 14 - 16;
+    let s, tx, ty;
+    if (m.kind === 'run') {
+      /* the sky fills the screen from under the inscription to the foot
+         (its zenith is the stage's own black), the new star in the
+         middle, the sky's own ends permitting */
+      const star = svg.querySelector('.sk-star[data-iso="' + m.iso + '"]'), px = ox + (star ? +star.getAttribute('cx') : svg.viewBox.baseVal.width / 2) * u;
+      s = (Hv - top) / r.height;
+      tx = Math.min(-r.left, Math.max(Wv - r.left - s * r.width, Wv / 2 - r.left - s * px));
+      ty = top - r.top;
+    } else {
+      /* the slice, at its full new size, fills the width */
+      const b = svg.querySelector('.rg-bark').getBBox(), rad = Math.max(b.width, b.height) / 2 * u;
+      const px = ox + (b.x + b.width / 2) * u, py = oy + (b.y + b.height / 2) * u, band = Math.max(120, foot - top);
+      s = Math.max(1, Math.min(8, 0.92 * Wv / (2 * rad), 0.96 * band / (2 * rad)));
+      tx = Wv / 2 - r.left - s * px;
+      ty = top + band / 2 - r.top - s * py;
+    }
+    const live = momentLive = { stage, words, latin, svg, fig, m, say, timers: [], land: null, back: false };
+    const later = (fn, ms) => live.timers.push(setTimeout(fn, ms));
+    stage.addEventListener('click', () => momentSkip(live));
+    stage.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    stage.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
+    svg.classList.add('mo-zoom');
+    void stage.offsetWidth;
+    stage.classList.add('on');
+    svg.classList.add('in');
+    svg.style.transform = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + s.toFixed(4) + ')';
+    /* the pen starts as the figure arrives; the star falls (or the ring
+       swells) once the phrase is half written */
+    if (latin) later(() => latin.classList.add('on'), 550);
+    later(() => {
+      if (m.kind === 'run') {
+        live.land = shootingStar(svg, m.iso, u * s, () => {
+          later(() => words.classList.add('on'), 250);
+          later(() => momentBack(live), 2300);
+        });
+      } else {
+        const slice = svg.querySelector('.rg-slice.pre');
+        if (slice) { slice.classList.remove('pre'); slice.classList.add('fresh'); }
+        later(() => words.classList.add('on'), 700);
+        later(() => momentBack(live), 3000);
+      }
+    }, hand ? 550 + Math.round(hand.ms * 0.55) : 1000);
+  }
+  /* a tap: land it now and go back */
+  function momentSkip(live) {
+    if (live.back) return;
+    live.timers.forEach(clearTimeout);
+    if (live.land) live.land(true);
+    else {
+      live.svg.querySelectorAll('[data-hold]').forEach((n) => n.classList.add('mo-landed'));
+      const slice = live.svg.querySelector('.rg-slice.pre');
+      if (slice) slice.classList.remove('pre');
+    }
+    momentBack(live);
+  }
+  function momentBack(live) {
+    if (live.back) return;
+    live.back = true;
+    live.timers.forEach(clearTimeout);
+    const { stage, words, latin, svg, fig, m, say } = live;
+    if (latin) latin.classList.add('off');
+    stage.classList.remove('on');
+    words.classList.remove('on');
+    words.classList.add('off');
+    svg.classList.remove('in');
+    svg.style.transform = '';
+    setTimeout(() => {
+      svg.classList.remove('mo-zoom');
+      stage.remove(); words.remove();
+      if (latin) latin.remove();
+      if (momentLive === live) momentLive = null;
+      if (!fig.isConnected || state.view !== 'plan') return;
+      momentCaption(fig, m, say.line);
+      showMomentPill(say.what, m.from);
+    }, 1000);
+  }
+  /* anything that redraws the page under a moment ends it where it stands */
+  function momentAbort() {
+    const live = momentLive;
+    if (!live) return;
+    momentLive = null;
+    live.back = true;
+    live.timers.forEach(clearTimeout);
+    if (live.land) live.land(true);
+    live.stage.remove(); live.words.remove();
+    if (live.latin) live.latin.remove();
+  }
+  /* the run's star: hidden, a meteor falls to it from beyond the screen's
+     left edge, flares where it lands and settles in its halo. Sizes are
+     set in screen pixels (pxPer: screen px per sky unit), so the streak
+     reads the same at any zoom. Returns a function that lands it at once. */
+  function shootingStar(svg, iso, pxPer, onLand) {
+    const star = svg.querySelector('.sk-star[data-iso="' + iso + '"]');
+    if (!star) { onLand(); return null; }
+    const parts = svg.querySelectorAll('[data-iso="' + iso + '"]'), k = 1 / pxPer, f2 = (v) => v.toFixed(2);
+    const reach = (document.documentElement.clientWidth / 2 + 70) * k;
+    const sx = +star.getAttribute('cx'), sy = +star.getAttribute('cy'), ax = sx - reach, ay = sy - reach * 0.5, NS = 'http://www.w3.org/2000/svg';
     const g = document.createElementNS(NS, 'g');
     g.setAttribute('class', 'mo-meteor');
-    g.innerHTML = '<path class="mo-tail" stroke="url(#sk-tail)"/><circle class="mo-glow" r="6" fill="url(#sk-hw)"/><circle class="mo-head" r="1.3"/>';
+    g.innerHTML = '<path class="mo-tail" stroke="url(#sk-tail)" style="stroke-width:' + f2(3.4 * k) + '"/><circle class="mo-glow" r="' + f2(30 * k) + '" fill="url(#sk-hw)"/><circle class="mo-glow" r="' + f2(12 * k) + '" fill="url(#sk-hw)"/><circle class="mo-head" r="' + f2(3.2 * k) + '"/>';
     svg.appendChild(g);
-    const tail = g.querySelector('.mo-tail'), heads = g.querySelectorAll('circle'), D = 1000, t0 = performance.now();
+    const tail = g.querySelector('.mo-tail'), heads = g.querySelectorAll('circle'), D = 1150, t0 = performance.now();
     const ease = (p) => p * p * (1.6 - 0.6 * p);   // falling: gathering pace, settling at the end
     const at = (p) => [ax + (sx - ax) * p, ay + (sy - ay) * p];
-    const step = (now) => {
-      if (!svg.isConnected) return;
-      const p = Math.min(1, (now - t0) / D), q = ease(p), [hx, hy] = at(q), [tx, ty] = at(Math.max(0, q - 0.42));
-      tail.setAttribute('d', 'M' + tx.toFixed(1) + ' ' + ty.toFixed(1) + ' L' + hx.toFixed(1) + ' ' + hy.toFixed(1));
-      heads.forEach((c) => { c.setAttribute('cx', hx.toFixed(1)); c.setAttribute('cy', hy.toFixed(1)); });
-      if (p < 1) { requestAnimationFrame(step); return; }
+    let raf = 0, landed = false;
+    const land = (quiet) => {
+      if (landed) return;
+      landed = true;
+      cancelAnimationFrame(raf);
       g.remove();
+      parts.forEach((n) => n.classList.add('mo-landed'));
+      if (quiet) return;
       const flare = document.createElementNS(NS, 'g');
       flare.setAttribute('class', 'mo-flare');
-      flare.innerHTML = '<circle cx="' + sx + '" cy="' + sy + '" r="16" fill="url(#sk-hw)"/><circle class="mo-ring" cx="' + sx + '" cy="' + sy + '" r="9"/>' +
-        '<path class="mo-cross" d="M' + (sx - 12) + ' ' + sy + 'H' + (sx + 12) + 'M' + sx + ' ' + (sy - 12) + 'V' + (sy + 12) + '"/>';
+      flare.innerHTML = '<circle cx="' + sx + '" cy="' + sy + '" r="' + f2(70 * k) + '" fill="url(#sk-hw)"/><circle class="mo-ring" cx="' + sx + '" cy="' + sy + '" r="' + f2(26 * k) + '" style="stroke-width:' + f2(1.4 * k) + '"/>' +
+        '<path class="mo-cross" style="stroke-width:' + f2(1.2 * k) + '" d="M' + f2(sx - 42 * k) + ' ' + sy + 'H' + f2(sx + 42 * k) + 'M' + sx + ' ' + f2(sy - 42 * k) + 'V' + f2(sy + 42 * k) + '"/>';
       svg.appendChild(flare);
-      parts.forEach((n) => n.classList.add('mo-landed'));
       setTimeout(() => flare.remove(), 1400);
+      onLand();
     };
-    requestAnimationFrame(step);
+    const step = (now) => {
+      if (!svg.isConnected) return;
+      const p = Math.max(0, Math.min(1, (now - t0) / D)), q = ease(p), [hx, hy] = at(q), [tx, ty] = at(Math.max(0, q - 0.42));
+      tail.setAttribute('d', 'M' + f2(tx) + ' ' + f2(ty) + ' L' + f2(hx) + ' ' + f2(hy));
+      heads.forEach((c) => { c.setAttribute('cx', f2(hx)); c.setAttribute('cy', f2(hy)); });
+      if (p < 1) raf = requestAnimationFrame(step);
+      else land(false);
+    };
+    raf = requestAnimationFrame(step);
+    return land;
   }
   function showMomentPill(what, from) {
     hideMomentPill();

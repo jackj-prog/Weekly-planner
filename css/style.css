@@ -112,6 +112,7 @@
   --ease-inout: cubic-bezier(.65, 0, .35, 1);
   --ease-spring: cubic-bezier(.34, 1.36, .64, 1);
   --ease-soft: cubic-bezier(.4, 0, .2, 1);
+  --ease-in: cubic-bezier(.7, 0, .9, .4);    /* holds, then goes: a light that fades late */
   --dur-quick: .28s;
   --dur-base: .6s;
   --dur-slow: 1.1s;
@@ -3877,30 +3878,83 @@ input, select, textarea, .xw-in, .recal-in, .data-box { font-size: 16px; }
   @keyframes rg-grow { from { opacity: 0; } }
   @keyframes rg-fade { from { opacity: 0; } }
 }
-/* The banked moment (v5.18): a run's first log comes into the firmament as
-   a shooting star and settles; a gym session's tick swells its ring out by
-   the new wood. The motion lives in the art, once, behind reduced motion
-   (without it the figure simply arrives with the star or ring in place). */
+/* The banked moment (v5.18; a sequence since v5.18.1): a run's first log
+   comes into the firmament as a shooting star and settles; a gym session's
+   tick swells its ring out by the new wood. The page fades through to the
+   journey, the figure itself lifts and zooms to fill the screen while the
+   page goes dark round it, the moment plays at that size under a caption,
+   and the figure pans back down into its place. All of it behind reduced
+   motion (without it the figure simply arrives with the star or ring in
+   place). */
+/* the held star waits unseen — hidden, not just transparent, so its twinkle cannot show it early */
 .sk-runs [data-hold] { opacity: 0; }
+.sk-runs [data-hold]:not(.mo-landed) { visibility: hidden; animation: none; }
 .sk-runs [data-hold].mo-landed { opacity: 1; }
-.mo-meteor .mo-tail { fill: none; stroke-width: 1.6; stroke-linecap: round; }
+.mo-meteor .mo-tail { fill: none; stroke-linecap: round; }
 .mo-meteor .mo-head { fill: var(--text); }
 .mo-flare { opacity: 0; }
-.mo-flare .mo-ring { fill: none; stroke: var(--text); stroke-opacity: .55; stroke-width: .6; }
-.mo-flare .mo-cross { stroke: var(--text); stroke-opacity: .8; stroke-width: .5; }
+.mo-flare .mo-ring { fill: none; stroke: var(--text); stroke-opacity: .55; }
+.mo-flare .mo-cross { stroke: var(--text); stroke-opacity: .8; }
 .rg-fresh { fill: var(--text); opacity: 0; }
 .rg-fresh-edge { fill: none; stroke: var(--text); stroke-width: 1.6; opacity: 0; }
+.rg-slice.pre { transform-box: view-box; transform: scale(var(--s0)); }
+/* the transfer: Today held still where it stood, the journey opening
+   through it from the press, a ring of light at the edge (three growth
+   rings for a session), Today falling back into the dark */
+.mo-curtain { position: fixed; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; transition: transform .8s var(--ease-inout); }
+.mo-curtain.away { transform: scale(.93); }
+.mo-dim { position: absolute; inset: 0; background: var(--chrome-bg); opacity: 0; transition: opacity .8s var(--ease-soft); }
+.mo-curtain.away .mo-dim { opacity: .75; }
+.view.mo-iris { position: relative; z-index: 2; background: inherit; transition: clip-path .8s var(--ease-inout); }
+.mo-iris-ring { position: fixed; z-index: 58; pointer-events: none; border-radius: 50%; transform: scale(0); }
+.mo-iris-ring.go { transform: scale(1); opacity: 0; transition: transform .8s var(--ease-inout), opacity .8s var(--ease-in); }
+.mo-iris-ring i { position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--text) 85%, transparent), 0 0 28px 4px var(--glow-white); }
+.mo-iris-ring i + i { display: none; }
+.mo-iris-ring.gym i + i { display: block; inset: 3.5%; box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 50%, transparent); }
+.mo-iris-ring.gym i + i + i { inset: 7.5%; box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 26%, transparent); }
+/* the stage: the page goes dark round the figure, which lifts above it */
+.mo-stage { position: fixed; inset: 0; z-index: 55; background: var(--chrome-bg); opacity: 0; transition: opacity .8s var(--ease-soft); touch-action: none; }
+.mo-stage.on { opacity: 1; }
+svg.mo-zoom { position: relative; z-index: 56; transform-origin: 0 0; pointer-events: none;
+  transition: transform 1s var(--ease-inout), border-radius 1s var(--ease-inout), border-color .6s var(--ease-soft); }
+svg.mo-zoom.in { border-radius: 0; border-color: transparent; }
+svg.mo-zoom :is(.sk-lab, .sk-now, .sk-now-t, .rg-lead, .rg-dot, .rg-cl, .rg-cl2, .rg-insc) { transition: opacity .35s var(--ease-soft) .62s; }   /* back near size before they return */
+svg.mo-zoom.in :is(.sk-lab, .sk-now, .sk-now-t, .rg-lead, .rg-dot, .rg-cl, .rg-cl2, .rg-insc) { opacity: 0; transition-delay: 0s; }
+svg.mo-zoom .sk-shoot { visibility: hidden; }
+/* what was banked, large, over the dark */
+.mo-say { position: fixed; z-index: 57; left: 0; right: 0; bottom: calc(64px + var(--sab)); padding: 0 max(20px, var(--sar)) 0 max(20px, var(--sal));
+  display: grid; justify-items: center; gap: 8px; text-align: center; pointer-events: none;
+  opacity: 0; transform: translateY(14px); transition: opacity .6s var(--ease-out), transform .7s var(--ease-out);
+  text-shadow: 0 0 18px var(--chrome-bg), 0 0 4px var(--chrome-bg); }
+.mo-say.on { opacity: 1; transform: none; }
+.mo-say.off { transition-duration: .3s; }
+.mo-k { font: 700 12px var(--mono); letter-spacing: .22em; color: var(--t2); }
+.mo-say b { font: 900 64px/1 var(--display); letter-spacing: -.03em; color: var(--text); }
+.mo-say b small { margin-left: .3em; font: 700 20px var(--mono); letter-spacing: 0; color: var(--t2); }
+.mo-sub { font: 500 15px/1.35 var(--body); color: var(--t2); text-wrap: balance; }
+/* the inscription: the Latin in the scribe's hand, stroke by stroke, the
+   initial in red ink; its English after it, as every motto carries */
+.mo-latin { position: fixed; z-index: 57; top: calc(var(--sat) + 26px); left: 0; right: 0; display: grid; justify-items: center; gap: 8px; pointer-events: none; transition: opacity .4s var(--ease-soft); }
+.mo-latin.off { opacity: 0; }
+.scribe { display: block; height: auto; overflow: visible; }
+.sc-s { fill: none; stroke: var(--text); stroke-width: var(--pen); stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 2; stroke-dashoffset: 1; opacity: 0; }
+.sc-s.rub { stroke: var(--accent); }
+.mo-latin i { font: italic 400 15px/1.3 var(--serif); color: var(--t2); opacity: 0; }
 @media (prefers-reduced-motion: no-preference) {
   .sk-runs [data-hold].mo-landed { animation: mo-land .9s var(--ease-spring) both; transform-box: fill-box; transform-origin: center; }
   .mo-flare { animation: mo-flare 1.3s var(--ease-out) both; transform-box: fill-box; transform-origin: center; }
-  .rg-slice.fresh { transform-box: view-box; animation: mo-swell 1.1s var(--ease-spring) .25s backwards; }
-  .rg-slice.fresh .rg-fresh { animation: mo-wood 2.6s var(--ease-soft) .25s both; }
-  .rg-slice.fresh .rg-fresh-edge { animation: mo-edge 2.6s var(--ease-soft) .25s both; }
-  @keyframes mo-land { from { opacity: 0; transform: scale(2.6); } }
-  @keyframes mo-flare { 0% { opacity: 0; transform: scale(.4); } 25% { opacity: 1; } 100% { opacity: 0; transform: scale(1.3); } }
+  .rg-slice.fresh { transform-box: view-box; animation: mo-swell 1.1s var(--ease-spring) .15s backwards; }
+  .rg-slice.fresh .rg-fresh { animation: mo-wood 2.6s var(--ease-soft) .15s both; }
+  .rg-slice.fresh .rg-fresh-edge { animation: mo-edge 2.6s var(--ease-soft) .15s both; }
+  @keyframes mo-land { from { opacity: .5; transform: scale(2.4); } }
+  @keyframes mo-flare { 0% { opacity: 1; transform: scale(.45); } 30% { opacity: .9; } 100% { opacity: 0; transform: scale(1.3); } }   /* bright on impact, then out */
   @keyframes mo-swell { from { transform: scale(var(--s0)); } }
   @keyframes mo-wood { 0% { opacity: 0; } 25% { opacity: .5; } 100% { opacity: 0; } }
   @keyframes mo-edge { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
+  .mo-latin.on .sc-s { animation: sc-ink var(--l) var(--ease-soft) var(--d) both; }
+  .mo-latin.on i { animation: mo-en .9s var(--ease-soft) var(--en) both; }
+  @keyframes sc-ink { 0% { stroke-dashoffset: 1; opacity: 0; } 1% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
+  @keyframes mo-en { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
   .mo-back { animation: mo-pill-in .5s var(--ease-spring); }
   @keyframes mo-pill-in { from { opacity: 0; transform: translateY(20px) scale(.96); } }
 }

@@ -559,6 +559,21 @@ const PLAN = {
       best: ['Citius', 'faster'],
       milestone: ['Nulla dies sine linea', 'no day without a line'],
     },
+    /* Written out in the scribe's hand over a banked moment (v5.18.1, the
+       owner's call), in turn: the star coming to its place in the sky, the
+       oak putting on its ring. */
+    banked: {
+      run: [
+        ['Sic itur ad astra', 'thus one goes to the stars'],        // Virgil, Aeneid 9.641
+        ['Gutta cavat lapidem', 'the drop hollows the stone'],      // Ovid
+        ['Vires acquirit eundo', 'it gathers strength as it goes'], // Virgil, Aeneid 4.175
+      ],
+      gym: [
+        ['Crescit eundo', 'it grows as it goes'],                   // Lucretius
+        ['Labor omnia vincit', 'work conquers all'],                // after Virgil, Georgics 1.145
+        ['Paulatim ergo certe', 'slowly, and so surely'],
+      ],
+    },
     /* Red-letter feasts that fall inside the block, by MM-DD. St Sebastian,
        patron of athletes, keeps the Wednesday of race week. */
     feasts: {

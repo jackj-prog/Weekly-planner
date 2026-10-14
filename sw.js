@@ -5,7 +5,7 @@
    ========================================================================== */
 'use strict';
 
-const CACHE_VERSION = 'week-os-v5.18.0';
+const CACHE_VERSION = 'week-os-v5.18.1';
 const ASSETS = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const ASSETS = [
   './js/run-import.js',
   './js/run-stream.js',
   './js/strava.js',
+  './js/scribe.js',
   './js/day-builder.js',
   './js/ef-chart.js',
   './js/run-progress.js',

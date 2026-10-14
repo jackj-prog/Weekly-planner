@@ -2604,3 +2604,71 @@ logged runs and strength.
   tab, hold/meteor/landing, caption, back, edit, untick, re-tick, reading,
   moving on, before the start, Focus, reduced motion, pill at 320/260);
   `open()` takes `{reduce}`.
+
+## The moment as a sequence — v5.18.1, 14 October (Claude)
+
+The owner found v5.18's moment cheap (a 1.1 s beat, a jump-cut, the run card
+scrolling up) and steered it over three rounds of recorded video:
+"fill the page, then shrink back to its container", "fill any blank space up
+the top with a nicely animated written Latin phrase", and "a straight
+transfer upon press". Approved, then one fix on the landing.
+
+- **The transfer.** `momentCurtain(btn)` is called by the run log's Save
+  (first save) and the timeline gym tick *before* their `render()`: it
+  clones #view (id stripped, arrivals finished, loops paused) into a fixed
+  `.mo-curtain` (z 1, the body's background copied) — Today as it stood.
+  `bankMoment` now plays at once (no beat): `playMoment` claims the curtain
+  (or makes one from the screen centre — Focus close, or after an earned
+  card, which still goes first via `scheduleMoment(m, 3300)`), renders the
+  journey with `state.moment`, scrolls the figure to centre, and opens it
+  through Today: `#view.mo-iris` (z 2, `background: inherit`) with
+  `clip-path: circle()` growing from the press over .8 s, a
+  `.mo-iris-ring` (one glow ring; three for gym) scaled in step, the
+  curtain scaling to .93 and dimming. An unclaimed curtain drops itself on
+  the next task.
+- **The zoom.** `momentZoom` lifts the real figure's `<svg>` (`.mo-zoom`:
+  relative, z 56, transform-origin 0 0, pointer-events none) above a black
+  `.mo-stage` (z 55) and transforms it: the sky to fill from under the
+  inscription to the bottom, star centred (clamped to the sky's ends); the
+  slice to 92% of the width in the band between the inscription and the
+  caption. `.in` fades the labels (they return late in the pan back) and
+  squares the corners. The stage swallows taps (skip), touchmove and wheel.
+- **The inscription.** `js/scribe.js` (UMD, pure): Hershey Gothic English
+  triplex glyphs, each `[left, right, strokes]` with points as chars offset
+  from 'R'. `Scribe.write(text, {maxUnits})` → `{svg, w, h, ms, lines}`:
+  one `<path pathLength=1>` per stroke with `--d`/`--l`, the first glyph
+  `.rub`; long phrases break at the middle space. `.mo-latin.on .sc-s`
+  animates the dash. Phrases are plan content: `PLAN.hours.banked.run|gym`,
+  chosen by `inTurn(kind, count)`. Loaded before app.js; precached.
+- **Timing.** Iris .82 s → zoom 1 s; the pen starts at +.55 s; the meteor
+  (or the swell) at +.55 s + 55% of the phrase; caption 250 ms after the
+  landing; pan back 2.3 s after it (gym: 3 s after the swell); 1 s back,
+  then the pill and the in-figure caption.
+- **The landing fix.** The iris ring was first named `.mo-ring`, which the
+  flare's ring circle also uses — it took `transform: scale(0)` about the
+  sky's origin, stretched the flare's fill-box to (0,0), and the flare slid
+  diagonally across the star. Renamed `.mo-iris-ring` (a build test keeps
+  them apart). The held star is now `visibility: hidden` until landed, as
+  `sk-twinkle` overrode its `opacity: 0`. The flare is bright on impact
+  (`mo-flare` starts at opacity 1), and `mo-land` from .5 opacity.
+- **Tokens.** New `--ease-in` (a light that holds, then fades).
+- **No flourish over a caution.** A first save that `longRunOvershoot`
+  flags does not bank a moment (the curtain drops unclaimed), so the recap's
+  warning stays on screen — the v5.11.2 rule for earned cards, extended.
+- **Other runners.** With no beat, a save or a gym tick leaves Today at
+  once and a still copy of Today sits in `.mo-curtain` for .8 s: checks
+  that read Today right after a press scope to `#view` (stained glass now
+  re-renders with the Read tick), and the Strava runner comes back through
+  the pill after its first save.
+- **Tests.** build: the scribe covers every phrase, writes forward, breaks
+  long phrases, carries the licence; every page script is precached; the
+  class collision and the hidden hold stay fixed; no beat remains.
+  interactions `moments()` (34): the press opens the journey through Today
+  at once, Today held with its Save, the iris gone and the sky filling the
+  screen, the star unseen, the Latin written with its English, the flare
+  centred on the star, the caption, the pan back and pill, Back to Today,
+  edit/untick/re-tick/reading/before-start do nothing and leave no curtain,
+  a tap skips, Focus waits, reduced motion has none of it, and at 320×568
+  the Latin, slice and caption stack. New `--only=name,…` runs just those
+  runners.
+

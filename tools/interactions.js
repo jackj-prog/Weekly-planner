@@ -18,6 +18,7 @@
    Needs playwright-core outside the repo, like tools/shoot.js:
        NODE_PATH=<dir>/node_modules node tools/interactions.js
        node tools/interactions.js --quick       (skip the 234-day sweep)
+       node tools/interactions.js --only=moments,fuel   (just those runners)
    A browser is found automatically, or set WEEKOS_CHROME=/path/to/chrome.
    ========================================================================== */
 'use strict';
@@ -914,8 +915,8 @@ async function cinema() {
     'before the run the window is glazed but dark');
   await t.page.click('.hero button.h-tick');
   check(!!(await t.page.$('.hero .sess-shape svg.sg.lit.lighting')), 'ticking the run done floods the window with light');
-  await t.page.click('.tl-card .tick').catch(() => {});
-  check(!(await t.page.$('.hero .sg.lighting')), 'the light floods in once, not on the next re-render');
+  await t.page.click('.tl-card:has-text("Read") .tick').catch(() => {});
+  check(!(await t.page.$('#view .hero .sg.lighting')), 'the light floods in once, not on the next re-render');
   noErrors(t, 'stained glass');
   await t.ctx.close();
   t = await open('2026-09-30', '20:00', Object.assign({}, SEED, { 'runlog-2026-09-30': { sec: 2700, hr: 150, km: 7 } }));
@@ -1127,6 +1128,7 @@ async function coherence() {
   await t.page.click('.rl-save'); await t.page.waitForTimeout(300);
   check(!(await t.page.$('.titlecard.earned')) && !!(await t.page.$('.recap-flag')) && /Longest logged run/.test(await text(t.page, '.run-recap')),
     'a long run 23% over plan gets the warning and the record, not the fanfare');
+  check(!(await t.page.$('.mo-curtain, .mo-stage')) && !!(await t.page.$('#view .hero')), 'nor the banked moment: the warning stays in front of you on Today');
   check(/^\d+(\.\d)?$/.test((await text(t.page, '.recap-total b')).replace(/,/g, '')), 'the log’s total reads to one decimal, as every other total does');
   noErrors(t, 'coherence');
   await t.ctx.close();
@@ -1245,14 +1247,18 @@ async function strength() {
 }
 
 /* v5.18: the banked moment. A run's first log and a gym session's tick
-   open the journey after a beat on Today and play once (a shooting star; the
-   ring's new wood); a pill goes back. Nothing for an edit, an untick, a
-   re-tick, a reading tick, a session before the strength start, or when you
-   have moved on in the beat; reduced motion arrives without the flight. */
+   open the journey and play once (a shooting star; the ring's new wood);
+   a pill goes back. Since v5.18.1 the press is the transfer — Today held
+   still and the journey opening through it from the button, no beat, no
+   scroll — then the figure fills the screen under a Latin phrase written
+   in, plays, and pans back into its place. Nothing for an edit, an untick,
+   a re-tick, a reading tick, or a session before the strength start; a tap
+   lands it and pans back; reduced motion arrives without any of it. */
 async function moments() {
   console.log('· the banked moment: a star, a ring');
-  const view = (t) => t.page.evaluate(() => ({ plan: !!document.querySelector('.training-journey'), tab: (document.querySelector('.jr-switch [aria-selected="true"]') || {}).textContent || '',
-    today: !!document.querySelector('.hero, .tl'), pill: (document.querySelector('.mo-back .mo-what') || {}).textContent || '' }));
+  const view = (t) => t.page.evaluate(() => ({ plan: !!document.querySelector('#view .training-journey'), tab: (document.querySelector('.jr-switch [aria-selected="true"]') || {}).textContent || '',
+    today: !!document.querySelector('#view .hero, #view .tl'), pill: (document.querySelector('.mo-back .mo-what') || {}).textContent || '',
+    curtain: !!document.querySelector('.mo-curtain'), stage: !!document.querySelector('.mo-stage') }));
   const logRun = async (t) => {
     await t.page.click('.runlogger .h-log');
     const fill = async (k, v) => { await t.page.fill('[data-log-field="' + k + '"]', v); await t.page.dispatchEvent('[data-log-field="' + k + '"]', 'change'); };
@@ -1261,15 +1267,32 @@ async function moments() {
   };
   let t = await open('2026-10-13', '18:30', SEED);
   await logRun(t);
-  await t.page.waitForTimeout(400);
-  check((await view(t)).today, 'a beat on Today first, so the save lands where it was made');
-  await t.page.waitForTimeout(1000);
+  await t.page.waitForTimeout(120);
   let v = await view(t);
-  check(v.plan && v.tab === 'Running' && v.pill === 'Easy run · 7 km banked', 'then the journey opens on Running with the way back: ' + JSON.stringify(v));
-  check(await t.page.evaluate(() => !!document.querySelector('.sky .sk-star[data-iso="2026-10-13"][data-hold]') && !!document.querySelector('.mo-meteor')), 'the day’s star waits while a meteor falls to it');
-  await t.page.waitForTimeout(1500);
-  check(await t.page.evaluate(() => document.querySelector('.sky .sk-star[data-iso="2026-10-13"]').classList.contains('mo-landed') && !document.querySelector('.mo-meteor') &&
-    /^Tue 13 Oct · \+7 km · banked$/.test(document.querySelector('.sk-capt').textContent)), 'it lands, the star is lit, the caption says what was banked');
+  check(v.plan && v.curtain && v.tab === 'Running' && await t.page.evaluate(() => !!document.querySelector('.mo-iris-ring.run') && /circle\(/.test(document.getElementById('view').style.clipPath)),
+    'the press is the transfer: the journey opens through Today from the button at once: ' + JSON.stringify(v));
+  check(await t.page.evaluate(() => { const c = document.querySelector('.mo-curtain .view'); return !!c && !c.id && !!c.querySelector('.rl-save'); }), 'Today is held as it stood at the press, the form and its Save still there');
+  await t.page.waitForSelector('.mo-stage', { timeout: 2500 });
+  await t.page.waitForTimeout(150);
+  check(await t.page.evaluate(() => !document.querySelector('.mo-curtain') && !document.querySelector('.mo-iris-ring') && !document.getElementById('view').style.clipPath &&
+    document.querySelector('#view .sky svg').classList.contains('mo-zoom')), 'the iris gone, the sky itself lifts and fills the screen');
+  check(await t.page.evaluate(() => { const s = document.querySelector('.sky .sk-star[data-iso="2026-10-13"]'); return !!s && s.hasAttribute('data-hold') && getComputedStyle(s).visibility === 'hidden'; }), 'the day’s star waits unseen');
+  await t.page.waitForSelector('.mo-latin.on', { timeout: 1500 });
+  check(await t.page.evaluate(() => { const L = document.querySelector('.mo-latin'), en = L.querySelector('i').textContent; return L.querySelectorAll('.sc-s').length > 20 && L.querySelectorAll('.sc-s.rub').length > 0 && PLAN.hours.banked.run.some((x) => x[1] === en); }),
+    'the Latin is written in stroke by stroke over the top, its initial red, its English under it');
+  await t.page.waitForSelector('.mo-meteor', { timeout: 2500 });
+  check(await t.page.evaluate(() => { const r = document.querySelector('#view .sky svg').getBoundingClientRect(); return r.height > window.innerHeight * 0.6 && r.left <= 0.5 && r.right >= window.innerWidth - 0.5; }), 'it fills the screen edge to edge');
+  await t.page.waitForSelector('.mo-flare', { timeout: 2500 });
+  check(await t.page.evaluate(() => { const f = document.querySelector('.mo-flare').getBBox(), s = document.querySelector('.sky .sk-star[data-iso="2026-10-13"]');
+    return Math.abs(f.x + f.width / 2 - +s.getAttribute('cx')) < 0.5 && Math.abs(f.y + f.height / 2 - +s.getAttribute('cy')) < 0.5 && s.classList.contains('mo-landed') && getComputedStyle(s).visibility === 'visible'; }),
+    'it lands: the flare bursts from the star itself and the star is lit');
+  await t.page.waitForSelector('.mo-say.on', { timeout: 1500 });
+  check(/^\+7\s*km$/.test(await text(t.page, '.mo-say b')) && /BANKED/.test(await text(t.page, '.mo-k')), 'the caption says what was banked, large: ' + await text(t.page, '.mo-say b'));
+  await t.page.waitForSelector('.mo-back', { timeout: 5000 });
+  v = await view(t);
+  check(v.plan && !v.stage && v.pill === 'Easy run · 7 km banked' && await t.page.evaluate(() => !document.querySelector('.mo-zoom') && !document.querySelector('.mo-latin') && !document.querySelector('.mo-say')),
+    'then it pans back into its place on the page, the way back offered: ' + JSON.stringify(v));
+  check(/^Tue 13 Oct · \+7 km · banked$/.test(await text(t.page, '.sk-capt')), 'the figure’s caption keeps the record a while');
   await t.page.click('.mo-back button');
   await t.page.waitForTimeout(200);
   v = await view(t);
@@ -1278,43 +1301,54 @@ async function moments() {
   await t.page.click('.runlogger .h-log');
   await t.page.fill('[data-log-field="hr"]', '144'); await t.page.dispatchEvent('[data-log-field="hr"]', 'change');
   await t.page.click('.rl-save');
-  await t.page.waitForTimeout(1500);
-  check((await view(t)).today, 'editing a saved run stays on Today');
+  await t.page.waitForTimeout(600);
+  v = await view(t);
+  check(v.today && !v.curtain, 'editing a saved run stays on Today');
   noErrors(t, 'run moment');
   await t.ctx.close();
 
   t = await open('2026-10-14', '20:30', SEED);
   await t.page.click('.tl-card:has-text("Push") .tick');
-  await t.page.waitForTimeout(1500);
+  await t.page.waitForTimeout(120);
   v = await view(t);
-  check(v.plan && v.tab === 'Strength' && v.pill === 'Push · session banked' && await t.page.evaluate(() => !!document.querySelector('.rg-slice.fresh .rg-fresh')),
-    'a gym tick opens Strength and its ring swells out by the new wood: ' + JSON.stringify(v));
+  check(v.plan && v.tab === 'Strength' && v.curtain && await t.page.evaluate(() => document.querySelectorAll('.mo-iris-ring.gym i').length === 3), 'a gym tick opens Strength through Today at once, three growth rings at the edge');
+  check(await t.page.evaluate(() => !!document.querySelector('.rg-slice.pre')), 'the slice arrives as it was before the session');
+  await t.page.waitForSelector('.rg-slice.fresh .rg-fresh', { timeout: 4000 });
+  check(await t.page.evaluate(() => { const r = document.querySelector('.rg-fig svg .rg-bark').getBoundingClientRect(); return r.width > window.innerWidth * 0.6; }), 'zoomed, the slice fills the width as its ring swells out by the new wood');
+  await t.page.waitForSelector('.mo-back', { timeout: 6000 });
+  v = await view(t);
+  check(v.plan && !v.stage && v.pill === 'Push · session banked', 'it pans back into its place, the way back offered: ' + JSON.stringify(v));
   check(/^Wed 14 Oct · \+1 session · 1 this week$/.test(await text(t.page, '.rg-capt')), 'the caption counts the session into its week: ' + await text(t.page, '.rg-capt'));
   await t.page.click('.mo-back button');
   await t.page.waitForTimeout(200);
   await t.page.click('.tl-card:has-text("Push") .tick');            // untick
-  await t.page.waitForTimeout(1400);
-  check((await view(t)).today, 'an untick stays on Today');
+  await t.page.waitForTimeout(600);
+  check((await view(t)).today && !(await view(t)).curtain, 'an untick stays on Today');
   await t.page.click('.tl-card:has-text("Push") .tick');            // re-tick: once is enough
-  await t.page.waitForTimeout(1400);
-  check((await view(t)).today, 'a re-tick does not replay the moment');
+  await t.page.waitForTimeout(600);
+  v = await view(t);
+  check(v.today && !v.curtain, 'a re-tick does not replay the moment, and leaves nothing over Today');
   await t.page.click('.tl-card:has-text("Read") .tick');
-  await t.page.waitForTimeout(1400);
+  await t.page.waitForTimeout(600);
   check((await view(t)).today, 'reading is not an input to the journey: no moment');
   noErrors(t, 'gym moment');
   await t.ctx.close();
 
-  /* moving on in the beat cancels it; before the strength start there is no ring */
+  /* a tap lands it and pans back; before the strength start there is no ring */
   t = await open('2026-10-17', '12:00', SEED);
   await t.page.click('.tl-card:has-text("Light upper") .tick');
-  await t.page.click('[data-nav="week"]');
-  await t.page.waitForTimeout(1500);
-  check(!(await view(t)).plan, 'leaving Today during the beat cancels the moment');
+  await t.page.waitForSelector('.mo-stage.on', { timeout: 2500 });
+  await t.page.mouse.click(195, 300);
+  await t.page.waitForTimeout(1200);
+  v = await view(t);
+  check(v.plan && !v.stage && !!v.pill && await t.page.evaluate(() => !document.querySelector('.rg-slice.pre') && !document.querySelector('.mo-zoom')), 'a tap lands it and pans straight back: ' + JSON.stringify(v));
+  noErrors(t, 'skipped moment');
   await t.ctx.close();
   t = await open('2026-10-10', '12:00', SEED);
   await t.page.click('.tl-card:has-text("Light upper") .tick');
-  await t.page.waitForTimeout(1500);
-  check((await view(t)).today, 'a session before the strength journey starts has no ring to grow: no moment');
+  await t.page.waitForTimeout(600);
+  v = await view(t);
+  check(v.today && !v.curtain, 'a session before the strength journey starts has no ring to grow: no moment');
   await t.ctx.close();
 
   /* a session ticked in Focus waits for Focus to close */
@@ -1325,23 +1359,34 @@ async function moments() {
   await t.page.waitForTimeout(1500);
   check(!!(await t.page.$('dialog.session-focus[open], dialog[open]')) && !(await view(t)).plan, 'ticked in Focus: nothing moves while Focus is open');
   await t.page.click('.focus-close');
-  await t.page.waitForTimeout(1500);
+  await t.page.waitForTimeout(600);
   check((await view(t)).tab === 'Strength', 'closing Focus lets the moment play');
+  await t.page.waitForSelector('.mo-back', { timeout: 7000 });
   noErrors(t, 'focus moment');
   await t.ctx.close();
 
   /* reduced motion: the journey arrives with the ring already in place */
   t = await open('2026-10-14', '20:30', SEED, null, { reduce: true });
   await t.page.click('.tl-card:has-text("Push") .tick');
-  await t.page.waitForTimeout(1500);
+  await t.page.waitForTimeout(300);
   v = await view(t);
-  check(v.plan && v.tab === 'Strength' && !!v.pill && !(await t.page.$('.rg-slice.fresh')), 'reduced motion: the journey opens, no swell');
+  check(v.plan && v.tab === 'Strength' && !!v.pill && !v.curtain && !v.stage && !(await t.page.$('.rg-slice.fresh, .rg-slice.pre, .mo-latin, .mo-iris-ring')), 'reduced motion: the journey opens at once, no iris, no zoom, no swell');
   for (const w of [320, 260]) {
     await t.page.setViewportSize({ width: w, height: 700 });
     await t.page.waitForTimeout(100);
     check(await t.page.evaluate(() => { const p = document.querySelector('.mo-back'), r = p.getBoundingClientRect(); return document.scrollingElement.scrollWidth <= window.innerWidth && r.left >= 0 && r.right <= window.innerWidth; }), 'the pill fits at ' + w + 'px');
   }
   noErrors(t, 'reduced moment');
+  await t.ctx.close();
+
+  /* a small phone: the inscription, the figure and the caption share the screen */
+  t = await open('2026-10-14', '20:30', SEED);
+  await t.page.setViewportSize({ width: 320, height: 568 });
+  await t.page.click('.tl-card:has-text("Push") .tick');
+  await t.page.waitForSelector('.mo-say.on', { timeout: 6000 });
+  check(await t.page.evaluate(() => { const L = document.querySelector('.mo-latin').getBoundingClientRect(), S = document.querySelector('.mo-say').getBoundingClientRect(), B = document.querySelector('.rg-fig svg .rg-bark').getBoundingClientRect();
+    return L.left >= 0 && L.right <= window.innerWidth && L.bottom <= B.top + 2 && B.bottom <= S.top + 2 && S.bottom <= window.innerHeight; }), 'at 320×568 the Latin, the slice and the caption stack without touching');
+  noErrors(t, 'small moment');
   await t.ctx.close();
 }
 
@@ -1502,6 +1547,10 @@ async function strava() {
   check(saved && saved.km === 5.21 && saved.sec === 1980 && saved.hr === 143 && saved.stream && saved.stream.source === 'Strava' && Number.isFinite(saved.stream.decPct),
     'saving keeps Strava’s numbers and the samples’ analysis: ' + JSON.stringify(saved && { km: saved.km, sec: saved.sec, hr: saved.hr, src: saved.stream && saved.stream.source }));
   check(!JSON.stringify(saved).includes('latlng') && !('lat' in (saved || {})), 'no route is stored');
+  // the first save banks the run: the journey opens; the way back returns to the day
+  await t.page.waitForSelector('.mo-back button', { timeout: 9000 });
+  check((await text(t.page, '.mo-back .mo-what')).includes('5.21 km banked'), 'an imported run is banked like any other: ' + await text(t.page, '.mo-back .mo-what'));
+  await t.page.click('.mo-back button'); await t.page.waitForTimeout(200);
   // two runs on one day: choose
   await t.page.click('.day-nav .nav[data-d="-1"]'); await t.page.waitForTimeout(200);
   await t.page.click('.hero .h-log'); await t.page.click('.log-sv-go');
@@ -1608,7 +1657,9 @@ async function offline() {
   browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbox'] });
   server = await serve();
   try {
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, strength, moments, fuel, strava, update, sweep, offline]) await run();
+    /* --only=name[,name] runs just those (a quicker loop while working on one) */
+    const only = (process.argv.find((x) => x.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, strength, moments, fuel, strava, update, sweep, offline]) if (!only.length || only.includes(run.name)) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');
