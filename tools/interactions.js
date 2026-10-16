@@ -292,6 +292,30 @@ async function marathonPace() {
   check((await t.json('runlog-2026-10-04')).mpHr === 158, 'imported MP saved');
   noErrors(t, 'MP import');
   await t.ctx.close();
+  /* v5.19: sub-3:20 the target, and marathon pace earned step by step */
+  t = await open('2026-10-18', '07:00', SEED);
+  check(/5:05–5:10 · km 19–26/.test(await text(t.page, '.hero .h-mp')), 'Sunday 18 Oct runs its last 8 at the ladder\u2019s first step: ' + await text(t.page, '.hero .h-mp'));
+  noErrors(t, 'MP step');
+  await t.ctx.close();
+  t = await open('2026-10-18', '13:00', { ...SEED, 'runlog-2026-10-18': { sec: 9600, hr: 150, km: 26, mpKm: 8, mpPaceSec: 300, mpHr: 158, cls: 'long' } });
+  check(/than the step, 5:05–5:10\/km/.test(await text(t.page, '.h-dc.mp')), 'the readback measures the MP finish against its step, not the race target: ' + await text(t.page, '.h-dc.mp'));
+  noErrors(t, 'MP step readback');
+  await t.ctx.close();
+  t = await open('2026-12-27', '07:00', { ...SEED, recal: '1:37:20' });
+  check(/4:55–4:58 · /.test(await text(t.page, '.hero .h-mp')), 'after a 1:37 half the dress rehearsal runs its MP at the pace the half set: ' + await text(t.page, '.hero .h-mp'));
+  await t.ctx.close();
+  t = await open('2026-12-27', '07:00', SEED);
+  check(/4:44 · /.test(await text(t.page, '.hero .h-mp')), 'with no half saved, race-pace work names the target');
+  await t.ctx.close();
+  t = await open('2026-10-16', '12:00', SEED, 'ref');
+  await t.page.evaluate(() => { document.getElementById('ref-paces').open = true; });
+  const rc = (await text(t.page, '.race-card')).replace(/\s+/g, ' ');
+  check(/sub-3:20\s*4:44\/km/.test(rc) && /Fallback sub-3:30 · 4:58\/km/.test(rc) && /Floor 3:45 · 5:20\/km/.test(rc), 'the race card names the target, the fallback and the floor: ' + rc.slice(0, 160));
+  check(/Wk 16 · now/.test(await text(t.page, '.mp-ladder .is-now')) && /5:05–5:10\/km/.test(await text(t.page, '.mp-ladder .is-now')), 'the ladder lights this week\u2019s step');
+  check((await t.page.$$('.mp-ladder .pace-row')).length === 8 && /race pace · set by the half/.test(await text(t.page, '.mp-ladder')), 'every step is listed, the last waiting for the half');
+  check(/TARGET 4:44/.test(await t.page.$eval('.pace-spectrum svg', (n) => n.textContent)), 'the pace line marks the target');
+  noErrors(t, 'targets');
+  await t.ctx.close();
 }
 
 async function weekShape() {
@@ -438,7 +462,7 @@ async function cinema() {
     'one distance figure carries the week: each run in its class, recorded against planned (v4.89)');
   await t.ctx.close();
   t = await open('2026-12-14', '12:00', Object.assign({}, SEED, { recal: '1:48:30' }), 'ref');
-  check((await t.page.$$('.recal-ruler .rr-band')).length === 3 && !!(await t.page.$('.recal-ruler .rr-band.goal')) && !!(await t.page.$('.recal-ruler .rr-dot')),
+  check((await t.page.$$('.recal-ruler .rr-band')).length === 5 && !!(await t.page.$('.recal-ruler .rr-band.goal')) && !!(await t.page.$('.recal-ruler .rr-dot')),
     'the tune-up ruler lays the plan\u2019s anchors on a time scale and pins the saved result');
   check(!!(await t.page.$('#ref-log .ef-chart .ef-fit')) && !!(await t.page.$('#ref-log .ef-chart .ef-area')), 'the efficiency charts draw their fitted line and the ground beneath');
   noErrors(t, 'polish pass');
@@ -587,7 +611,7 @@ async function cinema() {
   check((await t.page.$$('.journey-days .jd-emb svg')).length + (await t.page.$$('.journey-days .jd-moon')).length === 7, 'every explorer day carries an emblem or the night’s moon');
   await t.ctx.close();
   t = await open('2026-10-01', '12:00', SEED, 'ref');
-  check(!!(await t.page.$('#ref-paces .pace-spectrum .ps-easy')) && !!(await t.page.$('#ref-paces .pace-spectrum .ps-mp')) && /easy → MP/.test(await text(t.page, '#ref-paces .pace-spectrum')),
+  check(!!(await t.page.$('#ref-paces .pace-spectrum .ps-easy')) && !!(await t.page.$('#ref-paces .pace-spectrum .ps-mp')) && /easy → target/.test(await text(t.page, '#ref-paces .pace-spectrum')),
     'the paces sit on one line, easy to threshold, with the gap to marathon pace measured');
   const wh = await t.page.$$eval('.week-hours .wh-sleep', (ns) => ns.length);
   check(wh >= 7 && (await t.page.$$('.week-hours .wh-d.now')).length === 1 && /sleep \d+(\.5)?h/.test(await text(t.page, '.week-hours .wh-legend')),
@@ -939,7 +963,7 @@ async function cinema() {
   // v5.0.9: the Paces card — units small, "see below" a way there
   t = await open('2026-10-01', '12:00', SEED, 'ref');
   await t.page.evaluate(() => { document.getElementById('ref-paces').open = true; });
-  check(/^5:20\/km$/.test((await text(t.page, '#ref-paces .pace-row.numeric .v')).trim()) && !!(await t.page.$('#ref-paces .pace-row.numeric .v small.u')), 'a pace reads 5:20 with its unit set small');
+  check(/^4:44\/km$/.test((await text(t.page, '#ref-paces .pace-row.numeric .v')).trim()) && !!(await t.page.$('#ref-paces .pace-row.numeric .v small.u')), 'a pace reads 4:44 with its unit set small');
   await t.page.click('#ref-paces .ref-jump'); await t.page.waitForTimeout(150);
   check(await t.page.evaluate(() => { const d = document.getElementById('ref-easy-pace-by-phase'); return !!(d && d.open); }), '"Easy pace by phase ↓" opens that chapter');
   noErrors(t, 'paces card');
@@ -954,7 +978,7 @@ async function cinema() {
   check((await text(t.page, '.hero .h-gels')).replace(/\s+/g, '') === 'GELS·4I09:05II09:40III10:15IV10:50', 'Sunday’s card lists four gels at their clock times: ' + await text(t.page, '.hero .h-gels'));
   await t.ctx.close();
   t = await open('2027-01-24', '05:10', SEED);
-  check((await t.page.$$('.hero .h-gels .g-times i')).length === 9 && /IX\s*10:30/.test(await text(t.page, '.hero .h-gels')), 'race morning lists nine gels, the last at 10:30');
+  check((await t.page.$$('.hero .h-gels .g-times i')).length === 7 && /VII\s*09:40/.test(await text(t.page, '.hero .h-gels')), 'race morning lists seven gels, the last at 09:40');
   await t.ctx.close();
   t = await open('2026-10-04', '07:45', SEED);
   await t.page.click('.hero .session-focus-open');

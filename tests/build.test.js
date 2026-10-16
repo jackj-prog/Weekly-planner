@@ -279,8 +279,8 @@ ok(!/every 30 min/i.test(dayOfWeek(7, 6).run.detail), 'wk 7 long run stays on th
       times[times.length - 1] + ' vs ' + dur + ' min)');
     ok(times.every((t, i) => i === 0 || t - times[i - 1] === iv), 'the times are evenly spaced');
   });
-  /* The same formula must reproduce race day's stated nine. */
-  ok(Math.floor(225 / 25) === 9, 'floor(225/25) is the 9 gels the race block names');
+  /* Race day names its own count: every gel inside a ~200-min race. */
+  ok(Math.ceil(200 / 25) - 1 === PLAN.gels.raceCount && PLAN.gels.raceCount * PLAN.gels.raceInterval < 200, 'a sub-3:20 race takes ' + PLAN.gels.raceCount + ' gels, the last inside the race');
   ok(!/TODAY:/.test(dayOfWeek(6, 6).run.detail), 'a run under 90 min gets no schedule');
 }
 
@@ -288,7 +288,7 @@ PLAN.gels.ladder.forEach((l) => {
   ok(Math.abs(Math.round((60 / l.every) * PLAN.gels.carbG) - l.rate) <= 1,
     'gel ladder arithmetic: every ' + l.every + ' min ≈ ' + l.rate + ' g/h');
 });
-ok(Math.abs(Math.round(225 / 25) - 9) === 0, 'a 3h45 race at a gel every 25 min is 9 gels');
+ok(PLAN.gels.raceCount === 7 && /7 gels/.test(PLAN.gels.raceText) && /7 of them/.test(dayOfWeek(30, 6).run.detail), 'a 3h20 race at a gel every 25 min is 7 gels, said the same everywhere');
 ok(!/\b(mum|dad|nan|family)\b/i.test(PLAN.gels.sodiumNote + PLAN.gels.targetNote),
   'fuelling notes stay generic');
 
@@ -566,7 +566,7 @@ section('easy pace bands');
     /* MP guard: easy must stay ≥ 30 s/km slower than the 5:41 goal MP,
        and ≥ 40 s/km slower than the 5:20 stretch MP is NOT required —
        a quicker easy pace is evidence MP has moved, not licence to race. */
-    ok(fast - secs('5:20') >= 35, 'wk ' + b.fromWk + ' easy stays ≥35 s/km clear of goal MP 5:20');
+    ok(fast - secs(PLAN.race.floorPace.replace(/\/km$/, '')) >= 35, 'wk ' + b.fromWk + ' easy stays ≥35 s/km clear of even the floor MP (' + PLAN.race.floorPace + ')');
     if (prevFast) {
       ok(fast <= prevFast && slow <= prevSlow, 'bands never get slower as fitness builds (wk ' + b.fromWk + ')');
     }
@@ -631,13 +631,33 @@ section('run-log maths · key events · pacing tables');
     'the TT carries its 8-row lap script with the lap-6 decision');
   const race = dayOfWeek(30, 6).run;
   ok(race.table && race.table.rows.length === 8, 'race day carries the 8-point split table');
-  ok(race.table.rows.some((r) => r[0] === 'Half' && r[1] === '1:52:31'),
-    'the 3:45 plan crosses halfway at 1:52:31');
-  ok(race.table.rows.some((r) => /42\.2/.test(r[0]) && /3:45/.test(r[1])),
-    'the 3:45 plan finishes on 3:45');
-  ok(PLAN.race.goal === '3:45' && PLAN.race.goalPace === '5:20/km',
-    'the race object carries the 3:45 target');
-  ok(DB.parsePace('5:20') * 42.195 < 13510, 'MP 5:20 over 42.195 km does land inside 3:45');
+  /* v5.19: re-targeted on the block's evidence — sub-3:20 the target,
+     sub-3:30 the fallback, 3:45 the floor; the half still sets race pace */
+  const clock = (c) => c.split(':').map(Number).reduce((a, n) => a * 60 + n, 0);
+  const half = race.table.rows.find((r) => r[0] === 'Half'), fin = race.table.rows.find((r) => /42\.2/.test(r[0]));
+  ok(half && half[1] === '1:40:34' && clock(half[1]) > clock(fin[1]) / 2,
+    'the 3:20 plan crosses halfway at 1:40:34, a little slower than the second half (a gentle negative split)');
+  ok(fin && clock(fin[1]) < clock('3:20:00'), 'the 3:20 plan finishes under 3:20: ' + (fin && fin[1]));
+  ok(race.table.rows.every((r, i) => i === 0 || clock(r[1]) > clock(race.table.rows[i - 1][1])), 'the split clock only moves forward');
+  ok(PLAN.race.goal === 'sub-3:20' && PLAN.race.goalPace === '4:44/km' && PLAN.race.fallback === 'sub-3:30' && PLAN.race.floor === '3:45',
+    'the race object carries the sub-3:20 target, the sub-3:30 fallback and the 3:45 floor');
+  ok(DB.parsePace('4:44') * 42.195 < clock('3:20:00') && DB.parsePace('4:58') * 42.195 < clock('3:30:00') && DB.parsePace('5:20') * 42.195 < clock('3:45:30'),
+    'each pace lands inside its own finish');
+  ok(race.run.estPace === '4:44', 'race day is estimated at the target pace');
+  /* the ladder: MP is earned in training, step by step, toward the target */
+  const st = (w) => DB.mpStep(w);
+  ok(st(14).pace === '5:20' && st(15).pace === '5:20', 'Wks 14–15 keep the 5:20 they were run at');
+  let prevSec = Infinity, ladderOK = true;
+  for (let w = 14; w <= 23; w++) { const x = st(w); if (x.race || !(x.sec > 0) || x.sec > prevSec) ladderOK = false; prevSec = x.sec; }
+  ok(ladderOK, 'the ladder only steps quicker from Wk 14 to Wk 23');
+  ok(st(23).sec > DB.parsePace('4:44') && st(23).sec - DB.parsePace('4:44') <= 5, 'the last step before the half sits within 5 s/km of the target, never under it');
+  ok(st(24).race && st(26).race && st(29).race, 'from the tune-up, MP runs at the race pace the half sets');
+  /* the half's anchors: each band earns a race pace, the first is the target */
+  const hm = (c) => clock(c.length <= 4 ? c + ':00' : c);
+  ok(DB.raceAnchor(hm('1:33:00')).pace === '4:44' && DB.raceAnchor(hm('1:37:30')).pace === '4:55–4:58' &&
+    DB.raceAnchor(hm('1:41:00')).pace === '5:05–5:10' && DB.raceAnchor(hm('1:45:00')).pace === '5:20', 'a half earns the race pace of the band it lands in');
+  ok(DB.raceAnchor(hm('1:28:00')).short === '3:20' && DB.raceAnchor(hm('2:00:00')).short === '3:55' && DB.raceAnchor(null) === null, 'beyond the anchors, the nearest one; no half, no pace');
+  ok(PLAN.recalibrationAnchors.every((a) => a.short && a.pace && DB.parsePace(a.pace.split(/[–-]/)[0]) > 0), 'every anchor names its ruler mark and its race pace');
   ok(!dayOfWeek(7, 6).run.table, 'ordinary runs carry no pacing table');
 }
 
@@ -1491,10 +1511,10 @@ section('palette contrast (WCAG AA)');
     ok(/jd-'\+kind/.test(appSrc) && /\.journey-days button\.jd-long/.test(css) && /\.journey-days button\.jd-hard/.test(css),
       'the journey\u2019s week explorer lights each day by its run class');
     const specFn = appSrc.slice(appSrc.indexOf('function paceSpectrumHTML'), appSrc.indexOf('function buildEasyBandSection'));
-    ok(/PLAN\.race\.goalPace/.test(specFn) && /PLAN\.race\.stretchPace/.test(specFn) && /DB\.easyBand/.test(specFn) && /PLAN\.tempoPaceNote/.test(specFn) && !/\b5:20\b|\b5:06\b|\b4:25\b/.test(specFn),
+    ok(/PLAN\.race\.goalPace/.test(specFn) && /PLAN\.race\.fallbackPace/.test(specFn) && /DB\.easyBand/.test(specFn) && /PLAN\.tempoPaceNote/.test(specFn) && !/\b5:20\b|\b4:44\b|\b4:58\b|\b4:25\b/.test(specFn),
       'the pace spectrum reads every pace from the plan and hard-codes none');
     ok(/CLEAR day expect (\d:\d\d)\s*[–-]\s*(\d:\d\d)/.test(PLAN.tempoPaceNote), 'the tempo note still states a clear-day readout the spectrum can draw');
-    ok(DB.parsePace(PLAN.race.goalPace.replace(/\/km$/, '')) > 0 && DB.parsePace(PLAN.race.stretchPace.replace(/\/km$/, '')) > 0, 'race and stretch paces parse for the spectrum');
+    ok(DB.parsePace(PLAN.race.goalPace.replace(/\/km$/, '')) > 0 && DB.parsePace(PLAN.race.fallbackPace.replace(/\/km$/, '')) > 0, 'target and fallback paces parse for the spectrum');
     const hoursFn = appSrc.slice(appSrc.indexOf('function weekHoursHTML'), appSrc.indexOf('/* The block\u2019s paces on one line') > 0 ? appSrc.indexOf('/* The block\u2019s paces on one line') : appSrc.indexOf('function paceSpectrumHTML'));
     ok(/DB\.buildDay/.test(hoursFn) && /lights out/i.test(hoursFn) && /wake\|alarm/.test(hoursFn), 'the week in hours is built from the planned days, sleeping from lights out to waking');
     for (let i = 0; i < 210; i += 7) {
@@ -1671,8 +1691,8 @@ section('ics export');
   ok(events === expect && expect > 200, 'event count ' + events + ' matches training blocks ' + expect);
 
   const flat = ics.replace(/\r\n /g, '');            // unfold
-  ok(flat.includes('DTSTART:20270124T064500') && flat.includes('DTEND:20270124T104500'),
-    'race day event at 06:45–10:45');
+  ok(flat.includes('DTSTART:20270124T064500') && flat.includes('DTEND:20270124T101500'),
+    'race day event at 06:45–10:15 (a sub-3:20 window, with room)');
   ok(/SUMMARY:MARATHON — 42\.2 km/.test(flat), 'race summary not doubled');
   ok(/SUMMARY:Easy run — \d+ km/.test(flat), 'run summaries carry distance');
   ok(flat.includes('drive over\\, no run-commute'), 'commas escaped');
@@ -1747,7 +1767,7 @@ section('gels as a schedule (rule 4)');
  const g = PLAN.gels;
  ok(new RegExp('every ' + g.raceInterval + ' min · ' + g.raceCount + ' gels', 'i').test(g.raceText), 'race gel numbers are the race text\u2019s own: ' + g.raceText);
  const race = DB.buildDay('2027-01-24').blocks.find(b => b.run && /MARATHON/.test(b.title));
- ok(race && race.run.gelsAt.length === 9 && race.run.gelsAt[8] === 225, 'race day carries nine gels, the last at 225 min');
+ ok(race && race.run.gelsAt.length === 7 && race.run.gelsAt[6] === 175, 'race day carries seven gels, the last at 175 min (~37 km at 4:44)');
  const sun = DB.buildDay('2026-10-04').run;
  ok(sun.run.gelsAt && sun.run.gelsAt.join() === '35,70,105,140' && /TODAY: 4 gels, at 35, 70, 105 and 140 min/.test(sun.detail), 'a long run\u2019s schedule matches its text');
  ok(!DB.buildDay('2026-10-01').run.run.gelsAt, 'an easy run has no gels');
@@ -1811,7 +1831,7 @@ section('marathon-pace check (§10)');
   if (!d.run || !/^Long|REHEARSAL|PEAK/.test(d.run.title)) continue;
   const mpText = /MP segments/.test(d.run.detail);
   ok(mpText === DB.isMpSession(d.run.title), 'Wk ' + w + ' ' + d.run.title + ': MP text ' + (mpText ? 'present' : 'absent'));
-  if (mpText) ok(d.run.detail.includes('MP segments ' + PLAN.race.goalPace), 'Wk ' + w + ' MP text carries the goal pace');
+  if (mpText) ok(d.run.detail.includes('MP segments ' + DB.mpStep(w).say), 'Wk ' + w + ' MP text carries its step: ' + DB.mpStep(w).say);
  }
  ok(!/MP segments|5:20\/km/.test(require('fs').readFileSync(path.join(__dirname, '..', 'js', 'day-builder.js'), 'utf8')), 'day-builder.js carries no marathon pace of its own (§2)');
 }

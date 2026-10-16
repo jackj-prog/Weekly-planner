@@ -176,10 +176,16 @@ const PLAN = {
     date: '2027-01-24',          // Sun 24 Jan 2027
     gun: '06:45',                // pre-dawn start — sunrise ≈ 06:50
     sunrise: '06:50',
-    goal: '3:45',
-    goalPace: '5:20/km',
-    stretch: 'sub-3:35',
-    stretchPace: '5:06/km',
+    /* Re-targeted Oct 2026 (the athlete's call, on the evidence of the
+       block: a 13:00 two-mile, 25 min at 4:21 threshold and ~0% aerobic
+       decoupling over 22 km). The target is the bet; the fallback and the
+       floor are what the December half can still settle on (rule 7). */
+    goal: 'sub-3:20',
+    goalPace: '4:44/km',
+    fallback: 'sub-3:30',
+    fallbackPace: '4:58/km',
+    floor: '3:45',
+    floorPace: '5:20/km',
     course:
       'Solomou Square → Griva Digeni → University of Cyprus → Athalassa ' +
       'National Park → Venetian Walls and Old Town → Eleftheria Square. ' +
@@ -194,9 +200,11 @@ const PLAN = {
   /* ---- Paces (§10) --------------------------------------------------- */
   paces: [
     { type: 'Easy / long-run base',        pace: 'by phase — see below' },
-    { type: 'Marathon pace (3:45 goal)',   pace: '5:20 /km' },
+    { type: 'Race target (sub-3:20)',      pace: '4:44 /km' },
+    { type: 'Marathon pace in training',   pace: 'steps down by HR — see the ladder' },
     { type: 'Tempo / threshold',           pace: 'by HR — Z4' },
-    { type: 'Stretch MP (sub-3:35 bet)',   pace: '5:06 /km' },
+    { type: 'Fallback (sub-3:30)',         pace: '4:58 /km' },
+    { type: 'Floor (3:45)',                pace: '5:20 /km' },
   ],
 
   /* ---- Easy pace, by phase (§10) --------------------------------------
@@ -216,17 +224,42 @@ const PLAN = {
     { fromWk: 28, band: '6:04–6:29', good: '6:09–6:19', note: 'Taper shows up as a lower HR at the same pace. The clock barely moves; you feel dangerous.' },
   ],
   /* The band only shifts ~9 s/km across 30 weeks, and that is deliberate:
-     easy pace is anchored to marathon pace. MP moved to 5:20 in Aug 2026
-     on evidence (§10); the Week 24 half still settles it (rule 7). Chasing easy pace down toward
-     MP is how easy runs quietly become steady runs. If the tune-up
-     upgrades MP, the band upgrades with it. */
+     it was anchored to MP 5:20 (Aug 2026) and to the measured Z2. The
+     target moved to sub-3:20 (4:44) in Oct 2026 and the bands stay where
+     they are: a faster target widens the gap from easy, it does not make
+     easy faster. Chasing easy pace down toward MP is how easy runs
+     quietly become steady runs. */
   easyBandUnlock:
-    'These bands are anchored to MP 5:20 (the 3:45 target) and to his own ' +
-    'measured Z2, which returns ~6:13–6:23 heat-corrected. If the Week 24 ' +
-    'half moves MP again, they re-anchor with it. Easy pace getting ' +
-    'quicker at the SAME heart rate is evidence your MP has moved; easy ' +
-    'pace getting quicker because you pushed is just Sunday’s session ' +
+    'These bands describe your measured Z2 (~6:13–6:23 heat-corrected). ' +
+    'The target moved to sub-3:20 in Oct 2026 and they stay put: a faster ' +
+    'race widens the gap from easy, it does not make easy faster. Easy pace ' +
+    'getting quicker at the SAME heart rate is evidence your MP has moved; ' +
+    'easy pace getting quicker because you pushed is just Sunday’s session ' +
     'spent early.',
+
+  /* ---- Marathon pace in training (§10, Oct 2026) ----------------------
+     The target is 4:44, but MP is EARNED in training, not assumed: each
+     long run's MP segment runs at its step, and the step moves by heart
+     rate. Held in Z3 with no fade → the next MP session 5 s/km quicker;
+     touched Z4 or faded → hold the step; ran in Z4 → back 5 s/km. The
+     ladder below is the plan if every session holds; the heart rate is
+     the authority. Wks 14–15 ran at 5:20, as lived. From the tune-up on,
+     MP sessions run at the race pace the half sets (the anchors below). */
+  mpSteps: [
+    { fromWk: 14, pace: '5:20' },
+    { fromWk: 16, pace: '5:05–5:10' },
+    { fromWk: 17, pace: '5:00–5:05' },
+    { fromWk: 19, pace: '4:55–5:00' },
+    { fromWk: 20, pace: '4:52–4:57' },
+    { fromWk: 22, pace: '4:48–4:53' },
+    { fromWk: 23, pace: '4:45–4:50' },
+    { fromWk: 24, race: true, short: 'race pace', text: 'at the race pace your 13 Dec half sets' },
+  ],
+  mpStepRule:
+    'Marathon pace steps down by heart rate, not by the date. Held in Z3 ' +
+    'with no fade → the next MP session 5 s/km quicker. Touched Z4 or faded ' +
+    '→ hold the step. Ran in Z4 → back 5 s/km. The ladder is the plan if ' +
+    'every session holds; your heart rate is the authority.',
 
   /* The controlled test. Same day, same route, same shoes — otherwise
      you are measuring the weather, not your fitness. */
@@ -257,17 +290,25 @@ const PLAN = {
       'Wednesday and Sunday. Above 18 °C add 10–20 s/km before comparing; ' +
       'above 24 °C the run is not a benchmark at all.',
   },
+  /* The half sets race pace (rule 7). `half` is a range of minutes the
+     ruler can read; `short` labels the ruler; `pace` is the race pace it
+     earns, which the MP sessions from the tune-up on also run at. The
+     first anchor is the target and is drawn in red. A durable runner
+     (decoupling ~0% on 22 km) earns ~2.10–2.12 × the half. */
   recalibrationAnchors: [
-    { half: '1:43–1:46', target: '3:45 is on' },
-    { half: '~1:50', target: 'lock 3:55–4:00' },
-    { half: '~1:55', target: '4:05–4:10' },
+    { half: '1:31–1:34', target: 'sub-3:20 · race 4:44/km', short: '3:20', pace: '4:44' },
+    { half: '1:35–1:39', target: 'sub-3:30 · race 4:55–4:58/km', short: '3:30', pace: '4:55–4:58' },
+    { half: '1:40–1:43', target: '3:35–3:38 · race 5:05–5:10/km', short: '3:35', pace: '5:05–5:10' },
+    { half: '1:44–1:46', target: '3:45 · race 5:20/km', short: '3:45', pace: '5:20' },
+    { half: '~1:50', target: '3:55–4:00 · race 5:35/km', short: '3:55', pace: '5:35' },
   ],
   recalibration:
-    'The Week 24 half settles the target: 1:43–1:46 → 3:45 is on · ' +
-    '~1:50 → lock 3:55–4:00 · ~1:55 → 4:05–4:10. Race-day pacing is a negative ' +
-    'split — first half slightly easier than goal. Caveat: the half comes ' +
-    'six days after the 60 km peak week, so the legs will be heavy — read ' +
-    'a near-miss generously.',
+    'The Week 24 half sets race pace: under 1:35 → sub-3:20, race ' +
+    '4:44/km · 1:35–1:39 → sub-3:30, race 4:55–4:58 · 1:40–1:43 → 3:35–3:38, ' +
+    'race 5:05–5:10 · 1:44–1:46 → 3:45, race 5:20 · ~1:50 → 3:55–4:00. ' +
+    'Race-day pacing is a gentle negative split — first half slightly easier ' +
+    'than goal. Caveat: the half comes six days after the 60 km peak week, so ' +
+    'the legs will be heavy — read a near-miss generously.',
 
   /* ---- Shoes (§11) ---------------------------------------------------- */
   shoes: [
@@ -307,10 +348,10 @@ const PLAN = {
     'Easy means easy — conversational, or you’re stealing from Wednesday and Sunday.',
     'Cutback weeks are training. No junk km because the number looks small.',
     'Basketball is two sessions, not one: the 1v1 hour is real training (~500 kcal — the block’s only top-end and lateral work), the shooting hour is active recovery (~350 kcal, about a brisk walk). Flex the 1v1 half first: least marathon-specific, highest ankle risk. OFF entirely on weeks 18, 24, 26, 27, 30.',
-    'Fuelling is a skill, and the interval IS the carb rate. Runs over 90 min: a gel every 35–40 min (~39 g/h — learning the gut). Over 2.5 h: every 30 min (~46 g/h). Race day: every 25 min, 9 gels, ~55 g/h. Carry your own salt — gels barely have any.',
+    'Fuelling is a skill, and the interval IS the carb rate. Runs over 90 min: a gel every 35–40 min (~39 g/h — learning the gut). Over 2.5 h: every 30 min (~46 g/h). Race day: every 25 min, 7 gels for a 3:20 (an 8th if the half sets 3:30 or slower), ~55 g/h. Carry your own salt — gels barely have any.',
     'Niggle protocol: anything sharp or one-sided = 2 days off running before it becomes 2 weeks. The plan survives missed days, not a stress injury.',
     'Sleep is where training sticks: 22:30 lights out is part of the plan.',
-    'The December tune-up settles the race pace. The target moved 4:00 → 3:45 in Aug 2026 on evidence, not ambition (§10) — the half is still what confirms or corrects it.',
+    'The December tune-up sets the race pace. The target moved 4:00 → 3:45 in Aug 2026 and 3:45 → sub-3:20 in Oct 2026 on evidence (§10) — the half is still what confirms or corrects it, and nothing is raced that the half has not earned.',
     'From October, evening runs are dark runs: headtorch, hi-vis, lit routes.',
     'Long runs are capped by time, not distance: ~3h20 maximum. Past that the injury and recovery cost climbs faster than the aerobic return, and at 6:45/km 3h20 is 30 km. If easy pace is slower on the day, cut the distance — never chase the number.',
     'Saturday belongs to Sunday. No leg work, no calf work, no intensity on a Saturday from Wk 4 on. The buffer run is Z1 recovery or it doesn\u2019t happen.',
@@ -392,17 +433,20 @@ const PLAN = {
      every 25 = 55. Endurance guidance for efforts over 2.5 h is
      60–90 g/h, so one flat "every 35–40 min" rule under-fuels anything
      long — right for learning the skill on a 100-min run, wrong for a
-     3h45 race. */
+     3h20 race. */
   gels: {
     fromDate: '2026-08-10',
     /* interval doubles as the planning number: count = floor(duration /
-       interval), which is also exactly how race day arrives at 9. A rate
+       interval) on a long run. Race day names its own count so the last
+       gel lands inside the race, not on the line (7 over ~200 min). A rate
        asks you to do arithmetic at km 8 with a heart rate of 150; a
        schedule does not. */
     minRunMin: 90,  interval: 35, text: 'Gel every 35–40 min (~39 g carbs/h) — learning the skill',
     longRunMin: 150, longInterval: 30, longText: 'Gel every 30 min (~46 g carbs/h) — practise the race rate',
-    raceText: 'Gel every 25 min · 9 gels · ~55 g carbs/h',
-    raceInterval: 25, raceCount: 9,   // the same two numbers, for race day's schedule
+    /* sub-3:20 is ~200 min: gels at 25…175, the last at ~37 km — an 8th
+       would land on the finish line. A slower race the half sets adds one. */
+    raceText: 'Gel every 25 min · 7 gels · ~55 g carbs/h',
+    raceInterval: 25, raceCount: 7,   // the same two numbers, for race day's schedule
     /* Reference-page maths. Figures are per 40 g gel at 57 g carbs /
        100 g — re-derive these if the brand changes. */
     gelG: 40, carbG: 23, kcal: 91, sodiumMg: 19,
@@ -410,7 +454,7 @@ const PLAN = {
       { every: 40, rate: 34, note: 'below the useful range on anything long' },
       { every: 35, rate: 39, note: 'the learning dose — gut training, Wk 7+' },
       { every: 30, rate: 46, note: 'long runs over 2.5 h — practise this' },
-      { every: 25, rate: 55, note: 'RACE DAY — 9 gels for 3h45' },
+      { every: 25, rate: 55, note: 'RACE DAY — 7 gels for 3h20' },
       { every: 20, rate: 68, note: 'needs a 2:1 glucose:fructose gel to absorb' },
     ],
     targetNote:
@@ -419,7 +463,7 @@ const PLAN = {
       '60 g/h no matter how many you take, so ~55 g/h is the honest ceiling ' +
       'on these — the top of that band needs a 2:1 glucose:fructose product.',
     /* Caffeine is the best-evidenced legal ergogenic aid there is —
-       1–3% on endurance performance, which over 3h45 is 2–7 minutes for
+       1–3% on endurance performance, which over 3h20 is 2–6 minutes for
        nothing. The plan said "coffee" and left it there: a single mug is
        ~1.3 mg/kg, well under the effective band. Dose it, and REHEARSE it
        on the Wk 26 dress rehearsal, because it is also the intervention
@@ -427,12 +471,12 @@ const PLAN = {
     caffeine:
       '3 mg/kg about 60 min before the gun — roughly 200 mg, or ' +
       'two strong coffees, or one coffee plus a caffeinated gel. Worth 1–3% ' +
-      '(2–7 min over 3h45). One mug is half a dose. Above ~6 mg/kg the ' +
+      '(2–6 min over 3h20). One mug is half a dose. Above ~6 mg/kg the ' +
       'returns stop and the jitters and gut trouble start. Rehearse the exact ' +
       'dose and timing on the Wk 26 dress rehearsal — never meet it first on ' +
       'race morning.',
     sodiumNote:
-      'Nine gels carry only ~170 mg sodium. A 3h45 marathon at 6–12 °C ' +
+      'Seven gels carry only ~130 mg sodium. A 3h20 marathon at 6–12 °C ' +
       'still costs roughly 1000–2500 mg. Sodium comes from somewhere else: ' +
       'electrolyte tabs in the bottles, or salt capsules. Rehearse it on the ' +
       'Wk 26 dress rehearsal, never first on race day.',
@@ -598,8 +642,9 @@ const PLAN = {
      prescribed like any other easy long run. */
   mpLongText:
     'Long-run base {band}/km \u00b7 MP segments {mp} \u2014 these should sit in Z3. ' +
-    'If MP reads below Z3 the pace is too slow and that is evidence, months ' +
-    'before December',
+    'Below Z3 the step is too slow; held in Z3 with no fade → the next MP ' +
+    'session 5 s/km quicker; touched Z4 or faded → hold; ran in Z4 → back ' +
+    '5 s/km. The heart rate is the authority',
 
   /* §10: "MP has an HR correlate, and it is a live recalibration signal."
      From Wk 14 the MP segment of a long run is logged on its own (pace, HR,
@@ -614,12 +659,12 @@ const PLAN = {
     kmPattern: '(\\d+)(?:[–-]\\d+)?\\s*@ MP',          // "last 6 @ MP" → 6, "12 @ MP" → 12, "14–16" → 14
     tailPattern: 'last (\\d+)(?:[–-]\\d+)?\\s*@ MP',   // only a finish can be read off the end of a track
     verdicts: {
-      below: 'Below Z3 at marathon pace. By §10 the prescribed pace is still too slow for you: evidence the target can move before December.',
-      on: 'Z3, where marathon effort belongs (§10). This pace fits the current stage.',
-      above: 'Z4 at marathon pace: too fast for this stage (§10). Ease it back next time.',
+      below: 'Below Z3 at marathon pace: this step is too slow for you (§10). Next MP session, 5 s/km quicker.',
+      on: 'Z3, where marathon effort belongs (§10). Held with no fade? Next MP session, 5 s/km quicker; faded, hold the step.',
+      above: 'Z4 at marathon pace: too fast for this stage (§10). Next MP session, back 5 s/km.',
     },
     note:
-      'Rule 7: the December half still settles the target. Read this across ' +
+      'Rule 7: the December half still sets race pace. Read this across ' +
       'several MP runs, not one: heat, hills and a hard week all push HR up.',
   },
 
@@ -1543,7 +1588,7 @@ const PLAN = {
           6: { blocks: [
             { t: '07:00', end: '07:30', title: 'Wake · Anki · light breakfast', detail: '~90 min before the gun', cat: 'routine', quiet: true },
             { t: '08:00', end: '08:50', title: 'Travel + warm-up', detail: '2 km easy + strides', cat: 'run', quiet: true },
-            { t: '09:00', end: '11:00', title: 'TUNE-UP HALF — ~21 km, raced honest', detail: 'Evo SL · this settles the marathon target: 1:43–1:46 → 3:45 on · ~1:50 → lock 3:55–4:00 · ~1:55 → 4:05–4:10', cat: 'run', doable: true, runKm: 21.1, shoe: 'Evo SL' },
+            { t: '09:00', end: '11:00', title: 'TUNE-UP HALF — ~21 km, raced honest', detail: 'Evo SL · this sets race pace: under 1:35 → sub-3:20 (4:44/km) · 1:35–1:39 → sub-3:30 (4:55–4:58) · 1:40–1:43 → 3:35–3:38 (5:05–5:10) · 1:44–1:46 → 3:45 (5:20) · enter the time on Reference → the recalibrator', cat: 'run', doable: true, runKm: 21.1, shoe: 'Evo SL' },
             { t: '11:00', end: '11:45', title: 'Refuel + shower', cat: 'routine', quiet: true },
             { t: '12:00', end: '17:00', title: 'Easy afternoon', detail: 'Recover — the number is in the bank', cat: 'free', quiet: true },
             { t: '17:00', end: '18:00', title: 'Dinner', cat: 'meal', quiet: true },
@@ -1689,18 +1734,18 @@ const PLAN = {
             { t: '05:45', end: '06:00', title: 'To Solomou Square', detail: 'Central start — walk it, it doubles as a warm-up', cat: 'routine', quiet: true },
             { t: '06:00', end: '06:20', title: 'Bag drop · toilet queue', detail: 'Queue early, queue twice', cat: 'routine', quiet: true },
             { t: '06:20', end: '06:40', title: 'Warm-up', detail: '1 km jog + 3–4 strides · you do not need much for a marathon', cat: 'run', quiet: true },
-            { t: '06:45', end: '10:45', title: 'MARATHON — 42.2 km 🇨🇾', detail: 'Pro 4 · 5:20/km goal · NEGATIVE SPLIT — first half feels too easy · GEL EVERY 25 MIN, 9 of them (~55 g carbs/h) — carry them all, do not rely on the course · sunrise at 06:50, you run into it · flat course, but the Athalassa false flats are run by effort not pace · dress for the finish (low teens), not the start', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4', estPace: '5:20',
-              table: { title: 'THE 3:45 PLAN — 5:20/km, negative split', cols: ['At', 'Clock', 'Cue'], rows: [
-                ['5 km',  '26:40',   'settle — this MUST feel too easy'],
-                ['10 km', '53:20',   'rhythm · first gel done, keep drinking'],
-                ['Half',  '1:52:31', 'still holding back — the race has not started'],
-                ['25 km', '2:13:20', 'now it starts · stay smooth'],
-                ['30 km', '2:40:00', 'the real race · Athalassa by effort, not pace'],
-                ['35 km', '3:06:40', 'spend everything you saved'],
-                ['40 km', '3:33:20', 'count people down, one at a time'],
-                ['42.2',  '3:45:02', 'Eleftheria Square — into the sunrise'],
+            { t: '06:45', end: '10:15', title: 'MARATHON — 42.2 km 🇨🇾', detail: 'Pro 4 · the pace your 13 Dec half set — 4:44/km for the sub-3:20 (4:55–4:58 if it set sub-3:30, 5:20 for 3:45) · GENTLE NEGATIVE SPLIT — 4:46s out, 4:42s home, and the first half feels too easy · GEL EVERY 25 MIN, 7 of them (~55 g carbs/h; an 8th if you are racing 3:30 or slower) — carry them all, do not rely on the course · sunrise at 06:50, you run into it · flat course, but the Athalassa false flats are run by effort not pace · dress for the finish (low teens), not the start', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4', estPace: '4:44',
+              table: { title: 'THE 3:20 PLAN — 4:44/km, 4:46 out and 4:42 home', cols: ['At', 'Clock', 'Cue'], rows: [
+                ['5 km',  '23:50',   'settle — this MUST feel too easy'],
+                ['10 km', '47:40',   'rhythm · first gel done, keep drinking'],
+                ['Half',  '1:40:34', 'still holding back — the race has not started'],
+                ['25 km', '1:58:54', 'now it starts · 4:42s, smooth'],
+                ['30 km', '2:22:24', 'the real race · Athalassa by effort, not pace'],
+                ['35 km', '2:45:54', 'spend everything you saved'],
+                ['40 km', '3:09:24', 'count people down, one at a time'],
+                ['42.2',  '3:19:43', 'Eleftheria Square — into the sunrise'],
               ] } },
-            { t: '10:45', end: '11:45', title: 'Finish — food, warm kit, massage', detail: 'Free recovery massage at the finish — take it', cat: 'meal', quiet: true },
+            { t: '10:15', end: '11:45', title: 'Finish — food, warm kit, massage', detail: 'Free recovery massage at the finish — take it', cat: 'meal', quiet: true },
             { t: '11:45', end: '17:00', title: 'CELEBRATE ☀️', detail: 'You are a marathoner. In Cyprus. In January.', cat: 'free', quiet: true },
             { t: '17:00', end: '18:00', title: 'Eat again', cat: 'meal', quiet: true },
             { t: '18:00', end: '21:00', title: 'Evening — feet up', cat: 'free', quiet: true },

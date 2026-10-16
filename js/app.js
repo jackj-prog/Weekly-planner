@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.18.1';
+  const APP_VERSION = '5.19.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -932,17 +932,28 @@
     const mpKm = e.mpKm || DB.mpSegmentKm(day.run.title);
     return e.mpPaceSec && e.mpHr && mpKm ? DB.easyPartEf(km, e.sec, e.hr, mpKm, e.mpPaceSec * mpKm, e.mpHr) : null;
   }
+  /* The marathon pace a day's MP work asks for (v5.19): the ladder's step
+     for its week, or from the tune-up on the race pace the saved half sets
+     (the target's pace until a half is saved). */
+  function mpPaceFor(iso) {
+    const s = DB.mpStep(DB.weekNumber(iso));
+    if (!s.race) return s;
+    const a = DB.raceAnchor(parseHalf(readJSONSafeString('recal')));
+    const pace = a ? a.pace : String(PLAN.race.goalPace).replace(/\/km$/, '');
+    const [lo, hi = lo] = String(pace).split(/\s*[–-]\s*/).map(DB.parsePace);
+    return { pace, say: pace + '/km', sec: Math.round((lo + hi) / 2), race: true, fromHalf: !!a };
+  }
   function mpCheckHTML(day, e) {
     if (!day.run || !DB.isMpSession(day.run.title) || !(e.mpHr > 0) || !(e.mpPaceSec > 0)) return '';
     const h = readJSON('hr', null);
     const v = h ? DB.mpVerdict(e.mpHr, h.rest, h.max) : null;
-    const goal = DB.parsePace(String(PLAN.race.goalPace).replace(/\/km$/, ''));
+    const step = mpPaceFor(day.iso), goal = step.sec;
     const diff = goal ? Math.round(e.mpPaceSec - goal) : null;
     const km = e.mpKm || DB.mpSegmentKm(day.run.title);
     const band = !v ? 'mpb' : v.key === 'on' ? 'good' : v.key === 'below' ? 'mpb' : 'poor';
     return '<div class="h-dc mp ' + band + '"><b>' + (v ? 'Z' + v.z : 'MP') + '</b> marathon pace' + (km ? ' · ' + km + ' km' : '') +
       ' at ' + DB.fmtPaceSec(Math.round(e.mpPaceSec)) + '/km · ' + e.mpHr + ' bpm' +
-      (diff != null && Math.abs(diff) >= 3 ? ' · ' + Math.abs(diff) + ' s/km ' + (diff < 0 ? 'faster' : 'slower') + ' than the prescribed ' + esc(PLAN.race.goalPace) : '') +
+      (diff != null && Math.abs(diff) >= 3 ? ' · ' + Math.abs(diff) + ' s/km ' + (diff < 0 ? 'faster' : 'slower') + ' than the step, ' + esc(step.say) : '') +
       '<span>' + esc(v ? v.text : 'Set your HR zones on Reference to place this in a zone.') + ' ' + esc(PLAN.mpCheck.note) + '</span></div>';
   }
   /* History feed for the estimate model: every logged run, classified. */
@@ -1116,7 +1127,7 @@
       (r.estimatedKm ? ' · distance from plan' : '') + '</p>' +
       '<div class="recap-metrics"><div><span>TIME</span><b>' + recordTime(r.sec) + '</b></div><div><span>PACE / KM</span><b>' + pace + '</b></div><div><span>AVG HR</span><b>' + hrLabel(r.hr) + '</b></div></div>' +
       /* the session's window, lit now that it is done — flooding in on the save itself (v5.1) */
-      (day.run ? sessionShapeHTML(day.run, day.run.run.km, true, { lit: true, lighting: lit }) : '') +
+      (day.run ? sessionShapeHTML(day.run, day.run.run.km, true, { lit: true, lighting: lit, iso: day.iso }) : '') +
       longRunOverHTML(day, iso, r) +
       awards.map(a => '<article class="recap-award"><span class="recap-seal" aria-hidden="true">✦</span><div><h3>' + esc(a.label) + '</h3><strong>' + esc(a.value) + '</strong><p>' + esc(a.detail) + '</p></div></article>').join('') +
       (report.runCount === 1 ? '<p class="recap-baseline">Your history starts here. Future runs build the comparison.</p>' : '') +
@@ -1321,7 +1332,7 @@
       /* An empty stepper starts from something sensible, never from zero:
          a pace field from the run's own pace (MP from the prescribed MP),
          an HR field from the run's HR or the estimate. */
-      const goalPace = DB.parsePace(String(PLAN.race.goalPace).replace(/\/km$/, ''));
+      const goalPace = mpPaceFor(iso).sec;
       const estHr = () => d.hr || (DB.logEstimate(day, runLogHistory().filter(run => !run.x)) || {}).hr || 1;
       const current = d[key] != null ? d[key] : key === 'temp' ? PLAN.logModel.tempDefault
         : key === 'hr' || key === 'hr2' || key === 'mpHr' ? estHr()
@@ -1634,7 +1645,7 @@
             : c === 'quality' ? [['', mp ? 'Z3' : 'Z4']] : [['', c === 'recovery' ? 'Z1' : 'Z2']];
           return lines.length ? '<div class="focus-hr"><span>HEART RATE</span>' + lines.map(([lab, z]) =>
             '<strong>' + (lab ? '<em>' + lab + '</em> ' : '') + esc(withZones(z)) + '</strong>').join('') + '</div>' : ''; })() +
-        '</div>' + sessionShapeHTML(block, block.run.km, false, { lit: !!getDone(iso)[block.id] || (getRunLogEntry(iso) || {}).sec > 0 }) +
+        '</div>' + sessionShapeHTML(block, block.run.km, false, { lit: !!getDone(iso)[block.id] || (getRunLogEntry(iso) || {}).sec > 0, iso }) +
         (block.run.gelsAt && block.run.gelsAt.length ? '<div class="focus-gels">' + gelCandleHTML(block, iso) + '<div><span>GELS · ' + block.run.gelsAt.length + '</span><div class="g-times">' +
           block.run.gelsAt.map((m, k) => '<i><small>' + roman(k + 1) + '</small>' + DB.fmtHM((block.startMin + m) % 1440) + '</i>').join('') + '</div><p class="gc-next" role="status"></p></div></div>' : '') +
         runSkyHTML(iso, block, skyKind(block), 'f', iso === todayISO() ? nowMin() : null) +
@@ -1809,6 +1820,7 @@
        comes with a place: "last 6" of 22 is km 17 onward. Worked out from
        the title so the switch point is on the card, not arithmetic at km 15. */
     const mp = DB.mpShape(r.title, km);
+    if (mp) mp.pace = mpPaceFor(iso).pace;
     const mpWhere = !mp ? ''
       : mp.kind === 'reps' ? mp.reps + ' × ' + mp.repKm + ' km'
       : mp.kind === 'tail' ? (mp.from === mp.fromLate ? 'km ' + mp.from + '–' + kmTxt : 'from km ' + mp.from + '–' + mp.fromLate)
@@ -1886,7 +1898,7 @@
          between the card's state and its distance (v5.13). Not on race
          morning: nerves lift the reading and the call is made (v5.0.1) */
       (iso === today && !isRace && !isDone && !(e.sec > 0) && !isSkipped && !isMovedOut ? readinessHTML(iso, r.startMin) : '') +
-      sessionShapeHTML(r, km, true, { lit: isDone || e.sec > 0, lighting: just === r.id && isDone }) +
+      sessionShapeHTML(r, km, true, { lit: isDone || e.sec > 0, lighting: just === r.id && isDone, iso }) +
       runSkyHTML(iso, r, skyKind(r), 'h', iso === today ? nowMin() : null) +
       '<div class="h-detail">' + detailHTML(detail, iso + '|hero', false) + '</div>' +
       zonePrompt +
@@ -2452,6 +2464,7 @@
     } else {
       const mp = DB.mpShape(t, kmTotal);
       if (!mp) return '';
+      if (opts.iso) mp.pace = mpPaceFor(opts.iso).pace;
       if (mp.kind === 'tail') {
         const firm = kmTotal - mp.fromLate + 1, soft = mp.fromLate - mp.from;
         segs.push({ k: 'long', u: mp.from - 1 });
@@ -4582,7 +4595,7 @@
       '<div class="rc-where">' + esc(fmtDate(PLAN.race.date)) + ' · gun ' + esc(PLAN.race.gun) +
       (PLAN.race.city ? ' · ' + esc(PLAN.race.city) : '') + '</div>' +
       '<div class="rc-goal">' + esc(PLAN.race.goal) + '<small>' + esc(PLAN.race.goalPace) + '</small></div>' +
-      '<div class="rc-meta"><span>Stretch bet ' + esc(PLAN.race.stretch) + ' · ' + esc(PLAN.race.stretchPace) + '</span></div>' +
+      '<div class="rc-meta"><span>Fallback ' + esc(PLAN.race.fallback) + ' · ' + esc(PLAN.race.fallbackPace) + '</span><span>Floor ' + esc(PLAN.race.floor) + ' · ' + esc(PLAN.race.floorPace) + '</span></div>' +
       (() => { const rd = DB.buildDay(PLAN.race.date); return rd.run ? runSkyHTML(PLAN.race.date, rd.run, 'race', 'rc', null) : ''; })() +
       '</div>'
     ));
@@ -4599,6 +4612,7 @@
       '<h2>Paces</h2>' + paceSpectrumHTML() + '<div class="ref-card pace-card">' +
       PLAN.paces.map((p) => refRow(p.type, withZones(p.pace))).join('') + '</div>' +
       '<div class="ref-note">' + esc(PLAN.recalibration) + '</div>' +
+      mpLadderHTML() +
       '</div>'
     );
     paces.querySelectorAll('[data-ref-jump]').forEach((j) => j.addEventListener('click', () => {
@@ -4688,7 +4702,7 @@
       const t = String(a.half).replace(/[~≈]/g, '').split(/\s*[–-]\s*/).map((x) => parseHalf(x.length <= 4 ? x + ':00' : x));
       if (!t[0]) return null;
       const lo = t[0], hi = t[1] || t[0];
-      return { lo: lo - (t[1] ? 0 : 45), hi: hi + (t[1] ? 59 : 45), target: a.target, first: false };
+      return { lo: lo - (t[1] ? 0 : 45), hi: hi + (t[1] ? 59 : 45), target: a.short || a.target, first: false };
     }).filter(Boolean);
     if (!anchors.length) return '';
     anchors[0].first = true;
@@ -4850,8 +4864,26 @@
       '<div class="wh-legend">' + legend + '</div></figure>';
   }
 
+  /* The marathon-pace ladder (v5.19): each step from its week, this week's
+     lit, the race-pace steps naming what the saved half set. */
+  function mpLadderHTML() {
+    const steps = PLAN.mpSteps || [];
+    if (!steps.length) return '';
+    const wk = DB.weekNumber(todayISO()), last = DB.weekNumber(PLAN.race.date);
+    const rows = steps.map((s, i) => {
+      const to = i + 1 < steps.length ? steps[i + 1].fromWk - 1 : last;
+      const now = wk >= s.fromWk && wk <= to;
+      const half = s.race ? DB.raceAnchor(parseHalf(readJSONSafeString('recal'))) : null;
+      const v = s.race ? (half ? half.pace + '/km · from your half' : 'race pace · set by the half') : s.pace + '/km';
+      return '<div class="ref-row pace-row' + (now ? ' is-now' : '') + '"><span>Wk ' + s.fromWk + (to > s.fromWk ? '–' + to : '') + (now ? ' · now' : '') +
+        '</span><span class="v">' + (now ? '<b>' + esc(v) + '</b>' : esc(v)) + '</span></div>';
+    }).join('');
+    return '<div class="ref-note"><b>Marathon pace in training</b> · steps down by heart rate</div><div class="ref-card pace-card mp-ladder">' + rows + '</div>' +
+      '<div class="ref-note">' + esc(PLAN.mpStepRule || '') + '</div>';
+  }
+
   /* The block's paces on one line (v4.86), slower to the left: this
-     phase's easy band, marathon pace and the stretch bet, and the tempo's
+     phase's easy band, the race target and its fallback (v5.19), and the tempo's
      clear-day readout drawn dashed because it is a readout, not a target.
      The gap from easy to MP is measured, and your last logged MP segment
      is pinned where it landed. Every number is read from the plan. */
@@ -4860,7 +4892,7 @@
     const band = DB.easyBand(DB.weekNumber(todayISO()));
     const [bl, bh] = band ? span(band.band) : [null, null];
     const mp = DB.parsePace(String(PLAN.race.goalPace).replace(/\/km$/, ''));
-    const st = DB.parsePace(String(PLAN.race.stretchPace).replace(/\/km$/, ''));
+    const st = DB.parsePace(String(PLAN.race.fallbackPace || '').replace(/\/km$/, ''));
     const tm = String(PLAN.tempoPaceNote || '').match(/CLEAR day expect (\d:\d\d)\s*[–-]\s*(\d:\d\d)/);
     const [tl, th] = tm ? [DB.parsePace(tm[1]), DB.parsePace(tm[2])] : [null, null];
     if (!bl || !bh || !mp) return '';
@@ -4879,27 +4911,27 @@
       '<text class="ps-l" x="' + ((X(bh) + X(bl)) / 2).toFixed(1) + '" y="' + (AX - 13) + '">EASY</text>';
     /* threshold readout: dashed, red, as a readout */
     if (tl && th) svg += '<rect class="ps-tempo" x="' + X(th).toFixed(1) + '" y="' + (AX - 5) + '" width="' + (X(tl) - X(th)).toFixed(1) + '" height="10" rx="5"/>' +
-      '<text class="ps-l hard" x="' + ((X(th) + X(tl)) / 2).toFixed(1) + '" y="' + (AX - 13) + '">Z4 READOUT</text>';
-    /* marathon pace: the race's own mark, and the stretch bet beside it */
+      '<text class="ps-l hard" x="' + ((X(th) + X(tl)) / 2).toFixed(1) + '" y="' + (AX - 13) + '">' + (Math.abs((X(th) + X(tl)) / 2 - X(mp)) < 44 ? 'Z4' : 'Z4 READOUT') + '</text>';   /* a target beside the readout leaves room for its zone only */
+    /* the race target's own mark, and the fallback beside it */
     svg += '<path class="ps-mp" d="M' + X(mp).toFixed(1) + ' ' + (AX - 30) + ' V' + (AX + 5) + '"/>' +
       '<circle class="ps-mpdot" cx="' + X(mp).toFixed(1) + '" cy="' + (AX - 30) + '" r="3.2"/>' +
-      '<text class="ps-l mp" x="' + X(mp).toFixed(1) + '" y="' + (AX - 37) + '">MP ' + DB.fmtPaceSec(mp) + '</text>';
+      '<text class="ps-l mp" x="' + X(mp).toFixed(1) + '" y="' + (AX - 37) + '">TARGET ' + DB.fmtPaceSec(mp) + '</text>';
     if (st) svg += '<path class="ps-st" d="M' + X(st).toFixed(1) + ' ' + (AX - 16) + ' V' + (AX + 5) + '"/>' +
       '<circle class="ps-stdot" cx="' + X(st).toFixed(1) + '" cy="' + (AX - 16) + '" r="2.6"/>';
     /* the distance between easy and marathon pace, bracketed under the line */
     const gap = bl - mp, gy = AX + 26;
     if (gap > 0) svg += '<path class="ps-gap" d="M' + X(bl).toFixed(1) + ' ' + (gy - 4) + ' V' + gy + ' H' + X(mp).toFixed(1) + ' V' + (gy - 4) + '"/>' +
-      '<text class="ps-g" x="' + ((X(bl) + X(mp)) / 2).toFixed(1) + '" y="' + (gy + 11) + '">' + gap + ' s/km easy → MP</text>';
+      '<text class="ps-g" x="' + ((X(bl) + X(mp)) / 2).toFixed(1) + '" y="' + (gy + 11) + '">' + gap + ' s/km easy → target</text>';
     if (lastMp) {
       const x = X(lastMp.mpPaceSec);
       svg += '<path class="ps-you" d="M' + x.toFixed(1) + ' ' + (AX - 8) + ' V' + (AX + 8) + '"/><circle class="ps-youdot" cx="' + x.toFixed(1) + '" cy="' + (AX + 8) + '" r="2.4"/>';
     }
-    const label = 'Paces, slower to the left: easy ' + band.band + ', marathon pace ' + DB.fmtPaceSec(mp) +
-      (st ? ', stretch ' + DB.fmtPaceSec(st) : '') + (tl ? ', threshold readout ' + tm[1] + '–' + tm[2] : '') +
+    const label = 'Paces, slower to the left: easy ' + band.band + ', race target ' + DB.fmtPaceSec(mp) +
+      (st ? ', fallback ' + DB.fmtPaceSec(st) : '') + (tl ? ', threshold readout ' + tm[1] + '–' + tm[2] : '') +
       (lastMp ? '; your last marathon-pace segment ' + DB.fmtPaceSec(Math.round(lastMp.mpPaceSec)) : '');
     return '<figure class="pace-spectrum" role="img" aria-label="' + esc(label) + '"><svg viewBox="0 0 320 ' + (gy + 16) + '" aria-hidden="true">' + svg + '</svg>' +
-      '<figcaption class="pl-cap"><span><i class="k ps-ke"></i>easy · Wk ' + DB.weekNumber(todayISO()) + '</span><span><i class="k ps-kmp"></i>MP</span>' +
-      (st ? '<span><i class="k ps-kst"></i>stretch ' + DB.fmtPaceSec(st) + '</span>' : '') +
+      '<figcaption class="pl-cap"><span><i class="k ps-ke"></i>easy · Wk ' + DB.weekNumber(todayISO()) + '</span><span><i class="k ps-kmp"></i>target</span>' +
+      (st ? '<span><i class="k ps-kst"></i>fallback ' + DB.fmtPaceSec(st) + '</span>' : '') +
       (lastMp ? '<span><i class="k you"></i>your last MP · ' + DB.fmtPaceSec(Math.round(lastMp.mpPaceSec)) + '</span>' : '') +
       '<span class="dir">slower ← → quicker</span></figcaption></figure>';
   }

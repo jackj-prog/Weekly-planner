@@ -123,7 +123,7 @@
         paceMin: pace.long,
         detail: isMpSession(row.sun) && PLAN.mpLongText ?
           PLAN.mpLongText.replace('{band}', easyBand(week).band)
-            .replace('{mp}', PLAN.race.goalPace) : easyPaceText(week),
+            .replace('{mp}', mpStep(week).say) : easyPaceText(week),
         hard: true,
       };
       if (PLAN.longRunNote) spec.detail += ' · ' + PLAN.longRunNote;
@@ -373,14 +373,43 @@
     const hit = m && String(title || '').match(new RegExp(m.tailPattern));
     return hit ? Number(hit[1]) : null;
   }
+  /* The marathon pace a week's MP work runs at (v5.19): a step on the
+     ladder (PLAN.mpSteps), which heart rate moves; from the tune-up on,
+     the race pace the half sets — `race` says so, and the app reads the
+     saved half to name it. Without a ladder, the race goal pace. `pace`
+     is short ("5:05–5:10"), `say` reads in a sentence, `sec` is the
+     middle of the step for comparisons and steppers. */
+  function mpStep(week) {
+    const goal = String(PLAN.race.goalPace).replace(/\s*\/\s*km$/, '');
+    let s = null;
+    (PLAN.mpSteps || []).forEach((x) => { if (week >= x.fromWk) s = x; });
+    if (!s) return { pace: goal, say: goal + '/km', sec: parsePace(goal), race: false };
+    if (s.race) return { pace: s.short, say: s.text, sec: null, race: true };
+    const [a, b = a] = String(s.pace).split(/\s*[–-]\s*/).map(parsePace);
+    return { pace: s.pace, say: s.pace + '/km', sec: Math.round((a + b) / 2), race: false };
+  }
+  /* The race pace a half earns, from the plan's anchors: the band it lands
+     in, or the nearest one beyond either end. */
+  function raceAnchor(halfSec) {
+    if (!(halfSec > 0)) return null;
+    const bands = (PLAN.recalibrationAnchors || []).map((a) => {
+      const t = String(a.half).replace(/[~≈]/g, '').split(/\s*[–-]\s*/).map((x) => { const p = x.split(':').map(Number); return p[0] * 3600 + (p[1] || 0) * 60 + (p[2] || 0); });
+      return { a, lo: t[1] ? t[0] : t[0] - 45, hi: t[1] ? t[1] + 59 : t[0] + 45 };
+    });
+    if (!bands.length) return null;
+    const hit = bands.find((b) => halfSec >= b.lo && halfSec <= b.hi);
+    if (hit) return hit.a;
+    return halfSec < bands[0].lo ? bands[0].a : bands.reduce((n, b) => Math.abs(halfSec - (b.lo + b.hi) / 2) < Math.abs(halfSec - (n.lo + n.hi) / 2) ? b : n).a;
+  }
   /* Where the MP work sits in a long run, for the run card: a finish
      ("last 6" of 22 starts at km 17; "last 14–16" of 26 at km 11–13),
      reps ("2×5"), or a block with no fixed place ("12", "mid 6–8").
-     The pace is the race goal pace; all of it is read from the title. */
-  function mpShape(title, km) {
+     The pace is the week's MP step (the race goal pace without a week);
+     the rest is read from the title. */
+  function mpShape(title, km, week) {
     const m = PLAN.mpCheck, t = String(title || '');
     if (!m || !isMpSession(t) || !(km > 0)) return null;
-    const pace = String(PLAN.race.goalPace).replace(/\s*\/\s*km$/, '');
+    const pace = week ? mpStep(week).pace : String(PLAN.race.goalPace).replace(/\s*\/\s*km$/, '');
     const reps = t.match(new RegExp(m.repsPattern));
     if (reps) return { pace, kind: 'reps', reps: Number(reps[1]), repKm: Number(reps[2]) };
     const seg = t.match(new RegExp(m.kmPattern));
@@ -1263,7 +1292,7 @@
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
     liftDay, liftHistory, lastLift, withLift, strengthJourney, plannedShare, validBody, bmrOf, energyTarget, macroTargets, validEaten,
-    isMpSession, mpSegmentKm, mpTailKm, mpShape, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, sunLongitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
+    isMpSession, mpSegmentKm, mpTailKm, mpShape, mpStep, raceAnchor, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, sunLongitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

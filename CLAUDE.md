@@ -24,9 +24,12 @@ data, day structures, times, or rules below unless explicitly asked.
   Sun 24 Jan 2027, gun 06:45** (pre-dawn; sunrise ≈06:50). Flat and fast:
   ~120 m climb over 42.2 km. Requires international travel (UTC+2).
 - Block: 30 weeks, **Mon 29 Jun 2026 → Sun 24 Jan 2027**.
-- Goal: **3:45** (5:20/km). Stretch bet: **sub-3:35** (5:06/km).
-  Raised from 4:00 in Aug 2026 on evidence (§10). A December tune-up
-  half still confirms or corrects it (rule 7).
+- Target: **sub-3:20** (4:44/km). Fallback: **sub-3:30** (4:58/km).
+  Floor: **3:45** (5:20/km). Raised from 4:00 to 3:45 in Aug 2026 and to
+  sub-3:20 in Oct 2026 on evidence (§10: a 13:00 two-mile, 25 min at
+  4:21 threshold, ~0% aerobic decoupling over 22 km). The December
+  tune-up half sets race pace (rule 7); marathon pace in training is
+  earned step by step on heart rate (§10, the MP ladder).
 - The user is disciplined and data-driven; the app should be dense with real
   information, zero filler, and honest about hard days.
 
@@ -343,6 +346,7 @@ offline.
 **The chalice (v5.16, the owner's approval):** the day's fuel is a card under the run — an engraved chalice in the meal colour, filled to the day's share of the week's biggest target, the kcal large, one line saying why ("Long-run day · carbs 8 g/kg"), and the three macros in grams with their share and one split bar; "+" keeps how it is built. Protein 1.8 g/kg every day; carbs by the day's endurance minutes (4 rest or gym only · 5 under an hour · 6 to two · 8 beyond · 10 on race day, +1 the evening before a run of 22 km or more — §6's carb-forward dinner); fat the rest, held between 20% and 35% (`PLAN.energy.macros`, `DB.macroTargets`) — reversed in v5.16.2, below. Optional: the day's totals from MyFitnessPal entered in the evening (`eat-ISO`, calories required, macros optional, in the backup, never for a day still to come) — the cup then fills toward a dotted line at the target and each macro reads eaten against its own. Reference → Daily fuel shows the week as seven chalices on a dark plate, the rows carrying carbs and protein in grams.
 **The banked moment (v5.18, the owner's idea):** the two inputs the journey is drawn from each get their moment there. A run's first log (by hand or from Strava) and a gym session's tick hold a beat on Today (≈1 s, or until an earned-moment card has played) so the tick or the glass lands, then open the journey on its tab and play once: the run comes in as a shooting star from high on the left, flares where it lands and settles into its place in the firmament; the session swells the slice out by its new wood, lit and fading. The caption says what was banked ("Tue 13 Oct · +7 km · banked"; "+1 session · 2 this week") and a pill above the tab bar goes back to Today where you were. Nothing for an edit, an untick, a re-tick, a weight saved, study, reading or basketball; nothing when the day has no place in the figure, or when you have moved on in the beat; a session ticked in Focus waits for Focus to close; under reduced motion the journey arrives with the star or ring already in place.
 **The moment as a sequence (v5.18.1, the owner's calls over three rounds — the first cut "looked cheap": a pause, a jump-cut and a scroll):** the press is the transfer. Today is held still as it stood at the press, and the journey opens through it in a circle from the button pressed — a ring of light at the edge for a run, three growth rings for a session — while Today falls back into the dark (no beat, no scroll). The figure, in the middle of the page as it was before the session, then lifts and zooms until it fills the screen (the sky from under the inscription to the foot, the slice the full width) while the page goes dark round it; a Latin phrase is written in over the top in the scribe's hand — Gothic blackletter drawn stroke by stroke, its initial in red, its English under it (`PLAN.hours.banked`, taking turns; the glyphs are the Hershey Gothic English single-stroke font in `js/scribe.js`, with the acknowledgements its licence asks for) — the star falls or the ring swells once the phrase is half written, a large caption says what was banked ("+7 km", "+1 session"), and the figure pans back down into its place on the page, which returns round it; the pill follows. A tap lands it and pans straight back. A long run the recap flags as an overshoot gets no moment — the warning stays in front of you on Today, as it gets no earned card (v5.11.2). The landing flashes on impact from the star itself; the held star stays hidden (not just transparent) so its twinkle cannot show it early. Under reduced motion none of it: the journey simply opens with the star or ring in place.
+**The target moves to sub-3:20 (v5.19, the owner's call, on the block's evidence — §1, §10):** the race card names the target (sub-3:20 · 4:44/km), the fallback (sub-3:30 · 4:58) and the floor (3:45 · 5:20). Marathon pace in training is a ladder (`PLAN.mpSteps`, `DB.mpStep`): each long run's MP segment runs at its week's step, from 5:05–5:10 on 18 Oct to 4:45–4:50 by 6 Dec, moved by heart rate (held in Z3 with no fade → 5 s/km quicker next time; Z4 or a fade → hold; Z4 throughout → back 5 s/km); the run card, the session shape, the log's MP stepper and its readback ("… than the step, 5:05–5:10/km") all read the step. From the tune-up on, MP work runs at the race pace the saved half sets (`DB.raceAnchor` over the plan's anchors, which now carry their race pace: under 1:35 → 4:44 · 1:35–1:39 → 4:55–4:58 · 1:40–1:43 → 5:05–5:10 · 1:44–1:46 → 5:20). Reference lists the ladder with this week's step lit, and the pace line marks the target and the fallback. Race day: the 3:20 split table (4:46 out, 4:42 home), 7 gels (the last at 175 min), the window 06:45–10:15. Easy bands stay — a faster race widens the gap from easy, it does not make easy faster.
 **v5.17 (the owner's approval):** the Strength journey's column became the rings of an oak, and the journey starts on 12 Oct and runs on without an end — see The Strength journey above.
 **v5.16.2 (the owner's call):** fat and carbs swap roles — fat is a quarter of the day and carbs the rest, never under the day's tier (fat gives way, to 20%, when the tier needs the room). The old split parked every spare calorie of an easy or gym day in fat (33–35% four days a week) and gave the Monday after the long run 4 g/kg of carbs, the day the glycogen goes back in.
 **v5.16.1 (the owner's call):** Monday's anti-extension core is a barbell rollout — round plates, from the knees — because the gym has no ab wheel; same job, same 2×8–12.
@@ -876,12 +880,13 @@ Anki guilt. New Year's Day (Fri Wk 27): rest — peak 30 km is in two days.
   the gun — the same breakfast as every long run) · 05:00 kit, vaseline,
   throwaway layer (6–10 °C and dark) · 05:45 walk to Solomou Square ·
   06:00 bag drop + toilet queue · 06:20 warm-up 1 km + strides ·
-  **06:45 MARATHON 42.2 km — Pro 4 · 5:20/km goal · negative split · gel
-  every 25 min, 9 of them (~55 g carbs/h), carried not scavenged from the
-  course · sunrise 06:50, you run into it · Athalassa false
-  flats run by effort not pace · dress for the finish (low teens), not
-  the start** · finish ~10:45, free recovery massage, food, warm kit ·
-  celebrate · eat again · early night.
+  **06:45 MARATHON 42.2 km — Pro 4 · the pace the half set (4:44/km for
+  the sub-3:20) · gentle negative split, 4:46s out and 4:42s home · gel
+  every 25 min, 7 of them (~55 g carbs/h; an 8th if racing 3:30 or
+  slower), carried not scavenged from the course · sunrise 06:50, you
+  run into it · Athalassa false flats run by effort not pace · dress for
+  the finish (low teens), not the start** · finish ~10:05, free recovery
+  massage, food, warm kit · celebrate · eat again · early night.
 
 **Course & conditions (Nicosia).** Solomou Square → Griva Digeni →
 University of Cyprus → Athalassa National Park → Venetian Walls and Old
@@ -895,12 +900,35 @@ at the latest and shift bedtime earlier in the days before.
 | Type | Pace |
 |---|---|
 | Easy / long-run base | by phase — see the band table below |
-| Marathon pace (3:45 goal) | **5:20 /km** — trains in Z3; raced by the clock |
+| Race target (sub-3:20) | **4:44 /km** — raced by the clock |
+| Marathon pace in training | **steps down by HR** — the MP ladder below; trains in Z3 |
 | Tempo / threshold | **by HR — Z4** (pace band 5:05–5:20 is a 4:00-goal estimate only) |
-| Stretch MP (sub-3:35 bet) | 5:06 /km |
+| Fallback (sub-3:30) | 4:58 /km |
+| Floor (3:45) | 5:20 /km |
 
-The Week 24 half settles the target: **1:43–1:46 → 3:45 is on ·
-~1:50 → lock 3:55–4:00 · ~1:55 → 4:05–4:10.** Race-day pacing is a
+**Re-targeted Oct 2026 (the athlete's call, on the block's evidence).**
+A 13:00 two-mile (Aug), 25 continuous minutes at 4:21/km threshold
+(Sep) and ~0% aerobic decoupling on two 22 km long runs (Sep) put the
+"engine" at VDOT ~47–48 — a 3:17–3:21 marathon on the tables — and the
+decoupling says the endurance discount is smaller than a first-timer's
+usual 5–10%. The honest gap: the marathon-specific evidence (the 11 Oct
+MP finish, 5:16/km at the top of Z3, two weeks after an illness) is
+still ~30 s/km short of 4:44. So the target is the bet, the fallback
+and floor are kept, and nothing is raced that the half has not earned.
+
+**The MP ladder.** MP is earned, not assumed: each long run's MP
+segment runs at its step (`PLAN.mpSteps`) — Wks 14–15 at 5:20 as lived,
+then 5:05–5:10 (Wk 16) · 5:00–5:05 (17) · 4:55–5:00 (19) · 4:52–4:57
+(20) · 4:48–4:53 (22) · 4:45–4:50 (23), and from the tune-up on, the
+race pace the half sets. The heart rate moves it: held in Z3 with no
+fade → the next MP session 5 s/km quicker; touched Z4 or faded → hold;
+ran in Z4 → back 5 s/km. The ladder is the plan if every session holds;
+the heart rate is the authority.
+
+The Week 24 half sets race pace: **under 1:35 → sub-3:20, race 4:44 ·
+1:35–1:39 → sub-3:30, race 4:55–4:58 · 1:40–1:43 → 3:35–3:38, race
+5:05–5:10 · 1:44–1:46 → 3:45, race 5:20 · ~1:50 → 3:55–4:00.** A
+durable runner earns ~2.10–2.12 × the half. Race-day pacing is a gentle
 negative split — first half slightly easier than goal. Caveat: the
 half comes six days after the 60 km peak week, so the legs will be
 heavy — read a near-miss generously.
@@ -1020,22 +1048,24 @@ from mile 22.
    converts the rate into that day's actual schedule** (count + clock
    times), because a rate asks for arithmetic at km 8 and a schedule does
    not; **race day
-   → every 25 min, 9 gels, ~55 g/h**, carried, never scavenged from the
+   → every 25 min, 7 gels for a 3:20 (the last at ~37 km; an 8th if the
+   half sets 3:30 or slower), ~55 g/h**, carried, never scavenged from the
    course. Single-transporter gels saturate near 60 g/h, so 55 is the
-   honest ceiling on them. **Salt is the gap**: 9 gels carry ~170 mg
+   honest ceiling on them. **Salt is the gap**: 7 gels carry ~130 mg
    sodium against 1000–2500 mg of losses — electrolyte tabs or salt caps
    cover it, rehearsed on the Wk 26 dress rehearsal. **Caffeine** is the
    best-evidenced legal aid in the sport and was previously left as just
    "coffee": dose it at **3 mg/kg (~200 mg) about 60 min before the gun**,
-   worth 1–3% (2–7 min over 3h45); one mug is half a dose, above ~6 mg/kg
+   worth 1–3% (2–6 min over 3h20); one mug is half a dose, above ~6 mg/kg
    the returns stop. Rehearsed in Wk 26 like everything else.
 5. Niggle protocol: anything sharp or one-sided = 2 days off running
    before it becomes 2 weeks. The plan survives missed days, not a
    stress injury.
 6. Sleep is where training sticks: 22:30 lights out is part of the plan.
-7. The December tune-up **settles** the race pace. The target moved
-   4:00 → 3:45 in Aug 2026 on evidence, not ambition (§10) — the half
-   is still what confirms or corrects it.
+7. The December tune-up **sets** the race pace. The target moved
+   4:00 → 3:45 in Aug 2026 and 3:45 → sub-3:20 in Oct 2026 on evidence
+   (§10) — the half is still what confirms or corrects it, and nothing
+   is raced that the half has not earned.
 8. From October, evening runs are dark runs: headtorch, hi-vis, lit
    routes.
 9. **Long runs are capped by time, not distance: ~3h20 maximum.** Past

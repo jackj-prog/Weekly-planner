@@ -2672,3 +2672,45 @@ transfer upon press". Approved, then one fix on the landing.
   the Latin, slice and caption stack. New `--only=name,…` runs just those
   runners.
 
+## The target moves to sub-3:20 — v5.19.0, 16 October (Claude)
+
+The owner asked to re-target after the 11 Oct long run and pushed back on
+my first read ("you're underestimating me"). I went through the block on
+Strava: a 13:00 two-mile (23 Aug, max HR 199), 25 min continuous at
+4:21/km (16 Sep) and aerobic decoupling of 0.5% and −0.1% on the 13 and
+20 Sep 22 km long runs. That earned the change; the 11 Oct MP finish
+(5:16 at the top of Z3, post-illness) is why the half still gates it.
+Agreed: target sub-3:20, fallback sub-3:30, floor 3:45; MP earned on a
+ladder by heart rate; the half sets race pace.
+
+- **Data.** `PLAN.race` gains `fallback`/`fallbackPace` and
+  `floor`/`floorPace` (the `stretch` pair is gone). `PLAN.mpSteps` is the
+  ladder (`{fromWk, pace}`; the last step `{race: true, short, text}`),
+  `PLAN.mpStepRule` its rule. `recalibrationAnchors` now carry `short`
+  (the ruler's mark) and `pace` (the race pace the band earns); the first
+  anchor is the target and stays red on the ruler. `gels.raceCount` 7
+  (the last at 175 min, inside a ~200-min race). Rule 4 and rule 7 texts,
+  the tune-up and race-day blocks (window 06:45–10:15, `estPace` 4:44,
+  the 3:20 split table) and the caffeine/sodium notes follow.
+- **Builder.** `DB.mpStep(week)` → `{pace, say, sec, race}` — `{mp}` in
+  `mpLongText` reads it; `DB.mpShape(title, km, week?)` takes the week's
+  step when given one. `DB.raceAnchor(halfSec)` → the anchor a half lands
+  in (or the nearest beyond either end).
+- **App.** `mpPaceFor(iso)` = the step, or for race-pace weeks the saved
+  half's anchor pace (else the target). The run card's MP cell, the
+  session shape (`opts.iso`), the log's MP stepper default and the MP
+  readback all use it ("… than the step, 5:05–5:10/km"). Reference: the
+  race card shows target/fallback/floor; `mpLadderHTML()` lists the steps
+  under the Paces card with this week's lit (`.is-now`); the pace line's
+  MP mark is now TARGET, its dot the fallback.
+- **Tests.** build: the 3:20 table (half 1:40:34, finish 3:19:43), the
+  target/fallback/floor, each pace inside its finish, the ladder only
+  steps quicker and ends within 5 s of the target, race-pace weeks from
+  the tune-up, `raceAnchor` bands and ends, seven race gels said the same
+  everywhere, the race calendar window, MP text per week carries its
+  step, easy bands stay ≥35 s clear of even the floor MP. interactions
+  `marathonPace()`: 18 Oct's MP cell at 5:05–5:10 from km 19, the
+  readback against the step, the dress rehearsal at 4:55–4:58 after a
+  1:37 half (and at 4:44 with none), the race card, the ladder's lit
+  step, the TARGET mark.
+
