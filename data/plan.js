@@ -330,6 +330,7 @@ const PLAN = {
   keyEvents: [
     { wk: 8,  di: 4, label: '2-MILE TT' },
     { wk: 18, di: 5, label: 'PARKRUN 5K PB' },
+    { wk: 21, di: 5, label: '5K TIME TRIAL' },
     { wk: 24, di: 6, label: 'TUNE-UP HALF' },
     { wk: 26, di: 6, label: 'DRESS REHEARSAL' },
     { wk: 30, di: 6, label: 'MARATHON' },
@@ -347,7 +348,7 @@ const PLAN = {
   rules: [
     'Easy means easy — conversational, or you’re stealing from Wednesday and Sunday.',
     'Cutback weeks are training. No junk km because the number looks small.',
-    'Basketball is two sessions, not one: the 1v1 hour is real training (~500 kcal — the block’s only top-end and lateral work), the shooting hour is active recovery (~350 kcal, about a brisk walk). Flex the 1v1 half first: least marathon-specific, highest ankle risk. OFF entirely on weeks 18, 24, 26, 27, 30.',
+    'Basketball is two sessions, not one: the 1v1 hour is real training (~500 kcal — the block’s only top-end and lateral work), the shooting hour is active recovery (~350 kcal, about a brisk walk). Flex the 1v1 half first: least marathon-specific, highest ankle risk. OFF entirely on weeks 18, 21, 24, 26, 27, 30.',
     'Fuelling is a skill, and the interval IS the carb rate. Runs over 90 min: a gel every 35–40 min (~39 g/h — learning the gut). Over 2.5 h: every 30 min (~46 g/h). Race day: every 25 min, 7 gels for a 3:20 (an 8th if the half sets 3:30 or slower), ~55 g/h. Carry your own salt — gels barely have any.',
     'Niggle protocol: anything sharp or one-sided = 2 days off running before it becomes 2 weeks. The plan survives missed days, not a stress injury.',
     'Sleep is where training sticks: 22:30 lights out is part of the plan.',
@@ -1033,7 +1034,7 @@ const PLAN = {
       { wk: 18, phase: 'build', km: 36, lr: 16, wed: 'Easy 5 (race week)', sun: 'Long 16 easy — recovery', wedShoe: 'Ghost', lrShoe: 'Ghost', cutback: true, key: true, noBasketball: true, notes: 'PARKRUN 5K PB Sat' },
       { wk: 19, phase: 'build', km: 54, lr: 28, wed: '6×3 min @ threshold', sun: 'Long 28 — last 10 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL' },
       { wk: 20, phase: 'build', km: 58, lr: 30, wed: 'Tempo 2×15 min', sun: 'Long 30 — 12 @ MP',      wedShoe: 'Evo SL', lrShoe: 'Evo SL', key: true, notes: 'First 30 km' },
-      { wk: 21, phase: 'build', km: 46, lr: 22, wed: 'Easy + strides', sun: 'Long 22 easy',           wedShoe: 'Evo SL', lrShoe: 'Ghost', cutback: true },
+      { wk: 21, phase: 'build', km: 46, lr: 22, wed: 'Easy + strides', sun: 'Long 22 easy',           wedShoe: 'Evo SL', lrShoe: 'Ghost', cutback: true, key: true, noBasketball: true, notes: '5K TIME TRIAL Sat (the second go)' },
       { wk: 22, phase: 'build', km: 56, lr: 28, wed: 'Tempo 30 min',   sun: 'Long 28 — last 10 @ MP', wedShoe: 'Evo SL', lrShoe: 'Evo SL', key: true, notes: 'Racer arrives, keep boxed' },
       { wk: 23, phase: 'build', km: 60, lr: 30, wed: 'Tempo 2×15 min', sun: 'Long 30 — last 12 @ MP (Evo SL)', wedShoe: 'Evo SL', lrShoe: 'Evo SL', key: true, notes: 'Peak volume · Pro 4 fit-check Tue' },
       { wk: 24, phase: 'build', km: 35, lr: 21, wed: null, sun: null,  key: true, noBasketball: true, notes: 'TUNE-UP half (see §9)' },
@@ -1554,6 +1555,55 @@ const PLAN = {
             { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
             { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
           ] },
+        },
+      },
+
+      /* Week 21 — the 5k, second go (Sat 21 Nov; the owner's call, Oct 2026).
+         Wk 18's attempt on the track went out 11 s fast, held the sub-20
+         line to 4.1 km and stopped on a gag, the night after basketball.
+         The cutback keeps its 46 km counting the 5k itself, as Wk 18 did:
+         Tue 7 · Wed 7 · Thu 5 · Sat 5 · Sun 22 — the Saturday buffer run
+         is the time trial, warm-up and cool-down on top. Fri no basketball
+         (flag); the light upper still deloads (row.cutback). */
+      21: {
+        label: '5K TIME TRIAL',
+        days: {
+          2: { run: { km: 7 } },
+          3: { run: { km: 5 } },
+          5: { blocks: [
+            { t: '07:00', end: '07:30', title: 'Wake · Anki · breakfast', detail: '~2½ h before the start — porridge is fine this early. Anything within 90 min stays light (toast and jam, a banana): no milk, nothing dense. Caffeine with breakfast, not an extra dose later', cat: 'routine', quiet: true },
+            { t: '07:30', end: '08:30', title: 'Easy morning', detail: 'Kit out: Evo SL, watch on Track Run, the lap card', cat: 'free', quiet: true },
+            { t: '08:30', end: '09:00', title: 'Travel to the track', cat: 'routine', quiet: true },
+            { t: '09:00', end: '09:25', title: 'Warm-up', detail: '2 km easy jog + 3–4 strides to 5k pace, no faster · clear the throat — blow the nose, cough, spit, sip water', cat: 'run', quiet: true },
+            { t: '09:30', end: '09:50', title: '5K TIME TRIAL — the PB attempt', detail: 'Evo SL · lane 1, 12½ laps from the 200 m start · THE 200 M CHECK: 0:48 — 0:45 or quicker means ease off now; the last attempt opened 11 s fast · 1:36 laps to 1 km, then 1:35 if controlled · lap 10 is THE DECISION · the last 1½ laps everything · the sub-20 line is 1:36 every lap: 4:00 at 1 km, 12:00 at 3 km, 16:48 at lap 10 · if you gag, ease off for half a lap, spit, go again — it passes in 20–30 s · stop the watch on the line: the clock at 12½ laps is the result', cat: 'run', doable: true, runKm: 5, shoe: 'Evo SL', estPace: '3:57',
+              /* Every row carries its own cumulative; the test walks them. */
+              table: { title: 'THE LAP CARD — 12½ laps, lane 1 · target 19:46', cols: ['Lap', 'Target', 'Clock'], rows: [
+                ['200 m', '0:48 — the check', '0:48'],
+                ['1', '1:36', '2:24'],
+                ['2 · 1 km', '1:36', '4:00'],
+                ['3', '1:35', '5:35'],
+                ['4', '1:35', '7:10'],
+                ['5', '1:35', '8:45'],
+                ['6', '1:35', '10:20'],
+                ['7 · 3 km', '1:35', '11:55'],
+                ['8', '1:35', '13:30'],
+                ['9', '1:35', '15:05'],
+                ['10', '1:35 — THE DECISION', '16:40'],
+                ['11', '1:34', '18:14'],
+                ['12 · 5 km', '1:32 — everything', '19:46'],
+              ] } },
+            { t: '09:50', end: '10:05', title: 'Cool-down jog', detail: 'Never just stop', cat: 'run', quiet: true },
+            { t: '10:05', end: '10:45', title: 'Travel home · shower · refuel', cat: 'routine', quiet: true },
+            Object.assign({ t: '11:00', end: '11:50' }, SAT_LIGHT),
+            { t: '12:00', end: '13:00', title: 'Lunch', cat: 'meal', quiet: true },
+            { t: '13:00', end: '16:30', title: 'Study', cat: 'study', doable: true },
+            { t: '16:30', end: '19:00', title: 'Free — social / hobbies', cat: 'free', quiet: true },
+            { t: '19:00', end: '20:00', title: 'Dinner', cat: 'meal', quiet: true, carbEve: true },
+            { t: '20:00', end: '22:00', title: 'Free evening', cat: 'free', quiet: true },
+            { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
+            { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
+          ] },
+          6: { run: { detailExtra: 'The day after the 5k — run it by heart rate and keep it genuinely easy. Heavy legs for the first few km are normal; if they stay heavy, cut it to 18–20 km. Next Sunday’s 28 with 10 @ MP matters more' } },
         },
       },
 

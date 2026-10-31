@@ -191,6 +191,30 @@ ok(hasBlock(dayOfWeek(18, 5), /PARKRUN 5K/i), 'wk 18 Sat should hold the parkrun
   ok(sum(18) === 36 && PLAN.blocks[0].weekTable[17].cutback && DB.addDays(START, 17 * 7 + 5) === '2026-10-31', 'wk 18 is the parkrun cutback, Sat 31 Oct');
   ok(PLAN.keyEvents.some((e) => e.wk === 18 && /PARKRUN/.test(e.label)) && !PLAN.keyEvents.some((e) => e.wk === 17), 'the key date moved with the race');
 }
+/* Oct 2026 (the owner's call): the 5k gets a second go on Sat 21 Nov.
+   The cutback keeps its 46 km counting the 5k itself, Friday drops
+   basketball, Saturday's buffer run IS the time trial, and the lap card
+   is a script whose every clock is its own cumulative. */
+{
+  const sum = (wk) => [0, 1, 2, 3, 4, 5, 6].reduce((n, di) => n + (dayOfWeek(wk, di).run ? dayOfWeek(wk, di).run.run.km : 0), 0);
+  const row = PLAN.blocks[0].weekTable[20], sat = dayOfWeek(21, 5), tt = sat.run;
+  ok(sum(21) === 46 && row.km === 46 && row.cutback && row.noBasketball, 'wk 21 stays a 46 km cutback, with basketball off');
+  ok(DB.addDays(START, 20 * 7 + 5) === '2026-11-21' && tt && /5K TIME TRIAL/.test(tt.title) && tt.run.km === 5 && tt.run.hard,
+    'wk 21 Saturday (21 Nov) holds the 5k time trial, a hard 5 km');
+  ok(!sat.blocks.some((b) => /buffer/i.test(b.title)) && sat.blocks.filter((b) => b.run).length === 1,
+    'the time trial replaces the Saturday buffer run — no second run that day');
+  ok(/deload/i.test(sat.blocks.find((b) => /Light upper/.test(b.title)).title), 'the light upper after it still deloads on the cutback');
+  ok([1, 2, 3].map((di) => dayOfWeek(21, di).run.run.km).join() === '7,7,5', 'wk 21 Tue 7 · Wed 7 · Thu 5 around it');
+  ok(/genuinely easy/.test(dayOfWeek(21, 6).run.detail) && dayOfWeek(21, 6).run.run.km === 22, 'the Sunday after keeps its 22, easy');
+  ok(/200 m CHECK|200 M CHECK/i.test(tt.detail) && /gag/.test(tt.detail), 'the brief carries the two lessons of the first go: the 200 m check and the gag');
+  const lap = (s) => s.split(':').map(Number).reduce((a, n) => a * 60 + n, 0);
+  let acc = 0;
+  tt.table.rows.forEach((r) => { acc += lap(r[1].split(' ')[0]); ok(lap(r[2]) === acc, 'lap card ' + r[0] + ' clock is cumulative, got ' + r[2]); });
+  ok(tt.table.rows.length === 13 && acc === lap('19:46') && lap(tt.table.rows[2][2]) === 240,
+    'the card covers 200 m + 12 laps, 4:00 at 1 km, 19:46 at the line');
+  ok(PLAN.keyEvents.some((e) => e.wk === 21 && e.di === 5) && DB.nextKeyEvent('2026-11-01').label === '5K TIME TRIAL',
+    'after the first go the next key date is the 5k time trial');
+}
 ok(hasBlock(dayOfWeek(24, 6), /TUNE-UP HALF/i), 'wk 24 Sun should hold the tune-up half');
 ok(hasBlock(dayOfWeek(26, 4), /CHRISTMAS.*rest|full rest/i), 'wk 26 Fri should be Christmas rest');
 ok(hasBlock(dayOfWeek(27, 4), /New Year|REST/), 'wk 27 Fri should be NYD rest');
@@ -611,7 +635,7 @@ section('run-log maths · key events · pacing tables');
   ok(DB.paceOf(0, 100) === null, 'pace guards against zero distance');
 
   /* key events: ordered, well-formed, each lands on a real run day */
-  ok(PLAN.keyEvents && PLAN.keyEvents.length === 5, 'five key events defined');
+  ok(PLAN.keyEvents && PLAN.keyEvents.length === 6, 'six key events defined');
   for (const ev of PLAN.keyEvents) {
     const d = dayOfWeek(ev.wk, ev.di);
     ok(d.run && d.run.run.km > 0, 'key event "' + ev.label + '" lands on a day with a run');
@@ -773,8 +797,8 @@ section('season shape + verdicts');
   ok(shape[29].race === true && shape[29].km === 15, 'week 30 is the race week');
   ok(PLAN.keyEvents.every((ev) => shape[ev.wk - 1].key),
     'every key-event week is flagged on the skyline');
-  ok(shape.filter((w) => w.key).length === 10,
-    'the ten §7 KEY weeks are flagged (5 race days + the flagged build weeks)');
+  ok(shape.filter((w) => w.key).length === 11,
+    'the eleven §7 KEY weeks are flagged (6 race days + the flagged build weeks)');
   ok(shape[22].km === 60, 'peak volume week 23 tops the skyline at 60');
   ok(shape.filter((w) => w.cutback).length >= 5, 'cutback weeks carried through');
 
@@ -896,8 +920,8 @@ section('basketball as training');
   /* the evening block must not collide with the longer session */
   const eve = dayOfWeek(15, 4).blocks.find((b) => /Evening — out/.test(b.title));
   ok(eve && eve.start === '21:00', 'the Friday evening block starts after basketball, not during it');
-  /* still off on the five protected weeks — injury risk, not low value */
-  for (const wk of [18, 24, 26, 27, 30]) {
+  /* still off on the six protected weeks — injury risk, not low value */
+  for (const wk of [18, 21, 24, 26, 27, 30]) {
     ok(!dayOfWeek(wk, 4).blocks.some((b) => b.doable && /^Basketball — (1v1|shooting)/.test(b.title)),
       'wk ' + wk + ' keeps both basketball halves off before its key day');
   }

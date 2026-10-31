@@ -347,6 +347,7 @@ offline.
 **The banked moment (v5.18, the owner's idea):** the two inputs the journey is drawn from each get their moment there. A run's first log (by hand or from Strava) and a gym session's tick hold a beat on Today (≈1 s, or until an earned-moment card has played) so the tick or the glass lands, then open the journey on its tab and play once: the run comes in as a shooting star from high on the left, flares where it lands and settles into its place in the firmament; the session swells the slice out by its new wood, lit and fading. The caption says what was banked ("Tue 13 Oct · +7 km · banked"; "+1 session · 2 this week") and a pill above the tab bar goes back to Today where you were. Nothing for an edit, an untick, a re-tick, a weight saved, study, reading or basketball; nothing when the day has no place in the figure, or when you have moved on in the beat; a session ticked in Focus waits for Focus to close; under reduced motion the journey arrives with the star or ring already in place.
 **The moment as a sequence (v5.18.1, the owner's calls over three rounds — the first cut "looked cheap": a pause, a jump-cut and a scroll):** the press is the transfer. Today is held still as it stood at the press, and the journey opens through it in a circle from the button pressed — a ring of light at the edge for a run, three growth rings for a session — while Today falls back into the dark (no beat, no scroll). The figure, in the middle of the page as it was before the session, then lifts and zooms until it fills the screen (the sky from under the inscription to the foot, the slice the full width) while the page goes dark round it; a Latin phrase is written in over the top in the scribe's hand — Gothic blackletter drawn stroke by stroke, its initial in red, its English under it (`PLAN.hours.banked`, taking turns; the glyphs are the Hershey Gothic English single-stroke font in `js/scribe.js`, with the acknowledgements its licence asks for) — the star falls or the ring swells once the phrase is half written, a large caption says what was banked ("+7 km", "+1 session"), and the figure pans back down into its place on the page, which returns round it; the pill follows. A tap lands it and pans straight back. A long run the recap flags as an overshoot gets no moment — the warning stays in front of you on Today, as it gets no earned card (v5.11.2). The landing flashes on impact from the star itself; the held star stays hidden (not just transparent) so its twinkle cannot show it early. Under reduced motion none of it: the journey simply opens with the star or ring in place.
 **The target moves to sub-3:20 (v5.19, the owner's call, on the block's evidence — §1, §10):** the race card names the target (sub-3:20 · 4:44/km), the fallback (sub-3:30 · 4:58) and the floor (3:45 · 5:20). Marathon pace in training is a ladder (`PLAN.mpSteps`, `DB.mpStep`): each long run's MP segment runs at its week's step, from 5:05–5:10 on 18 Oct to 4:45–4:50 by 6 Dec, moved by heart rate (held in Z3 with no fade → 5 s/km quicker next time; Z4 or a fade → hold; Z4 throughout → back 5 s/km); the run card, the session shape, the log's MP stepper and its readback ("… than the step, 5:05–5:10/km") all read the step. From the tune-up on, MP work runs at the race pace the saved half sets (`DB.raceAnchor` over the plan's anchors, which now carry their race pace: under 1:35 → 4:44 · 1:35–1:39 → 4:55–4:58 · 1:40–1:43 → 5:05–5:10 · 1:44–1:46 → 5:20). Reference lists the ladder with this week's step lit, and the pace line marks the target and the fallback. Race day: the 3:20 split table (4:46 out, 4:42 home), 7 gels (the last at 175 min), the window 06:45–10:15. Easy bands stay — a faster race widens the gap from easy, it does not make easy faster.
+**The 5k, second go (v5.19.1, the owner's call):** the first attempt (Sat 31 Oct, a solo track 5k in place of the parkrun) went out 11 s fast, held the sub-20 line to 4.1 km and stopped on a gag, the night after basketball. Week 21 now carries a **5K TIME TRIAL on Sat 21 Nov** (§9): a red-letter key date, basketball off on the Friday, the cutback's 46 km kept with the 5k counted in place of the buffer run (Tue 7 · Wed 7 · Thu 5 · Sat 5 · Sun 22), and a 13-row lap card from the 200 m check (0:48) to 19:46. The Sunday after keeps its 22, run easy.
 **v5.17 (the owner's approval):** the Strength journey's column became the rings of an oak, and the journey starts on 12 Oct and runs on without an end — see The Strength journey above.
 **v5.16.2 (the owner's call):** fat and carbs swap roles — fat is a quarter of the day and carbs the rest, never under the day's tier (fat gives way, to 20%, when the tier needs the room). The old split parked every spare calorie of an easy or gym day in fat (33–35% four days a week) and gave the Monday after the long run 4 g/kg of carbs, the day the glycogen goes back in.
 **v5.16.1 (the owner's call):** Monday's anti-extension core is a barbell rollout — round plates, from the knees — because the gym has no ab wheel; same job, same 2×8–12.
@@ -416,7 +417,7 @@ First-principles design is welcome. These behaviours are the intent:
    (paces/shoes/rules) live behind a secondary menu.
 6. A NOW indicator that tracks the clock (minute refresh, date rollover).
 7. Race countdown (weeks + days to gun) always one glance away, plus the
-   next KEY date (TT → parkrun → half → rehearsal → race) as a chip on
+   next KEY date (TT → parkrun → 5k TT → half → rehearsal → race) as a chip on
    today.
 8. **The app closes the loop (v3.0):** any run on or before today can be
    logged in two taps — time + avg HR (+ optional km override) on the
@@ -764,7 +765,7 @@ session · Sunday session · flags/notes.
 | 18 | 26 Oct–1 Nov | Build | 36 | 16 | Easy 5 (race week) | Long 16 easy — recovery | CUTBACK · KEY · **PARKRUN 5K PB Sat** · no basketball |
 | 19 | 2–8 Nov | Build | 54 | 28 | 6×3 min @ threshold | Long 28 — last 10 @ MP | |
 | 20 | 9–15 Nov | Build | 58 | 30 | Tempo 2×15 min | Long 30 — 12 @ MP | KEY · first 30 km |
-| 21 | 16–22 Nov | Build | 46 | 22 | Easy + strides | Long 22 easy | CUTBACK |
+| 21 | 16–22 Nov | Build | 46 | 22 | Easy + strides | Long 22 easy | CUTBACK · KEY · **5K TIME TRIAL Sat** (second go, §9) · no basketball |
 | 22 | 23–29 Nov | Build | 56 | 28 | Tempo 30 min | Long 28 — last 10 @ MP | KEY · racer arrives, keep boxed |
 | 23 | 30 Nov–6 Dec | Build | 60 | 30 | Tempo 2×15 min | Long 30 — last 12 @ MP (Evo SL) | KEY · peak volume · Pro 4 fit-check Tue |
 | 24 | 7–13 Dec | Build | 35 | 21 | — | — | KEY · **TUNE-UP half** · no basketball (see §9) |
@@ -843,6 +844,23 @@ breakfast 90 min before · travel + 2 km warm-up + 3–4 strides · **09:00
 PARKRUN 5K all-out PB in the Evo SL** · even splits, don't sprint km 1 ·
 cool-down jog · light upper 10:30 (legs are done — ride the PB high) ·
 normal study afternoon. Sun: easy 16 recovery.
+*As lived:* run solo on the track instead (Oct 2026) — out 11 s fast,
+on the sub-20 line at 4.1 km, stopped on a gag, the night after
+basketball. Hence Week 21.
+
+**Week 21 — 5k time trial, the second go (Sat 21 Nov; the owner's call,
+Oct 2026).** Tue easy 7 · Wed easy 7 + strides · Thu easy 5 + strides ·
+Fri: NO basketball · Sat: breakfast ~2½ h out (anything within 90 min
+light — no milk, nothing dense; caffeine with breakfast) · travel ·
+2 km warm-up + 3–4 strides, clear the throat · **09:30 5K TIME TRIAL in
+the Evo SL** — lane 1, 12½ laps from the 200 m start · **the 200 m
+check: 0:48, and 0:45 or quicker means ease off now** · 1:36 laps to
+1 km, 1:35 if controlled, lap 10 the decision, the last 1½ laps
+everything (the card ends 19:46; the sub-20 line is 1:36 every lap) ·
+a gag: ease off half a lap, spit, go again · cool-down · light upper
+11:00 (deload — it is a cutback). Sun: long 22 easy by heart rate, cut
+to 18–20 if the legs stay heavy. The week keeps 46 km with the 5k
+counted in place of the Saturday buffer run.
 
 **Week 24 — tune-up (Sun 13 Dec).** Mon: the Monday session as normal
 (maintenance dose by then — six days out, with one set each of leg
@@ -1038,7 +1056,7 @@ from mile 22.
    impact cost with nothing left to buy. The **shooting hour** is active
    recovery (~350 kcal, about a brisk walk). Flex the 1v1 half first:
    least marathon-specific, highest ankle risk. Both OFF on weeks 18,
-   24, 26, 27, 30.
+   21, 24, 26, 27, 30.
 4. **Fuelling is a skill, and the interval IS the carb rate.** A 40 g gel
    is ~23 g carbs, so "every 35 min" literally means 39 g/h, every 30
    means 46, every 25 means 55. Guidance for efforts over 2.5 h is
@@ -1173,7 +1191,8 @@ absorbed without a deploy; the plan file stays canonical.
   weekly km (±1).
 - Date anchors: 2026-07-01 → week 1, day index 2. 2027-01-24 → week 30,
   day index 6.
-- Special-week spot checks: Wk 18 Sat = parkrun · Wk 24 Sun = tune-up
+- Special-week spot checks: Wk 18 Sat = parkrun · Wk 21 Sat = 5k time
+  trial · Wk 24 Sun = tune-up
   half · Wk 26 Fri = Christmas rest · Wk 27 Fri = NYD rest · Wk 30 Sun
   = race protocol · Wk 23 Tue run mentions the Pro 4 fit-check.
 - Post-block behaviour: 2027-01-27 resolves to the Recovery block;

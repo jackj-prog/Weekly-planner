@@ -2714,3 +2714,25 @@ ladder by heart rate; the half sets race pace.
   1:37 half (and at 4:44 with none), the race card, the ladder's lit
   step, the TARGET mark.
 
+
+## The 5k gets a second go — v5.19.1, 31 October (Claude)
+
+The first attempt (Sat 31 Oct) was run solo on a track instead of the
+parkrun: out 11 s fast (3:49 first km), 1:36–1:37 laps after, on the
+sub-20 line at 4.1 km, then a gag and a stop — the night after
+basketball. The owner chose a second go on Sat 21 Nov. Data only.
+
+- **Data.** Wk 21's row gains `key`, `noBasketball` and a note.
+  `specialWeeks[21]`: Wed 7 and Thu 5 (km only — titles, shoes and cues
+  stay computed), a Saturday template whose 5k block replaces the buffer
+  run (`runKm: 5`, Evo SL, `estPace` 3:57, a 13-row `table` from the
+  200 m check to 19:46), and a `detailExtra` on Sunday's 22. The week
+  stays 46 km counting the 5k, as Wk 18 counted its parkrun. A sixth
+  `keyEvents` entry, `5K TIME TRIAL`; rule 3's off-weeks list gains 21.
+  The light upper deloads through `row.cutback` as before.
+- **Wk 18 stays as written** (the §15 spot check is "Wk 18 Sat =
+  parkrun"); §9 records how it was lived.
+- **Tests.** build: six key events, eleven KEY weeks, basketball off in
+  wk 21, the week's sum and split, the trial replacing the buffer run,
+  the deload, the brief's two lessons, every lap-card clock cumulative,
+  and the next key date after 1 Nov.
