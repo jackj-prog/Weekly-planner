@@ -4127,3 +4127,16 @@ svg.mo-zoom .sk-shoot { visibility: hidden; }
 }
 .fw-row.past .fw-k { color: var(--t2); }
 
+
+/* ---- v5.20: the marathon pace the log has earned ----
+   One quiet line under the card's MP figure naming the run it was read
+   from; the readback's next step; and the same pair on Reference's ladder. */
+.hero .h-meta .h-mp .h-mp-why { display: block; margin-top: 6px; font: 400 12.5px/1.4 var(--body); color: var(--t2); text-wrap: pretty; }
+.h-dc.mp .mp-next { margin-top: 8px; }
+.h-dc.mp .mp-next b { font: 700 13px var(--mono); color: var(--text); }
+.mp-ladder .mp-earned { border-top: 1px solid var(--line); }
+.mp-ladder .mp-earned .v b { color: var(--text); }
+.mp-ladder .mp-earned-why { margin: -8px 0 16px; font: 400 13px/1.45 var(--body); color: var(--t2); text-wrap: pretty; }
+/* the race card, once the half is run: what it set (rule 7) */
+.race-card .rc-set { margin-top: 12px; padding-top: 12px; border-top: 1px solid color-mix(in srgb, var(--chrome-text) 30%, transparent); font: 400 var(--type-note)/1.45 var(--body); }
+.race-card .rc-set b { display: block; font-weight: 700; }

@@ -2736,3 +2736,46 @@ basketball. The owner chose a second go on Sat 21 Nov. Data only.
   wk 21, the week's sum and split, the trial replacing the buffer run,
   the deload, the brief's two lessons, every lap-card clock cumulative,
   and the next key date after 1 Nov.
+
+## The plan answers the log — v5.20.0, 11 November (Claude)
+
+The owner asked for a full sweep: look, feel, training recommendations.
+Every screen was shot from an invented season to 10 Nov (scratch tooling,
+not in the repo). The visual layer held up; what did not was four places
+where the app stated a rule and did not follow it. Those shipped here.
+The visual findings went to the owner as current-against-proposed boards,
+per the standing review process, and are NOT in this release.
+
+- **The earned MP step.** `DB.mpVerdict` gains `edge` (Z3, within
+  `mpCheck.holdBpm` of the Z4 line). `DB.mpEarned(week, last, rest, max)`
+  → the ladder's step, or `{pace, say, sec, earned: true, ladder, from:
+  {iso, paceSec, hr, z, move}}` when the last MP log leaves the pace
+  slower than the ladder. Race-pace weeks and missing zones return the
+  ladder. App: `lastMpBefore(iso)`, `mpPaceFor(iso)` (now the single
+  source for the card, Focus, the shape, the stepper and the readback),
+  `mpWhy(step)`, `runDetail(block, iso)` (the prescription text with the
+  earned or half-set pace in place of the ladder's wording),
+  `nextMpAfter(iso, e)`. `runLogHistory()` now carries `mpKm`,
+  `mpPaceSec`, `mpHr` — the pace line's pin had read fields that were
+  never there.
+- **Race day from the half.** `DB.setRaceHalf(sec)` is the builder's one
+  piece of personal state (the app sets it at every render from
+  `savedHalfSec()`, which is null until the tune-up day; tests leave it
+  unset). `DB.racePlan(entry)` reads the marathon block's `repace`
+  (`swing`, `room`, `gelRoom`, three templates) and returns pace, end,
+  gels, detail and table; `assemble()` moves the block that started at
+  the old finish. `DB.raceClock(pace, swing, km)` is the split formula.
+- **MP reps.** `PLAN.mpRepsNote`; `runSpec('wed')` uses it when the
+  Wednesday title is an MP session.
+- **Week 21.** `specialWeeks[21].days[2]` and `[3]` gain a title and
+  detail (km unchanged, the week still 46).
+- **Text.** `PLAN.tempoPaceNote`'s first sentence now ends in " · " so
+  the card can show it; `withZones()` gives each zone's range once.
+- **Tests.** build +49 (the rule's cases, the reps, the rehearsal, the
+  authored table against the formula, re-pacing at four halves and back).
+  interactions `marathonPace()` +15.
+
+Recommendations given to the owner in chat, not built: a chest strap
+(wrist HR cadence-locks at 5k effort, and the earned step reads HR);
+trial a dual-source 40 g-carb gel on the long runs if more than ~55 g/h
+is wanted on race day; find an organised half for 13 Dec if there is one.

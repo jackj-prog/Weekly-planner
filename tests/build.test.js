@@ -1859,6 +1859,78 @@ section('marathon-pace check (§10)');
  }
  ok(!/MP segments|5:20\/km/.test(require('fs').readFileSync(path.join(__dirname, '..', 'js', 'day-builder.js'), 'utf8')), 'day-builder.js carries no marathon pace of its own (§2)');
 }
+section('the step the heart rate has earned · MP reps · race day from the half (v5.20)');
+{
+ /* Fixture zones only (rest 50, max 190): Z3 is 148–162, Z4 162–176. */
+ const z = [50, 190], m = PLAN.mpCheck;
+ ok(m.holdBpm === 3 && m.stepSec === 5 && /Hold/.test(m.verdicts.edge), 'the rule’s two numbers and the top-of-Z3 verdict are data');
+ ok(DB.mpVerdict(158, ...z).key === 'on' && DB.mpVerdict(159, ...z).key === 'edge' && DB.mpVerdict(161, ...z).key === 'edge' && DB.mpVerdict(162, ...z).key === 'above',
+  'an average within 3 bpm of the Z4 line is the top of Z3: hold');
+ const run = (paceSec, hr) => ({ iso: '2026-11-08', paceSec, hr });
+ const hold = DB.mpEarned(20, run(312, 160), ...z);
+ ok(hold.earned && hold.pace === '5:10–5:15' && hold.sec === 312 && hold.ladder === DB.mpStep(20).pace && hold.from.move === 'hold',
+  'a 5:12 at the top of Z3 holds: 5:10–5:15, not the ladder’s ' + DB.mpStep(20).pace);
+ const back = DB.mpEarned(20, run(312, 167), ...z);
+ ok(back.earned && back.pace === '5:15–5:20' && back.from.move === 'back', 'a 5:12 in Z4 steps back 5 s/km: ' + back.pace);
+ const quick = DB.mpEarned(20, run(312, 152), ...z);
+ ok(quick.earned && quick.pace === '5:05–5:10' && quick.from.move === 'quicker', 'a 5:12 settled in Z3 earns 5 s/km: ' + quick.pace);
+ const cap = DB.mpEarned(20, run(290, 152), ...z);
+ ok(!cap.earned && cap.pace === DB.mpStep(20).pace && cap.from.move === 'quicker', 'the ladder is the ceiling: a quick, easy MP run still gets the week’s step');
+ ok(DB.mpEarned(20, null, ...z).pace === DB.mpStep(20).pace && !DB.mpEarned(20, run(312, 160)).earned && !DB.mpEarned(20, run(312, 160), 0, 0).earned,
+  'no log, or no zones: the ladder as written');
+ ok(DB.mpEarned(24, run(312, 167), ...z).race === true && DB.mpEarned(27, run(312, 167), ...z).race === true, 'from the tune-up on the half is the authority, not the log');
+ ok(DB.mpEarned(20, run(310, 160), ...z).pace === '5:10–5:15', 'a held pace on the 5 s line reads from it, never quicker');
+ for (const k of ['quicker', 'hold', 'back', 'ladder']) ok(typeof m.earned[k] === 'string' && m.earned[k].length > 10, 'the card’s "' + k + '" line is data');
+ ok(/applies/.test(PLAN.mpStepRule), 'the rule says the app applies it to the log');
+
+ /* Wk 29's "5×3 min @ MP" is race pace in Z3, not a Z4 tempo */
+ const reps = dayOfWeek(29, 2).run;
+ ok(/5×3 min @ MP/.test(reps.title) && /Race pace, not threshold/.test(reps.detail) && /Z3/.test(reps.detail) && !/HEART RATE|4:25|Z4 threshold/.test(reps.detail),
+  'the taper’s MP reps are prescribed at race pace in Z3, not by the tempo note');
+ ok(reps.detail.includes(DB.mpStep(29).say), 'and name the week’s MP: ' + DB.mpStep(29).say);
+ for (let w = 7; w <= 28; w++) { const q = dayOfWeek(w, 2).run; if (q && /Tempo|threshold/.test(q.title)) ok(/HEART RATE/.test(q.detail) && !/Race pace, not threshold/.test(q.detail), 'wk ' + w + ' ' + q.title + ' keeps the tempo note'); }
+ ok(PLAN.tempoPaceNote.split(' · ')[0].length <= 110 && /Z4/.test(PLAN.tempoPaceNote.split(' · ')[0]), 'the tempo note leads with a clause short enough for the card’s face, naming Z4');
+ ok(PLAN.mpRepsNote.split(' · ')[0].length <= 110, 'so does the MP reps note');
+
+ /* Wk 21: the pace rehearsal before the 5k, as before the August 2-mile */
+ const reh = dayOfWeek(21, 2).run, two = dayOfWeek(21, 3).run, tt = dayOfWeek(21, 5).run;
+ ok(/rehearsal/i.test(reh.title) && /4 × 400 m in EXACTLY 1:36/.test(reh.detail) && reh.run.km === 7 && reh.run.shoe === 'Evo SL' && DB.runClass(reh) === 'quality',
+  'wk 21 Wednesday rehearses four laps at the trial’s opening pace');
+ ok(tt.table.rows[1][1] === '1:36' && /1:36/.test(reh.detail), 'the rehearsed lap is the lap card’s first full lap');
+ ok(/2 × 200 m in EXACTLY 48 s/.test(two.detail) && two.run.km === 5 && /^0:48/.test(tt.table.rows[0][1]) && DB.runClass(two) === 'easy',
+  'wk 21 Thursday resets the number: two 200s at the card’s 200 m check');
+ ok([1, 2, 3, 5, 6].reduce((n, di) => n + dayOfWeek(21, di).run.run.km, 0) === 46, 'the week is still 46 km');
+ const face = reh.detail.split(' · ').filter((c) => !/^\d+ km$|^Evo SL$/.test(c))[0];
+ ok(face.length <= 110 && /^4 × 400/.test(face), 'the card’s face leads with the reps');
+
+ /* Rule 7 on race day: the saved half re-paces it */
+ const race = () => DB.buildDay(PLAN.race.date), entry = PLAN.blocks[0].specialWeeks[30].days[6].blocks.find((b) => b.repace);
+ const authored = race(), a0 = authored.run;
+ const goal = DB.parsePace(String(PLAN.race.goalPace).replace(/\/km$/, '')), clk = (s) => s.split(':').map(Number).reduce((x, n) => x * 60 + n, 0);
+ ok(entry && entry.table.rows.every((r) => Math.abs(clk(r[1]) - DB.raceClock(goal, entry.repace.swing, /half/i.test(r[0]) ? 21.0975 : parseFloat(r[0]) >= 42 ? 42.195 : parseFloat(r[0]))) < 1),
+  'the authored split table is exactly what the formula makes at the target pace');
+ DB.setRaceHalf(1 * 3600 + 33 * 60);
+ ok(JSON.stringify(race().blocks) === JSON.stringify(authored.blocks), 'a half inside the target’s band changes nothing');
+ DB.setRaceHalf(1 * 3600 + 37 * 60 + 20);
+ const d = race(), r = d.run, next = d.blocks[d.blocks.indexOf(r) + 1];
+ ok(r.run.estPace === '4:58' && r.end === '10:25' && next.start === '10:25' && /Finish/.test(next.title), 'a 1:37 half: race pace 4:58, the window and the finish move to 10:25');
+ ok(/THE 3:30 PLAN — 4:58\/km, 5:00 out and 4:56 home/.test(r.table.title) && r.table.rows.length === a0.table.rows.length, 'the split table is the 3:30 plan');
+ const fin = r.table.rows[r.table.rows.length - 1], half = r.table.rows.find((x) => x[0] === 'Half');
+ ok(clk(fin[1]) < clk('3:30:00') && clk(fin[1]) > clk('3:29:00') && clk(half[1]) > clk(fin[1]) / 2, 'it finishes under 3:30 on a gentle negative split: ' + half[1] + ' → ' + fin[1]);
+ ok(r.table.rows.every((x, i) => x[2] === a0.table.rows[i][2].split('4:42').join('4:56')), 'the cues are kept, their pace re-said');
+ ok(r.run.gelsAt.length === 8 && r.run.gelsAt[7] === 200 && /8 of them/.test(r.detail) && !/7 of them|4:44|4:46|4:42/.test(r.detail), 'eight gels (rule 4: an 8th at 3:30 or slower), said the same in the text');
+ ok(/the pace your half set — 4:58\/km for sub-3:30/.test(r.detail) && r.run.fromHalf.target === 'sub-3:30', 'the card says what the half set');
+ let prev = -1, ordered = true; d.blocks.forEach((b) => { if (b.startMin < prev) ordered = false; prev = b.endMin; });
+ ok(ordered, 'the re-paced day keeps its blocks in order with no overlap');
+ DB.setRaceHalf(1 * 3600 + 45 * 60);
+ ok(race().run.run.estPace === '5:20' && race().run.end === '10:45' && race().run.run.gelsAt.length === 8, 'a 1:45 half: 5:20, to 10:45, eight gels');
+ DB.setRaceHalf(2 * 3600);
+ ok(race().run.run.estPace === '5:35' && race().run.end < '11:00', 'a half beyond the last band takes the last band’s pace');
+ const other = DB.buildDay('2026-12-27');
+ DB.setRaceHalf(null);
+ ok(JSON.stringify(DB.buildDay('2026-12-27').blocks) === JSON.stringify(other.blocks), 'only race day is re-paced');
+ ok(JSON.stringify(race().blocks) === JSON.stringify(authored.blocks), 'clearing the half restores the plan as written');
+}
 section('weights: one history per session, nothing trimmed (v5.14)');
 {
   /* invented round loads — never anyone's real lifts */

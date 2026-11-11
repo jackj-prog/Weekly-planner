@@ -156,7 +156,9 @@
         km, title: quality ? 'Quality run — ' + row.wed : (row.wed || 'Easy run'),
         shoe: row.wedShoe || 'Evo SL',
         paceMin: pace.quality,
-        detail: (quality ? TEMPO_PACE_TEXT : easyPaceText(week)) + ' · warm up 10 min easy first',
+        /* MP reps are race pace in Z3, not a Z4 tempo (v5.20) */
+        detail: (quality ? (isMpSession(row.wed) && PLAN.mpRepsNote ? PLAN.mpRepsNote.replace('{mp}', mpStep(week).say) : TEMPO_PACE_TEXT)
+          : easyPaceText(week)) + ' · warm up 10 min easy first',
         hard: quality,
       };
     }
@@ -401,6 +403,51 @@
     if (hit) return hit.a;
     return halfSec < bands[0].lo ? bands[0].a : bands.reduce((n, b) => Math.abs(halfSec - (b.lo + b.hi) / 2) < Math.abs(halfSec - (n.lo + n.hi) / 2) ? b : n).a;
   }
+  /* ---- race day from the half (rule 7, v5.20) ----
+     The one piece of the athlete's own data the builder is told: the saved
+     tune-up half, in seconds (the app sets it from storage; tests leave it
+     unset, so the plan builds as written). When it lands in a band other
+     than the target's, race day is re-paced by repaceRace(). */
+  let raceHalfSec = null;
+  function setRaceHalf(sec) { raceHalfSec = sec > 0 ? sec : null; }
+  /* The race at a pace: gun-to-line seconds at each mark, `swing` s/km
+     held back to halfway and given back after. */
+  function raceClock(paceSec, swing, km) {
+    const half = 21.0975;
+    return Math.min(km, half) * (paceSec + swing) + Math.max(0, km - half) * (paceSec - swing);
+  }
+  const fmtClock = (sec) => { const s = Math.round(sec), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60;
+    return (h ? h + ':' + String(m).padStart(2, '0') : String(m)) + ':' + String(s % 60).padStart(2, '0'); };
+  /* The plan for a race block at the pace the half set, or null when the
+     half is unsaved or lands in the target's own band. Paces a band names
+     as a range race at its slower end: that is the one that earns the
+     band's finish. */
+  function racePlan(entry) {
+    const rp = entry && entry.repace, anchors = PLAN.recalibrationAnchors || [];
+    const a = rp && raceHalfSec ? raceAnchor(raceHalfSec) : null;
+    if (!a || a === anchors[0] || !a.pace) return null;
+    const pace = Math.max.apply(null, String(a.pace).split(/\s*[–-]\s*/).map(parsePace));
+    if (!(pace > 0)) return null;
+    const g = PLAN.gels, km = entry.runKm >= 42 ? 42.195 : entry.runKm, finish = raceClock(pace, rp.swing, km);
+    const marks = { half: 21.0975 };
+    const at = (label) => /half/i.test(label) ? marks.half : parseFloat(label) >= 42 ? km : parseFloat(label);
+    const goal = parsePace(String(PLAN.race.goalPace).replace(/\s*\/\s*km$/, ''));
+    const swap = (t) => String(t).split(fmtPaceSec(goal + rp.swing)).join(fmtPaceSec(pace + rp.swing)).split(fmtPaceSec(goal - rp.swing)).join(fmtPaceSec(pace - rp.swing));
+    const fill = (t, n) => String(t).replace('{pace}', fmtPaceSec(pace)).replace('{target}', String(a.target).split(' · ')[0])
+      .replace('{short}', a.short || '').replace('{out}', fmtPaceSec(pace + rp.swing)).replace('{home}', fmtPaceSec(pace - rp.swing))
+      .replace('{every}', g.raceInterval).replace('{n}', n);
+    const gels = [];
+    for (let m = g.raceInterval; m <= finish / 60 - rp.gelRoom; m += g.raceInterval) gels.push(m);
+    return {
+      paceSec: pace, pace: fmtPaceSec(pace), finishSec: Math.round(finish), anchor: a, gelsAt: gels,
+      endMin: parseHM(entry.t) + Math.ceil((finish / 60 + rp.room) / 5) * 5,
+      detail: String(entry.detail).split(' · ').map((c) => /^the pace your/i.test(c) ? fill(rp.lead, gels.length)
+        : /^GEL EVERY/i.test(c) ? fill(rp.gels, gels.length) : swap(c)).join(' · '),
+      table: entry.table ? { title: fill(rp.title, gels.length), cols: entry.table.cols,
+        rows: entry.table.rows.map((r) => [r[0], fmtClock(raceClock(pace, rp.swing, at(r[0]))), swap(r[2])]) } : null,
+    };
+  }
+
   /* Where the MP work sits in a long run, for the run card: a finish
      ("last 6" of 22 starts at km 17; "last 14–16" of 26 at km 11–13),
      reps ("2×5"), or a block with no fixed place ("12", "mid 6–8").
@@ -422,10 +469,33 @@
       : { pace, kind: 'block', lo, hi };
   }
   function mpVerdict(hr, rest, max) {
-    const z = zoneOf(hr, rest, max);
-    if (!z || !PLAN.mpCheck) return null;
-    const key = z.z < 3 ? 'below' : z.z === 3 ? 'on' : 'above';
-    return { z: z.z, name: z.name, key, text: PLAN.mpCheck.verdicts[key] };
+    const z = zoneOf(hr, rest, max), m = PLAN.mpCheck;
+    if (!z || !m) return null;
+    /* an average within holdBpm of the Z4 line touched Z4 by the end (v5.20) */
+    const edge = z.z === 3 && m.holdBpm > 0 && m.verdicts.edge && hr >= z.hi - m.holdBpm;
+    const key = z.z < 3 ? 'below' : z.z === 3 ? (edge ? 'edge' : 'on') : 'above';
+    return { z: z.z, name: z.name, key, text: m.verdicts[key] };
+  }
+  /* The step the heart rate has earned (v5.20) — §10's rule applied to the
+     log. last = the latest logged MP segment before the day in question
+     ({iso, paceSec, hr}); rest/max the athlete's own. Below Z3 or settled in
+     it: stepSec quicker than it was run. The top of Z3: hold. In Z4: stepSec
+     back. The ladder is the ceiling — never quicker than the week's step —
+     so a session that holds simply returns the ladder (with `from` saying
+     what was read). Race-pace weeks belong to the half, and without a log
+     or zones the ladder stands as written. */
+  function mpEarned(week, last, rest, max) {
+    const planned = mpStep(week), m = PLAN.mpCheck;
+    if (planned.race || !m || !last || !(last.paceSec > 0)) return planned;
+    const v = mpVerdict(last.hr, rest, max);
+    if (!v) return planned;
+    const by = m.stepSec || 5;
+    const move = v.key === 'above' ? 'back' : v.key === 'edge' ? 'hold' : 'quicker';
+    const sec = Math.round(last.paceSec) + (move === 'back' ? by : move === 'hold' ? 0 : -by);
+    const from = { iso: last.iso, paceSec: Math.round(last.paceSec), hr: last.hr, z: v.z, move };
+    if (sec <= planned.sec) return Object.assign({}, planned, { from });
+    const lo = Math.floor(sec / 5) * 5, pace = fmtPaceSec(lo) + '–' + fmtPaceSec(lo + 5);
+    return { pace, say: pace + '/km', sec, race: false, earned: true, ladder: planned.pace, from };
   }
   /* EF of the run without its MP segment: the part that is still an easy
      long run and so still comparable with other long runs (§4.8). Average
@@ -791,7 +861,7 @@
     const pace = PLAN.pacing;
     const dist = row ? distancesForWeek(row) : null;
     const out = [];
-    let prevEnd = 0;
+    let prevEnd = 0, raceShift = null;
 
     for (const entry of template) {
       /* recovery-block "week 2 only" blocks */
@@ -847,6 +917,11 @@
 
       let start = entry.after ? prevEnd : parseHM(entry.t);
       let end = entry.end ? parseHM(entry.end) : (entry.mins ? start + entry.mins : start + 30);
+      /* race day at the pace the half set (rule 7): the race runs to its own
+         finish, and what was planned for the line starts there */
+      const rp = entry.repace ? racePlan(entry) : null;
+      if (rp) { raceShift = { from: end, to: rp.endMin }; end = rp.endMin; }
+      else if (raceShift && start === raceShift.from) start = raceShift.to;
 
       /* Friday German block end time is a phase delta */
       if (entry.friGerman && block.friGermanEnd) {
@@ -854,7 +929,7 @@
       }
       if (end <= start) continue;            /* squeezed out — drop it */
 
-      const b = mk(start, end, entry);
+      const b = mk(start, end, rp ? Object.assign({}, entry, { detail: rp.detail, table: rp.table }) : entry);
       /* Saturday dinner goes carb-forward before the big MP long runs */
       if (entry.carbEve && row && week >= 14 && row.lr >= 22) {
         b.detail = (b.detail ? b.detail + ' · ' : '') + 'Carb-forward — ' + row.lr + ' km tomorrow';
@@ -886,11 +961,12 @@
         b.run = {
           km: entry.runKm, shoe: entry.shoe || 'Ghost', slot: 'fixed',
           hard: entry.runKm > 20 || /parkrun|marathon|all-out|time trial/i.test(b.title),
-          estPace: entry.estPace || null,
+          estPace: rp ? rp.pace : entry.estPace || null,
           /* race day's gels as a schedule, from the same numbers as its text */
-          gelsAt: /marathon/i.test(b.title) && PLAN.gels && PLAN.gels.raceInterval
+          gelsAt: rp ? rp.gelsAt : /marathon/i.test(b.title) && PLAN.gels && PLAN.gels.raceInterval
             ? Array.from({ length: PLAN.gels.raceCount }, (_, i) => (i + 1) * PLAN.gels.raceInterval) : null,
         };
+        if (rp) b.run.fromHalf = { target: String(rp.anchor.target).split(' · ')[0], finishSec: rp.finishSec };
       }
       out.push(b);
       prevEnd = end;
@@ -1292,7 +1368,7 @@
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
     liftDay, liftHistory, lastLift, withLift, strengthJourney, plannedShare, validBody, bmrOf, energyTarget, macroTargets, validEaten,
-    isMpSession, mpSegmentKm, mpTailKm, mpShape, mpStep, raceAnchor, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, sunLongitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
+    isMpSession, mpSegmentKm, mpTailKm, mpShape, mpStep, mpEarned, raceAnchor, setRaceHalf, racePlan, raceClock, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, sunLongitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

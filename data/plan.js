@@ -259,7 +259,9 @@ const PLAN = {
     'Marathon pace steps down by heart rate, not by the date. Held in Z3 ' +
     'with no fade → the next MP session 5 s/km quicker. Touched Z4 or faded ' +
     '→ hold the step. Ran in Z4 → back 5 s/km. The ladder is the plan if ' +
-    'every session holds; your heart rate is the authority.',
+    'every session holds; your heart rate is the authority. The app applies ' +
+    'this to your log: once an MP segment is logged, the run card asks for ' +
+    'the pace it earned, and never one quicker than the ladder.',
 
   /* The controlled test. Same day, same route, same shoes — otherwise
      you are measuring the weather, not your fitness. */
@@ -397,13 +399,23 @@ const PLAN = {
      Hence the heat line below: a tempo run in the heat SHOULD come back
      slow, and that is not a failed session. */
   tempoPaceNote:
-    'Run this by HEART RATE — Z4 threshold, not the clock. ' +
+    'Run this by HEART RATE — Z4 threshold, not the clock · ' +
     'On a CLEAR day expect 4:25–4:40/km — measured off your own first true ' +
     'Z4 tempo, not off a table. Add ~0.5%/°C above 15 °C before comparing: ' +
     'at feels-like 25 °C that same effort is 4:40–4:55, and coming back slow ' +
     'in the heat is the correction working, not a bad session. It is a ' +
     'readout, not a target: if the pace is there and the HR is not, it was ' +
     'not a tempo',
+
+  /* Marathon-pace REPS on a Wednesday (Wk 29's "5×3 min @ MP") are not a
+     tempo: until v5.20 they carried the threshold note above and its
+     4:25–4:40 readout, eleven days before the race. {mp} is the week's MP
+     (the race pace the half set, by then). */
+  mpRepsNote:
+    'Race pace, not threshold — each rep {mp}, in Z3 · Jog easy between the ' +
+    'reps · This is rhythm, not fitness: this close to the race nothing here ' +
+    'can make you fitter, it can only leave you tired, so it should feel ' +
+    'almost too easy · If the heart rate reaches Z4 you are running too fast',
 
   /* The dress rehearsal is the only run in the block that rehearses the
      things that are not running: the shoes, the gel interval, the salt,
@@ -659,10 +671,24 @@ const PLAN = {
     repsPattern: '(\\d+)×(\\d+)\\s*@ MP',              // "2×5 @ MP" → 10 km
     kmPattern: '(\\d+)(?:[–-]\\d+)?\\s*@ MP',          // "last 6 @ MP" → 6, "12 @ MP" → 12, "14–16" → 14
     tailPattern: 'last (\\d+)(?:[–-]\\d+)?\\s*@ MP',   // only a finish can be read off the end of a track
+    /* The rule applied to the log (v5.20): the last MP segment moves the
+       next one by stepSec. An AVERAGE within holdBpm of the Z4 line means
+       the end of the segment was over it (heart rate drifts up through a
+       finish), which is §10's "touched Z4": hold. */
+    stepSec: 5,
+    holdBpm: 3,
     verdicts: {
       below: 'Below Z3 at marathon pace: this step is too slow for you (§10). Next MP session, 5 s/km quicker.',
       on: 'Z3, where marathon effort belongs (§10). Held with no fade? Next MP session, 5 s/km quicker; faded, hold the step.',
+      edge: 'The top of Z3: an average this close to Z4 means the end of it was in Z4 (§10). Hold this pace next time.',
       above: 'Z4 at marathon pace: too fast for this stage (§10). Next MP session, back 5 s/km.',
+    },
+    /* what the run card says when the log, not the ladder, sets the pace */
+    earned: {
+      quicker: '5 s/km quicker than your {date} run ({pace} in Z{z})',
+      hold: 'held from your {date} run ({pace}, the top of Z3)',
+      back: 'back 5 s/km from your {date} run ({pace} in Z{z})',
+      ladder: 'the ladder’s {ladder} comes when the heart rate allows',
     },
     note:
       'Rule 7: the December half still sets race pace. Read this across ' +
@@ -1368,7 +1394,7 @@ const PLAN = {
           { t: '16:30', end: '17:00', title: 'Commute home', cat: 'work', quiet: true },
           { t: '17:10', run: 'tue' },
           { t: '18:30', end: '19:30', title: 'Dinner', cat: 'meal', quiet: true },
-          { t: '19:30', end: '21:00', title: 'Study', detail: 'Swapped with Wednesday when push moved onto the quality day — any subject, interchangeable', cat: 'study', doable: true },
+          { t: '19:30', end: '21:00', title: 'Study', detail: 'Any subject — the slot is the commitment', cat: 'study', doable: true },
           { t: '21:00', end: '22:00', title: 'Wind down', cat: 'free', quiet: true },
           { t: '22:00', end: '22:30', title: 'Read', cat: 'reading', doable: true },
           { t: '22:30', end: '23:00', title: 'Lights out 22:30', cat: 'routine', quiet: true },
@@ -1568,8 +1594,13 @@ const PLAN = {
       21: {
         label: '5K TIME TRIAL',
         days: {
-          2: { run: { km: 7 } },
-          3: { run: { km: 5 } },
+          /* The pace rehearsal that worked before the August 2-mile (Wk 8),
+             added Nov 2026 on the owner's ask for recommendations: the first
+             attempt was lost in its first 400 m (1:25 against 1:36), so the
+             legs meet 1:36 on Wednesday and 48 s on Thursday. 1.6 km of work
+             at 5k pace with full jogs, then 400 m — neither costs Saturday. */
+          2: { run: { km: 7, title: 'TT rehearsal — 4 × 400 m', shoe: 'Evo SL', detail: 'Evo SL · 4 × 400 m in EXACTLY 1:36 (4:00/km, the sub-20 lap), 400 m easy jogs between · 2 km easy warm-up first, then easy to 7 km · The ONLY job is to teach the legs what 1:36 feels like so Saturday’s first lap is automatic — the last attempt opened in 1:25 · Do not race these: a 1:32 here is the same mistake, rehearsed' } },
+          3: { run: { km: 5, title: 'Easy 5 + goal-pace 200s', detail: 'Easy 5 km in Z2, then 2 × 200 m in EXACTLY 48 s · That is Saturday’s 200 m check · CONTROLLED, not hard: 96 seconds of work, walk back between · If Wednesday’s laps drifted quicker than 1:36 this resets the number' } },
           5: { blocks: [
             { t: '07:00', end: '07:30', title: 'Wake · Anki · breakfast', detail: '~2½ h before the start — porridge is fine this early. Anything within 90 min stays light (toast and jam, a banana): no milk, nothing dense. Caffeine with breakfast, not an extra dose later', cat: 'routine', quiet: true },
             { t: '07:30', end: '08:30', title: 'Easy morning', detail: 'Kit out: Evo SL, watch on Track Run, the lap card', cat: 'free', quiet: true },
@@ -1785,6 +1816,17 @@ const PLAN = {
             { t: '06:00', end: '06:20', title: 'Bag drop · toilet queue', detail: 'Queue early, queue twice', cat: 'routine', quiet: true },
             { t: '06:20', end: '06:40', title: 'Warm-up', detail: '1 km jog + 3–4 strides · you do not need much for a marathon', cat: 'run', quiet: true },
             { t: '06:45', end: '10:15', title: 'MARATHON — 42.2 km 🇨🇾', detail: 'Pro 4 · the pace your 13 Dec half set — 4:44/km for the sub-3:20 (4:55–4:58 if it set sub-3:30, 5:20 for 3:45) · GENTLE NEGATIVE SPLIT — 4:46s out, 4:42s home, and the first half feels too easy · GEL EVERY 25 MIN, 7 of them (~55 g carbs/h; an 8th if you are racing 3:30 or slower) — carry them all, do not rely on the course · sunrise at 06:50, you run into it · flat course, but the Athalassa false flats are run by effort not pace · dress for the finish (low teens), not the start', cat: 'run', doable: true, runKm: 42.2, shoe: 'Pro 4', estPace: '4:44',
+              /* Rule 7 on race day itself (v5.20): when the saved half sets a
+                 race pace other than the target's, the day is re-paced from
+                 it — the window, the split table (clocks from the pace, the
+                 cues kept), the gel count and these three clauses. `swing`
+                 is the s/km held back to halfway and given back after;
+                 `room` the minutes of window left after the finish. The
+                 table above is exactly what this makes at the target pace. */
+              repace: { swing: 2, room: 10, gelRoom: 8,
+                lead: 'the pace your half set — {pace}/km for {target}',
+                gels: 'GEL EVERY {every} MIN, {n} of them (~55 g carbs/h) — carry them all, do not rely on the course',
+                title: 'THE {short} PLAN — {pace}/km, {out} out and {home} home' },
               table: { title: 'THE 3:20 PLAN — 4:44/km, 4:46 out and 4:42 home', cols: ['At', 'Clock', 'Cue'], rows: [
                 ['5 km',  '23:50',   'settle — this MUST feel too easy'],
                 ['10 km', '47:40',   'rhythm · first gel done, keep drinking'],

@@ -316,6 +316,80 @@ async function marathonPace() {
   check(/TARGET 4:44/.test(await t.page.$eval('.pace-spectrum svg', (n) => n.textContent)), 'the pace line marks the target');
   noErrors(t, 'targets');
   await t.ctx.close();
+
+  /* v5.20: the step the log has earned. On the fixture zones (rest 50,
+     max 190: Z3 148–162) an invented finish at 5:12 is Z4 at 168 bpm and
+     the top of Z3 at 160. */
+  const mp8 = { 'runlog-2026-11-08': { sec: 10084, hr: 156, km: 28, mpKm: 10, mpPaceSec: 312, mpHr: 168, cls: 'long' } };
+  const mp8top = { 'runlog-2026-11-08': { sec: 10084, hr: 154, km: 28, mpKm: 10, mpPaceSec: 312, mpHr: 160, cls: 'long' } };
+  t = await open('2026-11-15', '07:00', { ...SEED, ...mp8 });
+  let cell = await text(t.page, '.hero .h-mp');
+  check(/5:15–5:20 · 12 km/.test(cell) && /Back 5 s\/km from your 8 Nov run \(5:12 in Z4\)/.test(cell) && /ladder’s 4:52–4:57/.test(cell),
+    'a Z4 finish steps the next MP run back 5 s/km, and the card says which run and what the ladder holds: ' + cell);
+  check(/MP segments 5:15–5:20\/km/.test(await text(t.page, '.hero .h-detail')), 'the prescription text names the same pace');
+  check(await t.page.evaluate(() => (document.querySelector('.hero .h-detail').textContent.match(/\(148.?–.?162\)/g) || []).length) === 1, 'a zone’s range is given once in a text, not at every mention');
+  noErrors(t, 'earned step, back');
+  await t.ctx.close();
+  t = await open('2026-11-15', '07:00', { ...SEED, ...mp8top });
+  cell = await text(t.page, '.hero .h-mp');
+  check(/5:10–5:15 · 12 km/.test(cell) && /Held from your 8 Nov run \(5:12, the top of Z3\)/.test(cell), 'the top of Z3 holds the pace it was run at: ' + cell);
+  await t.ctx.close();
+  t = await open('2026-11-15', '07:00', { ...SEED, ...mp8, hr: null });
+  cell = await text(t.page, '.hero .h-mp');
+  check(/4:52–4:57 · 12 km/.test(cell) && !/your 8 Nov run/.test(cell), 'with no zones set the ladder stands as written: ' + cell);
+  await t.ctx.close();
+  t = await open('2026-11-08', '15:00', { ...SEED, ...mp8top });
+  const rb = await text(t.page, '.h-dc.mp');
+  check(/top of Z3/.test(rb) && /Next MP run, Sun 15 Nov: 5:10–5:15\/km/.test(rb), 'the readback names the next MP run and the pace this one earned: ' + rb.slice(-90));
+  noErrors(t, 'earned step, readback');
+  await t.ctx.close();
+  t = await open('2026-11-10', '12:00', { ...SEED, ...mp8 }, 'ref');
+  await t.page.evaluate(() => { document.getElementById('ref-paces').open = true; });
+  const ear = await text(t.page, '.mp-ladder');
+  check(/Your next MP run · 15 Nov\s*5:15–5:20\/km/.test(ear) && /Back 5 s\/km from your 8 Nov run/.test(ear) && /Wk 20–21 · now/.test(await text(t.page, '.mp-ladder .is-now')),
+    'Reference sets the earned pace beside the ladder’s lit step: ' + ear.slice(-150));
+  check(/your last MP · 5:12/.test(await text(t.page, '.pace-spectrum figcaption')) && !!(await t.page.$('.pace-spectrum .ps-you')), 'the pace line pins the last MP segment');
+  noErrors(t, 'earned step, Reference');
+  await t.ctx.close();
+
+  /* v5.20: the taper’s MP reps are race pace, not a tempo */
+  t = await open('2027-01-13', '12:00', SEED);
+  let meta = await text(t.page, '.hero .h-meta');
+  check(/PACE\s*4:44/.test(meta) && !/4:25/.test(meta) && /Race pace, not threshold/.test(await text(t.page, '.hero .h-detail')), 'Wk 29’s 5×3 min @ MP is paced at the target, not the tempo readout: ' + meta);
+  await t.ctx.close();
+  t = await open('2027-01-13', '12:00', { ...SEED, recal: '1:37:20' });
+  meta = await text(t.page, '.hero .h-meta');
+  check(/PACE\s*4:55–4:58/.test(meta) && /the pace your half set/.test(await text(t.page, '.hero .h-detail')), 'after a 1:37 half the reps run at the pace it set: ' + meta);
+  await t.ctx.close();
+
+  /* v5.20: rule 7 on race day */
+  t = await open('2027-01-24', '05:10', { ...SEED, recal: '1:37:20' });
+  meta = await text(t.page, '.hero .h-meta');
+  check(/PACE\s*4:58/.test(meta) && /06:45–10:25/.test(meta) && /GELS · 8/.test(meta), 'a 1:37 half re-paces race day: 4:58, to 10:25, eight gels: ' + meta.slice(0, 90));
+  check(/THE 3:30 PLAN — 4:58\/km, 5:00 out and 4:56 home/.test(await text(t.page, '.hero .pace-table, .hero table')) || /THE 3:30 PLAN/.test(await text(t.page, '.hero')), 'the split table is the 3:30 plan');
+  check(/10:25/.test(await text(t.page, '.timeline, .tl')) || /10:25–11:45/.test(await t.page.evaluate(() => document.getElementById('view').textContent)), 'the finish moves with it on the timeline');
+  noErrors(t, 'race day from the half');
+  await t.ctx.close();
+  t = await open('2027-01-24', '05:10', SEED);
+  meta = await text(t.page, '.hero .h-meta');
+  check(/PACE\s*4:44/.test(meta) && /06:45–10:15/.test(meta) && /GELS · 7/.test(meta) && /THE 3:20 PLAN/.test(await text(t.page, '.hero')), 'with no half saved race day is the plan as written');
+  await t.ctx.close();
+  t = await open('2026-12-20', '12:00', { ...SEED, recal: '1:37:20' }, 'ref');
+  check(/Your 1:37:20 half set it\s*sub-3:30 · race 4:58\/km/.test(await text(t.page, '.race-card .rc-set')), 'the race card says what the half set: ' + await text(t.page, '.race-card .rc-set'));
+  await t.ctx.close();
+  t = await open('2026-12-01', '12:00', { ...SEED, recal: '1:37:20' }, 'ref');
+  check(!(await t.page.$('.race-card .rc-set')), 'a time tried before the half is run re-paces nothing');
+  await t.ctx.close();
+  t = await open('2026-12-06', '07:00', { ...SEED, recal: '1:37:20' });
+  check(/4:45–4:50 · /.test(await text(t.page, '.hero .h-mp')), 'nor does it move an MP session before the half: ' + await text(t.page, '.hero .h-mp'));
+  await t.ctx.close();
+
+  /* v5.20: Week 21’s pace rehearsal */
+  t = await open('2026-11-18', '12:00', SEED);
+  check(/TT rehearsal — 4 × 400 m/.test(await text(t.page, '.hero .h-session')) && /PACE\s*4:00/.test(await text(t.page, '.hero .h-meta')) && /4 × 400 m in EXACTLY 1:36/.test(await text(t.page, '.hero .h-detail')),
+    'Wed 18 Nov rehearses the lap: ' + await text(t.page, '.hero .h-detail'));
+  noErrors(t, 'rehearsal');
+  await t.ctx.close();
 }
 
 async function weekShape() {

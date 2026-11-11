@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.19.1';
+  const APP_VERSION = '5.20.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -365,10 +365,14 @@
     if (!hr || !hr.rest || !hr.max) return String(text);
     const zs = DB.hrZones(hr.rest, hr.max);
     if (!zs) return String(text);
+    /* the range once per text: "Z3 (154–169) … Z3 … Z3", not three times (v5.20) */
+    const seen = {};
     return String(text).replace(/\bZ([1-5])\b/g, (m0, n) => {
       const z = zs[Number(n) - 1];
+      if (!z || seen[n]) return m0;
+      seen[n] = true;
       /* a zone and its range never break apart ("Z3 (154– / 169)") (v5.0.7) */
-      return z ? 'Z' + n + '\u00a0(' + z.lo + '\u2060–\u2060' + z.hi + ')' : m0;
+      return 'Z' + n + '\u00a0(' + z.lo + '\u2060–\u2060' + z.hi + ')';
     });
   }
 
@@ -891,7 +895,7 @@
       const tmr = DB.buildDay(DB.addDays(day.iso, 1));
       const line = tmr.run
         ? tmr.run.start + ' · ' + tmr.run.title + (namesKm(tmr.run) ? '' : ' — ' +
-          (tmr.run.run.km === Math.round(tmr.run.run.km) ? tmr.run.run.km : tmr.run.run.km.toFixed(1)) + ' km') +
+          (tmr.run.run.km === Math.round(tmr.run.run.km) ? tmr.run.run.km : tmr.run.run.km.toFixed(1)) + '\u00a0km') +
           ' · ' + tmr.run.run.shoe
         : 'No run — recovery day';
       html += '<div class="nn-tmrw"><span class="t">TMRW</span><span>' + esc(line) + '</span></div>';
@@ -935,13 +939,55 @@
   /* The marathon pace a day's MP work asks for (v5.19): the ladder's step
      for its week, or from the tune-up on the race pace the saved half sets
      (the target's pace until a half is saved). */
+  /* The tune-up half, once it has been run (rule 7). A time tried in the
+     recalibrator beforehand re-paces nothing. */
+  function savedHalfSec() {
+    const ev = (PLAN.keyEvents || []).find((k) => /HALF/i.test(k.label));
+    if (ev && todayISO() < DB.addDays(PLAN.blocks[0].start, (ev.wk - 1) * 7 + ev.di)) return null;
+    return parseHalf(readJSONSafeString('recal'));
+  }
+  /* the latest logged MP segment before a day: what §10's rule reads */
+  function lastMpBefore(iso) {
+    const today = todayISO();
+    const e = runLogHistory().filter((x) => x.mp && x.mpPaceSec > 0 && x.mpHr > 0 && x.iso < iso && x.iso <= today).pop();
+    return e ? { iso: e.iso, paceSec: e.mpPaceSec, hr: e.mpHr } : null;
+  }
   function mpPaceFor(iso) {
-    const s = DB.mpStep(DB.weekNumber(iso));
+    const wk = DB.weekNumber(iso), h = readJSON('hr', null);
+    /* v5.20: before the half, the step is the one the log has earned */
+    const s = h && h.rest && h.max ? DB.mpEarned(wk, lastMpBefore(iso), h.rest, h.max) : DB.mpStep(wk);
     if (!s.race) return s;
-    const a = DB.raceAnchor(parseHalf(readJSONSafeString('recal')));
+    const a = DB.raceAnchor(savedHalfSec());
     const pace = a ? a.pace : String(PLAN.race.goalPace).replace(/\/km$/, '');
     const [lo, hi = lo] = String(pace).split(/\s*[–-]\s*/).map(DB.parsePace);
     return { pace, say: pace + '/km', sec: Math.round((lo + hi) / 2), race: true, fromHalf: !!a };
+  }
+  /* Why the card asks for a pace the ladder does not (v5.20): the run it
+     was read from, and that the ladder waits on the heart rate. */
+  function mpWhy(step) {
+    const t = PLAN.mpCheck && PLAN.mpCheck.earned, f = step && step.from;
+    if (!t || !f || !step.earned || !t[f.move]) return '';
+    const fill = (x) => String(x).replace('{date}', fmtShort(f.iso)).replace('{pace}', DB.fmtPaceSec(f.paceSec)).replace('{z}', f.z).replace('{ladder}', step.ladder);
+    return fill(t[f.move]) + ' · ' + fill(t.ladder);
+  }
+  /* a run's prescription with the earned step in place of the ladder's */
+  function runDetail(block, iso) {
+    if (!block.run || !DB.isMpSession(block.title)) return block.detail;
+    const step = mpPaceFor(iso), said = DB.mpStep(DB.weekNumber(iso)).say;
+    if (step.race) return String(block.detail).replace(said, step.say + (step.fromHalf ? ', the pace your half set' : ', the target until the half is run'));
+    return step.earned ? String(block.detail).replace(said, step.say) : block.detail;
+  }
+  /* the next planned MP session after a day, and the pace this log earns it */
+  function nextMpAfter(iso, e) {
+    const h = readJSON('hr', null);
+    if (!h || !h.rest || !h.max) return null;
+    for (let i = 1; i <= 70; i++) {
+      const d = DB.addDays(iso, i), day = DB.buildDay(d);
+      if (!day.run || !DB.isMpSession(day.run.title) || !DB.mpSegmentKm(day.run.title)) continue;
+      const step = DB.mpEarned(day.week, { iso, paceSec: e.mpPaceSec, hr: e.mpHr }, h.rest, h.max);
+      return step.race ? null : { iso: d, step };
+    }
+    return null;
   }
   function mpCheckHTML(day, e) {
     if (!day.run || !DB.isMpSession(day.run.title) || !(e.mpHr > 0) || !(e.mpPaceSec > 0)) return '';
@@ -950,11 +996,13 @@
     const step = mpPaceFor(day.iso), goal = step.sec;
     const diff = goal ? Math.round(e.mpPaceSec - goal) : null;
     const km = e.mpKm || DB.mpSegmentKm(day.run.title);
-    const band = !v ? 'mpb' : v.key === 'on' ? 'good' : v.key === 'below' ? 'mpb' : 'poor';
+    const band = !v ? 'mpb' : v.key === 'on' ? 'good' : v.key === 'below' ? 'mpb' : v.key === 'edge' ? 'ok' : 'poor';
+    const next = v ? nextMpAfter(day.iso, e) : null;
     return '<div class="h-dc mp ' + band + '"><b>' + (v ? 'Z' + v.z : 'MP') + '</b> marathon pace' + (km ? ' · ' + km + ' km' : '') +
       ' at ' + DB.fmtPaceSec(Math.round(e.mpPaceSec)) + '/km · ' + e.mpHr + ' bpm' +
       (diff != null && Math.abs(diff) >= 3 ? ' · ' + Math.abs(diff) + ' s/km ' + (diff < 0 ? 'faster' : 'slower') + ' than the step, ' + esc(step.say) : '') +
-      '<span>' + esc(v ? v.text : 'Set your HR zones on Reference to place this in a zone.') + ' ' + esc(PLAN.mpCheck.note) + '</span></div>';
+      '<span>' + esc(v ? v.text : 'Set your HR zones on Reference to place this in a zone.') + ' ' + esc(PLAN.mpCheck.note) + '</span>' +
+      (next ? '<span class="mp-next">Next MP run, ' + esc(DAY_NAMES[DB.dayIndex(next.iso)].slice(0, 3) + ' ' + fmtShort(next.iso)) + ': <b>' + esc(next.step.say) + '</b></span>' : '') + '</div>';
   }
   /* History feed for the estimate model: every logged run, classified. */
   function runLogHistory() {
@@ -973,6 +1021,7 @@
         iso: m[1], km, sec: e.sec, estimatedKm: !(Number.isFinite(e.km) && e.km > 0), cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'), paceSec: Math.round(e.sec / km),
         hr: e.hr || null, ef: trendEf(day, km, e),
         mp: !!(day.run && DB.isMpSession(day.run.title)),
+        mpKm: e.mpKm || null, mpPaceSec: e.mpPaceSec || null, mpHr: e.mpHr || null,
         temp: e.temp == null ? null : e.temp, x: e.x === true,
       });
     }
@@ -1629,8 +1678,8 @@
     }
     else if (block.run) {
       const pace = (block.detail.match(/\d{1,2}:\d{2}(?:\s*–\s*\d{1,2}:\d{2})?\s*\/\s*km/) || [])[0];
-      const prefix = block.run.km + ' km · ' + block.run.shoe + ' · ';
-      let detail = block.detail.startsWith(prefix) ? block.detail.slice(prefix.length) : block.detail;
+      const prefix = block.run.km + ' km · ' + block.run.shoe + ' · ', bDetail = runDetail(block, iso);
+      let detail = bDetail.startsWith(prefix) ? bDetail.slice(prefix.length) : bDetail;
       if (detail.startsWith(block.run.shoe + ' · ')) detail = detail.slice(block.run.shoe.length + 3);
       dialog.querySelector('.focus-notes').remove();
       dialog.querySelector('.focus-content').innerHTML = '<div class="focus-distance">' + esc(String(block.run.km)) + '<span>km</span></div>' +
@@ -1803,7 +1852,8 @@
     // Distance and shoe already have dedicated fields. Split the remaining
     // source text at its own separators without rewriting any prescription.
     const prefix = kmTxt + ' km · ' + r.run.shoe + ' · ';
-    let detail = r.detail.startsWith(prefix) ? r.detail.slice(prefix.length) : r.detail;
+    const rDetail = runDetail(r, iso);
+    let detail = rDetail.startsWith(prefix) ? rDetail.slice(prefix.length) : rDetail;
     if (detail.startsWith(r.run.shoe + ' · ')) detail = detail.slice(r.run.shoe.length + 3);
 
     /* §4.2 wants distance, session, shoe AND pace without scrolling. Pace had
@@ -1812,20 +1862,23 @@
        it here — render code carries no plan content (§2). A recovery run
        genuinely has no pace target (rule 10: Z1, HR decides), so it simply
        gets no cell rather than an invented one. */
-    const paceTxt = (r.detail.match(/\d{1,2}:\d{2}\s*–\s*\d{1,2}:\d{2}\s*\/\s*km/) ||
-                     r.detail.match(/\d{1,2}:\d{2}\s*\/\s*km/) || [])[0];
+    const paceTxt = (rDetail.match(/\d{1,2}:\d{2}\s*–\s*\d{1,2}:\d{2}\s*\/\s*km/) ||
+                     rDetail.match(/\d{1,2}:\d{2}\s*\/\s*km/) || [])[0];
     const paceCell = paceTxt
       ? '<span><b>PACE</b>' + esc(paceTxt.replace(/\s*\/\s*km/, '')) + '</span>' : '';
     /* A long run with marathon-pace work has two paces, and the second one
        comes with a place: "last 6" of 22 is km 17 onward. Worked out from
        the title so the switch point is on the card, not arithmetic at km 15. */
-    const mp = DB.mpShape(r.title, km);
-    if (mp) mp.pace = mpPaceFor(iso).pace;
+    const mp = DB.mpShape(r.title, km), mpStepNow = mp ? mpPaceFor(iso) : null;
+    if (mp) mp.pace = mpStepNow.pace;
     const mpWhere = !mp ? ''
       : mp.kind === 'reps' ? mp.reps + ' × ' + mp.repKm + ' km'
       : mp.kind === 'tail' ? (mp.from === mp.fromLate ? 'km ' + mp.from + '–' + kmTxt : 'from km ' + mp.from + '–' + mp.fromLate)
       : (mp.lo === mp.hi ? mp.lo : mp.lo + '–' + mp.hi) + ' km';
-    const mpCell = mp ? '<span class="h-mp"><b>MARATHON PACE</b>' + esc(mp.pace + ' · ' + mpWhere) + '</span>' : '';
+    /* when the log, not the ladder, set that pace, the card says which run (v5.20) */
+    const mpWhyTxt = mp ? mpWhy(mpStepNow) : '';
+    const mpCell = mp ? '<span class="h-mp"><b>MARATHON PACE</b>' + esc(mp.pace + ' · ' + mpWhere) +
+      (mpWhyTxt ? '<small class="h-mp-why">' + esc(mpWhyTxt.charAt(0).toUpperCase() + mpWhyTxt.slice(1)) + '</small>' : '') + '</span>' : '';
     /* rule 4: the rate as today's schedule, in clock times (v5.0.6) */
     const gAt = r.run.gelsAt;
     const gelCell = gAt && gAt.length ? '<span class="h-mp h-gels"><b>GELS · ' + gAt.length + '</b><span class="g-times">' +
@@ -4596,6 +4649,10 @@
       (PLAN.race.city ? ' · ' + esc(PLAN.race.city) : '') + '</div>' +
       '<div class="rc-goal">' + esc(PLAN.race.goal) + '<small>' + esc(PLAN.race.goalPace) + '</small></div>' +
       '<div class="rc-meta"><span>Fallback ' + esc(PLAN.race.fallback) + ' · ' + esc(PLAN.race.fallbackPace) + '</span><span>Floor ' + esc(PLAN.race.floor) + ' · ' + esc(PLAN.race.floorPace) + '</span></div>' +
+      /* once the half is run, what it set (rule 7): race day is paced from it */
+      (() => { const hs = savedHalfSec(), a = hs ? DB.raceAnchor(hs) : null; if (!a) return '';
+        const rd = DB.buildDay(PLAN.race.date), pace = rd.run && rd.run.run.estPace ? rd.run.run.estPace : a.pace;
+        return '<div class="rc-set"><b>Your ' + esc(recordTime(hs)) + ' half set it</b> ' + esc(String(a.target).split(' · ')[0]) + ' · race ' + esc(pace) + '/km</div>'; })() +
       (() => { const rd = DB.buildDay(PLAN.race.date); return rd.run ? runSkyHTML(PLAN.race.date, rd.run, 'race', 'rc', null) : ''; })() +
       '</div>'
     ));
@@ -4735,7 +4792,7 @@
       '<div class="recal-fig">' + recalRulerHTML(parseHalf(saved)) + '</div>' +
       '<div class="ref-note">After the Week-24 half (Sun 13 Dec), enter your time. §10 sets the target — ambition doesn’t.</div>' +
       '<div class="data-actions"><input class="recal-in" inputmode="numeric" ' +
-      'placeholder="1:54:30" value="' + esc(saved) + '" aria-label="Half marathon time"> ' +
+      'placeholder="1:35:00" value="' + esc(saved) + '" aria-label="Half marathon time"> ' +
       '<button data-io="recal">Compare time</button></div>' +
       '<div class="data-msg recal-out" role="status"></div></div></div>'
     );
@@ -4744,7 +4801,7 @@
     const show = (raw) => {
       const sec = parseHalf(raw);
       wrap.querySelector('.recal-fig').innerHTML = recalRulerHTML(sec);
-      if (!sec) { out.textContent = raw ? 'Time reads as h:mm or h:mm:ss — e.g. 1:54:30.' : ''; return; }
+      if (!sec) { out.textContent = raw ? 'Time reads as h:mm or h:mm:ss — e.g. 1:35:00.' : ''; return; }
       out.innerHTML = recalVerdict(sec);
     };
     wrap.querySelector('[data-io="recal"]').addEventListener('click', () => {
@@ -4873,12 +4930,24 @@
     const rows = steps.map((s, i) => {
       const to = i + 1 < steps.length ? steps[i + 1].fromWk - 1 : last;
       const now = wk >= s.fromWk && wk <= to;
-      const half = s.race ? DB.raceAnchor(parseHalf(readJSONSafeString('recal'))) : null;
+      const half = s.race ? DB.raceAnchor(savedHalfSec()) : null;
       const v = s.race ? (half ? half.pace + '/km · from your half' : 'race pace · set by the half') : s.pace + '/km';
       return '<div class="ref-row pace-row' + (now ? ' is-now' : '') + '"><span>Wk ' + s.fromWk + (to > s.fromWk ? '–' + to : '') + (now ? ' · now' : '') +
         '</span><span class="v">' + (now ? '<b>' + esc(v) + '</b>' : esc(v)) + '</span></div>';
     }).join('');
-    return '<div class="ref-note"><b>Marathon pace in training</b> · steps down by heart rate</div><div class="ref-card pace-card mp-ladder">' + rows + '</div>' +
+    /* the log against the ladder (v5.20): the pace the next MP run will be
+       asked for, when the heart rate has not yet let the ladder step */
+    let earned = '';
+    for (let i = 0; i <= 70 && !earned; i++) {
+      const d = DB.addDays(todayISO(), i), day = DB.buildDay(d);
+      if (!day.run || !DB.isMpSession(day.run.title) || !DB.mpSegmentKm(day.run.title)) continue;
+      if (i === 0 && (getRunLogEntry(d) || {}).sec > 0) continue;      // today's is run: the next one
+      const step = mpPaceFor(d), why = mpWhy(step);
+      if (step.earned && why) earned = '<div class="ref-row pace-row mp-earned"><span>Your next MP run · ' + esc(fmtShort(d)) + '</span><span class="v"><b>' + esc(step.say) + '</b></span></div>' +
+        '<p class="mp-earned-why">' + esc(why.charAt(0).toUpperCase() + why.slice(1)) + '.</p>';
+      break;
+    }
+    return '<div class="ref-note"><b>Marathon pace in training</b> · steps down by heart rate</div><div class="ref-card pace-card mp-ladder">' + rows + earned + '</div>' +
       '<div class="ref-note">' + esc(PLAN.mpStepRule || '') + '</div>';
   }
 
@@ -5395,7 +5464,7 @@
       spark += '<div class="dc-list mp-list"><div class="dc-h">Marathon-pace checks · §10</div>' +
         mpPts.slice().reverse().map((p) => {
           const v = h ? DB.mpVerdict(p.mpHr, h.rest, h.max) : null;
-          const band = !v ? 'mpb' : v.key === 'on' ? 'good' : v.key === 'below' ? 'mpb' : 'poor';
+          const band = !v ? 'mpb' : v.key === 'on' ? 'good' : v.key === 'below' ? 'mpb' : v.key === 'edge' ? 'ok' : 'poor';
           return '<div class="dc-r"><span>' + fmtShort(p.iso) + ' · ' + (p.mpKm || '') + (p.mpKm ? ' km · ' : '') +
             DB.fmtPaceSec(Math.round(p.mpPaceSec)) + '/km · ' + p.mpHr + ' bpm</span>' +
             '<b class="dc ' + band + '">' + (v ? 'Z' + v.z : '—') + '</b></div>';
@@ -5985,6 +6054,7 @@
   const openDetails = new Set();
 
   function render() {
+    DB.setRaceHalf(savedHalfSec());          // race day runs at the pace the half set (rule 7)
     if (typeof momentAbort === 'function') momentAbort();
     if (state.view !== 'plan' && typeof hideMomentPill === 'function') hideMomentPill();
     document.querySelectorAll('details[data-disclosure]').forEach(node => {
