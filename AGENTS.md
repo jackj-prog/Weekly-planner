@@ -2779,3 +2779,27 @@ Recommendations given to the owner in chat, not built: a chest strap
 (wrist HR cadence-locks at 5k effort, and the earned step reads HR);
 trial a dual-source 40 g-carb gel on the long runs if more than ~55 g/h
 is wanted on race day; find an organised half for 13 Dec if there is one.
+
+## Visual batch 2 — v5.21.0, 11 November (Claude)
+
+The owner approved the four boards from the sweep ("go ahead").
+
+- **Now title.** `.nn-title:has(> .nn-emb)` takes a 28px left pad and the
+  emblem is absolutely placed in it; it was a float, so a third line ran
+  under it.
+- **The seal on Previously.** `.previously > .seal` is a grid item in the
+  `line` area (right, centred) and the line pads to make its row; it was
+  absolutely placed over the bars' day letters. It is a 48px disc turned
+  14°, so its bounding box is wider than its wax — measure the disc.
+- **MP readback.** `mpCheckHTML()` returns `.h-dc.mp.mpx` with `.mpx-h`,
+  `.mpx-figs`, `.mpx-v`, `.mpx-next`, `.mpx-note`. Its text still reads
+  "Next MP run, Sun 15 Nov: 5:10–5:15/km" for the checks that read it.
+- **What the half sets.** Reference → Paces builds `.rc-anchors` from
+  `PLAN.recalibrationAnchors` and keeps `PLAN.recalibration` from
+  "Race-day" on as prose; `.is-yours` marks the saved half's row.
+- **Figure numbers.** Kalendar `Fig. <roman(month)>`; week-hours
+  `Fig. <roman(week)>` inside a block.
+- **Targets.** `.tl-card .tick::after` is inset −4px (offsets run from
+  the padding box, inside a 1.5px border), `.more-btn::after` −2px; both
+  get `z-index: 1` so the title beneath does not take the edge.
+- **Tests.** interactions `batchTwo()` (14 checks).

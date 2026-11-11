@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.20.0';
+  const APP_VERSION = '5.21.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -998,11 +998,13 @@
     const km = e.mpKm || DB.mpSegmentKm(day.run.title);
     const band = !v ? 'mpb' : v.key === 'on' ? 'good' : v.key === 'below' ? 'mpb' : v.key === 'edge' ? 'ok' : 'poor';
     const next = v ? nextMpAfter(day.iso, e) : null;
-    return '<div class="h-dc mp ' + band + '"><b>' + (v ? 'Z' + v.z : 'MP') + '</b> marathon pace' + (km ? ' · ' + km + ' km' : '') +
-      ' at ' + DB.fmtPaceSec(Math.round(e.mpPaceSec)) + '/km · ' + e.mpHr + ' bpm' +
-      (diff != null && Math.abs(diff) >= 3 ? ' · ' + Math.abs(diff) + ' s/km ' + (diff < 0 ? 'faster' : 'slower') + ' than the step, ' + esc(step.say) : '') +
-      '<span>' + esc(v ? v.text : 'Set your HR zones on Reference to place this in a zone.') + ' ' + esc(PLAN.mpCheck.note) + '</span>' +
-      (next ? '<span class="mp-next">Next MP run, ' + esc(DAY_NAMES[DB.dayIndex(next.iso)].slice(0, 3) + ' ' + fmtShort(next.iso)) + ': <b>' + esc(next.step.say) + '</b></span>' : '') + '</div>';
+    /* the figures, the verdict, the next step — each on its own line (v5.21) */
+    return '<div class="h-dc mp mpx ' + band + '"><div class="mpx-h"><span>Marathon pace' + (km ? ' · ' + km + ' km' : '') + '</span> <b>' + (v ? 'Z' + v.z : 'MP') + '</b></div>' +
+      '<div class="mpx-figs"><span><b>' + DB.fmtPaceSec(Math.round(e.mpPaceSec)) + '</b><small>/km</small></span> <span><b>' + e.mpHr + '</b><small> bpm</small></span>' +
+      (diff != null && Math.abs(diff) >= 3 ? ' <span class="mpx-d">' + Math.abs(diff) + ' s/km ' + (diff < 0 ? 'faster' : 'slower') + ' than the step, ' + esc(step.say) + '</span>' : '') + '</div>' +
+      '<p class="mpx-v">' + esc(v ? v.text : 'Set your HR zones on Reference to place this in a zone.') + '</p>' +
+      (next ? '<div class="mpx-next"><span>Next MP run, ' + esc(DAY_NAMES[DB.dayIndex(next.iso)].slice(0, 3) + ' ' + fmtShort(next.iso)) + ':</span> <b>' + esc(next.step.say) + '</b></div>' : '') +
+      '<p class="mpx-note">' + esc(PLAN.mpCheck.note) + '</p></div>';
   }
   /* History feed for the estimate model: every logged run, classified. */
   function runLogHistory() {
@@ -4617,7 +4619,7 @@
       list.appendChild(row);
     });
     view.appendChild(list);
-    view.appendChild(el('<p class="fig-cap kl-cap"><span class="fig">Fig.</span> The Kalendar of ' + esc(name) + '</p>'));
+    view.appendChild(el('<p class="fig-cap kl-cap"><span class="fig">Fig. ' + roman(m) + '</span> The Kalendar of ' + esc(name) + '</p>'));
   }
 
   /* ================= reference view ================= */
@@ -4668,7 +4670,14 @@
       '<div class="ref" id="ref-paces" tabindex="-1">' +
       '<h2>Paces</h2>' + paceSpectrumHTML() + '<div class="ref-card pace-card">' +
       PLAN.paces.map((p) => refRow(p.type, withZones(p.pace))).join('') + '</div>' +
-      '<div class="ref-note">' + esc(PLAN.recalibration) + '</div>' +
+      (() => { const A = PLAN.recalibrationAnchors || [], txt = String(PLAN.recalibration || ''), cut = txt.indexOf('Race-day');
+        if (!A.length || cut < 0) return '<div class="ref-note">' + esc(txt) + '</div>';
+        const hs = savedHalfSec(), hit = hs ? DB.raceAnchor(hs) : null;
+        return '<div class="ref-note no-init"><b>The Week 24 half sets race pace</b> · rule 7</div>' +
+          '<div class="ref-card rc-anchors" role="table" aria-label="What the half sets"><div class="rca-h" role="row"><span role="columnheader">Half</span><span role="columnheader">Marathon</span><span role="columnheader">Race pace /km</span></div>' +
+          A.map((a, i) => { const [target, race] = String(a.target).split(' · ');
+            return '<div class="rca-r' + (i === 0 ? ' is-target' : '') + (a === hit ? ' is-yours' : '') + '" role="row"><span role="cell">' + esc(i === 0 ? 'under ' + String(A[1].half).split(/[–-]/)[0] : a.half) + '</span><span role="cell">' + esc(target) + '</span><span role="cell">' + esc(String(race || '').replace(/^race\s*/, '').replace(/\/km$/, '')) + (a === hit ? '<i>your half</i>' : '') + '</span></div>'; }).join('') + '</div>' +
+          '<div class="ref-note no-init">' + esc(txt.slice(cut)) + '</div>'; })() +
       mpLadderHTML() +
       '</div>'
     );
@@ -4916,7 +4925,7 @@
     const H = TOP + 7 * (RH + GAP) - GAP + 4;
     return '<figure class="week-hours" role="img" aria-label="' + esc('This week as planned, hour by hour: ' +
       cats.map((c) => (HOUR_NAMES[c] || c) + ' ' + hrs(tot[c])).join(', ') + ', sleep ' + hrs(sleep) + '.') + '">' +
-      '<figcaption class="wh-head"><span class="fig">Fig.</span> This week, hour by hour <small>' + esc(fmtShort(days[0]) + ' – ' + fmtShort(days[6])) + ' · as planned</small></figcaption>' +
+      '<figcaption class="wh-head"><span class="fig">Fig.' + (DB.buildDay(days[0]).week ? ' ' + roman(DB.buildDay(days[0]).week) : '') + '</span> This week, hour by hour <small>' + esc(fmtShort(days[0]) + ' – ' + fmtShort(days[6])) + ' · as planned</small></figcaption>' +
       '<svg viewBox="0 0 320 ' + H + '" aria-hidden="true">' + svg + '</svg>' +
       '<div class="wh-legend">' + legend + '</div></figure>';
   }

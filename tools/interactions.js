@@ -1269,6 +1269,66 @@ async function batchOne() {
    loads: Monday's row and Saturday's row are two histories, Saturday's box
    opens on Saturday's weight, a save keeps every entry, and the Plan
    page's two tabs switch by tap and by arrow key at every width. */
+async function batchTwo() {
+  console.log('· visual batch 2: hanging title, the seal’s line, the MP readback, the half’s table, figure numbers, 44px rings');
+  /* Monday 21 Sep, in the long gym session, the week before sealed */
+  let t = await open('2026-09-21', '16:40', Object.assign({}, SEED, { 'runlog-2026-09-16': { sec: 2300, hr: 160, km: 7 } }));
+  const m = await t.page.evaluate(() => {
+    const title = document.querySelector('.nownext .nn-title'), emb = title.querySelector('.nn-emb');
+    const tn = [...title.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+    const r = document.createRange(); r.selectNodeContents(tn);
+    const lines = [...r.getClientRects()].filter((x) => x.width > 2);
+    const lefts = lines.map((x) => Math.round(x.left)), tops = [...new Set(lines.map((x) => Math.round(x.top)))];
+    const box = (n) => n.getBoundingClientRect(), hit = (a, b) => !(a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top);
+    /* the seal is a 48px disc turned 14°: its box is wider than its wax, so measure the disc */
+    const sb = box(document.querySelector('.previously > .seal')), sr = document.querySelector('.previously > .seal').offsetWidth / 2, sx = sb.left + sb.width / 2, sy = sb.top + sb.height / 2;
+    const seal = { left: sx - sr, right: sx + sr, top: sy - sr, bottom: sy + sr }, line = box(document.querySelector('.previously > .pv-line'));
+    return { text: title.textContent, rows: tops.length, spread: Math.max(...lefts) - Math.min(...lefts), embRight: Math.round(box(emb).right), left: Math.min(...lefts),
+      overLetters: [...document.querySelectorAll('.previously .pv-day b')].some((b) => hit(seal, box(b))), overBars: [...document.querySelectorAll('.previously .pv-track')].some((b) => hit(seal, box(b))),
+      overOpen: hit(seal, box(document.querySelector('.previously .pv-open'))), inLine: seal.top >= line.top - 2 && seal.bottom <= line.bottom + 2,
+      lineText: document.querySelector('.previously .pv-line').textContent };
+  });
+  check(/Legs microdose/.test(m.text) && m.rows >= 2 && m.spread <= 1 && m.left > m.embRight, 'a long Now title hangs under its first word on every line: ' + JSON.stringify({ rows: m.rows, spread: m.spread }));
+  check(!m.overLetters && !m.overBars && !m.overOpen && m.inLine, 'the seal stamps its own line, clear of the day letters, the bars and the way in: ' + JSON.stringify(m));
+  check(/^\d of \d runs · \S/.test(m.lineText), 'the line keeps its words and their spaces: ' + m.lineText);
+  /* the timeline's 40px rings reach 44 */
+  const ring = await t.page.evaluate(() => { const n = document.querySelector('.tl-card .tick'); n.scrollIntoView({ block: 'center' });
+    const r = n.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, at = (dx, dy) => document.elementFromPoint(cx + dx, cy + dy) === n;
+    return { w: Math.round(r.width), up: at(0, -21), down: at(0, 21), left: at(-21, 0) }; });
+  check(ring.w === 40 && ring.up && ring.down && ring.left, 'a card’s tick is a 40px ring with a 44px target: ' + JSON.stringify(ring));
+  noErrors(t, 'batch 2, Monday');
+  await t.ctx.close();
+  /* the MP readback: figures, verdict, next step */
+  const mp = { 'runlog-2026-11-08': { sec: 10084, hr: 154, km: 28, mpKm: 10, mpPaceSec: 312, mpHr: 160, cls: 'long' } };
+  t = await open('2026-11-08', '15:00', { ...SEED, ...mp });
+  const rb = await t.page.evaluate(() => { const q = (s) => { const n = document.querySelector('.h-dc.mpx ' + s); return n ? n.textContent.replace(/\s+/g, ' ').trim() : null; };
+    return { head: q('.mpx-h'), figs: q('.mpx-figs'), verdict: q('.mpx-v'), next: q('.mpx-next'), note: q('.mpx-note'), nextRows: (() => { const n = document.querySelector('.h-dc.mpx .mpx-next'); const a = n.children[0].getBoundingClientRect(), b = n.children[1].getBoundingClientRect(); return Math.abs(a.bottom - b.bottom) < 8; })() }; });
+  check(/Marathon pace · 10 km\s*Z3/.test(rb.head) && /^5:12\/km 160 bpm/.test(rb.figs) && /top of Z3/.test(rb.verdict) && !/Rule 7/.test(rb.verdict) && /Rule 7/.test(rb.note),
+    'the readback sets out its figures, its verdict and its standing note apart: ' + JSON.stringify(rb).slice(0, 200));
+  check(/^Next MP run, Sun 15 Nov: 5:10–5:15\/km$/.test(rb.next) && rb.nextRows, 'and the next step on one line: ' + rb.next);
+  noErrors(t, 'batch 2, readback');
+  await t.ctx.close();
+  /* what the half sets, as a table; the figures numbered */
+  t = await open('2026-11-10', '12:00', SEED, 'ref');
+  await t.page.evaluate(() => { document.getElementById('ref-paces').open = true; });
+  const tb = await t.page.evaluate(() => [...document.querySelectorAll('.rc-anchors .rca-r')].map((r) => (r.classList.contains('is-target') ? '*' : '') + [...r.children].map((c) => c.textContent.trim()).join('|')));
+  check(tb.length === 5 && tb[0] === '*under 1:35|sub-3:20|4:44' && tb[1] === '1:35–1:39|sub-3:30|4:55–4:58', 'the half’s anchors read as a table, the target’s row marked: ' + tb.join(' / '));
+  check(!(await t.page.$('.rc-anchors .is-yours')) && /Race-day pacing is a gentle negative split/.test(await text(t.page, '#ref-paces')) && !/under 1:35 → sub-3:20/.test(await text(t.page, '#ref-paces')),
+    'the caveat stays as prose and the run-on sentence is gone; no row is yours before the half');
+  await t.page.evaluate(() => { const f = document.querySelector('.week-hours'); let d = f; while (d) { if (d.tagName === 'DETAILS') d.open = true; d = d.parentElement; } });
+  check((await text(t.page, '.week-hours .wh-head .fig')) === 'Fig. XX', 'the week’s hours are Fig. XX in week 20: ' + await text(t.page, '.week-hours .wh-head .fig'));
+  noErrors(t, 'batch 2, Reference');
+  await t.ctx.close();
+  t = await open('2026-12-20', '12:00', { ...SEED, recal: '1:37:20' }, 'ref');
+  await t.page.evaluate(() => { document.getElementById('ref-paces').open = true; });
+  check(/1:35–1:39/.test(await text(t.page, '.rc-anchors .is-yours')) && /your half/.test(await text(t.page, '.rc-anchors .is-yours')), 'once the half is run its row is marked as yours');
+  await t.ctx.close();
+  t = await open('2026-11-10', '12:00', SEED);
+  await t.page.click('[data-nav="more"]'); await t.page.click('.sheet-item[data-nav="kal"]'); await t.page.waitForTimeout(300);
+  check((await text(t.page, '.kl-cap .fig')) === 'Fig. XI', 'November’s Kalendar is Fig. XI: ' + await text(t.page, '.kl-cap .fig'));
+  await t.ctx.close();
+}
+
 async function strength() {
   console.log('· the Strength journey and per-session weights');
   const lateral = [];
@@ -1757,7 +1817,7 @@ async function offline() {
   try {
     /* --only=name[,name] runs just those (a quicker loop while working on one) */
     const only = (process.argv.find((x) => x.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, strength, moments, fuel, strava, update, sweep, offline]) if (!only.length || only.includes(run.name)) await run();
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, batchTwo, strength, moments, fuel, strava, update, sweep, offline]) if (!only.length || only.includes(run.name)) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');

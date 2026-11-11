@@ -4140,3 +4140,48 @@ svg.mo-zoom .sk-shoot { visibility: hidden; }
 /* the race card, once the half is run: what it set (rule 7) */
 .race-card .rc-set { margin-top: 12px; padding-top: 12px; border-top: 1px solid color-mix(in srgb, var(--chrome-text) 30%, transparent); font: 400 var(--type-note)/1.45 var(--body); }
 .race-card .rc-set b { display: block; font-weight: 700; }
+
+/* ---- v5.21 (visual batch 2) ----------------------------------------- */
+/* a long Now title hangs under its first word, never under its emblem */
+.nownext .nn-title:has(> .nn-emb) { position: relative; padding-left: 28px; }
+.nownext .nn-title > .nn-emb { float: none; position: absolute; left: 0; top: 1px; margin: 0; }
+/* the timeline's tick and ⋯ are 40px rings: their targets reach 44 */
+.tl-card .tick::after, .tl-card .more-btn::after { display: block; inset: -2px; }
+.tl-card .tick::after { inset: -4px; }       /* from the padding box, inside a 1.5px border */
+.tl-card .tick, .tl-card .more-btn { z-index: 1; }
+.c-up, .h-rhr.mini { position: relative; }
+.c-up::after { content: ""; position: absolute; inset: -4px 0; }
+.h-rhr.mini::after { content: ""; position: absolute; inset: -2px 0; }
+/* Monday's seal stamps the line it earns, clear of the week's day letters:
+   it shares the line's row, at its right, instead of floating over the bars */
+.previously:has(> .seal) > .pv-line { margin-top: 2px; padding: 15px 62px 15px 0; }
+.previously > .seal { position: relative; grid-area: line; justify-self: end; align-self: center; inset: auto; width: 48px; height: 48px; margin-top: 2px; }
+/* the MP readback: figures, verdict, next step */
+.h-dc.mpx { padding: 14px 14px 12px; }
+.h-dc.mpx .mpx-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font: 400 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--t2); }
+.h-dc.mpx .mpx-h b { font: 700 13px var(--mono); letter-spacing: .04em; }
+.h-dc.mpx .mpx-figs { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; margin-top: 8px; }
+.h-dc.mpx .mpx-figs > span { display: inline-block; margin: 0; color: var(--text); white-space: nowrap; }
+.h-dc.mpx .mpx-figs b { font: 400 24px/1.1 var(--mono); letter-spacing: -.03em; color: var(--text); }
+.h-dc.mpx .mpx-figs small { margin-left: 3px; font: 400 12px var(--body); color: var(--t2); }
+.h-dc.mpx .mpx-figs .mpx-d { flex-basis: 100%; font: 400 13px/1.4 var(--body); color: var(--t2); white-space: normal; }
+.h-dc.mpx .mpx-v { margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font: 400 14.5px/1.5 var(--body); color: var(--text); text-wrap: pretty; }
+.h-dc.mpx .mpx-next { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.h-dc.mpx .mpx-next span { margin: 0; font: 400 13.5px var(--body); color: var(--t2); }
+.h-dc.mpx .mpx-next b { font: 700 15px var(--mono); color: var(--text); white-space: nowrap; }
+.h-dc.mpx .mpx-note { margin: 10px 0 0; font: 400 12px/1.45 var(--body); color: var(--t3); text-wrap: pretty; }
+/* what the half sets, as a table */
+.rc-anchors { padding-block: 4px; }
+.rc-anchors .rca-h, .rc-anchors .rca-r { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.1fr) minmax(0, 1fr); gap: 8px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.rc-anchors .rca-r:last-child { border-bottom: 0; }
+.rc-anchors .rca-h { padding: 8px 0; font: 400 10px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--t3); }
+.rc-anchors .rca-r { font: 400 14px var(--mono); font-variant-numeric: tabular-nums; color: var(--t2); }
+.rc-anchors .rca-r span { white-space: nowrap; }
+.rc-anchors .rca-r span:nth-child(2) { font-family: var(--body); font-weight: 600; color: var(--text); }
+.rc-anchors .rca-r.is-target span { color: var(--accent); }
+.rc-anchors .rca-r.is-yours { box-shadow: inset 2px 0 0 var(--text); padding-left: 10px; margin-left: -10px; }
+.rc-anchors .rca-r i { display: block; margin-top: 2px; font: 400 10px var(--mono); font-style: normal; letter-spacing: .1em; text-transform: uppercase; color: var(--text); }
+@media (max-width: 340px) {
+  .rc-anchors .rca-r { font-size: 12px; }
+  .rc-anchors .rca-r span { white-space: normal; overflow-wrap: anywhere; }
+}
