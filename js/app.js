@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.22.0';
+  const APP_VERSION = '5.23.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1012,6 +1012,18 @@
   function repSpecFor(day) {
     return day && day.run && DB.runClass(day.run) === 'quality' ? DB.repSpec(day.run.title) : null;
   }
+  /* what an import asks the track for, by the day's session: an MP finish
+     off its end, an MP block wherever it sits (v5.23), a session's reps */
+  function trackAsks(day) {
+    const r = day && day.run;
+    return { tailKm: r ? DB.mpTailKm(r.title) : null, mpBlock: r ? DB.mpBlockSpec(r.title, r.run.km) : null, reps: repSpecFor(day) };
+  }
+  /* where an imported MP segment sat: a finish, or a block from a kilometre */
+  function mpFoundText(v) {
+    const km = (n) => (Math.round(n * 10) / 10).toLocaleString('en-GB');
+    return (v.mpFromKm != null ? 'Marathon-pace segment · km ' + km(v.mpFromKm) + '–' + km(v.mpFromKm + v.mpKm) + ' · ' : 'Marathon-pace finish · ') +
+      v.mpKm + ' km · ' + DB.fmtPaceSec(v.mpPaceSec) + '/km · ' + v.mpHr + ' bpm';
+  }
   function repReadingFor(day, e) {
     const spec = repSpecFor(day);
     if (!spec || !e || (e.cls && e.cls !== 'quality') || !(e.stream && e.stream.reps)) return null;
@@ -1065,6 +1077,18 @@
     return '<span class="h-mp h-last"><b>' + esc(c.lastLabel + ' · ' + fmtShort(last.iso).toUpperCase()) + '</b>' + esc(paces + '/km · ' + last.rd.what) +
       (last.rd.hr ? ' · ' + esc(String(c.settled).replace('{hr}', last.rd.hr)) : '') +
       (why ? '<small class="h-mp-why">' + esc(why) + '</small>' : '') + '</span>';
+  }
+  /* A race's pacing from its imported track (v5.23, PLAN.splitCheck) */
+  function racePacingHTML(day, e) {
+    const c = PLAN.splitCheck, r = day.run;
+    if (!c || e.x || (e.cls || (r ? DB.runClass(r) : 'unclassified')) !== 'race' || !(e.stream && e.stream.kmSec)) return '';
+    const rd = DB.raceSplits(e.stream.kmSec);
+    if (!rd) return '';
+    const sign = (n) => (n === 0 ? '±0' : (n > 0 ? '+' : '−') + Math.abs(n)) + '<small> s</small>';
+    const band = rd.key === 'hot' ? 'poor' : rd.key === 'fade' ? 'ok' : 'good';
+    return '<div class="h-dc mp mpx ' + band + '"><div class="mpx-h"><span>' + esc(c.title + ' · ' + rd.rows.length + (rd.by === 1 ? ' km' : ' × 5 km')) + '</span> <b>' + esc(c.badge[rd.key]) + '</b></div>' +
+      ledgerHTML(c.cols, rd.rows.map((x) => [esc(x.label), '<b>' + DB.fmtPaceSec(x.paceSec) + '</b><small>/km</small>', sign(x.delta)])) +
+      '<p class="mpx-v">' + esc(rd.text) + '</p><p class="mpx-note">' + esc(c.note) + '</p></div>';
   }
   /* What a race or time trial is worth at other distances (v5.22,
      PLAN.raceEquiv): only a whole run saved as a race at its own distance. */
@@ -1293,7 +1317,7 @@
       }
       const dec = e.stream ? (Number.isFinite(e.stream.decPct) ? {pct:e.stream.decPct} : null) : DB.decoupling(e.km || km, e.sec, e.hr, e.halfPaceSec, e.hr2);
       const dv = dec ? DB.decoupleVerdict(dec.pct) : null;
-      logHTML += mpCheckHTML(day, e) + repCheckHTML(day, e) + raceEquivHTML(day, e);
+      logHTML += mpCheckHTML(day, e) + repCheckHTML(day, e) + racePacingHTML(day, e) + raceEquivHTML(day, e);
       if (dv && (e.cls || (r ? DB.runClass(r) : 'unclassified')) === 'long' && !(r && DB.isMpSession(r.title))) {
         logHTML += '<div class="h-dc ' + dv.band + '"><b>' + dec.pct.toFixed(1) +
           '%</b> decoupling · ' + esc(dv.text) + '</div>';
@@ -1346,6 +1370,7 @@
           temp: e.temp == null ? null : e.temp, gels: e.gels == null ? null : e.gels,
           halfPaceSec: e.halfPaceSec || null, hr2: e.hr2 || null,
           cls: e.cls || (day.run ? DB.runClass(day.run) : 'unclassified'), stream: e.stream || null, x: e.x === true,
+          streamOf: e.stream ? (e.stream.of || { km, sec }) : null,
           mpKm: e.mpKm || (day.run ? DB.mpSegmentKm(day.run.title) : null), mpPaceSec: e.mpPaceSec || null, mpHr: e.mpHr || null,
           paste: '', preview: null, note: saved ? 'Saved values. Change only what needs correcting.' :
             plannedKm ? 'Distance and time start from the plan. Replace them with your actual run.' : 'Enter actual distance and time. HR and conditions are optional.',
@@ -1387,7 +1412,7 @@
       (p ? '<div class="log-preview" role="status"><b>Found' + (p.date ? ' · ' + esc(p.date) : '') + '</b><p>' +
         [found.km ? Number(found.km.toFixed(3)) + ' km' : 'No distance', found.sec ? clock(found.sec) : 'No time',
           found.hr ? found.hr + ' bpm' : 'No HR', found.temp != null ? found.temp + '°C' : 'No temperature'].map(esc).join(' · ') +
-        '</p>' + (found.mpPaceSec ? '<p>Marathon-pace finish · ' + esc(found.mpKm + ' km · ' + DB.fmtPaceSec(found.mpPaceSec) + '/km · ' + found.mpHr + ' bpm') + '</p>' : '') + p.warnings.map(w => '<p>' + esc(w) + '</p>').join('') +
+        '</p>' + (found.mpPaceSec ? '<p>' + esc(mpFoundText(found)) + '</p>' : '') + p.warnings.map(w => '<p>' + esc(w) + '</p>').join('') +
         (p.date && p.date !== iso ? '<p>Open ' + esc(p.date) + ' before importing this activity. No values have been saved.</p>' : Object.keys(found).length ? '<button class="log-use">Use these values</button>' : '') + '</div>' : '') + '</details>' +
       field('km', 'Distance', d.km, 'decimal', 'km', true) +
       field('sec', d.stream && d.stream.source !== 'Strava' ? 'Track time' : 'Moving time', clock(d.sec), 'text', 'h:mm:ss', false) +
@@ -1401,7 +1426,7 @@
          a 5 km easy run is not asked for them (v5.0.1). They show for Long
          or Race, or whenever they already hold a value */
       '<div class="log-when-long"' + (longish(d.cls) || has(d.gels) ? '' : ' hidden') + '>' + field('gels', 'Gels taken', d.gels, 'numeric', 'gels', true) + '</div>' +
-      (isMpDay ? '<p class="log-note">Marathon-pace segment: its distance, pace and average HR only. The app places the HR in your zones (§10). A track import fills a “last N @ MP” finish for you.</p>' +
+      (isMpDay ? '<p class="log-note">Marathon-pace segment: its distance, pace and average HR only. The app places the HR in your zones (§10). A track import finds the segment for you.</p>' +
         field('mpKm', 'MP distance', d.mpKm, 'decimal', 'km', true) +
         field('mpPaceSec', 'MP pace', clock(d.mpPaceSec), 'text', '/km', true) +
         field('mpHr', 'MP average HR', d.mpHr, 'numeric', 'bpm', true) :
@@ -1424,7 +1449,14 @@
     wrap.querySelector('.log-extra').addEventListener('toggle', remember);
     const setField = (key, value) => {
       if (d[key] !== value && ['km','sec','paceSec','hr'].includes(key) && d.stream) {
-        d.stream = null; d.note = 'Measurements edited. Import the file again to restore stream analysis.';
+        /* a distance or time put right by a few per cent against the track
+           (a GPS 5.04 km on a measured 5.00) keeps its analysis; a bigger
+           change, or a different heart rate, is no longer that track (v5.23) */
+        const base = d.streamOf, within = PLAN.logModel.keepTrackWithin || 0;
+        const km = key === 'km' ? value : d.km, sec = key === 'sec' ? value : key === 'paceSec' ? value * d.km : d.sec;
+        const near = (a, b) => a > 0 && b > 0 && Math.abs(a / b - 1) <= within;
+        if (key !== 'hr' && base && near(km, base.km) && near(sec, base.sec)) d.note = 'A small correction: the track’s analysis is kept.';
+        else { d.stream = null; d.streamOf = null; d.note = 'Measurements edited. Import the file again to restore stream analysis.'; }
       }
       d[key] = value;
       if (key === 'paceSec' && d.km && value) d.sec = Math.round(value * d.km);
@@ -1448,6 +1480,8 @@
         for (const key of ['sec', 'paceSec']) if (input.dataset.logField !== key) wrap.querySelector('[data-log-field="' + key + '"]').value = clock(d[key]);
       }
       wrap.querySelector('.log-error').textContent = d.error;
+      /* what the edit did to the track's analysis is said at once, not on the next redraw */
+      wrap.querySelector('.log-note[role="status"]').textContent = d.note;
     }));
     wrap.querySelectorAll('[data-log-step]').forEach(btn => btn.addEventListener('click', () => {
       remember();
@@ -1484,7 +1518,7 @@
       wrap.querySelector('.log-note').textContent = d.note;
       try {
         if (file.size > 20*1024*1024) throw new Error('Choose an activity file smaller than 20 MB.');
-        const parsed = window.RunStream.parseXML(await file.text(), { tailKm: day.run ? DB.mpTailKm(day.run.title) : null, reps: repSpecFor(day) });
+        const parsed = window.RunStream.parseXML(await file.text(), trackAsks(day));
         if (state.runLogDraft !== d || state.runLogEdit !== iso) return;
         d.preview = parsed;
         d.note = 'File read locally. Review the date and measurements before using them.';
@@ -1500,6 +1534,7 @@
       d.km = v.km || null; d.sec = v.sec || null; d.paceSec = v.paceSec || null;
       d.hr = v.hr || null; d.temp = v.temp == null ? (pv.source === 'Strava' ? d.temp : null) : v.temp;
       d.halfPaceSec = d.hr2 = null; d.stream = pv.stream || null;
+      d.streamOf = pv.stream && v.km > 0 && v.sec > 0 ? { km: v.km, sec: v.sec } : null;   // what the track itself measured
       if (v.mpPaceSec) { d.mpKm = v.mpKm; d.mpPaceSec = v.mpPaceSec; d.mpHr = v.mpHr; }
       d.preview = null; d.paste = ''; d.note = note;
       render();
@@ -1510,12 +1545,13 @@
     const svFail = (error) => { if (stale()) return; d.stravaBusy = false; d.note = error && error.message ? error.message : 'Strava import failed.'; render(); };
     const svUse = (run) => {
       d.stravaBusy = true; render();
-      SV.importRun(run, { tailKm: day.run ? DB.mpTailKm(day.run.title) : null, reps: repSpecFor(day) }).then((pv) => {
+      SV.importRun(run, trackAsks(day)).then((pv) => {
         if (stale()) return;
         d.stravaBusy = false; d.stravaRuns = null;
         /* the feels-like temperature is the owner's to add: a watch's own
            sensor reads the wrist, not the air (§10) */
         applyPreview(pv, 'Imported from Strava · ' + pv.name + '. Check the numbers, add the feels-like temperature, then Save run.' +
+          (pv.values.mpPaceSec ? ' ' + mpFoundText(pv.values) + '.' : '') +
           (pv.warnings.length ? ' ' + pv.warnings.join(' ') : ''));
       }, svFail);
     };
@@ -1543,7 +1579,10 @@
       }
       const entry = { ...(saved || {}), sec: d.sec, hr: d.hr == null ? null : Math.round(d.hr),
         km: d.km, temp: d.temp, cls: d.cls,
-        halfPaceSec: d.halfPaceSec, hr2: d.hr2, gels: d.gels, stream: d.stream || null };
+        halfPaceSec: d.halfPaceSec, hr2: d.hr2, gels: d.gels,
+        /* the track's own distance and time travel with its analysis, so a
+           second small correction is still measured against the track */
+        stream: d.stream ? Object.assign({}, d.stream, d.streamOf ? { of: d.streamOf } : {}) : null };
       if (d.x) entry.x = true; else delete entry.x;
       if (isMpDay && d.mpPaceSec && d.mpHr) { entry.mpKm = d.mpKm; entry.mpPaceSec = Math.round(d.mpPaceSec); entry.mpHr = Math.round(d.mpHr); }
       else { delete entry.mpKm; delete entry.mpPaceSec; delete entry.mpHr; }

@@ -677,6 +677,13 @@ const PLAN = {
        finish), which is §10's "touched Z4": hold. */
     stepSec: 5,
     holdBpm: 3,
+    /* An MP block that is not a finish ("12 @ MP", "2×5 @ MP", "mid 6–8")
+       is found in an imported track as its fastest stretch of that length
+       (v5.23): it must be this much quicker than the rest of the run to
+       count, and a range is read at its longer end only if the extra
+       kilometres held the pace to within tolSec. */
+    blockStandOut: 0.07,
+    blockTolSec: 4,
     verdicts: {
       below: 'Below Z3 at marathon pace: this step is too slow for you (§10). Next MP session, 5 s/km quicker.',
       on: 'Z3, where marathon effort belongs (§10). Held with no fade? Next MP session, 5 s/km quicker; faded, hold the step.',
@@ -755,6 +762,31 @@ const PLAN = {
       below: { 4: 'Take the reps up into Z4 this time' },
       faded: 'Open at {pace}/km: the first rep was too fast',
     },
+  },
+
+  /* A race's pacing, read from its imported track (v5.23). Each full
+     kilometre's time, or 5 km blocks beyond blockFromKm, set against the
+     run's own average: the watch's kilometres are not the course's, but
+     they are good against each other. The verdict is the first split
+     against the average and the second half against the first. The 31 Oct
+     5k was lost in its first 400 m; this is that, said by the log. */
+  splitCheck: {
+    minKm: 3,          // fewer full kilometres than this is not a pacing story
+    blockFromKm: 12,   // longer races read in 5 km blocks
+    hotSec: 5,         // s/km the first split is quicker than the average to count as a fast start
+    halfSec: 3,        // s/km between the halves to count as a positive or negative split
+    title: 'Pacing',
+    cols: ['Km', 'Pace', '± average'],
+    badge: { hot: 'Out fast', fade: 'Faded', even: 'Even', negative: 'Negative' },
+    verdicts: {
+      hot: 'Out {first} s/km quicker than the run’s average, and the second half was {half} s/km slower than the first. The start cost the finish.',
+      fade: 'A positive split: the second half {half} s/km slower than the first.',
+      even: 'Even: the two halves within {half} s/km of each other.',
+      negative: 'A negative split: the second half {half} s/km quicker than the first.',
+    },
+    note:
+      'The track’s own kilometres, so read them against each other, not ' +
+      'against the clock: a watch’s kilometre is not the course’s.',
   },
 
   /* What a race or time trial is worth at the other distances (v5.22).
@@ -1030,6 +1062,10 @@ const PLAN = {
        once, so widening this is the difference between logging the run and
        logging a rounded guess. */
     paceStep: 5,  paceSpan: 60,     // ± seconds/km around the estimate
+    /* A distance or time corrected by no more than this against the
+       imported track (a GPS 5.04 km put right to the track's 5.00) keeps
+       the track's analysis; a bigger change is a different run (v5.23). */
+    keepTrackWithin: 0.03,
     /* hrStep was 2, which meant ODD heart rates did not exist: from an even
        centre only even values are reachable, so a run averaging an odd bpm was
        unloggable. Not merely imprecise — EF is (m/min) ÷ HR, so 2 bpm of

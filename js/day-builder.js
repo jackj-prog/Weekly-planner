@@ -376,6 +376,19 @@
     return hit ? Number(hit[1]) : null;
   }
 
+  /* An MP block that is not a finish (v5.23): what an import should look
+     for in the track. "12 @ MP" → one stretch of 12 km, "2×5 @ MP" → two of
+     5, "mid 6–8 @ MP" → 6, up to 8 if the pace held. A "last N" finish is
+     read off the end of the track instead (mpTailKm), so it has none. */
+  function mpBlockSpec(title, km) {
+    const m = PLAN.mpCheck, shape = mpShape(title, km);
+    if (!m || !shape || shape.kind === 'tail') return null;
+    const base = { standOut: m.blockStandOut, tolSec: m.blockTolSec };
+    return shape.kind === 'reps'
+      ? (shape.reps * shape.repKm < km ? Object.assign({ n: shape.reps, km: shape.repKm }, base) : null)
+      : Object.assign({ n: 1, km: shape.lo, kmMax: shape.hi }, base);
+  }
+
   /* ---- the reps of a quality session (PLAN.repCheck, v5.22) ----
      What the title states by time: "Tempo 2×15 min" → 2 × 900 s in Z4,
      "Tempo 25 min continuous" → one rep, "5×3 min @ MP" → Z3. Anything
@@ -429,6 +442,30 @@
     return { found: true, what, rows, hr, z: z ? z.z : null, zKey, zText, hi: target ? target.hi : null,
       fKey, fText: fKey ? String(texts[fKey]).replace('{d}', Math.abs(d)) : '',
       openSec: fKey === 'faded' ? b : null };
+  }
+
+  /* ---- a race's pacing (PLAN.splitCheck, v5.23) ----
+     kmSec = the track's full kilometres in seconds. Rows are single
+     kilometres, or 5 km blocks for a long race; each is set against the
+     average of the rows, and the halves against each other (the middle
+     row of an odd count belongs to neither). */
+  function raceSplits(kmSec) {
+    const c = PLAN.splitCheck;
+    if (!c || !Array.isArray(kmSec) || kmSec.length < c.minKm || kmSec.some((x) => !(x > 60 && x < 1200))) return null;
+    const by = kmSec.length > c.blockFromKm ? 5 : 1, rows = [];
+    for (let i = 0; i + by <= kmSec.length; i += by) {
+      const sec = kmSec.slice(i, i + by).reduce((a, b) => a + b, 0);
+      rows.push({ label: by === 1 ? String(i + 1) : (i + 1) + '–' + (i + by), paceSec: sec / by });
+    }
+    if (rows.length < 2) return null;
+    const mean = rows.reduce((a, r) => a + r.paceSec, 0) / rows.length;
+    rows.forEach((r) => { r.delta = Math.round(r.paceSec - mean); r.paceSec = Math.round(r.paceSec); });
+    const h = Math.floor(rows.length / 2), avg = (list) => list.reduce((a, r) => a + r.paceSec, 0) / list.length;
+    const half = Math.round(avg(rows.slice(rows.length - h)) - avg(rows.slice(0, h)));   // + = slower home
+    const first = -rows[0].delta;                                                       // + = quicker than average
+    const key = half >= c.halfSec ? (first >= c.hotSec ? 'hot' : 'fade') : half <= -c.halfSec ? 'negative' : 'even';
+    return { rows, by, key, first, half,
+      text: String(c.verdicts[key]).replace('{first}', Math.abs(first)).replace('{half}', key === 'even' ? Math.max(1, Math.abs(half)) : Math.abs(half)) };
   }
 
   /* ---- what a race is worth elsewhere (PLAN.raceEquiv, v5.22) ----
@@ -1438,7 +1475,7 @@
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
     liftDay, liftHistory, lastLift, withLift, strengthJourney, plannedShare, validBody, bmrOf, energyTarget, macroTargets, validEaten,
-    isMpSession, mpSegmentKm, mpTailKm, repSpec, repReading, raceEquivalents, mpShape, mpStep, mpEarned, raceAnchor, setRaceHalf, racePlan, raceClock, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, sunLongitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
+    isMpSession, mpSegmentKm, mpTailKm, mpBlockSpec, repSpec, repReading, raceSplits, raceEquivalents, mpShape, mpStep, mpEarned, raceAnchor, setRaceHalf, racePlan, raceClock, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, sunLongitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

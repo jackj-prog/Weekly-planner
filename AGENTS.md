@@ -2847,3 +2847,36 @@ MP readback's existing block; no plan data, time or rule changed.
   owner should agree to). Render time was measured with a full season
   (25–65 ms a view in Chromium) and left alone.
 
+## More from the track — v5.23.0, 13 November (Claude)
+
+Same round ("Continue"). Functional; reuses the v5.22 ledger.
+
+- **MP block mid-run.** `RunStream.findBlock(intervals, totalM, { n, km,
+  kmMax, standOut, tolSec })`: cumulative time on a 10 m grid, then
+  `pickWindows` (now shared with `findReps`) for the n stretches of `km`
+  taking the least time. `kmMax` (a range) is tried from the top down and
+  taken only within `tolSec` s/km of the base pace. Null unless it beats
+  the rest of the run by `standOut` and has heart rate. `summarize` takes
+  `opts.mpBlock`, only when no tail was read, and sets `values.mpKm /
+  mpPaceSec / mpHr / mpFromKm`. `DB.mpBlockSpec(title, km)` is null for a
+  "last N" finish (the tail reader keeps those). The app's
+  `trackAsks(day)` builds all three asks for both import paths;
+  `mpFoundText` words the preview and the Strava note. `mpFromKm` is not
+  stored.
+- **Race pacing.** `stream.kmSec` (one decimal, full kilometres, clean
+  clock only) on every import; `DB.raceSplits(kmSec)` → rows (per km, or
+  5 km blocks past `blockFromKm`), `key` hot/fade/even/negative, text.
+  `racePacingHTML` on race-class logs, before the equivalents.
+- **Small corrections.** The draft carries `streamOf` (the track's own
+  km and sec: `stream.of` when saved, else the values at open). An edit
+  to km, sec or pace keeps `d.stream` while both stay within
+  `PLAN.logModel.keepTrackWithin` (3%) of it; HR edits always drop it.
+  The status note is now updated on the change event itself.
+- **Tests.** build +110 (two sections), run-stream (block: mid, pair,
+  range, flat, broken, no HR, finish wins; kmSec), strava (block
+  pass-through), interactions `mpBlockImport()` (9) and `racePacing()`
+  (16).
+- **Considered and left:** a lap-time entry for the 4 × 400 m rehearsal
+  (four more fields for a verdict the runner already knows on the track);
+  the easy-efficiency line still waits on the owner's yes or no.
+

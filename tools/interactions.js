@@ -1442,6 +1442,112 @@ async function repsReadback() {
   await t.ctx.close();
 }
 
+/* v5.23: a long run whose MP is a block mid-run ("Long 30 — 12 @ MP") is
+   imported with the block found in the track. Invented figures. */
+async function mpBlockImport() {
+  console.log('· an MP block mid-run is found on import');
+  const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST' };
+  const track = (parts) => { const tt = [0], dd = [0], hh = [120]; let c = 0, m = 0;
+    for (const [km, pace, h] of parts) { const sec = km * pace; for (let i = 0; i < sec; i++) { c++; m += 1000 / pace; tt.push(c); dd.push(Math.round(m * 10) / 10); hh.push(h); } }
+    return { c, m, streams: { time: { data: tt }, distance: { data: dd }, heartrate: { data: hh }, moving: { data: tt.map(() => true) } } }; };
+  const connected = { strava: { id: '12345', secret: 'a1'.repeat(20), access: 'acc', refresh: 'ref', expires: 4102444800, scope: 'read,activity:read_all', since: '2026-10-01' } };
+  const serve = async (t, run) => t.ctx.route('https://www.strava.com/**', (r) => { const u = new URL(r.request().url());
+    const json = (body) => r.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: JSON.stringify(body) });
+    if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
+    if (u.pathname === '/api/v3/athlete/activities') return json([{ id: 31, name: 'Long Run', sport_type: 'Run', start_date_local: '2026-11-15T08:31:00Z', distance: run.m, moving_time: run.c, has_heartrate: true, average_heartrate: 151 }]);
+    if (/\/activities\/31\/streams$/.test(u.pathname)) return json(run.streams);
+    return r.fulfill({ status: 404, headers: cors, body: '{}' }); });
+  const importIt = async (t) => { await t.page.click('.hero .h-log'); await t.page.click('.log-sv-go');
+    await t.page.waitForFunction(() => /Imported from Strava/.test((document.querySelector('.runlogger .log-note') || {}).textContent || ''), null, { timeout: 8000 }).catch(() => {}); };
+  /* Sun 15 Nov, "Long 30 — 12 @ MP": 14 easy, 12 at 5:11 in Z3, 4 easy */
+  let t = await open('2026-11-15', '12:30', Object.assign({}, SEED, connected));
+  await serve(t, track([[14, 380, 145], [12, 311, 158], [4, 390, 150]]));
+  await importIt(t);
+  const note = await text(t.page, '.runlogger .log-note');
+  check(/Marathon-pace segment · km 14–26 · 12 km · 5:11\/km · 158 bpm/.test(note), 'the import says where it found the block: ' + note);
+  const mpv = await t.page.evaluate(() => ['mpKm', 'mpPaceSec', 'mpHr'].map((k) => document.querySelector('[data-log-field="' + k + '"]').value));
+  check(mpv.join('|') === '12|5:11|158', 'and fills the segment’s distance, pace and heart rate: ' + mpv.join(' · '));
+  check(/A track import finds the segment for you/.test(await text(t.page, '.runlogger')), 'the form says an import finds it');
+  await t.page.click('.rl-save');
+  const kept = await t.json('runlog-2026-11-15');
+  check(kept && kept.mpKm === 12 && kept.mpPaceSec === 311 && kept.mpHr === 158 && !('mpFromKm' in kept), 'the log keeps the segment, as a hand entry would: ' + JSON.stringify(kept && { mpKm: kept.mpKm, mpPaceSec: kept.mpPaceSec, mpHr: kept.mpHr }));
+  /* a first 30 km is also a new longest run: its earned card plays before the journey opens */
+  await t.page.waitForSelector('.mo-back button', { timeout: 20000 }).catch(() => {});
+  if (await t.page.$('.mo-back button')) { await t.page.click('.mo-back button'); await t.page.waitForTimeout(300); }
+  else { await t.page.click('[data-nav="today"]').catch(() => {}); await t.page.waitForTimeout(300); }
+  const back = await text(t.page, '.runlogger .h-dc.mp');
+  check(/Marathon pace · 12 km/.test(back) && /Z3/.test(back) && /Next MP run, Sun 29 Nov/.test(back), 'and it is read back like any MP segment, with the next step: ' + back.slice(0, 200));
+  noErrors(t, 'MP block, imported');
+  await t.ctx.close();
+  /* the same day run all easy: nothing is invented, the fields stay for the hand */
+  t = await open('2026-11-15', '12:30', Object.assign({}, SEED, connected));
+  await serve(t, track([[30, 378, 146]]));
+  await importIt(t);
+  const none = await text(t.page, '.runlogger .log-note');
+  check(/12 km at marathon pace could not be told apart/.test(none) && !/Marathon-pace segment ·/.test(none), 'a run with no block in it is said so: ' + none.slice(-160));
+  check(await t.page.$eval('[data-log-field="mpPaceSec"]', (i) => i.value) === '', 'and its MP fields are left empty');
+  noErrors(t, 'MP block, absent');
+  await t.ctx.close();
+}
+
+/* v5.23: a race's pacing from its kilometres; a small correction to the
+   imported distance or time keeps the track's analysis. Invented figures. */
+async function racePacing() {
+  console.log('· a race’s pacing from its track · a small correction keeps the analysis');
+  const stream = (kmSec) => ({ source: 'Strava', hrSeconds: [], coveredSec: 1190, sec: 1190, decPct: null, splitSec: 20, halves: [], kmSec });
+  const tt = (kmSec, more) => ({ 'runlog-2026-11-21': Object.assign({ sec: 1190, hr: 178, km: 5.04, cls: 'race', temp: 7, stream: stream(kmSec) }, more || {}) });
+  const pacing = async (t) => t.page.evaluate(() => { const b = [...document.querySelectorAll('.runlogger .h-dc.mpx')].find((x) => /^Pacing/.test(x.querySelector('.mpx-h').textContent.trim()));
+    return b ? { head: b.querySelector('.mpx-h').textContent.replace(/\s+/g, ' ').trim(), rows: [...b.querySelectorAll('.mpx-rr')].map((r) => [...r.children].map((x) => x.textContent.trim()).join(' ')), said: b.querySelector('.mpx-v').textContent, note: b.querySelector('.mpx-note').textContent, cls: b.className } : null; });
+  let t = await open('2026-11-21', '12:10', Object.assign({}, SEED, tt([229, 236, 238, 243, 244])));
+  let p = await pacing(t);
+  check(p && /^Pacing · 5 km Out fast$/.test(p.head) && p.rows.length === 5 && p.rows[0] === '1 3:49/km −9 s' && p.rows[2] === '3 3:58/km ±0 s' && p.rows[4] === '5 4:04/km +6 s', 'each kilometre against the run’s average: ' + JSON.stringify(p && p.rows));
+  check(p && /Out 9 s\/km quicker than the run’s average/.test(p.said) && /start cost the finish/.test(p.said) && /\bpoor\b/.test(p.cls) && /against each other/.test(p.note), 'a fast start the finish paid for is said on the log: ' + (p && p.said));
+  const order = await t.page.$$eval('.runlogger .h-dc.mpx .mpx-h span', (hs) => hs.map((h) => h.textContent.trim().split(' ·')[0]));
+  check(order.join('|') === 'Pacing|Equivalent times', 'pacing first, then what the time is worth: ' + order.join(' | '));
+  check(await t.page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'the pacing block does not widen the page');
+  noErrors(t, 'race pacing');
+  await t.ctx.close();
+  t = await open('2026-11-21', '12:10', Object.assign({}, SEED, tt([238, 237, 238, 236, 237])));
+  p = await pacing(t);
+  check(p && /Even$/.test(p.head) && /\bgood\b/.test(p.cls), 'an even race is told so');
+  await t.ctx.close();
+  t = await open('2026-11-21', '12:10', Object.assign({}, SEED, tt([229, 236, 238, 243, 244], { cls: 'easy' })));
+  check(!(await pacing(t)), 'only a race is read for pacing');
+  await t.ctx.close();
+  t = await open('2026-11-21', '12:10', Object.assign({}, SEED, { 'runlog-2026-11-21': { sec: 1190, hr: 178, km: 5, cls: 'race' } }));
+  check(!(await pacing(t)), 'a race logged by hand has no splits to read');
+  await t.ctx.close();
+  /* the GPS said 5.04 km; the track is 5.00 and the watch was stopped late */
+  t = await open('2026-11-21', '12:10', Object.assign({}, SEED, tt([229, 236, 238, 243, 244])));
+  await t.page.click('.runlogger .h-log');
+  const setField = async (k, v) => { await t.page.fill('[data-log-field="' + k + '"]', v); await t.page.dispatchEvent('[data-log-field="' + k + '"]', 'change'); };
+  await setField('km', '5');
+  check(/small correction: the track’s analysis is kept/.test(await text(t.page, '.runlogger .log-note')), 'putting a GPS 5.04 km right to 5.00 keeps the analysis: ' + await text(t.page, '.runlogger .log-note'));
+  await setField('sec', '19:46');
+  await t.page.click('.rl-save'); await t.page.waitForTimeout(300);
+  let kept = await t.json('runlog-2026-11-21');
+  check(kept && kept.km === 5 && kept.sec === 1186 && kept.stream && kept.stream.kmSec.length === 5 && kept.stream.of && kept.stream.of.km === 5.04 && kept.stream.of.sec === 1190,
+    'the corrected run keeps its splits, and what the track itself measured: ' + JSON.stringify(kept && { km: kept.km, sec: kept.sec, of: kept.stream && kept.stream.of }));
+  check(!!(await pacing(t)), 'and the pacing is still read back');
+  /* a second small step is measured against the track, not the last edit */
+  await t.page.click('.runlogger .h-log');
+  await setField('km', '4.9');
+  check(/small correction/.test(await text(t.page, '.runlogger .log-note')), '4.90 is still within a few per cent of the track’s 5.04');
+  await setField('km', '4.8');
+  check(/Measurements edited/.test(await text(t.page, '.runlogger .log-note')), '4.80 is not: step by step never drifts past the track');
+  await t.page.click('.rl-save'); await t.page.waitForTimeout(300);
+  kept = await t.json('runlog-2026-11-21');
+  check(kept && kept.km === 4.8 && kept.stream === null && !(await pacing(t)), 'a different distance is a different run: the analysis goes');
+  noErrors(t, 'small corrections');
+  await t.ctx.close();
+  /* a changed heart rate always drops it: the trace is no longer trusted */
+  t = await open('2026-11-21', '12:10', Object.assign({}, SEED, tt([229, 236, 238, 243, 244])));
+  await t.page.click('.runlogger .h-log');
+  await t.page.fill('[data-log-field="hr"]', '177'); await t.page.dispatchEvent('[data-log-field="hr"]', 'change');
+  check(/Measurements edited/.test(await text(t.page, '.runlogger .log-note')), 'a corrected heart rate drops the track’s analysis, as before');
+  await t.ctx.close();
+}
+
 async function strength() {
   console.log('· the Strength journey and per-session weights');
   const lateral = [];
@@ -1930,7 +2036,7 @@ async function offline() {
   try {
     /* --only=name[,name] runs just those (a quicker loop while working on one) */
     const only = (process.argv.find((x) => x.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
-    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, batchTwo, repsReadback, strength, moments, fuel, strava, update, sweep, offline]) if (!only.length || only.includes(run.name)) await run();
+    for (const run of [missedRun, moves, restingHr, trendsAndBackup, marathonPace, weekShape, cinema, layouts, coherence, batchOne, batchTwo, repsReadback, mpBlockImport, racePacing, strength, moments, fuel, strava, update, sweep, offline]) if (!only.length || only.includes(run.name)) await run();
   } catch (e) { fails++; console.error(e); }
   await browser.close(); server.close();
   console.log('\n' + passes + ' passed, ' + fails + ' failed · Chromium mobile viewport, not a physical iPhone');

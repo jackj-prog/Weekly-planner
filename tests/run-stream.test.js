@@ -59,3 +59,30 @@ const noisy = tempo.map((p,i)=>({...p,distance:p.distance+40*Math.min(5,Math.flo
 assert.deepEqual(S.summarize([noisy],'Strava',{moving:true,reps:{n:2,sec:900,standOut:.1}}).stream.reps.list,[]);
 // not asked for, not stored
 assert.equal(S.summarize([tempo],'Strava',{moving:true}).stream.reps,undefined);
+// An MP block that is not a finish (v5.23): the fastest stretch of that length, wherever it sits.
+const longRun = (parts) => { const pts=[{time:0,distance:0,hr:120}]; let t=0,d=0; for (const [km,pace,hr] of parts) { const sec=Math.round(km*pace); for (let i=1;i<=sec;i++){ t++; d+=1000/pace; pts.push({time:t*1000,distance:d,hr}); } } return pts; };
+const ask = { n:1, km:12, standOut:.07, tolSec:4 };
+const mid = S.summarize([longRun([[14,380,145],[12,311,160],[4,390,150]])],'Strava',{moving:true,mpBlock:ask}).values;
+assert.deepEqual([mid.mpKm,mid.mpPaceSec,mid.mpHr,mid.mpFromKm],[12,311,160,14],'a mid-run block is found where it sits: '+JSON.stringify(mid));
+const pair = S.summarize([longRun([[5,380,145],[5,305,158],[3,400,146],[5,309,162],[8,385,150]])],'Strava',{moving:true,mpBlock:{n:2,km:5,standOut:.07}}).values;
+assert.deepEqual([pair.mpKm,pair.mpPaceSec,pair.mpHr,pair.mpFromKm],[10,307,160,5],'two reps are one segment: their time over their distance, the heart rate time-weighted');
+// a range is read at its longer end only if the extra kilometres held the pace
+const range = { n:1, km:6, kmMax:8, standOut:.07, tolSec:4 };
+assert.equal(S.summarize([longRun([[6,380,145],[8,292,160],[4,390,150]])],'Strava',{moving:true,mpBlock:range}).values.mpKm,8);
+assert.equal(S.summarize([longRun([[6,380,145],[6.4,292,160],[5.6,390,150]])],'Strava',{moving:true,mpBlock:range}).values.mpKm,6);
+// an easy 30 has no block; neither has a track with a broken clock, or one with no heart rate
+const easy30 = S.summarize([longRun([[30,375,146]])],'Strava',{moving:true,mpBlock:ask});
+assert.equal(easy30.values.mpKm,undefined); assert.ok(easy30.warnings.some(w=>/12 km at marathon pace could not be told apart/.test(w)));
+const midPts = longRun([[14,380,145],[12,311,160],[4,390,150]]);
+assert.equal(S.summarize([midPts.map((p,i)=>({...p,time:p.time+(i>=3000?90000:0)}))],'TCX',{mpBlock:ask}).values.mpKm,undefined);
+assert.equal(S.summarize([midPts.map(p=>({...p,hr:null}))],'TCX',{mpBlock:ask}).values.mpKm,undefined);
+// a finish is still read off the end of the track, and wins when both are asked for
+const fin = S.summarize([longRun([[16,380,145],[6,311,160]])],'Strava',{moving:true,tailKm:6,mpBlock:{n:1,km:6,standOut:.07}}).values;
+assert.deepEqual([fin.mpKm,fin.mpPaceSec,fin.mpFromKm],[6,311,undefined]);
+assert.equal(S.findBlock([],0,ask),null);
+// Each full kilometre's time (v5.23): a race's pacing is read from these.
+const five = S.summarize([longRun([[1,229,170],[1,236,176],[1,238,178],[1,243,180],[1.04,244,181]])],'Strava',{moving:true}).stream;
+assert.deepEqual(five.kmSec,[229,236,238,243,244],'five full kilometres; the 40 m past the fifth belongs to none');
+assert.equal(S.summarize([longRun([[0.8,300,150]])],'Strava',{moving:true}).stream.kmSec,undefined,'under a kilometre there are no splits');
+assert.equal(S.summarize([midPts.map((p,i)=>({...p,time:p.time+(i>=3000?90000:0)}))],'TCX',{}).stream.kmSec,undefined,'nor across a break in the clock');
+assert.equal(S.summarize([midPts],'Strava',{moving:true}).stream.kmSec.length,30);

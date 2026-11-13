@@ -163,7 +163,7 @@
   /* Strava's numbers are the ones the owner sees there — distance, moving
      time, average HR — so those fill the form. The samples, put on moving
      time (a stop or an auto-pause drops out, as Strava itself does), give
-     the halves, the HR distribution and a "last N @ MP" finish. */
+     the halves, the HR distribution, a session's reps and its MP segment. */
   function fromStreams(run, streams, opts) {
     const values = { km: Math.round(run.km * 100) / 100, sec: Math.round(run.sec) };
     values.paceSec = values.sec / values.km;
@@ -181,9 +181,9 @@
         pts.push({ time: clock * 1000, distance: metres, hr: hr && Number.isFinite(hr[i]) ? hr[i] : null });
       }
       try {
-        const s = root.RunStream.summarize([pts], 'Strava', { tailKm: opts && opts.tailKm, reps: opts && opts.reps, moving: true });
+        const s = root.RunStream.summarize([pts], 'Strava', { tailKm: opts && opts.tailKm, reps: opts && opts.reps, mpBlock: opts && opts.mpBlock, moving: true });
         stream = s.stream;
-        if (s.values.mpPaceSec) { values.mpKm = s.values.mpKm; values.mpPaceSec = s.values.mpPaceSec; values.mpHr = s.values.mpHr; }
+        if (s.values.mpPaceSec) { values.mpKm = s.values.mpKm; values.mpPaceSec = s.values.mpPaceSec; values.mpHr = s.values.mpHr; if (s.values.mpFromKm != null) values.mpFromKm = s.values.mpFromKm; }
         s.warnings.forEach((w) => warnings.push(w));
       } catch (e) { warnings.push('Strava’s samples for this run couldn’t be read; the summary is imported without the half-run analysis.'); }
     } else {

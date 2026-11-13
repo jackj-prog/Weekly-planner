@@ -2196,8 +2196,48 @@ section('the reps read back · what a race is worth elsewhere (v5.22)');
   ok(hm.list.length === 4 && hm.half === null, 'the half itself gets the shorter distances and no second half');
   /* the app asks every import for the reps, and shows them */
   const appSrc = require('fs').readFileSync(path.join(__dirname, '../js/app.js'), 'utf8'), sv = require('fs').readFileSync(path.join(__dirname, '../js/strava.js'), 'utf8');
-  ok((appSrc.match(/reps: repSpecFor\(day\)/g) || []).length === 2 && /reps: opts && opts\.reps/.test(sv), 'both imports (a file, Strava) ask the track for the session’s reps');
-  ok(/mpCheckHTML\(day, e\) \+ repCheckHTML\(day, e\) \+ raceEquivHTML\(day, e\)/.test(appSrc), 'the log reads them back beside the MP check');
+  ok(/reps: repSpecFor\(day\) \};/.test(appSrc) && (appSrc.match(/trackAsks\(day\)\)/g) || []).length === 2 && /reps: opts && opts\.reps/.test(sv), 'both imports (a file, Strava) ask the track for the session’s reps');
+  ok(/mpCheckHTML\(day, e\) \+ repCheckHTML\(day, e\) \+ racePacingHTML\(day, e\) \+ raceEquivHTML\(day, e\)/.test(appSrc), 'the log reads them back beside the MP check');
+}
+/* ---- an MP block that is not a finish (v5.23) ---- */
+section('an MP block found wherever it sits (v5.23)');
+{
+  const m = PLAN.mpCheck, rows = PLAN.blocks[0].weekTable;
+  const spec = (wk) => { const r = rows.find((x) => x.wk === wk); return DB.mpBlockSpec(r.sun, r.lr); };
+  ok(JSON.stringify(spec(20)) === JSON.stringify({ n: 1, km: 12, kmMax: 12, standOut: m.blockStandOut, tolSec: m.blockTolSec }), 'wk 20 "12 @ MP" is one stretch of 12 km: ' + JSON.stringify(spec(20)));
+  ok(spec(17).n === 2 && spec(17).km === 5 && spec(28).km === 6 && spec(28).kmMax === 8, '"2×5 @ MP" is two of 5; "mid 6–8" is 6, up to 8');
+  rows.forEach((r) => {
+    const tail = DB.mpTailKm(r.sun), block = DB.mpBlockSpec(r.sun, r.lr);
+    ok(!(tail && block), 'wk ' + r.wk + ': a finish is read off the end, never searched for as well');
+    if (DB.isMpSession(r.sun) && DB.mpSegmentKm(r.sun)) ok(!!tail || !!block, 'wk ' + r.wk + ' "' + r.sun + '": an import knows what to look for');
+    else ok(!block, 'wk ' + r.wk + ' has no MP block to find');
+    ok(!DB.mpBlockSpec(r.wed, 9), 'wk ' + r.wk + ': a Wednesday by minutes carries no km block');
+  });
+  ok(m.blockStandOut > 0 && m.blockStandOut < 0.15 && m.blockTolSec > 0, 'the block must stand out from the easy running, and a range holds its pace');
+  const appSrc = require('fs').readFileSync(path.join(__dirname, '../js/app.js'), 'utf8'), sv = require('fs').readFileSync(path.join(__dirname, '../js/strava.js'), 'utf8');
+  ok((appSrc.match(/trackAsks\(day\)\)/g) || []).length === 2 && /mpBlock: r \? DB\.mpBlockSpec\(r\.title, r\.run\.km\)/.test(appSrc) && /mpBlock: opts && opts\.mpBlock/.test(sv), 'both imports ask the track for the block');
+}
+/* ---- a race's pacing from its kilometres (v5.23) ---- */
+section('a race’s pacing, read from its track (v5.23)');
+{
+  const c = PLAN.splitCheck;
+  const hot = DB.raceSplits([229, 236, 238, 243, 244]);
+  ok(hot.rows.length === 5 && hot.by === 1 && hot.rows[0].label === '1' && hot.rows[0].delta === -9 && hot.rows[4].delta === 6, 'each kilometre against the run’s own average: ' + JSON.stringify(hot.rows.map((r) => r.delta)));
+  ok(hot.key === 'hot' && hot.first === 9 && hot.half === 11 && /Out 9 s\/km quicker/.test(hot.text) && /11 s\/km slower/.test(hot.text), 'a fast first kilometre that the second half pays for is named: ' + hot.text);
+  ok(DB.raceSplits([238, 237, 238, 236, 237]).key === 'even' && /within 1 s\/km/.test(DB.raceSplits([238, 237, 238, 236, 237]).text), 'even halves are even');
+  ok(DB.raceSplits([240, 239, 238, 236, 233]).key === 'negative' && DB.raceSplits([236, 236, 240, 241, 241]).key === 'fade', 'a negative split, and a fade with no fast start, each read as themselves');
+  ok(DB.raceSplits([237, 237, 237]).text.indexOf('within 1 s/km') > 0, 'identical halves are within a second, not within nothing');
+  ok(DB.raceSplits([230, 240]) === null && DB.raceSplits(null) === null && DB.raceSplits([240, 30, 240, 240]) === null, 'too few kilometres, or an impossible one, is not a pacing story');
+  /* a half reads in 5 km blocks (its last 1.1 km in none); the marathon in eight */
+  const half = DB.raceSplits(Array.from({ length: 21 }, (_, i) => 272 + (i >= 10 ? -4 : 0)));
+  ok(half.by === 5 && half.rows.length === 4 && half.rows[0].label === '1–5' && half.rows[3].label === '16–20' && half.key === 'negative', 'the half is four blocks of 5 km: ' + half.rows.map((r) => r.label).join(' '));
+  ok(DB.raceSplits(Array.from({ length: 42 }, () => 284)).rows.length === 8, 'the marathon is eight');
+  ok(DB.raceSplits(Array.from({ length: 10 }, () => 250)).by === 1, 'a 10 km still reads by the kilometre');
+  for (const k of ['hot', 'fade', 'even', 'negative']) ok(typeof c.verdicts[k] === 'string' && /\{half\}/.test(c.verdicts[k]) && c.badge[k], 'pacing text ' + k);
+  ok(c.cols.length === 3 && /against each other/.test(c.note) && c.hotSec > 0 && c.halfSec > 0, 'its labels and thresholds are data');
+  ok(PLAN.logModel.keepTrackWithin > 0 && PLAN.logModel.keepTrackWithin <= 0.05, 'a correction of a few per cent keeps the track’s analysis; no more than that');
+  const appSrc = require('fs').readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
+  ok(/key !== 'hr' && base && near\(km, base\.km\) && near\(sec, base\.sec\)/.test(appSrc), 'the correction is measured against the track’s own numbers, never the last edit');
 }
 /* ---- result ---- */
 // Chart geometry is part of correctness, not just appearance.

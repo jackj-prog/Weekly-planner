@@ -131,6 +131,18 @@ module.exports = (async () => {
     assert.equal(S.fromStreams(tempo, st, {}).stream.reps, undefined, 'a run with no reps to find stores none');
   }
 
+  // an MP block mid-run is found in the samples and fills the segment (v5.23)
+  {
+    const tt = [0], dd = [0], hh = [120];
+    let c = 0, mm = 0;
+    for (const [km, pace, h] of [[4, 380, 145], [5, 310, 158], [3, 390, 150]]) { const sec = km * pace; for (let i = 0; i < sec; i++) { c++; mm += 1000 / pace; tt.push(c); dd.push(mm); hh.push(h); } }
+    const st = { time: { data: tt }, distance: { data: dd }, heartrate: { data: hh }, moving: { data: tt.map(() => true) } };
+    const long = { id: 12, name: 'Long', date: '2026-11-15', km: mm / 1000, sec: c, hr: 151, manual: false };
+    const v = S.fromStreams(long, st, { mpBlock: { n: 1, km: 5, standOut: 0.07 } }).values;
+    assert.deepEqual([v.mpKm, v.mpPaceSec, v.mpHr, v.mpFromKm], [5, 310, 158, 4]);
+    assert.equal(S.fromStreams(long, st, {}).values.mpKm, undefined);
+  }
+
   // disconnect removes keys and tokens and tells Strava
   calls = []; answer = () => ({ status: 200, body: {} });
   S.forget();
