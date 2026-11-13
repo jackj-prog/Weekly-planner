@@ -8,19 +8,68 @@
     const h = Math.sin(dy/2)**2 + Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dx/2)**2;
     return 6371000 * 2 * Math.asin(Math.sqrt(Math.min(1,h)));
   }
+  /* The reps of a session by time (v5.22): the n non-overlapping windows of
+     `sec` seconds that cover the most ground, taken in order on a
+     one-second grid of the track's own clock. Each rep keeps its distance
+     (and its first half's) and each half's average heart rate — a summary,
+     never the trace. An empty list means the track was read and the reps
+     were not there: they must stand out from the rest of the run, or an
+     abandoned session's "fastest 2 × 15 min" would be read back as reps. */
+  function findReps(intervals, total, spec) {
+    const n = Math.round(spec.n), L = Math.round(spec.sec), S = Math.floor(total + 1e-6);
+    if (!(n > 0 && n <= 20 && L >= 30 && L % 2 === 0 && n * L <= S && S <= 86400)) return [];
+    const cd = new Float64Array(S + 1), cb = new Float64Array(S + 1), ch = new Float64Array(S + 1);
+    let t = 0, m = 0, beats = 0, cov = 0, s = 1;
+    for (const iv of intervals) {
+      const t1 = t + iv.sec;
+      for (; s <= S && s <= t1 + 1e-9; s++) {
+        const f = Math.min(1, (s - t) / iv.sec);
+        cd[s] = m + iv.metres * f; cb[s] = beats + (iv.hr || 0) * iv.sec * f; ch[s] = cov + (iv.hr ? iv.sec * f : 0);
+      }
+      t = t1; m += iv.metres; beats += (iv.hr || 0) * iv.sec; cov += iv.hr ? iv.sec : 0;
+    }
+    for (; s <= S; s++) { cd[s] = m; cb[s] = beats; ch[s] = cov; }
+    /* most[a] = the most metres k windows can cover when all start at or after a */
+    let prev = new Float64Array(S + 2);
+    const takes = [];
+    for (let k = 1; k <= n; k++) {
+      const cur = new Float64Array(S + 2).fill(-Infinity), take = new Uint8Array(S + 2);
+      for (let a = S - k * L; a >= 0; a--) {
+        const here = cd[a + L] - cd[a] + prev[a + L];
+        if (here >= cur[a + 1]) { cur[a] = here; take[a] = 1; } else cur[a] = cur[a + 1];
+      }
+      takes.push(take); prev = cur;
+    }
+    const list = [], h = L / 2;
+    const hrOver = (a, b) => (ch[b] - ch[a] >= (b - a) * 0.9 ? (cb[b] - cb[a]) / (ch[b] - ch[a]) : null);
+    let a = 0, repM = 0;
+    for (let k = n; k >= 1; k--) {
+      const take = takes[k - 1];
+      while (a <= S - k * L && !take[a]) a++;
+      const dm = cd[a + L] - cd[a];
+      if (!(dm > 0)) return [];
+      const r1 = hrOver(a, a + h), r2 = hrOver(a + h, a + L);
+      list.push({ at: a, km: Math.round(dm) / 1000, km1: Math.round(cd[a + h] - cd[a]) / 1000,
+        hr1: r1 == null ? null : Math.round(r1 * 10) / 10, hr2: r2 == null ? null : Math.round(r2 * 10) / 10 });
+      repM += dm; a += L;
+    }
+    const restSec = S - n * L, restM = cd[S] - repM;
+    if (restSec >= 60 && restM > 0 && spec.standOut > 0 && (n * L) / repM > (restSec / restM) * (1 - spec.standOut)) return [];
+    return list;
+  }
   function summarize(segments, source, opts) {
     const intervals = [], warnings = [];
-    let sec = 0, distance = 0, gaps = 0, missingHR = 0;
+    let sec = 0, distance = 0, gaps = 0, missingHR = 0, breaks = 0, blips = 0;
     const histogram = new Map();
     for (const points of segments) {
       for (let i=1; i<points.length; i++) {
         const a=points[i-1], b=points[i], dt=(b.time-a.time)/1000;
-        if (!finite(dt) || dt <= 0 || dt > 86400) { gaps++; continue; }
+        if (!finite(dt) || dt <= 0 || dt > 86400) { gaps++; breaks++; continue; }
         let dm = finite(a.distance) && finite(b.distance) ? b.distance-a.distance : metres(a,b);
-        if (!finite(dm) || dm < 0 || dm/dt > 15) { gaps++; dm=0; }
+        if (!finite(dm) || dm < 0 || dm/dt > 15) { gaps++; blips++; dm=0; }
         const hr = finite(a.hr) && a.hr > 0 && a.hr <= 300 && dt <= 30 ? Math.round(a.hr) : null;
         if (hr) histogram.set(hr,(histogram.get(hr)||0)+dt); else missingHR += dt;
-        if (dt > 30) gaps++;
+        if (dt > 30) { gaps++; breaks++; }
         intervals.push({start:distance,metres:dm,sec:dt,hr});
         distance+=dm; sec+=dt;
       }
@@ -53,6 +102,15 @@
       if (s > 0 && hrSec >= s * 0.95) tail = { km: m / 1000, sec: s, hr: beats / hrSec, paceSec: s / (m / 1000) };
     }
     if (tailKm > 0 && !tail) warnings.push('The final ' + tailKm + ' km could not be read cleanly from this track; enter the MP segment by hand if you have it.');
+    /* the reps a session by time asks for (v5.22). A break in the clock or a
+       pause split across segments leaves no single clock to find them on;
+       a stray GPS sample or two (its metres dropped) does not spoil a rep */
+    let reps = null;
+    const want = opts && opts.reps;
+    if (want && want.n > 0 && want.sec > 0) {
+      reps = { n: want.n, sec: want.sec, list: !breaks && blips <= 3 && segments.length === 1 ? findReps(intervals, sec, want) : [] };
+      if (!reps.list.length) warnings.push('The ' + (want.n > 1 ? want.n + ' × ' : '') + Math.round(want.sec / 60) + ' min could not be told apart from the rest of this track, so the reps are not read back.');
+    }
     if (source === 'GPX') warnings.push('Distance is estimated from GPS points; it may differ from your watch.');
     /* a moving-time series (Strava's, v5.12) has its stops taken out already */
     if (!(opts && opts.moving)) warnings.push('Track time includes recorded stops within each segment. Check it against your moving time; editing distance, time or HR removes stream analysis.');
@@ -62,7 +120,7 @@
     const values = {km: Math.round(distance)/1000,sec,paceSec:sec/(distance/1000),hr:complete ? Math.round(avg) : null};
     if (tail) { values.mpKm = Math.round(tail.km * 100) / 100; values.mpPaceSec = Math.round(tail.paceSec); values.mpHr = Math.round(tail.hr); }
     return { values,
-      stream: {source,hrSeconds,coveredSec:hrTime,sec,decPct,splitSec,halves:halves.map(h=>({sec:h.sec,km:h.metres/1000,hr:h.sec?h.beats/h.sec:null}))}, warnings };
+      stream: Object.assign({source,hrSeconds,coveredSec:hrTime,sec,decPct,splitSec,halves:halves.map(h=>({sec:h.sec,km:h.metres/1000,hr:h.sec?h.beats/h.sec:null}))}, reps ? {reps} : {}), warnings };
   }
   function parseXML(text, opts) {
     if (text.length > 20*1024*1024) throw new Error('Choose an activity file smaller than 20 MB.');
@@ -93,6 +151,6 @@
     if (firstTime!==null) {const d=new Date(firstTime);result.date=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
     return result;
   }
-  const api={metres,summarize,parseXML};
+  const api={metres,summarize,parseXML,findReps};
   if (typeof module!=='undefined' && module.exports) module.exports=api; else root.RunStream=api;
 }(typeof window!=='undefined'?window:globalThis));

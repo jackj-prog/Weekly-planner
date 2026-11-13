@@ -4185,3 +4185,21 @@ svg.mo-zoom .sk-shoot { visibility: hidden; }
   .rc-anchors .rca-r { font-size: 12px; }
   .rc-anchors .rca-r span { white-space: normal; overflow-wrap: anywhere; }
 }
+
+/* ---- v5.22: the reps read back · what a race is worth elsewhere ----
+   A small ruled ledger inside the readback block (the MP readback's own
+   ground and type): a head row in the label face, figures in mono. */
+.h-dc.mpx .mpx-reps { margin-top: 8px; }
+.h-dc.mpx .mpx-rh, .h-dc.mpx .mpx-rr { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1fr) minmax(0, 1.1fr); gap: 8px; align-items: baseline; }
+.h-dc.mpx .mpx-rh { padding: 0 0 6px; }
+.h-dc.mpx .mpx-rh span { margin: 0; font: 400 10px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--t3); }
+.h-dc.mpx .mpx-rr { padding: 8px 0; border-top: 1px solid var(--line); }
+.h-dc.mpx .mpx-rr span { margin: 0; font: 400 14px/1.2 var(--mono); font-variant-numeric: tabular-nums; color: var(--t2); white-space: nowrap; }
+.h-dc.mpx .mpx-rr b { font: 400 17px/1.2 var(--mono); letter-spacing: -.02em; color: var(--text); }
+.h-dc.mpx .mpx-rr small { font: 400 11.5px var(--body); color: var(--t2); }
+.h-dc.mpx .mpx-h b { white-space: nowrap; }
+.h-dc.rep-hint { color: var(--t2); }
+@media (max-width: 340px) {
+  .h-dc.mpx .mpx-rr b { font-size: 15px; }
+  .h-dc.mpx .mpx-rr span { white-space: normal; overflow-wrap: anywhere; }
+}

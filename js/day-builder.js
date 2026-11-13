@@ -375,6 +375,76 @@
     const hit = m && String(title || '').match(new RegExp(m.tailPattern));
     return hit ? Number(hit[1]) : null;
   }
+
+  /* ---- the reps of a quality session (PLAN.repCheck, v5.22) ----
+     What the title states by time: "Tempo 2×15 min" → 2 × 900 s in Z4,
+     "Tempo 25 min continuous" → one rep, "5×3 min @ MP" → Z3. Anything
+     else (distance reps, an easy run) has no reps to read. */
+  function repSpec(title) {
+    const c = PLAN.repCheck, t = String(title || '');
+    if (!c) return null;
+    const m = t.match(new RegExp(c.repsPattern)), one = m ? null : t.match(new RegExp(c.onePattern));
+    if (!m && !one) return null;
+    const n = m ? Number(m[1]) : 1, min = Number(m ? m[2] : one[1]);
+    if (!(n > 0 && n <= 20 && min > 0 && min <= 120)) return null;
+    return { n, min, sec: min * 60, zone: isMpSession(t) ? 3 : 4, standOut: c.standOut };
+  }
+  /* The reps an imported track gave ({ n, sec, list: [{ km, km1, hr1, hr2 }] },
+     from RunStream), read against the session: each rep's pace and the
+     heart rate it settled at, the zone that puts the session in, and
+     whether the pace held. Zones are optional: without them the paces and
+     the fade still read. */
+  function repReading(spec, got, rest, max) {
+    const c = PLAN.repCheck;
+    if (!c || !spec || !got || got.n !== spec.n || got.sec !== spec.sec || !Array.isArray(got.list)) return null;
+    const what = (spec.n > 1 ? spec.n + ' × ' : '') + spec.min + ' min';
+    if (got.list.length !== spec.n) return { found: false, what };
+    const rows = got.list.map((r) => ({
+      paceSec: r.km > 0 ? Math.round(spec.sec / r.km) : null,
+      hr: r.hr2 > 0 ? Math.round(r.hr2) : r.hr1 > 0 ? Math.round(r.hr1) : null,
+    }));
+    if (rows.some((r) => !(r.paceSec > 0))) return { found: false, what };
+    const hrs = rows.map((r) => r.hr), allHr = hrs.every((h) => h > 0);
+    const hr = allHr ? Math.round(hrs.reduce((a, b) => a + b, 0) / hrs.length) : null;
+    const z = hr ? zoneOf(hr, rest, max) : null;
+    const zs = z ? hrZones(rest, max) : null, target = zs ? zs.find((x) => x.z === spec.zone) : null;
+    const zKey = !z ? null : z.z < spec.zone ? 'below' : z.z === spec.zone ? 'on' : 'above';
+    const zText = zKey && c.zone[spec.zone] ? String(c.zone[spec.zone][zKey]).replace('{hi}', target ? target.hi : '') : '';
+    /* the fade: first rep against last, or the halves of one continuous rep */
+    let a = null, b = null, dHr = null;
+    if (rows.length > 1) {
+      a = rows[0].paceSec; b = rows[rows.length - 1].paceSec;
+      dHr = allHr ? hrs[hrs.length - 1] - hrs[0] : null;
+    } else {
+      const r = got.list[0], half = spec.sec / 2;
+      if (r.km1 > 0 && r.km - r.km1 > 0) { a = Math.round(half / r.km1); b = Math.round(half / (r.km - r.km1)); }
+      dHr = r.hr1 > 0 && r.hr2 > 0 ? r.hr2 - r.hr1 : null;
+    }
+    let fKey = null, d = null;
+    if (a != null && b != null) {
+      d = b - a;
+      fKey = d >= c.fadeSec ? (dHr != null && dHr < -c.sameBpm ? 'eased' : 'faded') : d <= -c.fadeSec ? 'built' : 'even';
+    }
+    const texts = rows.length > 1 ? c.fade : c.fadeOne;
+    return { found: true, what, rows, hr, z: z ? z.z : null, zKey, zText, hi: target ? target.hi : null,
+      fKey, fText: fKey ? String(texts[fKey]).replace('{d}', Math.abs(d)) : '',
+      openSec: fKey === 'faded' ? b : null };
+  }
+
+  /* ---- what a race is worth elsewhere (PLAN.raceEquiv, v5.22) ----
+     Riegel from one whole-run race or time trial to the listed distances,
+     the one raced left out. The half's equivalent is also placed on the
+     plan's own half table (rule 7), so the marathon is never extrapolated
+     here. */
+  function raceEquivalents(km, sec) {
+    const q = PLAN.raceEquiv;
+    if (!q || !(km >= q.minKm && km <= q.maxKm) || !(sec > 0)) return null;
+    const list = q.to.filter((t) => Math.abs(t.km - km) / km > 0.05)
+      .map((t) => ({ label: t.label, km: t.km, sec: Math.round(sec * Math.pow(t.km / km, q.exponent)) }));
+    if (!list.length) return null;
+    const half = list.find((t) => Math.abs(t.km - 21.0975) < 0.01);
+    return { list, half: half ? { sec: half.sec, anchor: raceAnchor(half.sec) } : null };
+  }
   /* The marathon pace a week's MP work runs at (v5.19): a step on the
      ladder (PLAN.mpSteps), which heart rate moves; from the tune-up on,
      the race pace the half sets — `race` says so, and the app reads the
@@ -1368,7 +1438,7 @@
     fmtPaceSec, parsePace, runClass, logEstimate, seasonShape, trainingJourney, logVerdict, adjustPace,
     hrZones, zoneOf, decoupling, decoupleVerdict, trendPct, bandPlace, carbRate,
     liftDay, liftHistory, lastLift, withLift, strengthJourney, plannedShare, validBody, bmrOf, energyTarget, macroTargets, validEaten,
-    isMpSession, mpSegmentKm, mpTailKm, mpShape, mpStep, mpEarned, raceAnchor, setRaceHalf, racePlan, raceClock, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, sunLongitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
+    isMpSession, mpSegmentKm, mpTailKm, repSpec, repReading, raceEquivalents, mpShape, mpStep, mpEarned, raceAnchor, setRaceHalf, racePlan, raceClock, sunTimes, moonPhase, skyPlace, lightAt, lightLevel, sunAltitude, sunLongitude, moonArc, moonUp, runSky, mpVerdict, easyPartEf,
     parseLocalDate, toISO, addDays, daysBetween, parseHM, fmtHM,
   };
 });

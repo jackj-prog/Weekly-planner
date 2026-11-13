@@ -2803,3 +2803,47 @@ The owner approved the four boards from the sweep ("go ahead").
   the padding box, inside a 1.5px border), `.more-btn::after` −2px; both
   get `z-index: 1` so the title beneath does not take the edge.
 - **Tests.** interactions `batchTwo()` (14 checks).
+
+## The reps, read back · equivalent times — v5.22.0, 13 November (Claude)
+
+The owner asked to keep improving the app. Functional readbacks in the
+MP readback's existing block; no plan data, time or rule changed.
+
+- **Why.** Each Wednesday the owner asked in chat what the tempo's reps
+  were and what they meant; the app kept only the whole-run summary.
+- **Detection.** `RunStream.findReps(intervals, total, { n, sec,
+  standOut })`: a one-second grid of cumulative metres, then a small DP
+  for the n non-overlapping `sec`-long windows covering the most ground,
+  in order. Rejected (empty list) when the run is too short, or the reps
+  are not `standOut` (10%) quicker than the rest of the run. `summarize`
+  asks for it via `opts.reps` and stores `stream.reps = { n, sec, list:
+  [{ at, km, km1, hr1, hr2 }] }`; an empty list means looked for, not
+  found. It needs one clock: no breaks (`dt > 30`), one segment, and at
+  most 3 bad distance samples (`blips`; `gaps` still counts both for the
+  halves, unchanged).
+- **Spec.** `DB.repSpec(title)` from `PLAN.repCheck.repsPattern` /
+  `onePattern`; zone 3 when the title is an MP session, else 4. The app's
+  `repSpecFor(day)` adds `runClass === 'quality'`, so the recovery
+  block's "2×20 min very easy" is not reps. `sessionShapeHTML` reads the
+  same spec.
+- **Reading.** `DB.repReading(spec, got, rest, max)` → rows (pace, second
+  half HR), `zKey` below/on/above against `spec.zone`, `fKey`
+  faded/eased/even/built (`fadeSec` 8, `sameBpm` 2), `openSec` when
+  faded. Zones optional. All words are in `PLAN.repCheck`.
+- **Where.** `repCheckHTML` beside `mpCheckHTML` in the logged run;
+  `lastRepsCellHTML` as an `.h-mp.h-last` cell on the hero of the next
+  unlogged session of the same zone (today or later).
+- **Equivalents.** `DB.raceEquivalents(km, sec)` (Riegel 1.06,
+  `PLAN.raceEquiv`), shown by `raceEquivHTML` on a race-class log with
+  its own distance, not `x`. The half's row is passed to `DB.raceAnchor`
+  and said only while `savedHalfSec()` is null.
+- **CSS.** `.mpx-reps` / `.mpx-rh` / `.mpx-rr` (the ledger), `.rep-hint`.
+- **Tests.** build +98 (section "the reps read back …"), run-stream
+  (detector: two reps, one, six, abandoned, short, broken clock, two
+  segments, one blip, noisy), strava (pass-through), interactions
+  `repsReadback()` (31, with an end-to-end import from a fake Strava).
+- **Not done, offered to the owner:** a line when easy-run efficiency
+  runs under the four-week norm (a fatigue signal; needs thresholds the
+  owner should agree to). Render time was measured with a full season
+  (25–65 ms a view in Chromium) and left alone.
+

@@ -2138,6 +2138,67 @@ section('the banked moment: the scribe’s hand and the transfer (v5.18.1)');
   ok(/momentCurtain\(wrap\.querySelector\('\.rl-save'\)\);[\s\S]{0,120}render\(\);/.test(app) && /momentCurtain\(tickEl\);\s*toggleDone/.test(app), 'the press holds Today before it redraws, so nothing jumps under the transfer');
   ok(!/\.view\.mo-out|1100\)|m\.info\.staged \? 3300 : 1100/.test(css + app), 'no beat on Today: the press is the transfer');
 }
+/* ---- the reps read back · race equivalents (v5.22) ---- */
+section('the reps read back · what a race is worth elsewhere (v5.22)');
+{
+  const c = PLAN.repCheck, block = PLAN.blocks[0];
+  /* every Wednesday the plan states by time has a spec; nothing else does */
+  const want = { 7: [1, 10], 9: [1, 15], 10: [1, 20], 11: [2, 10], 12: [1, 25], 14: [5, 3], 16: [4, 5], 17: [1, 30], 19: [6, 3], 20: [2, 15], 22: [1, 30], 23: [2, 15], 26: [1, 20], 29: [5, 3] };
+  block.weekTable.forEach((row) => {
+    const sp = DB.repSpec(row.wed), w = want[row.wk];
+    ok(w ? !!sp && sp.n === w[0] && sp.min === w[1] && sp.sec === w[1] * 60 : !sp, 'wk ' + row.wk + ' "' + row.wed + '" → ' + JSON.stringify(sp));
+    ok(!DB.repSpec(row.sun), 'a long run has no reps by time: ' + row.sun);
+  });
+  ok(DB.repSpec('5×3 min @ MP').zone === 3 && DB.repSpec('Tempo 2×15 min').zone === 4, 'MP reps are read in Z3, threshold in Z4');
+  ok(!DB.repSpec('TT rehearsal — 4 × 400 m') && !DB.repSpec('Easy + strides') && !DB.repSpec('Long 26 — 2×5 @ MP'), 'distance reps and easy runs have none: GPS cannot time a lap to the second');
+  /* the detector itself is tested in run-stream.test.js; here, the reading (fixture zones 50/190: Z3 148–162, Z4 162–176) */
+  const spec = DB.repSpec('Tempo 2×15 min');
+  const got = (a, b) => ({ n: 2, sec: 900, list: [{ at: 600, km: 900 / a[0], km1: 450 / a[0], hr1: a[1] - 6, hr2: a[1] }, { at: 1680, km: 900 / b[0], km1: 450 / b[0], hr1: b[1] - 6, hr2: b[1] }] });
+  const rd = (a, b, r, m) => DB.repReading(spec, got(a, b), r === undefined ? 50 : r, m === undefined ? 190 : m);
+  const hot = rd([258, 180], [269, 181]);
+  ok(hot.found && hot.rows.length === 2 && hot.rows[0].paceSec === 258 && hot.rows[1].paceSec === 269 && hot.rows[0].hr === 180, 'each rep: its pace and the heart rate of its second half');
+  ok(hot.z === 5 && hot.zKey === 'above' && /under 176 bpm/.test(hot.zText) && hot.hi === 176, 'settled above Z4 → harder than threshold, with the line to hold under: ' + hot.zText);
+  ok(hot.fKey === 'faded' && /fell 11 s\/km/.test(hot.fText) && hot.openSec === 269, 'slower at the same heart rate → the first rep was too fast; open the next at the last rep’s pace');
+  ok(rd([262, 170], [264, 172]).zKey === 'on' && rd([262, 170], [264, 172]).fKey === 'even' && rd([262, 170], [264, 172]).openSec == null, 'in Z4 and even: nothing to change');
+  ok(rd([262, 170], [269, 172]).fKey === 'even', 'inside ' + c.fadeSec + ' s/km is GPS and terrain, not a fade');
+  ok(rd([280, 156], [270, 158]).zKey === 'below' && rd([280, 156], [270, 158]).fKey === 'built', 'below Z4 and quicker at the end');
+  ok(rd([258, 176], [272, 168]).fKey === 'eased' && rd([258, 176], [272, 168]).openSec == null, 'slower with the heart rate down is eased off, not faded');
+  const noZones = rd([258, 180], [269, 181], null, null);
+  ok(noZones.found && noZones.zKey == null && noZones.zText === '' && noZones.fKey === 'faded', 'without zones the paces and the fade still read');
+  ok(DB.repReading(spec, { n: 2, sec: 900, list: [] }, 50, 190).found === false, 'looked for and not found is said, not hidden');
+  ok(DB.repReading(spec, { n: 6, sec: 180, list: [] }, 50, 190) === null && DB.repReading(spec, null, 50, 190) === null, 'reps read against another session are not this session’s');
+  /* one continuous rep: its halves */
+  const one = DB.repSpec('Tempo 30 min');
+  const cont = (k1, k2, h1, h2) => DB.repReading(one, { n: 1, sec: 1800, list: [{ at: 600, km: k1 + k2, km1: k1, hr1: h1, hr2: h2 }] }, 50, 190);
+  ok(cont(3.5, 3.3, 168, 174).fKey === 'faded' && /second half was 16 s\/km slower/.test(cont(3.5, 3.3, 168, 174).fText), 'a continuous tempo fades across its halves: ' + cont(3.5, 3.3, 168, 174).fText);
+  ok(cont(3.4, 3.42, 166, 172).fKey === 'even' && cont(3.3, 3.5, 166, 174).fKey === 'built', 'even and negative-split tempos read as such');
+  ok(cont(3.4, 3.42, 166, 172).rows[0].paceSec === Math.round(1800 / 6.82) && cont(3.4, 3.42, 166, 172).z === 4, 'its pace is the whole rep’s, its zone the second half’s');
+  /* MP reps are read against Z3 */
+  const mpr = DB.repReading(DB.repSpec('5×3 min @ MP'), { n: 5, sec: 180, list: [0, 1, 2, 3, 4].map(() => ({ at: 0, km: 0.63, km1: 0.315, hr1: 150, hr2: 165 })) }, 50, 190);
+  ok(mpr.zKey === 'above' && /too fast for this session/.test(mpr.zText), 'MP reps settling in Z4 are too fast');
+  /* every text the reading can ask for exists */
+  for (const z of [3, 4]) for (const k of ['below', 'on', 'above']) ok(typeof c.zone[z][k] === 'string' && c.zone[z][k].length > 20, 'zone text ' + z + '/' + k);
+  for (const k of ['faded', 'eased', 'even', 'built']) ok(/\{d\}|Even/.test(c.fade[k]) && /\{d\}|Even/.test(c.fadeOne[k]), 'fade text ' + k);
+  ok(c.cols.length === 3 && /\{what\}/.test(c.note) && /\{what\}/.test(c.missed) && c.hint && c.open && c.lastLabel && /\{hr\}/.test(c.settled), 'the readback’s labels are data');
+  ok(/\{hi\}/.test(c.lastWhy.above[4]) && /\{pace\}/.test(c.lastWhy.faded), 'the next card’s instruction is data');
+
+  /* race equivalents: Riegel, the raced distance left out, never the marathon */
+  const q = PLAN.raceEquiv, eq = DB.raceEquivalents(5, 1186);
+  const t = (label) => eq.list.find((x) => x.label === label);
+  ok(eq.list.length === 4 && !t('5 km'), 'a 5 km is worth four other distances, not itself');
+  ok(t('10 km').sec === Math.round(1186 * Math.pow(2, 1.06)) && t('Half').sec === Math.round(1186 * Math.pow(21.0975 / 5, 1.06)), 'Riegel at 1.06: 10 km ' + t('10 km').sec + ' s, half ' + t('Half').sec + ' s');
+  ok(t('Mile').sec < t('2 miles').sec && t('2 miles').sec < 1186, 'shorter distances come out quicker');
+  ok(eq.half && eq.half.anchor === PLAN.recalibrationAnchors[0], 'its half is placed on the plan’s own table (rule 7)');
+  ok(DB.raceEquivalents(5, 1500).half.anchor !== PLAN.recalibrationAnchors[0], 'a slower 5 km lands in a slower band');
+  ok(q.to.every((d) => d.km < 42) && /marathon is not on this list/.test(q.note), 'the marathon is never extrapolated: the half sets it');
+  ok(DB.raceEquivalents(42.195, 12000) === null && DB.raceEquivalents(1, 200) === null && DB.raceEquivalents(5, 0) === null, 'outside 1.5–25 km, or with no time, nothing is claimed');
+  const hm = DB.raceEquivalents(21.0975, 5700);
+  ok(hm.list.length === 4 && hm.half === null, 'the half itself gets the shorter distances and no second half');
+  /* the app asks every import for the reps, and shows them */
+  const appSrc = require('fs').readFileSync(path.join(__dirname, '../js/app.js'), 'utf8'), sv = require('fs').readFileSync(path.join(__dirname, '../js/strava.js'), 'utf8');
+  ok((appSrc.match(/reps: repSpecFor\(day\)/g) || []).length === 2 && /reps: opts && opts\.reps/.test(sv), 'both imports (a file, Strava) ask the track for the session’s reps');
+  ok(/mpCheckHTML\(day, e\) \+ repCheckHTML\(day, e\) \+ raceEquivHTML\(day, e\)/.test(appSrc), 'the log reads them back beside the MP check');
+}
 /* ---- result ---- */
 // Chart geometry is part of correctness, not just appearance.
 require('./ef-chart.test.js');

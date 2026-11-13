@@ -181,7 +181,7 @@
         pts.push({ time: clock * 1000, distance: metres, hr: hr && Number.isFinite(hr[i]) ? hr[i] : null });
       }
       try {
-        const s = root.RunStream.summarize([pts], 'Strava', { tailKm: opts && opts.tailKm, moving: true });
+        const s = root.RunStream.summarize([pts], 'Strava', { tailKm: opts && opts.tailKm, reps: opts && opts.reps, moving: true });
         stream = s.stream;
         if (s.values.mpPaceSec) { values.mpKm = s.values.mpKm; values.mpPaceSec = s.values.mpPaceSec; values.mpHr = s.values.mpHr; }
         s.warnings.forEach((w) => warnings.push(w));

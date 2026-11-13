@@ -117,6 +117,20 @@ module.exports = (async () => {
   const asArray = Object.keys(streams).map((k) => ({ type: k, data: streams[k].data }));
   assert.equal(S.fromStreams(brief, asArray, {}).stream.sec, 1995);
 
+  // a session by reps: the samples give each rep, as a summary (v5.22)
+  {
+    const tt = [0], dd = [0], hh = [120];
+    let c = 0, mm = 0;
+    for (const [sec, pace, h] of [[600, 360, 140], [900, 260, 175], [180, 420, 150], [900, 270, 177], [480, 370, 145]]) for (let i = 0; i < sec; i++) { c++; mm += 1000 / pace; tt.push(c); dd.push(mm); hh.push(h); }
+    const st = { time: { data: tt }, distance: { data: dd }, heartrate: { data: hh }, moving: { data: tt.map(() => true) } };
+    const tempo = { id: 11, name: 'Tempo', date: '2026-11-11', km: mm / 1000, sec: c, hr: 160, manual: false };
+    const rp = S.fromStreams(tempo, st, { reps: { n: 2, sec: 900, standOut: 0.1 } }).stream.reps;
+    assert.deepEqual([rp.n, rp.sec, rp.list.length], [2, 900, 2]);
+    assert.deepEqual(rp.list.map((r) => Math.round(900 / r.km)), [260, 270]);
+    assert.deepEqual(rp.list.map((r) => Math.round(r.hr2)), [175, 177]);
+    assert.equal(S.fromStreams(tempo, st, {}).stream.reps, undefined, 'a run with no reps to find stores none');
+  }
+
   // disconnect removes keys and tokens and tells Strava
   calls = []; answer = () => ({ status: 200, body: {} });
   S.forget();

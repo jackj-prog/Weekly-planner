@@ -695,6 +695,93 @@ const PLAN = {
       'several MP runs, not one: heat, hills and a hard week all push HR up.',
   },
 
+  /* The reps of a quality session, read back from an imported track (v5.22).
+     A session stated by time ("Tempo 2×15 min", "6×3 min @ threshold",
+     "Tempo 25 min continuous") is found as the n windows of that length
+     that cover the most ground, in order. Each rep is given its pace and
+     the heart rate of its SECOND HALF: a rep's first minutes are the heart
+     catching up, so its whole-rep average reads low. §10 prescribes these
+     sessions by heart rate, so the zone is read from where the reps
+     settled; the fade is the first rep against the last (the two halves of
+     one continuous rep). Distance reps (4 × 400 m) are not read: a watch's
+     GPS cannot time a 96-second lap to the second it is run for. */
+  repCheck: {
+    repsPattern: '(\\d+)\\s*[×x]\\s*(\\d+)\\s*min',   // "2×15 min" · "6×3 min @ threshold"
+    onePattern: 'Tempo\\s+(\\d+)\\s*min',              // "Tempo 25 min continuous"
+    standOut: 0.1,   // the reps must be this much quicker than the rest of the run to count as found
+    fadeSec: 8,      // s/km, first rep to last, that counts as a change of pace (about 3%: inside it is GPS and terrain)
+    sameBpm: 2,      // the heart rate "held" if it fell by no more than this
+    names: { 3: 'Marathon pace', 4: 'Threshold' },
+    /* where the reps settled, against the zone the session is prescribed in */
+    zone: {
+      4: {
+        below: 'Settled below Z4: steady running, not threshold (§10). The session is prescribed by heart rate; next time take the reps up into Z4.',
+        on: 'Settled in Z4, where a tempo belongs (§10).',
+        above: 'Settled above Z4: harder than threshold (§10). Next time hold the reps under {hi} bpm and let the pace be what it is.',
+      },
+      3: {
+        below: 'Below Z3 by the end of each rep. Short reps finish before the heart rate arrives, and this session is rhythm, not fitness.',
+        on: 'In Z3, where race pace belongs (§10).',
+        above: 'Into Z4 at race pace: too fast for this session. Ease the reps back.',
+      },
+    },
+    /* first rep against last */
+    fade: {
+      faded: 'The pace fell {d} s/km from the first rep to the last with the heart rate no lower: the first rep was too fast.',
+      eased: 'The last rep was {d} s/km slower and the heart rate came down with it: eased off, not faded.',
+      even: 'Even reps: the pace held from the first to the last.',
+      built: 'The last rep was {d} s/km quicker than the first: finished stronger than it started.',
+    },
+    /* one continuous rep: its first half against its second */
+    fadeOne: {
+      faded: 'The second half was {d} s/km slower than the first with the heart rate no lower: it went out too fast.',
+      eased: 'The second half was {d} s/km slower and the heart rate came down with it: eased off, not faded.',
+      even: 'Even: the second half matched the first.',
+      built: 'The second half was {d} s/km quicker than the first: a negative split.',
+    },
+    open: 'Open the next one at',          // + the pace the last rep (or second half) held
+    cols: ['Rep', 'Pace', 'HR, 2nd half'],
+    note:
+      'Read from the imported track as the fastest {what} of the run. The ' +
+      'heart rate is each rep’s second half, once it has caught up. GPS ' +
+      'pace over a rep is good to a few seconds per km.',
+    missed: 'The track was read, but {what} could not be told apart from the rest of the run.',
+    hint: 'Import this run’s track again (Edit run) to read each rep.',
+    /* the next session of the same kind carries the last one on its card */
+    lastLabel: 'LAST TIME',
+    settled: 'settled {hr} bpm',
+    lastWhy: {
+      above: { 4: 'Hold the reps under {hi} bpm this time', 3: 'Ease the reps back this time' },
+      below: { 4: 'Take the reps up into Z4 this time' },
+      faded: 'Open at {pace}/km: the first rep was too fast',
+    },
+  },
+
+  /* What a race or time trial is worth at the other distances (v5.22).
+     Riegel: time × (distance ratio)^1.06. It assumes the training for the
+     other distance is there, so it flatters going up and is harsh going
+     down. The marathon is deliberately not on the list: rule 7 gives it to
+     the December half, and the half's own table (recalibrationAnchors)
+     already carries the durability discount a first marathon needs. */
+  raceEquiv: {
+    exponent: 1.06,
+    minKm: 1.5, maxKm: 25,
+    to: [
+      { km: 1.609344, label: 'Mile' },
+      { km: 3.218688, label: '2 miles' },
+      { km: 5, label: '5 km' },
+      { km: 10, label: '10 km' },
+      { km: 21.0975, label: 'Half' },
+    ],
+    title: 'Equivalent times',
+    half: 'On the plan’s table a {half} half sets {target}. The tune-up half is what confirms it (rule 7).',
+    note:
+      'Riegel’s formula: the same fitness at another distance, if the ' +
+      'training for it is there. It flatters going up in distance and is ' +
+      'harsh going down. The marathon is not on this list: the December ' +
+      'half sets it.',
+  },
+
   /* Moving a session to another day this week (in-app). A gym session that
      carries leg work and lands on Thursday or later keeps its upper-body and
      core work but drops the legs: §6 keeps leg work away from the long run

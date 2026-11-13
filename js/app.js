@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  const APP_VERSION = '5.21.0';
+  const APP_VERSION = '5.22.0';
   const DB = window.DayBuilder;
 
   const CAT_VAR = {
@@ -1006,6 +1006,81 @@
       (next ? '<div class="mpx-next"><span>Next MP run, ' + esc(DAY_NAMES[DB.dayIndex(next.iso)].slice(0, 3) + ' ' + fmtShort(next.iso)) + ':</span> <b>' + esc(next.step.say) + '</b></div>' : '') +
       '<p class="mpx-note">' + esc(PLAN.mpCheck.note) + '</p></div>';
   }
+  /* ---- the reps, read back (v5.22, PLAN.repCheck) ----
+     Only a session the plan classes as quality has reps: the recovery
+     block's "2×20 min very easy" is not one. */
+  function repSpecFor(day) {
+    return day && day.run && DB.runClass(day.run) === 'quality' ? DB.repSpec(day.run.title) : null;
+  }
+  function repReadingFor(day, e) {
+    const spec = repSpecFor(day);
+    if (!spec || !e || (e.cls && e.cls !== 'quality') || !(e.stream && e.stream.reps)) return null;
+    const h = readJSON('hr', null);
+    return DB.repReading(spec, e.stream.reps, h && h.rest, h && h.max);
+  }
+  /* a small ruled ledger inside a readback: a head row and its rows */
+  function ledgerHTML(cols, rows) {
+    return '<div class="mpx-reps" role="table"><div class="mpx-rh" role="row">' + cols.map((c) => '<span role="columnheader">' + esc(c) + '</span>').join('') + '</div>' +
+      rows.map((r) => '<div class="mpx-rr" role="row">' + r.map((c) => '<span role="cell">' + c + '</span>').join('') + '</div>').join('') + '</div>';
+  }
+  function repCheckHTML(day, e) {
+    const spec = repSpecFor(day), c = PLAN.repCheck;
+    if (!spec || !c || (e.cls && e.cls !== 'quality')) return '';
+    const rd = repReadingFor(day, e);
+    /* never read (logged by hand, or imported before the reps were): one
+       quiet line, and only where a track can be had */
+    if (!rd) return e.stream || (window.Strava && window.Strava.connected()) ? '<div class="h-dc rep-hint">' + esc(c.hint) + '</div>' : '';
+    if (!rd.found) return '<div class="h-dc rep-hint">' + esc(String(c.missed).replace('{what}', rd.what)) + '</div>';
+    const band = !rd.zKey ? 'mpb' : rd.zKey === 'on' ? (rd.fKey === 'faded' ? 'ok' : 'good') : rd.zKey === 'below' ? 'mpb' : 'poor';
+    const rows = rd.rows.map((r, i) => [rd.rows.length > 1 ? roman(i + 1) : '—', '<b>' + DB.fmtPaceSec(r.paceSec) + '</b><small>/km</small>', r.hr ? '<b>' + r.hr + '</b><small> bpm</small>' : '—']);
+    const said = [rd.zText, rd.fText].filter(Boolean).join(' ');
+    return '<div class="h-dc mp mpx ' + band + '"><div class="mpx-h"><span>' + esc((c.names[spec.zone] || 'Reps') + ' · ' + rd.what) + '</span> <b>' + (rd.z ? 'Z' + rd.z : '') + '</b></div>' +
+      ledgerHTML(c.cols, rows) +
+      (said ? '<p class="mpx-v">' + esc(said) + '</p>' : '<p class="mpx-v">' + esc('Set your HR zones on Reference to place this in a zone.') + '</p>') +
+      (rd.openSec ? '<div class="mpx-next"><span>' + esc(c.open) + '</span> <b>' + DB.fmtPaceSec(rd.openSec) + '/km</b></div>' : '') +
+      '<p class="mpx-note">' + esc(String(c.note).replace('{what}', rd.what)) + '</p></div>';
+  }
+  /* the last session of the same kind before a day, with its reps read:
+     what the next one's card carries (v5.22) */
+  function lastRepsBefore(iso, zone) {
+    const today = todayISO();
+    const list = runLogHistory().filter((x) => x.cls === 'quality' && !x.x && x.iso < iso && x.iso <= today);
+    for (let i = list.length - 1; i >= 0; i--) {
+      const d = DB.buildDay(list[i].iso), spec = repSpecFor(d);
+      if (!spec || spec.zone !== zone) continue;
+      const rd = repReadingFor(d, getRunLogEntry(list[i].iso));
+      if (rd && rd.found) return { iso: list[i].iso, rd };
+    }
+    return null;
+  }
+  function lastRepsCellHTML(iso, spec) {
+    const c = PLAN.repCheck, last = spec && c ? lastRepsBefore(iso, spec.zone) : null;
+    if (!last) return '';
+    const rows = last.rd.rows, p = (r) => DB.fmtPaceSec(r.paceSec);
+    const paces = rows.length > 1 ? p(rows[0]) + ' → ' + p(rows[rows.length - 1]) : p(rows[0]);
+    /* the card gets the instruction, not the reasoning: that is on the log */
+    const w = c.lastWhy || {}, zw = w[last.rd.zKey] && w[last.rd.zKey][spec.zone];
+    const why = [zw ? String(zw).replace('{hi}', last.rd.hi) : '',
+      last.rd.openSec && w.faded ? String(w.faded).replace('{pace}', DB.fmtPaceSec(last.rd.openSec)) : ''].filter(Boolean).join(' · ');
+    return '<span class="h-mp h-last"><b>' + esc(c.lastLabel + ' · ' + fmtShort(last.iso).toUpperCase()) + '</b>' + esc(paces + '/km · ' + last.rd.what) +
+      (last.rd.hr ? ' · ' + esc(String(c.settled).replace('{hr}', last.rd.hr)) : '') +
+      (why ? '<small class="h-mp-why">' + esc(why) + '</small>' : '') + '</span>';
+  }
+  /* What a race or time trial is worth at other distances (v5.22,
+     PLAN.raceEquiv): only a whole run saved as a race at its own distance. */
+  function raceEquivHTML(day, e) {
+    const q = PLAN.raceEquiv, r = day.run;
+    if (!q || e.x || !(Number.isFinite(e.km) && e.km > 0) || (e.cls || (r ? DB.runClass(r) : 'unclassified')) !== 'race') return '';
+    const eq = DB.raceEquivalents(e.km, e.sec);
+    if (!eq) return '';
+    const rows = eq.list.map((t) => [esc(t.label), '<b>' + recordTime(t.sec) + '</b>', DB.fmtPaceSec(Math.round(t.sec / t.km)) + '<small>/km</small>']);
+    const half = eq.half && eq.half.anchor && savedHalfSec() == null
+      ? String(q.half).replace('{half}', recordTime(eq.half.sec)).replace('{target}', String(eq.half.anchor.target).replace(/-/g, '\u2011')) : '';
+    return '<div class="h-dc mp mpx mpb"><div class="mpx-h"><span>' + esc(q.title) + '</span> <b>' + esc(loggedDistance(e.km) + ' km · ' + recordTime(e.sec)) + '</b></div>' +
+      ledgerHTML(['Distance', 'Time', 'Pace'], rows) +
+      (half ? '<p class="mpx-v">' + esc(half) + '</p>' : '') +
+      '<p class="mpx-note">' + esc(q.note) + '</p></div>';
+  }
   /* History feed for the estimate model: every logged run, classified. */
   function runLogHistory() {
     const out = [];
@@ -1218,7 +1293,7 @@
       }
       const dec = e.stream ? (Number.isFinite(e.stream.decPct) ? {pct:e.stream.decPct} : null) : DB.decoupling(e.km || km, e.sec, e.hr, e.halfPaceSec, e.hr2);
       const dv = dec ? DB.decoupleVerdict(dec.pct) : null;
-      logHTML += mpCheckHTML(day, e);
+      logHTML += mpCheckHTML(day, e) + repCheckHTML(day, e) + raceEquivHTML(day, e);
       if (dv && (e.cls || (r ? DB.runClass(r) : 'unclassified')) === 'long' && !(r && DB.isMpSession(r.title))) {
         logHTML += '<div class="h-dc ' + dv.band + '"><b>' + dec.pct.toFixed(1) +
           '%</b> decoupling · ' + esc(dv.text) + '</div>';
@@ -1409,7 +1484,7 @@
       wrap.querySelector('.log-note').textContent = d.note;
       try {
         if (file.size > 20*1024*1024) throw new Error('Choose an activity file smaller than 20 MB.');
-        const parsed = window.RunStream.parseXML(await file.text(), { tailKm: day.run ? DB.mpTailKm(day.run.title) : null });
+        const parsed = window.RunStream.parseXML(await file.text(), { tailKm: day.run ? DB.mpTailKm(day.run.title) : null, reps: repSpecFor(day) });
         if (state.runLogDraft !== d || state.runLogEdit !== iso) return;
         d.preview = parsed;
         d.note = 'File read locally. Review the date and measurements before using them.';
@@ -1435,7 +1510,7 @@
     const svFail = (error) => { if (stale()) return; d.stravaBusy = false; d.note = error && error.message ? error.message : 'Strava import failed.'; render(); };
     const svUse = (run) => {
       d.stravaBusy = true; render();
-      SV.importRun(run, { tailKm: day.run ? DB.mpTailKm(day.run.title) : null }).then((pv) => {
+      SV.importRun(run, { tailKm: day.run ? DB.mpTailKm(day.run.title) : null, reps: repSpecFor(day) }).then((pv) => {
         if (stale()) return;
         d.stravaBusy = false; d.stravaRuns = null;
         /* the feels-like temperature is the owner's to add: a watch's own
@@ -1881,6 +1956,8 @@
     const mpWhyTxt = mp ? mpWhy(mpStepNow) : '';
     const mpCell = mp ? '<span class="h-mp"><b>MARATHON PACE</b>' + esc(mp.pace + ' · ' + mpWhere) +
       (mpWhyTxt ? '<small class="h-mp-why">' + esc(mpWhyTxt.charAt(0).toUpperCase() + mpWhyTxt.slice(1)) + '</small>' : '') + '</span>' : '';
+    /* a session by reps carries the last one of its kind until it is run (v5.22) */
+    const lastCell = !(e.sec > 0) && iso >= todayISO() ? lastRepsCellHTML(iso, repSpecFor(day)) : '';
     /* rule 4: the rate as today's schedule, in clock times (v5.0.6) */
     const gAt = r.run.gelsAt;
     const gelCell = gAt && gAt.length ? '<span class="h-mp h-gels"><b>GELS · ' + gAt.length + '</b><span class="g-times">' +
@@ -1948,7 +2025,7 @@
       '<div class="h-row"><div class="h-km">' + kmTxt + '<small>km</small></div>' +
       '<div class="h-session">' + tt(r.title) + '</div></div>' +
       '<div class="h-meta"><span class="h-shoe t-' + shoeTier(r.run.shoe) + '"><b>SHOE</b><i class="h-shoe-e">' + emblemSVG(shoeTier(r.run.shoe) === 'race' ? 'laurel' : 'foot') + '</i>' + esc(r.run.shoe) + '</span>' + paceCell +
-      '<span><b>WINDOW</b>' + r.start + '–' + r.end + '</span>' + mpCell + gelCell + '</div>' +
+      '<span><b>WINDOW</b>' + r.start + '–' + r.end + '</span>' + mpCell + lastCell + gelCell + '</div>' +
       /* the run first, then the morning's question: under the ruled line, not
          between the card's state and its distance (v5.13). Not on race
          morning: nerves lift the reading and the call is made (v5.0.1) */
@@ -2505,11 +2582,11 @@
     const segs = [];
     let cap = '', kind = '';
     if (cls === 'quality') {
-      const rep = t.match(/(\d+)\s*[×x]\s*(\d+)\s*min/) || (t.match(/Tempo\s+(\d+)\s*min/) ? [null, '1', t.match(/Tempo\s+(\d+)\s*min/)[1]] : null);
+      const rep = DB.repSpec(t);
       if (!rep) return '';
-      const n = Number(rep[1]), min = Number(rep[2]);
+      const n = rep.n, min = rep.min;
       const wuM = d.match(/warm up (\d+) min/i), wu = wuM ? Number(wuM[1]) : 0;
-      const zone = /@\s*MP/.test(t) ? 'MP' : 'Z4';
+      const zone = rep.zone === 3 ? 'MP' : 'Z4';
       const rest = Math.max(0, (r.endMin - r.startMin) - wu - n * min);
       if (wu) segs.push({ k: 'easy', u: wu });
       for (let j = 0; j < n; j++) { if (j) segs.push({ k: 'jog' }); segs.push({ k: 'hard', u: min }); }
